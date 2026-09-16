@@ -1,0 +1,11 @@
+{
+  "name": "sbmusicbe-garmin-chat-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Serverless backend (deploy to Vercel) powering the Garmin-connected training & nutrition chatbot on sbmusic.be. The rest of this repo (index.html) is the static site, still served by GitHub Pages.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
+    "garmin-connect": "^1.6.2"
+  }
+}

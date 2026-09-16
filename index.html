@@ -587,6 +587,48 @@
     .card{ padding:26px; }
     .fact-row dd{ text-align:right; font-size:13.5px; }
   }
+
+  /* ---- Garmin training & food coach widget ---- */
+  #garmin-chat{ position:fixed; right:20px; bottom:20px; z-index:300; font-family:'Inter',sans-serif; }
+  #garmin-chat .gc-toggle{
+    width:56px; height:56px; border-radius:50%; border:1px solid var(--glass-border);
+    background:linear-gradient(155deg, var(--green), var(--green-deep));
+    color:var(--white); font-size:22px; line-height:1; cursor:pointer;
+    box-shadow:var(--glass-shadow); display:flex; align-items:center; justify-content:center;
+  }
+  #garmin-chat .gc-panel{
+    position:absolute; right:0; bottom:70px; width:340px; max-width:calc(100vw - 40px);
+    height:460px; max-height:70vh; background:var(--glass-backing-strong);
+    -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border); border-radius:var(--radius-lg); box-shadow:var(--glass-shadow);
+    display:flex; flex-direction:column; overflow:hidden;
+    opacity:0; pointer-events:none; transform:translateY(12px);
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  #garmin-chat .gc-panel.open{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  #garmin-chat .gc-header{
+    padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--glass-border-soft);
+    font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--green-bright);
+  }
+  #garmin-chat .gc-close{ background:none; border:none; color:var(--grey); cursor:pointer; font-size:14px; padding:4px; }
+  #garmin-chat .gc-messages{ flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:10px; font-size:13.5px; }
+  #garmin-chat .gc-msg{ padding:10px 12px; border-radius:var(--radius-sm); line-height:1.45; max-width:88%; white-space:pre-wrap; }
+  #garmin-chat .gc-msg-user{ align-self:flex-end; background:var(--green); color:var(--white); }
+  #garmin-chat .gc-msg-bot{ align-self:flex-start; background:var(--surface-2); color:var(--grey); border:1px solid var(--glass-border-soft); }
+  #garmin-chat .gc-form{ display:flex; gap:8px; padding:12px; border-top:1px solid var(--glass-border-soft); }
+  #garmin-chat .gc-input{
+    flex:1; min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-pill);
+    padding:10px 14px; color:var(--white); font-size:13.5px; font-family:inherit;
+  }
+  #garmin-chat .gc-input:focus{ outline:2px solid var(--green-bright); outline-offset:2px; }
+  #garmin-chat .gc-send{
+    background:var(--green); color:var(--white); border:none; border-radius:var(--radius-pill);
+    padding:0 16px; font-size:13.5px; cursor:pointer; font-family:inherit;
+  }
+  #garmin-chat .gc-send:disabled{ opacity:.6; cursor:default; }
+  @media (max-width:480px){ #garmin-chat .gc-panel{ width:calc(100vw - 24px); right:-4px; } }
 </style>
 </head>
 <body>
@@ -762,6 +804,125 @@
     }
     loop();
   }
+</script>
+
+<div id="garmin-chat">
+  <button type="button" class="gc-toggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="gc-panel" aria-label="Open training & food coach">💬</button>
+  <div class="gc-panel" id="gc-panel" role="dialog" aria-label="Training & food coach">
+    <div class="gc-header">
+      <span>Training &amp; food coach</span>
+      <button type="button" class="gc-close" aria-label="Close chat">✕</button>
+    </div>
+    <div class="gc-messages"></div>
+    <form class="gc-form">
+      <input type="text" class="gc-input" placeholder="Ask about your training or food…" autocomplete="off" maxlength="2000" />
+      <button type="submit" class="gc-send">Send</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  // TODO: after deploying api/chat.js to Vercel (see README.md), replace this
+  // with your deployment's URL, e.g. "https://your-project.vercel.app/api/chat".
+  const GARMIN_CHAT_API_URL = "https://YOUR-VERCEL-APP.vercel.app/api/chat";
+
+  const PASSPHRASE_KEY = 'garminChatPassphrase';
+  const HISTORY_KEY = 'garminChatHistory';
+
+  const root = document.getElementById('garmin-chat');
+  if(!root) return;
+
+  const toggleBtn = root.querySelector('.gc-toggle');
+  const panel = root.querySelector('.gc-panel');
+  const closeBtn = root.querySelector('.gc-close');
+  const form = root.querySelector('.gc-form');
+  const input = root.querySelector('.gc-input');
+  const sendBtn = root.querySelector('.gc-send');
+  const messagesEl = root.querySelector('.gc-messages');
+
+  let history = [];
+  try { history = JSON.parse(sessionStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { history = []; }
+  history.forEach(renderMessage);
+
+  toggleBtn.addEventListener('click', function(){
+    const open = panel.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', String(open));
+    if(open){
+      input.focus();
+      if(!messagesEl.children.length){
+        addBotMessage("Hey! I can see your Garmin training & health data — ask me about your recent workouts, sleep, recovery, steps or weight trend.");
+      }
+    }
+  });
+
+  closeBtn.addEventListener('click', function(){
+    panel.classList.remove('open');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  });
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    addUserMessage(text);
+    setBusy(true);
+    try {
+      const reply = await sendMessage(text);
+      addBotMessage(reply);
+    } catch(err){
+      addBotMessage(err.message || 'Something went wrong reaching the coach. Try again in a moment.');
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  async function sendMessage(message){
+    let passphrase = localStorage.getItem(PASSPHRASE_KEY) || '';
+
+    function doFetch(){
+      return fetch(GARMIN_CHAT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Chat-Passphrase': passphrase },
+        body: JSON.stringify({ message: message, history: history.slice(-10) }),
+      });
+    }
+
+    let res = await doFetch();
+    if(res.status === 401){
+      passphrase = window.prompt('Enter the chat access code:') || '';
+      localStorage.setItem(PASSPHRASE_KEY, passphrase);
+      res = await doFetch();
+    }
+    if(!res.ok){
+      const errBody = await res.json().catch(function(){ return {}; });
+      throw new Error(errBody.error || ('Request failed (' + res.status + ')'));
+    }
+    const data = await res.json();
+    history.push({ role: 'user', content: message }, { role: 'assistant', content: data.reply });
+    history = history.slice(-20);
+    try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
+    return data.reply;
+  }
+
+  function addUserMessage(text){ renderMessage({ role: 'user', content: text }); }
+  function addBotMessage(text){ renderMessage({ role: 'assistant', content: text }); }
+
+  function renderMessage(msg){
+    const el = document.createElement('div');
+    el.className = 'gc-msg gc-msg-' + (msg.role === 'user' ? 'user' : 'bot');
+    el.textContent = msg.content;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function setBusy(busy){
+    sendBtn.disabled = busy;
+    input.disabled = busy;
+    sendBtn.textContent = busy ? '…' : 'Send';
+  }
+})();
 </script>
 
 </body>
