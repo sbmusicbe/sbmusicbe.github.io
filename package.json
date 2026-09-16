@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Serverless backend (deploy to Vercel) powering the Garmin-connected training & nutrition chatbot on sbmusic.be. The rest of this repo (index.html) is the static site, still served by GitHub Pages.",
+  "scripts": {
+    "garmin:login": "node scripts/garmin-login.js"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",
     "garmin-connect": "^1.6.2"

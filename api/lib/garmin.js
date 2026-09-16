@@ -9,7 +9,19 @@ async function login() {
     username: process.env.GARMIN_EMAIL,
     password: process.env.GARMIN_PASSWORD,
   });
-  await gc.login();
+
+  // Garmin often challenges logins from cloud/datacenter IPs (like Vercel's)
+  // with a CAPTCHA/MFA step this library can't complete. If GARMIN_TOKENS is
+  // set (produced once locally via scripts/garmin-login.js, see README), reuse
+  // that session instead of hitting the login endpoint at all; the OAuth2
+  // token auto-refreshes off the OAuth1 token as needed.
+  if (process.env.GARMIN_TOKENS) {
+    const { oauth1, oauth2 } = JSON.parse(process.env.GARMIN_TOKENS);
+    gc.loadToken(oauth1, oauth2);
+  } else {
+    await gc.login();
+  }
+
   return gc;
 }
 
