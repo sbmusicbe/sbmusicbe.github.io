@@ -385,8 +385,12 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
     <a href="#" class="modal-close" aria-label="Sluiten">&times;</a>
     <div class="modal-title" id="booking-modal-title">Boek SB</div>
-    <p class="modal-sub">Vul je gegevens in — dit opent je mailprogramma met een kant-en-klare aanvraag naar hey@sbmusic.be.</p>
-    <form class="modal-form" id="booking-form">
+    <p class="modal-sub">Vul je gegevens in — de aanvraag wordt rechtstreeks verstuurd naar hey@sbmusic.be, je mailprogramma opent niet.</p>
+    <form class="modal-form" id="booking-form" action="https://formsubmit.co/hey@sbmusic.be" method="POST">
+      <input type="hidden" name="_subject" value="Booking aanvraag SB">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
       <div>
         <label for="bf-naam">Naam</label>
         <input id="bf-naam" name="naam" type="text" required autocomplete="name">
@@ -414,7 +418,7 @@
         <textarea id="bf-bericht" name="bericht" rows="4" placeholder="Locatie, tijdstip, gewenste stijl, ..."></textarea>
       </div>
       <button type="submit" class="btn modal-submit">Verstuur aanvraag →</button>
-      <p class="modal-note">Opent je e-mailprogramma met dit bericht al ingevuld.</p>
+      <p class="modal-note" id="booking-form-note">Wordt rechtstreeks verstuurd, zonder je mailprogramma te openen.</p>
     </form>
   </div>
 </div>
@@ -423,10 +427,17 @@
   (function(){
     var form = document.getElementById('booking-form');
     if(!form) return;
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var data = new FormData(form);
-      var type = data.get('type') || '';
+    var submitBtn = form.querySelector('.modal-submit');
+    var note = document.getElementById('booking-form-note');
+    var noteDefault = note ? note.textContent : '';
+
+    function setNote(text, isError){
+      if(!note) return;
+      note.textContent = text;
+      note.style.color = isError ? '#b3413a' : '';
+    }
+
+    function mailtoFallback(data, type){
       var subject = 'Booking aanvraag SB' + (type ? ' — ' + type : '');
       var lines = [
         'Naam: ' + data.get('naam'),
@@ -436,10 +447,52 @@
         '',
         (data.get('bericht') || '').toString()
       ];
-      var mailto = 'mailto:hey@sbmusic.be'
+      return 'mailto:hey@sbmusic.be'
         + '?subject=' + encodeURIComponent(subject)
         + '&body=' + encodeURIComponent(lines.join('\n'));
-      window.location.href = mailto;
+    }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var data = new FormData(form);
+      var type = data.get('type') || '';
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Bezig met versturen …';
+      setNote(noteDefault, false);
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: data
+      })
+        .then(function(response){
+          if(!response.ok) throw new Error('Verzenden mislukt');
+          form.reset();
+          submitBtn.textContent = 'Verstuurd ✓';
+          setNote('Bedankt! Je aanvraag is verstuurd, SB reageert zo snel mogelijk.', false);
+          setTimeout(function(){
+            window.location.hash = 'closed';
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Verstuur aanvraag →';
+            setNote(noteDefault, false);
+          }, 1800);
+        })
+        .catch(function(){
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Verstuur aanvraag →';
+          var mailto = mailtoFallback(data, type);
+          setNote('Kon niet automatisch verzenden. ', true);
+          if(note){
+            var link = document.createElement('a');
+            link.href = mailto;
+            link.textContent = 'Verstuur via e-mail →';
+            link.style.color = 'var(--green)';
+            link.style.textDecoration = 'underline';
+            note.appendChild(link);
+          }
+        });
     });
 
     var overlay = document.getElementById('booking-modal');
