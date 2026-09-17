@@ -230,6 +230,91 @@
   @media (prefers-reduced-motion: reduce){
     .home-btn, .boek-pill, .tile, .promo-btn, .cta-black, .social-icons a{ transition:none; }
   }
+
+  /* ---------- BOOKING MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    z-index:300;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(16,18,16,.55);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .modal-overlay:target{ opacity:1; pointer-events:auto; }
+  .modal{
+    position:relative;
+    width:100%;
+    max-width:400px;
+    max-height:calc(100svh - 40px);
+    overflow-y:auto;
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    padding:30px 26px 26px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.4);
+  }
+  .modal-close{
+    position:absolute;
+    top:16px; right:16px;
+    width:34px; height:34px;
+    border-radius:50%;
+    background:var(--mist);
+    color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+    line-height:1;
+    transition:background .2s ease;
+  }
+  .modal-close:hover, .modal-close:focus-visible{ background:#e2ede3; }
+  .modal-title{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:700;
+    font-size:21px;
+    padding-right:30px;
+  }
+  .modal-sub{ color:var(--ink-soft); font-size:14px; margin-top:6px; }
+  .modal-form{ margin-top:22px; display:flex; flex-direction:column; gap:14px; }
+  .modal-form label{
+    display:block;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .modal-form input,
+  .modal-form select,
+  .modal-form textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    transition:border-color .2s ease;
+  }
+  .modal-form input:focus,
+  .modal-form select:focus,
+  .modal-form textarea:focus{
+    outline:none;
+    border-color:var(--green);
+  }
+  .modal-form textarea{ resize:vertical; min-height:80px; }
+  .modal-submit{
+    width:100%;
+    border:none;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .modal-note{ font-size:12px; color:var(--ink-mute); margin-top:12px; text-align:center; }
+  @media (prefers-reduced-motion: reduce){
+    .modal-overlay{ transition:none; }
+  }
 </style>
 </head>
 <body>
@@ -289,12 +374,97 @@
       <div class="promo-title">Beschikbaar voor bookingen</div>
       <div class="promo-sub">Club, festival, bruiloft & private events</div>
     </div>
-    <a class="promo-btn" href="mailto:hey@sbmusic.be?subject=Booking%20aanvraag%20SB">Boek nu</a>
+    <a class="promo-btn" href="#booking-modal">Boek nu</a>
   </div>
 
   <div class="foot-mini">© 2026 SB — Allround dj</div>
 
 </div>
+
+<div class="modal-overlay" id="booking-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
+    <a href="#" class="modal-close" aria-label="Sluiten">&times;</a>
+    <div class="modal-title" id="booking-modal-title">Boek SB</div>
+    <p class="modal-sub">Vul je gegevens in — dit opent je mailprogramma met een kant-en-klare aanvraag naar hey@sbmusic.be.</p>
+    <form class="modal-form" id="booking-form">
+      <div>
+        <label for="bf-naam">Naam</label>
+        <input id="bf-naam" name="naam" type="text" required autocomplete="name">
+      </div>
+      <div>
+        <label for="bf-email">E-mail</label>
+        <input id="bf-email" name="email" type="email" required autocomplete="email">
+      </div>
+      <div>
+        <label for="bf-type">Type event</label>
+        <select id="bf-type" name="type">
+          <option>Club</option>
+          <option>Festival</option>
+          <option>Bruiloft</option>
+          <option>Private event</option>
+          <option>Anders</option>
+        </select>
+      </div>
+      <div>
+        <label for="bf-datum">Datum</label>
+        <input id="bf-datum" name="datum" type="date">
+      </div>
+      <div>
+        <label for="bf-bericht">Bericht</label>
+        <textarea id="bf-bericht" name="bericht" rows="4" placeholder="Locatie, tijdstip, gewenste stijl, ..."></textarea>
+      </div>
+      <button type="submit" class="btn modal-submit">Verstuur aanvraag →</button>
+      <p class="modal-note">Opent je e-mailprogramma met dit bericht al ingevuld.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var form = document.getElementById('booking-form');
+    if(!form) return;
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var data = new FormData(form);
+      var type = data.get('type') || '';
+      var subject = 'Booking aanvraag SB' + (type ? ' — ' + type : '');
+      var lines = [
+        'Naam: ' + data.get('naam'),
+        'E-mail: ' + data.get('email'),
+        'Type event: ' + type,
+        'Datum: ' + (data.get('datum') || '-'),
+        '',
+        (data.get('bericht') || '').toString()
+      ];
+      var mailto = 'mailto:hey@sbmusic.be'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(lines.join('\n'));
+      window.location.href = mailto;
+    });
+
+    var overlay = document.getElementById('booking-modal');
+    function closeModal(){
+      // a real hash change (not history.replaceState) so CSS :target re-evaluates
+      window.location.hash = 'closed';
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && window.location.hash === '#booking-modal'){
+        closeModal();
+      }
+    });
+    overlay.addEventListener('click', function(e){
+      if(e.target === overlay) closeModal();
+    });
+    var closeBtn = overlay.querySelector('.modal-close');
+    if(closeBtn){
+      closeBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        closeModal();
+      });
+    }
+  })();
+</script>
 
 </body>
 </html>
