@@ -126,6 +126,18 @@
     gap:12px;
     margin-top:30px;
   }
+  .tile.wide{
+    grid-column:span 2;
+    flex-direction:row;
+    align-items:center;
+    gap:14px;
+    min-height:auto;
+    padding:16px 18px;
+  }
+  .tile.wide svg:first-child{ width:20px; height:20px; flex-shrink:0; }
+  .tile.wide .tile-text{ flex:1; }
+  .tile.wide .tile-label{ margin-top:0; }
+  .tile.wide .arr{ width:16px; height:16px; color:var(--ink-mute); flex-shrink:0; }
   .tile{
     background:var(--mist);
     border-radius:var(--radius-lg);
@@ -239,21 +251,6 @@
     </div>
     <div class="name">SB</div>
     <p class="bio">Allround dj uit België. Van clubnight tot bruiloft — een set op maat van het publiek.</p>
-
-    <div class="social-icons">
-      <a href="mailto:hey@sbmusic.be" aria-label="E-mail">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>
-      </a>
-      <a href="https://instagram.com/sbmusicbe" target="_blank" rel="noopener" aria-label="Instagram">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>
-      </a>
-      <a href="https://tiktok.com/@sbmusicbe" target="_blank" rel="noopener" aria-label="TikTok">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v10.2a3.4 3.4 0 1 1-2.6-3.3"/><path d="M14 3c.3 2.2 2 3.9 4.2 4.2"/></svg>
-      </a>
-      <a href="https://facebook.com/sbmusicbe" target="_blank" rel="noopener" aria-label="Facebook">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 9h2.5V6H14c-1.7 0-3 1.3-3 3v2H9v3h2v7h3v-7h2.3l.7-3H14V9z"/></svg>
-      </a>
-    </div>
   </div>
 
   <div class="tiles">
@@ -277,6 +274,14 @@
         <div class="tile-handle">@sbmusicbe</div>
       </div>
     </a>
+    <a class="tile wide" href="https://facebook.com/sbmusicbe" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 9h2.5V6H14c-1.7 0-3 1.3-3 3v2H9v3h2v7h3v-7h2.3l.7-3H14V9z"/></svg>
+      <div class="tile-text">
+        <div class="tile-label">Facebook</div>
+        <div class="tile-handle">@sbmusicbe</div>
+      </div>
+      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+    </a>
   </div>
 
   <div class="promo">
@@ -286,13 +291,6 @@
     </div>
     <a class="promo-btn" href="mailto:hey@sbmusic.be?subject=Booking%20aanvraag%20SB">Boek nu</a>
   </div>
-
-  <a class="cta-black" href="mailto:hey@sbmusic.be?subject=Booking%20aanvraag%20SB">Stuur een booking-aanvraag →</a>
-
-  <a class="cta-black" href="https://facebook.com/sbmusicbe" target="_blank" rel="noopener">Volg op Facebook</a>
-
-  <div class="support-label">Contact</div>
-  <a class="cta-black" href="mailto:hey@sbmusic.be">hey@sbmusic.be</a>
 
   <div class="foot-mini">© 2026 SB — Allround dj</div>
 
