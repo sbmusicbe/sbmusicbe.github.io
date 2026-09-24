@@ -362,8 +362,35 @@
   .modal-submit:disabled{ cursor:progress; opacity:.75; }
   .modal-note{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--krijt-mute); margin-top:4px; }
 
+  /* ---------- COOKIE / PRIVACYMELDING ---------- */
+  .cookie-banner{
+    position:fixed;
+    left:16px; right:16px; bottom:16px;
+    z-index:250;
+    max-width:640px;
+    margin:0 auto;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:16px;
+    background:var(--studio-2);
+    border:1px solid var(--line);
+    padding:18px 20px;
+    box-shadow:0 24px 48px -20px rgba(0,0,0,.7);
+    transition:transform .4s ease;
+  }
+  .cookie-banner.hide{ transform:translateY(140%); }
+  .cookie-banner p{
+    flex:1;
+    min-width:220px;
+    font-size:13px;
+    line-height:1.5;
+    color:var(--krijt-soft);
+  }
+  .cookie-banner .tag{ flex-shrink:0; padding:12px 22px; font-size:12px; border:none; cursor:pointer; }
+
   @media (prefers-reduced-motion: reduce){
-    .modal-overlay, .tag::before, .row .go, .panel, .book{ transition:none; }
+    .modal-overlay, .tag::before, .row .go, .panel, .book, .cookie-banner{ transition:none; }
   }
 </style>
 </head>
@@ -485,6 +512,11 @@
   </div>
 </div>
 
+<div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Privacymelding">
+  <p>Deze site gebruikt geen tracking- of marketingcookies. Lettertypes worden geladen via Google Fonts, en als je het boekingsformulier verstuurt gaat dat via FormSubmit.co naar mijn mailbox.</p>
+  <button type="button" class="tag krijt" id="cookie-accept">Oké</button>
+</div>
+
 <script>
   (function(){
     var form = document.getElementById('booking-form');
@@ -585,6 +617,20 @@
         closeModal();
       });
     }
+  })();
+
+  (function(){
+    var banner = document.getElementById('cookie-banner');
+    var acceptBtn = document.getElementById('cookie-accept');
+    if(!banner || !acceptBtn) return;
+    var KEY = 'sb-privacy-ack';
+    try{
+      if(localStorage.getItem(KEY)) banner.classList.add('hide');
+    }catch(e){ /* localStorage unavailable (private mode, etc.) - keep banner visible */ }
+    acceptBtn.addEventListener('click', function(){
+      banner.classList.add('hide');
+      try{ localStorage.setItem(KEY, '1'); }catch(e){ /* ignore */ }
+    });
   })();
 </script>
 
