@@ -137,12 +137,14 @@
     position:absolute;
     z-index:2;
     left:0; bottom:0;
-    width:min(420px, 80%);
-    background:var(--studio);
-    clip-path:polygon(0 0, 100% 0, 76% 100%, 0 100%);
-    padding:30px clamp(26px, 7vw, 34px) 34px clamp(20px, 6vw, 28px);
+    padding:0 20px 26px clamp(20px, 6vw, 32px);
   }
-  .hero-copy h1{ font-size:clamp(30px, 10.4vw, 54px); max-width:11ch; }
+  .hero-copy h1{
+    font-size:clamp(25px, 7.6vw, 34px);
+    max-width:8ch;
+    color:var(--krijt);
+    text-shadow:0 3px 14px rgba(0,0,0,.85), 0 1px 4px rgba(0,0,0,.9);
+  }
 
   .hero-lede{ padding:30px clamp(20px, 6vw, 64px) 4px; }
   .hero-lede p{ font-size:17px; color:var(--krijt-soft); max-width:42ch; }
@@ -297,25 +299,21 @@
   .foot-privacy{ font-size:11px; color:var(--krijt-mute); text-decoration:underline; text-underline-offset:2px; }
   .foot-privacy:hover{ color:var(--krijt); }
 
-  /* ---------- TABLET: bredere foto, ruimer titelvlak ---------- */
+  /* ---------- TABLET: bredere foto, titel blijft compact ---------- */
   @media (min-width:700px) and (max-width:959px){
     .hero-photo{ aspect-ratio:16 / 9; }
-    .hero-copy{ width:min(480px, 62%); padding:36px clamp(28px,5vw,40px) 40px clamp(24px,5vw,32px); }
-    .hero-copy h1{ font-size:clamp(38px, 6.6vw, 60px); }
+    .hero-copy{ padding:0 24px 32px clamp(24px,5vw,40px); }
+    .hero-copy h1{ font-size:clamp(32px, 5vw, 42px); max-width:9ch; }
   }
 
-  /* ---------- DESKTOP: titel als opaak, diagonaal afgesneden vlak over de foto ---------- */
+  /* ---------- DESKTOP: titel zweeft met schaduw over de foto, linksonder ---------- */
   @media (min-width:960px){
     .topbar{ padding:32px clamp(24px, 5vw, 64px); }
     .topbar .logo{ width:80px; }
 
     .hero-photo{ aspect-ratio:auto; height:82svh; }
-    .hero-copy{
-      width:min(620px, 48%);
-      padding:56px clamp(32px, 4vw, 64px) 64px clamp(28px, 4vw, 56px);
-      clip-path:polygon(0 0, 100% 0, 68% 100%, 0 100%);
-    }
-    .hero-copy h1{ font-size:clamp(56px, 6.4vw, 100px); }
+    .hero-copy{ padding:0 24px 48px clamp(28px, 4vw, 56px); }
+    .hero-copy h1{ font-size:clamp(36px, 3.4vw, 52px); max-width:9ch; }
     .sticker{ top:32px; right:32px; }
 
     .sound-scene{ padding:120px 0; }
@@ -339,7 +337,7 @@
   }
 
   @media (min-width:1400px){
-    .hero-copy h1{ font-size:96px; }
+    .hero-copy h1{ font-size:56px; }
     .live-title{ font-size:60px; }
   }
 
