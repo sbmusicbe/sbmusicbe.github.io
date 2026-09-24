@@ -221,6 +221,8 @@
     gap:18px;
   }
   .foot .copy{ font-size:11px; color:var(--krijt-mute); }
+  .foot-privacy{ font-size:11px; color:var(--krijt-mute); text-decoration:underline; text-underline-offset:2px; }
+  .foot-privacy:hover{ color:var(--krijt); }
 
   @media (min-width:560px){
     body{ padding-top:36px; }
@@ -387,6 +389,8 @@
     line-height:1.5;
     color:var(--krijt-soft);
   }
+  .cookie-banner p a{ color:var(--krijt); text-decoration:underline; }
+  .cookie-banner p a:hover{ color:var(--signaal); }
   .cookie-banner .tag{ flex-shrink:0; padding:12px 22px; font-size:12px; border:none; cursor:pointer; }
 
   @media (prefers-reduced-motion: reduce){
@@ -466,6 +470,7 @@
 
   <footer class="foot">
     <div class="copy mono">© 2026 SB — Allround DJ</div>
+    <a class="foot-privacy mono" href="privacy.html">Privacyverklaring</a>
   </footer>
 
 </div>
@@ -513,7 +518,7 @@
 </div>
 
 <div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Privacymelding">
-  <p>Deze site gebruikt geen tracking- of marketingcookies. Lettertypes worden geladen via Google Fonts, en als je het boekingsformulier verstuurt gaat dat via FormSubmit.co naar mijn mailbox.</p>
+  <p>Deze site gebruikt geen tracking- of marketingcookies. Lettertypes worden geladen via Google Fonts, en als je het boekingsformulier verstuurt gaat dat via FormSubmit.co naar mijn mailbox. Meer info in de <a href="privacy.html">privacyverklaring</a>.</p>
   <button type="button" class="tag krijt" id="cookie-accept">Oké</button>
 </div>
 
