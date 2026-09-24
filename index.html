@@ -157,10 +157,11 @@
 
   /* ---------- LINKS ---------- */
   .panel{
+    --cut-run:0px;
     margin-top:34px;
     background:var(--studio-2);
-    padding:22px 20px 30px;
-    clip-path:polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - (40px * var(--tan22))) 100%, 0 100%);
+    padding:22px 60px 30px 20px;
+    clip-path:polygon(0 0, 100% 0, calc(100% - var(--cut-run)) 100%, 0 100%);
   }
   .panel-head{
     display:flex;
@@ -192,11 +193,12 @@
 
   /* ---------- BOEKEN ---------- */
   .book{
+    --cut-run:0px;
     position:relative;
     margin-top:14px;
     background:var(--corduroy);
-    padding:30px 24px 30px;
-    clip-path:polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - (40px * var(--tan22))) 100%, 0 100%);
+    padding:30px 64px 30px 24px;
+    clip-path:polygon(0 0, 100% 0, calc(100% - var(--cut-run)) 100%, 0 100%);
   }
   .book .mono{ font-size:11px; color:rgba(238,235,229,.7); }
   .book h2{ margin-top:12px; font-size:clamp(32px, 10vw, 44px); }
@@ -218,8 +220,8 @@
 
   @media (min-width:560px){
     body{ padding-top:36px; }
-    .panel{ padding:26px 28px 34px; }
-    .book{ padding:36px 32px; }
+    .panel{ padding:26px 100px 34px 28px; }
+    .book{ padding:36px 104px 36px 32px; }
   }
 
   /* ---------- TABLET: wijder dan de mobiele kaart, nog niet het volle grid ---------- */
@@ -590,6 +592,32 @@
         e.preventDefault();
         closeModal();
       });
+    }
+  })();
+
+  // 22°-snede over de volle hoogte van .panel/.book: de horizontale
+  // inspring op de onderrand moet exact hoogte * tan(22°) zijn, dus
+  // gemeten in px i.p.v. een vaste %/px-waarde die niet meeschaalt.
+  (function(){
+    var cutEls = document.querySelectorAll('.book, .panel');
+    if(!cutEls.length) return;
+    var TAN22 = 0.404;
+    function applyCut(el){
+      // cap at the CSS padding-right (minus a small safety margin) so the
+      // cut can never eat into the reserved text column, at any breakpoint
+      var maxRun = Math.max(0, parseFloat(getComputedStyle(el).paddingRight) - 8);
+      var run = Math.min(Math.round(el.offsetHeight * TAN22), maxRun);
+      el.style.setProperty('--cut-run', run + 'px');
+    }
+    if('ResizeObserver' in window){
+      var ro = new ResizeObserver(function(entries){
+        entries.forEach(function(entry){ applyCut(entry.target); });
+      });
+      cutEls.forEach(function(el){ ro.observe(el); });
+    } else {
+      var applyAll = function(){ cutEls.forEach(applyCut); };
+      applyAll();
+      window.addEventListener('resize', applyAll);
     }
   })();
 </script>
