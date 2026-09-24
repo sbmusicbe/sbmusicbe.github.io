@@ -121,6 +121,7 @@
 
   /* ---------- SCENE 01 — HERO: titel en foto op één vlak, langs de 23°-snede ---------- */
   .hero-scene{ position:relative; }
+  .hero-frame{ position:relative; }
   .hero-photo{
     position:relative;
     z-index:0;
@@ -311,9 +312,10 @@
     .topbar{ padding:32px clamp(24px, 5vw, 64px); }
     .topbar .logo{ width:80px; }
 
-    .hero-photo{ aspect-ratio:auto; height:82svh; }
-    .hero-copy{ padding:0 24px 48px clamp(28px, 4vw, 56px); }
-    .hero-copy h1{ font-size:clamp(36px, 3.4vw, 52px); max-width:9ch; }
+    .hero-frame{ width:fit-content; margin:0 auto; }
+    .hero-photo{ width:auto; height:min(76svh, 700px); aspect-ratio:3 / 4; }
+    .hero-copy{ padding:0 24px 52px clamp(28px, 4vw, 56px); }
+    .hero-copy h1{ font-size:clamp(24px, 2.2vw, 32px); max-width:7ch; }
     .sticker{ top:32px; right:32px; }
 
     .sound-scene{ padding:120px 0; }
@@ -337,7 +339,6 @@
   }
 
   @media (min-width:1400px){
-    .hero-copy h1{ font-size:56px; }
     .live-title{ font-size:60px; }
   }
 
@@ -468,6 +469,7 @@
 
   <main>
     <section class="hero-scene">
+     <div class="hero-frame">
       <div class="hero-photo">
         <div class="sticker" aria-label="Type events">
           <span>Club</span><span>Festival</span><span>Bruiloft</span><span>Privéfeest</span>
@@ -477,6 +479,7 @@
       <div class="hero-copy">
         <h1 class="display">Jouw feest,<br>mijn missie.</h1>
       </div>
+     </div>
     </section>
 
     <section class="hero-lede">
