@@ -307,16 +307,27 @@
     .hero-copy h1{ font-size:clamp(32px, 5vw, 42px); max-width:9ch; }
   }
 
-  /* ---------- DESKTOP: titel zweeft met schaduw over de foto, linksonder ---------- */
+  /* ---------- DESKTOP: foto en tekst delen de scene, titel zweeft over de foto ---------- */
   @media (min-width:960px){
     .topbar{ padding:32px clamp(24px, 5vw, 64px); }
     .topbar .logo{ width:80px; }
 
-    .hero-frame{ width:fit-content; margin:0 auto; }
-    .hero-photo{ width:auto; height:min(76svh, 700px); aspect-ratio:3 / 4; }
-    .hero-copy{ padding:0 24px 52px clamp(28px, 4vw, 56px); }
+    .hero-scene{
+      display:flex;
+      align-items:center;
+      gap:clamp(32px, 5vw, 72px);
+      max-width:1400px;
+      margin:0 auto;
+      padding:48px clamp(24px, 4vw, 56px);
+    }
+    .hero-frame{ flex:0 0 auto; }
+    .hero-photo{ width:auto; height:min(64svh, 560px); aspect-ratio:3 / 4; }
+    .hero-copy{ padding:0 24px 40px clamp(20px, 3vw, 32px); }
     .hero-copy h1{ font-size:clamp(24px, 2.2vw, 32px); max-width:7ch; }
-    .sticker{ top:32px; right:32px; }
+    .sticker{ top:28px; right:24px; }
+
+    .hero-lede{ flex:1 1 auto; max-width:44ch; padding:0; }
+    .hero-lede .cta-row{ margin-top:28px; }
 
     .sound-scene{ padding:120px 0; }
     .sound-bars{ max-width:960px; }
@@ -480,16 +491,13 @@
         <h1 class="display">Jouw feest,<br>mijn missie.</h1>
       </div>
      </div>
-    </section>
-
-    <section class="hero-lede">
-      <div class="wrap">
-        <p>Ik voel de zaal aan en draai wat het feest nodig heeft: van meezingers tot house en hiphop. De hele nacht vol energie, geen moment saai.</p>
-        <div class="cta-row">
-          <a class="tag signaal" href="#booking-modal">Boek SB →</a>
-          <a class="tag" href="#connect">Volg SB →</a>
-        </div>
-      </div>
+     <div class="hero-lede">
+       <p>Ik voel de zaal aan en draai wat het feest nodig heeft: van meezingers tot house en hiphop. De hele nacht vol energie, geen moment saai.</p>
+       <div class="cta-row">
+         <a class="tag signaal" href="#booking-modal">Boek SB →</a>
+         <a class="tag" href="#connect">Volg SB →</a>
+       </div>
+     </div>
     </section>
 
     <section class="sound-scene">
