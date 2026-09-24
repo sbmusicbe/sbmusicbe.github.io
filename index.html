@@ -319,11 +319,12 @@
     .topbar .logo{ width:80px; }
 
     .hero-scene{
-      grid-template-columns:min-content 1fr;
+      grid-template-columns:min-content minmax(0, 620px);
       grid-template-areas:"photo copy" "photo lede";
       align-items:start;
       column-gap:clamp(32px, 5vw, 72px);
-      max-width:1400px;
+      width:fit-content;
+      max-width:100%;
       margin:0 auto;
       padding:56px clamp(24px, 4vw, 56px);
     }
