@@ -159,7 +159,8 @@
   .panel{
     margin-top:34px;
     background:var(--studio-2);
-    padding:22px 20px 8px;
+    padding:22px 20px 30px;
+    clip-path:polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - (40px * var(--tan22))) 100%, 0 100%);
   }
   .panel-head{
     display:flex;
@@ -195,6 +196,7 @@
     margin-top:14px;
     background:var(--corduroy);
     padding:30px 24px 30px;
+    clip-path:polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - (40px * var(--tan22))) 100%, 0 100%);
   }
   .book .mono{ font-size:11px; color:rgba(238,235,229,.7); }
   .book h2{ margin-top:12px; font-size:clamp(32px, 10vw, 44px); }
@@ -216,7 +218,7 @@
 
   @media (min-width:560px){
     body{ padding-top:36px; }
-    .panel{ padding:26px 28px 10px; }
+    .panel{ padding:26px 28px 34px; }
     .book{ padding:36px 32px; }
   }
 
