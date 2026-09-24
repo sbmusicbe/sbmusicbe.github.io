@@ -154,6 +154,18 @@
   .bands span:nth-child(2){ width:46%; }
   .bands span:nth-child(3){ width:22%; background:var(--signaal); }
 
+  /* ---------- WAAR AL GEDRAAID ---------- */
+  .venues{ margin-top:56px; padding:0 6px; }
+  .venues h2{ margin-top:12px; font-size:clamp(26px, 4.4vw, 36px); max-width:16ch; }
+  .venue-list{
+    list-style:none;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:26px;
+  }
+  .venue-list .tag{ padding:10px 18px; }
+
   /* ---------- LINKS ---------- */
   .card-tab{
     position:absolute;
@@ -262,6 +274,8 @@
     .hero .intro{ grid-column:2; grid-row:1; align-self:center; margin-top:0; }
     .hero .bands{ grid-column:2; grid-row:2; align-self:start; margin:32px 0 0 12px; gap:10px; }
     .hero .bands span{ height:16px; }
+
+    .venues{ grid-column:1 / -1; margin-top:0; }
 
     .panel{ margin-top:0; }
     .book{ margin-top:0; display:flex; flex-direction:column; justify-content:center; }
@@ -425,6 +439,17 @@
       </div>
 
       <div class="bands" aria-hidden="true"><span></span><span></span><span></span></div>
+    </section>
+
+    <section class="venues" aria-labelledby="venues-title">
+      <span class="mono">Live ervaring</span>
+      <h2 class="display" id="venues-title">Waar je me al hoorde.</h2>
+      <ul class="venue-list">
+        <li class="tag signaal">Sunrise Festival</li>
+        <li class="tag signaal">Café De Zwarte Ruiter</li>
+        <li class="tag signaal">Futur Turnhout</li>
+        <li class="tag signaal">Club Madelon</li>
+      </ul>
     </section>
 
     <section class="panel" aria-labelledby="volg-title">
