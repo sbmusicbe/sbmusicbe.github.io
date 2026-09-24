@@ -30,7 +30,10 @@
   *{ margin:0; padding:0; box-sizing:border-box; }
   html{ background:var(--studio); }
   body{
-    background:var(--studio);
+    background:
+      radial-gradient(120% 60% at 15% 0%, rgba(46,91,71,.28), transparent 60%),
+      radial-gradient(90% 50% at 100% 30%, rgba(184,238,92,.06), transparent 60%),
+      var(--studio);
     color:var(--krijt);
     font-family:'Archivo',sans-serif;
     font-stretch:100%;
@@ -156,13 +159,22 @@
   .bands span:nth-child(3){ width:22%; background:var(--signaal); }
 
   /* ---------- LINKS ---------- */
-  .panel{
-    --cut-run:0px;
-    margin-top:34px;
-    background:var(--studio-2);
-    padding:22px 40px 30px 40px;
-    clip-path:polygon(var(--cut-run) 0, 100% 0, calc(100% - var(--cut-run)) 100%, 0 100%);
+  .card-tab{
+    position:absolute;
+    top:-17px; left:24px;
+    padding:9px 18px;
+    z-index:1;
   }
+  .panel{
+    position:relative;
+    margin-top:56px;
+    background:var(--studio-2);
+    border:1px solid var(--line);
+    padding:28px 24px 8px;
+    box-shadow:0 28px 56px -30px rgba(0,0,0,.7);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .panel:hover, .book:hover{ transform:translateY(-3px); }
   .panel-head{
     display:flex;
     align-items:baseline;
@@ -193,17 +205,16 @@
 
   /* ---------- BOEKEN ---------- */
   .book{
-    --cut-run:0px;
     position:relative;
-    margin-top:14px;
+    margin-top:56px;
     background:var(--corduroy);
-    padding:30px 40px 30px 40px;
-    clip-path:polygon(var(--cut-run) 0, 100% 0, calc(100% - var(--cut-run)) 100%, 0 100%);
+    padding:32px 28px 32px;
+    box-shadow:0 28px 56px -26px rgba(0,0,0,.55);
+    transition:transform .25s ease, box-shadow .25s ease;
   }
-  .book .mono{ font-size:11px; color:rgba(238,235,229,.7); }
-  .book h2{ margin-top:12px; font-size:clamp(32px, 10vw, 44px); }
+  .book h2{ margin-top:14px; font-size:clamp(32px, 10vw, 44px); }
   .book p{ margin-top:14px; font-size:16px; color:rgba(238,235,229,.82); max-width:30ch; }
-  .book .tag{ margin:22px 0 0 10px; padding:14px 18px; font-size:13px; }
+  .book a.tag{ margin:24px 0 0 2px; padding:14px 24px; font-size:13px; }
 
   /* ---------- FOOTER ---------- */
   .foot{
@@ -220,8 +231,8 @@
 
   @media (min-width:560px){
     body{ padding-top:36px; }
-    .panel{ padding:26px 90px 34px 90px; }
-    .book{ padding:36px 94px 36px 94px; }
+    .panel{ padding:32px 32px 12px; }
+    .book{ padding:40px 36px; }
   }
 
   /* ---------- TABLET: wijder dan de mobiele kaart, nog niet het volle grid ---------- */
@@ -365,7 +376,7 @@
   .modal-note{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--krijt-mute); margin-top:4px; }
 
   @media (prefers-reduced-motion: reduce){
-    .modal-overlay, .tag::before, .row .go{ transition:none; }
+    .modal-overlay, .tag::before, .row .go, .panel, .book{ transition:none; }
   }
 </style>
 </head>
@@ -400,6 +411,7 @@
     </section>
 
     <section class="panel" aria-labelledby="volg-title">
+      <span class="tag card-tab">Socials</span>
       <div class="panel-head">
         <h2 class="display" id="volg-title">Volg SB</h2>
         <span class="mono">@sbmusicbe</span>
@@ -432,7 +444,7 @@
     </section>
 
     <section class="book" aria-labelledby="boek-title">
-      <div class="mono">Agenda open voor 2026</div>
+      <span class="tag krijt card-tab">Agenda open voor 2026</span>
       <h2 class="display" id="boek-title">Boek SB.</h2>
       <p>Laat me weten wanneer, waar en wat voor feest het wordt — de rest regel ik.</p>
       <a class="tag krijt" href="#booking-modal">Stuur je aanvraag →</a>
@@ -592,35 +604,6 @@
         e.preventDefault();
         closeModal();
       });
-    }
-  })();
-
-  // 22°-snede over de volle hoogte van .panel/.book, links én rechts
-  // (een echt parallellogram zoals .tag): de horizontale inspring
-  // moet hoogte * tan(22°) zijn, dus gemeten in px i.p.v. een vaste
-  // %/px-waarde die niet meeschaalt met content-hoogte/breakpoint.
-  (function(){
-    var cutEls = document.querySelectorAll('.book, .panel');
-    if(!cutEls.length) return;
-    var TAN22 = 0.404;
-    function applyCut(el){
-      // cap at the smaller of padding-left/padding-right (minus a small
-      // safety margin) so the cut can never eat into the reserved text
-      // column on either side, at any breakpoint
-      var cs = getComputedStyle(el);
-      var maxRun = Math.max(0, Math.min(parseFloat(cs.paddingLeft), parseFloat(cs.paddingRight)) - 8);
-      var run = Math.min(Math.round(el.offsetHeight * TAN22), maxRun);
-      el.style.setProperty('--cut-run', run + 'px');
-    }
-    if('ResizeObserver' in window){
-      var ro = new ResizeObserver(function(entries){
-        entries.forEach(function(entry){ applyCut(entry.target); });
-      });
-      cutEls.forEach(function(el){ ro.observe(el); });
-    } else {
-      var applyAll = function(){ cutEls.forEach(applyCut); };
-      applyAll();
-      window.addEventListener('resize', applyAll);
     }
   })();
 </script>
