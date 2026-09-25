@@ -181,6 +181,9 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .box p{margin:0 0 8px}
 code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;word-break:break-all}
 
+#banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:color-mix(in srgb,var(--accent) 10%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:14px}
+#banner span{flex:1;min-width:180px}
+#banner .btn{padding:6px 12px}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -243,6 +246,7 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
         <span class="grow"></span>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
+      <div id="banner" hidden></div>
       <div class="toolbar" id="toolbar"></div>
       <form id="quickAdd" autocomplete="off">
         <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”" enterkeyhint="done">
@@ -271,6 +275,9 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 const VAULT = 'taken.vault.v1';
 const ITER = 310000;
 const GIST_FILE = 'taken.vault.json';
+const CONFIG_URL = 'config.json';
+const CFG_CACHE = 'taken.config.v1';
+const REPO = 'sbmusicbe/sbmusicbe.github.io', BRANCH = 'main', CONFIG_PATH = 'taken/config.json';
 const COLORS = ['#dc4c3e','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
 const PRIO = {1:'Prioriteit 1',2:'Prioriteit 2',3:'Prioriteit 3',4:'Geen prioriteit'};
 const REPEAT = [['','Niet herhalen'],['daily','Elke dag'],['weekdays','Elke werkdag'],['weekly','Elke week'],['monthly','Elke maand'],['yearly','Elk jaar']];
@@ -485,7 +492,7 @@ async function syncNow(pw) {
       let rkey = K.key;
       const differentSalt = remoteBlob.salt !== b64(K.salt);
       if (differentSalt) {
-        if (!pw) throw new Error('De online kluis gebruikt een ander wachtwoord. Vergrendel en kies “Herstellen vanaf GitHub Gist”.');
+        if (!pw) throw new Error('Het wachtwoord werd op een ander toestel gewijzigd. Vergrendel en log opnieuw in met je nieuwe wachtwoord.');
         rkey = await deriveKey(pw, unb64(remoteBlob.salt), remoteBlob.iter);
       }
       let remote;
@@ -524,14 +531,55 @@ function renderSync() {
   else el.textContent = 'Synchronisatie ingesteld';
 }
 
+/* ---------------- Sleutelbestand (config.json) ----------------
+   config.json staat op de site zelf en bevat de GitHub-token + gist-ID,
+   versleuteld met hetzelfde wachtwoord als de kluis. Zo volstaat je
+   wachtwoord om op elke browser automatisch je taken op te halen. */
+let CFG = null;
+async function fetchConfig() {
+  try {
+    const r = await fetch(CONFIG_URL + '?t=' + now(), {cache:'no-store'});
+    if (r.ok) {
+      const j = await r.json();
+      if (j && j.ct && j.salt) { localStorage.setItem(CFG_CACHE, JSON.stringify(j)); return j; }
+    }
+    if (r.status === 404) { localStorage.removeItem(CFG_CACHE); return null; }
+  } catch {}
+  try { return JSON.parse(localStorage.getItem(CFG_CACHE)); } catch { return null; }
+}
+// Staat config.json overeen met de huidige sleutel en synchronisatie?
+let cfgState = 'unknown';
+async function checkConfig(refetch) {
+  if (refetch) CFG = await fetchConfig();
+  const s = data?.settings.sync;
+  if (!CFG) cfgState = 'none';
+  else if (!K || CFG.salt !== b64(K.salt)) cfgState = 'stale';
+  else {
+    try {
+      const c = await unseal(K.key, CFG);
+      cfgState = s && c.token === s.token && c.gistId === s.gistId ? 'ok' : 'stale';
+    } catch { cfgState = 'stale'; }
+  }
+  renderBanner();
+  return cfgState;
+}
+async function makeConfig() {
+  const s = data.settings.sync;
+  return JSON.stringify(await seal(K, {token:s.token, gistId:s.gistId}));
+}
+
 /* ---------------- Lock screen ---------------- */
-let lockMode = vaultBlob() ? 'unlock' : 'setup';
+let lockMode = 'loading';
 function renderLock() {
   const f = $('#lockFields'), sub = $('#lockSub'), btn = $('#lockBtn'), alt = $('#lockAlt');
   $('#lockErr').textContent = '';
+  btn.hidden = false; alt.hidden = false;
   if (!window.crypto?.subtle) {
     sub.textContent = 'Deze pagina moet via https geopend worden (versleuteling is anders niet beschikbaar).';
     f.innerHTML = ''; btn.hidden = true; alt.hidden = true; return;
+  }
+  if (lockMode === 'loading') {
+    sub.textContent = 'Laden…'; f.innerHTML = ''; btn.hidden = true; alt.hidden = true; return;
   }
   if (lockMode === 'setup') {
     $('#lockTitle').textContent = 'Welkom bij Taken';
@@ -541,7 +589,7 @@ function renderLock() {
     btn.textContent = 'Aan de slag'; alt.textContent = 'Ik heb al een kluis in GitHub Gist';
   } else if (lockMode === 'unlock') {
     $('#lockTitle').textContent = 'Taken';
-    sub.textContent = 'Voer je wachtwoord in om te ontgrendelen.';
+    sub.textContent = CFG ? 'Voer je wachtwoord in. Je taken worden automatisch opgehaald en gesynchroniseerd.' : 'Voer je wachtwoord in om te ontgrendelen.';
     f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required autofocus>`;
     btn.textContent = 'Ontgrendelen'; alt.textContent = 'Herstellen vanaf GitHub Gist';
   } else {
@@ -558,6 +606,56 @@ $('#lockAlt').addEventListener('click', () => {
   lockMode = lockMode === 'restore' ? (vaultBlob() ? 'unlock' : 'setup') : 'restore';
   renderLock();
 });
+
+// Ontgrendelen: lokale kluis en/of (via config.json) de gedeelde kluis in de gist.
+async function unlockWith(pw) {
+  const keys = new Map();
+  const keyObj = async blob => {
+    if (!keys.has(blob.salt + blob.iter)) keys.set(blob.salt + blob.iter, await deriveKey(pw, unb64(blob.salt), blob.iter));
+    return {key:keys.get(blob.salt + blob.iter), salt:unb64(blob.salt), iter:blob.iter};
+  };
+  CFG = await fetchConfig();
+  const local = vaultBlob();
+  let localData = null, creds = null;
+  if (local) try { localData = normalize(await unseal((await keyObj(local)).key, local)); } catch {}
+  if (CFG) try { creds = await unseal((await keyObj(CFG)).key, CFG); } catch {}
+  if (!localData && !creds) throw new Error('Onjuist wachtwoord.');
+
+  if (creds) {
+    let rblob = null, remote = null;
+    try { rblob = await gistGet(creds); }
+    catch (e) { if (!localData) throw new Error('GitHub is niet bereikbaar: ' + e.message); }
+    if (rblob) {
+      try { remote = normalize(await unseal((await keyObj(rblob)).key, rblob)); }
+      catch { if (!localData) throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+    }
+    if (remote) {
+      K = await keyObj(rblob);
+      data = localData ? merge(localData, remote) : remote;
+      data.settings.sync = creds;
+      await persist();
+      enterApp();
+      syncNow(pw);
+      return;
+    }
+    if (!localData) {
+      // gist bestaat maar is nog leeg: nieuwe kluis starten
+      K = await keyObj(CFG);
+      data = newData();
+      data.settings.sync = creds;
+      await persist();
+      enterApp();
+      syncNow(pw);
+      return;
+    }
+  }
+  K = await keyObj(local);
+  data = localData;
+  if (creds) data.settings.sync = creds;
+  enterApp();
+  syncNow(pw);
+}
+
 $('#lockForm').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#lockErr'), btn = $('#lockBtn');
@@ -574,13 +672,7 @@ $('#lockForm').addEventListener('submit', async e => {
       await persist();
       enterApp();
     } else if (lockMode === 'unlock') {
-      const blob = vaultBlob();
-      const key = await deriveKey(pw, unb64(blob.salt), blob.iter);
-      try { data = normalize(await unseal(key, blob)); }
-      catch { throw new Error('Onjuist wachtwoord.'); }
-      K = {key, salt:unb64(blob.salt), iter:blob.iter};
-      enterApp();
-      syncNow(pw);
+      await unlockWith(pw);
     } else {
       const s = {token:$('#rTok').value.trim(), gistId:$('#rGist').value.trim().replace(/^.*\//, '')};
       const blob = await gistGet(s);
@@ -609,6 +701,7 @@ function enterApp() {
   document.title = 'Taken';
   renderAll();
   startTimers();
+  checkConfig();
 }
 async function lock() {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); }
@@ -864,7 +957,7 @@ function renderToolbar() {
 }
 function renderAll() {
   if (!data) return;
-  renderNav(); renderHead();
+  renderNav(); renderHead(); renderBanner();
   const focused = document.activeElement?.id;
   if (focused !== 'tbSearch' && focused !== 'tbFv') renderToolbar();
   renderList(); renderDetail();
@@ -1267,23 +1360,71 @@ function openFieldEditor(f, presetProject, back) {
   draw();
 }
 
+function cfgBox() {
+  if (cfgState === 'ok') return `<p style="margin:0"><b>Stap 2 ✓</b> Actief in al je browsers. Open <b>${esc(location.host + location.pathname)}</b> op eender welk toestel en log in met je wachtwoord: je ziet overal dezelfde taken.</p>`;
+  const stale = cfgState === 'stale';
+  return `<p><b>Stap 2.</b> ${stale
+      ? 'Het sleutelbestand op je site hoort nog bij je oude wachtwoord of een andere gist. Vervang de inhoud van <code>' + CONFIG_PATH + '</code> door de nieuwe versie.'
+      : 'Publiceer het versleutelde sleutelbestand op je site. Daarna volstaat je wachtwoord op elke browser, en kan niemand anders nog een account aanmaken.'}</p>
+    <p class="muted small">${stale
+      ? 'Klik op “Inhoud kopiëren”, dan op “Openen op GitHub”, vervang alles door de gekopieerde tekst en klik op “Commit changes”.'
+      : 'Klik op “Publiceren op GitHub” en daarna op GitHub op de groene knop “Commit changes”. Na 1 à 2 minuten staat het online.'}</p>
+    <div class="dlg-actions" style="margin-top:4px">
+      ${stale
+        ? '<button type="button" class="btn" id="cfCopy">Inhoud kopiëren</button><a class="btn primary" id="cfEdit" target="_blank" rel="noopener" style="text-decoration:none" href="https://github.com/' + REPO + '/edit/' + BRANCH + '/' + CONFIG_PATH + '">Openen op GitHub</a>'
+        : '<button type="button" class="btn primary" id="cfPublish">Publiceren op GitHub</button><button type="button" class="btn" id="cfCopy">Inhoud kopiëren</button>'}
+      <span class="grow"></span><button type="button" class="btn" id="cfCheck">Controleren</button>
+    </div>
+    <p class="muted small" id="cfMsg" style="margin:8px 0 0"></p>`;
+}
+function bindCfgBox(d) {
+  $('#cfPublish', d)?.addEventListener('click', async () => {
+    const w = window.open('', '_blank');
+    const url = `https://github.com/${REPO}/new/${BRANCH}/${CONFIG_PATH.replace(/\/[^/]+$/, '')}?filename=${encodeURIComponent(CONFIG_PATH.split('/').pop())}&value=${encodeURIComponent(await makeConfig())}`;
+    if (w) w.location = url; else location.href = url;
+  });
+  $('#cfCopy', d)?.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(await makeConfig()); toast('Inhoud gekopieerd'); }
+    catch { prompt('Kopieer deze inhoud:', await makeConfig()); }
+  });
+  $('#cfCheck', d)?.addEventListener('click', async () => {
+    $('#cfMsg', d).textContent = 'Controleren…';
+    const st = await checkConfig(true);
+    if (st === 'ok') { openSettings(); toast('Alles is ingesteld'); }
+    else $('#cfMsg', d).textContent = st === 'none'
+      ? 'Nog niet gevonden. GitHub Pages heeft na het committen meestal 1 à 2 minuten nodig.'
+      : 'Het bestand online is nog de oude versie. Probeer over een minuutje opnieuw.';
+  });
+}
+function renderBanner() {
+  const el = $('#banner'); if (!el || !data) return;
+  let msg = '';
+  if (!data.settings.sync) msg = 'Je taken staan nu alleen in deze browser.';
+  else if (cfgState === 'none') msg = 'Nog één stap om al je browsers automatisch te synchroniseren.';
+  else if (cfgState === 'stale') msg = 'Het sleutelbestand op je site moet bijgewerkt worden.';
+  el.hidden = !msg;
+  if (msg) el.innerHTML = `<span>${msg}</span><button type="button" class="btn" id="bnGo">${data.settings.sync ? 'Afronden' : 'Synchronisatie instellen'}</button>`;
+}
+
 function openSettings() {
   const s = data.settings.sync;
   showDialog(`
     <h3>Instellingen</h3>
 
-    <h4>Synchroniseren tussen toestellen</h4>
+    <h4>Synchroniseren tussen al je browsers</h4>
     ${s ? `<div class="box">
-        <p>Gekoppeld aan gist <code>${esc(s.gistId)}</code>.</p>
-        <p class="muted small">Op een ander toestel: open deze pagina, kies <b>“Ik heb al een kluis in GitHub Gist”</b> en vul je token, dit gist-ID en je wachtwoord in.</p>
-        <div class="dlg-actions" style="margin-top:10px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button><button type="button" class="btn" id="stCopy">Gist-ID kopiëren</button><span class="grow"></span><button type="button" class="btn danger" id="stUnlink">Ontkoppelen</button></div>
-      </div>`
+        <p><b>Stap 1 ✓</b> Gekoppeld aan geheime gist <code>${esc(s.gistId)}</code>. ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
+        <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button><span class="grow"></span><button type="button" class="btn danger" id="stUnlink">Ontkoppelen</button></div>
+      </div>
+      <div class="box">${cfgBox()}</div>`
     : `<div class="box">
-        <p class="muted small">Zonder synchronisatie staan je taken alleen in deze browser. Met een (gratis) GitHub-token bewaart Taken een <b>versleutelde</b> kopie in een geheime Gist, zodat je ze op je gsm én computer kunt gebruiken.</p>
-        <p class="muted small">1. Maak een token op <a href="https://github.com/settings/tokens/new?scopes=gist&description=Taken" target="_blank" rel="noopener">github.com/settings/tokens</a> met alleen het recht <code>gist</code>.<br>2. Plak het hieronder. Laat het gist-ID leeg om een nieuwe gist aan te maken.</p>
+        <p class="muted small">Nu staan je taken alleen in deze browser. Koppel één keer een (gratis) GitHub-token: Taken bewaart dan een <b>versleutelde</b> kopie in een geheime Gist, en elke browser waarin je met je wachtwoord inlogt, toont dezelfde taken.</p>
+        <p class="muted small"><b>Stap 1.</b> Maak een token op <a href="https://github.com/settings/tokens/new?scopes=gist&description=Taken" target="_blank" rel="noopener">github.com/settings/tokens</a> met alleen het vinkje <code>gist</code> (kies als vervaldatum “No expiration” of een lange termijn) en plak het hieronder.</p>
         <label class="fl">GitHub-token<input id="stTok" type="password" autocomplete="off" placeholder="ghp_…"></label>
-        <label class="fl">Bestaand gist-ID <span class="muted">(optioneel)</span><input id="stGist" type="text" autocomplete="off"></label>
-        <label class="fl">Je wachtwoord <span class="muted">(alleen nodig bij een bestaand gist)</span><input id="stPw" type="password" autocomplete="current-password"></label>
+        <details style="margin-top:10px"><summary class="muted small" style="cursor:pointer">Ik heb al een gist met taken</summary>
+          <label class="fl">Bestaand gist-ID<input id="stGist" type="text" autocomplete="off"></label>
+          <label class="fl">Je wachtwoord<input id="stPw" type="password" autocomplete="current-password"></label>
+        </details>
         <p class="err" id="stErr"></p>
         <div class="dlg-actions" style="margin-top:6px"><span class="grow"></span><button type="button" class="btn primary" id="stConnect">Koppelen</button></div>
       </div>`}
@@ -1315,11 +1456,11 @@ function openSettings() {
     $('#stClose', d).onclick = () => dlg.close();
     $('#stAuto', d).onchange = e => { data.settings.autolock = +e.target.value; save(); };
     $('#stSync', d)?.addEventListener('click', () => syncNow());
-    $('#stCopy', d)?.addEventListener('click', () => { navigator.clipboard?.writeText(s.gistId); toast('Gist-ID gekopieerd'); });
     $('#stUnlink', d)?.addEventListener('click', () => {
-      if (!confirm('Synchronisatie ontkoppelen? De gist blijft bestaan op GitHub.')) return;
-      data.settings.sync = null; setSync('idle'); save(); openSettings();
+      if (!confirm('Synchronisatie in deze browser ontkoppelen? De gist en het sleutelbestand op je site blijven bestaan.')) return;
+      data.settings.sync = null; setSync('idle'); save(); checkConfig(); openSettings();
     });
+    bindCfgBox(d);
     $('#stConnect', d)?.addEventListener('click', async e => {
       const token = $('#stTok', d).value.trim(), gistId = $('#stGist', d).value.trim().replace(/^.*\//, ''), pw = $('#stPw', d).value;
       const err = $('#stErr', d);
@@ -1339,8 +1480,9 @@ function openSettings() {
           await syncNow(pw);
           if (syncState.state === 'err') { data.settings.sync = null; save(); throw new Error(syncState.msg); }
         }
+        await checkConfig(true);
         openSettings();
-        toast('Synchronisatie ingesteld');
+        toast('Stap 1 klaar: gekoppeld');
       } catch (ex) {
         err.textContent = ex.message; e.target.disabled = false; e.target.textContent = 'Koppelen';
       }
@@ -1359,8 +1501,9 @@ function openSettings() {
         try { await gistPut(data.settings.sync, blob); setSync('ok'); }
         catch (ex) { setSync('err', ex.message); }
       }
-      dlg.close();
-      toast('Wachtwoord gewijzigd' + (data.settings.sync ? '. Gebruik op andere toestellen “Herstellen vanaf GitHub Gist”.' : ''));
+      await checkConfig();
+      if (data.settings.sync && CFG) { openSettings(); toast('Wachtwoord gewijzigd. Werk nu het sleutelbestand bij.'); }
+      else { dlg.close(); toast('Wachtwoord gewijzigd'); }
     };
     const download = (name, obj) => {
       const a = document.createElement('a');
@@ -1413,6 +1556,7 @@ function toast(msg, undo) {
 /* ---------------- Events ---------------- */
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView({type:b.dataset.view}); });
 $('#projNav').addEventListener('click', e => { const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
+$('#banner').addEventListener('click', e => { if (e.target.id === 'bnGo') openSettings(); });
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = () => openProjectDialog(proj(view.type === 'inbox' ? 'inbox' : view.id));
 $('#openFields').onclick = () => { $('#app').classList.remove('side-open'); openFieldsDialog(); };
@@ -1471,10 +1615,15 @@ function startTimers() {
     if (document.visibilityState === 'visible') syncNow();
     else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); scheduleSync(0); }
   });
-  setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 60000);
+  setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30000);
 }
 
 renderLock();
+fetchConfig().then(c => {
+  CFG = c;
+  lockMode = CFG || vaultBlob() ? 'unlock' : 'setup';
+  renderLock();
+});
 </script>
 </body>
 </html>
