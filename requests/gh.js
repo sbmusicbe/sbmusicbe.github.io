@@ -38,9 +38,12 @@ export const nextLink = link => (link.match(/<([^>]+)>;\s*rel="next"/) || [])[1]
 
 // ---- events ----
 export const EVENT_LABEL = 'event';
+// Issues echt verwijderen vraagt beheerrechten op de repo; daarom krijgen ze dit label en worden ze gesloten.
+export const DELETED_LABEL = 'verwijderd';
+const hasLabel = (issue, name) => (issue.labels || []).some(l => (l.name || l) === name);
 const JSON_RE = /```json\s*([\s\S]*?)```/;
 export function parseEvent(issue) {
-  if (!issue || issue.pull_request || !(issue.labels || []).some(l => (l.name || l) === EVENT_LABEL)) return null;
+  if (!issue || issue.pull_request || !hasLabel(issue, EVENT_LABEL) || hasLabel(issue, DELETED_LABEL)) return null;
   try {
     const d = JSON.parse((issue.body || '').match(JSON_RE)[1]);
     if (!d.code) return null;
@@ -68,15 +71,15 @@ export function parseRequest(issue) {
     const d = JSON.parse(m[1]);
     if (!d.e || !d.t) return null;
     return {
-      id: issue.number, number: issue.number, eventId: String(d.e), title: String(d.t).slice(0, 200), artist: String(d.a || '').slice(0, 200),
+      id: issue.number, number: issue.number, eventId: String(d.e), eventNumber: +d.en || null, title: String(d.t).slice(0, 200), artist: String(d.a || '').slice(0, 200),
       artwork: safeArt(d.art), songKey: d.k || songKey(d.t, d.a), name: String(d.n || '').slice(0, 60), message: String(d.m || '').slice(0, 300),
-      status: issue.state === 'open' ? 'new' : issue.state_reason === 'not_planned' ? 'rejected' : 'played',
+      status: hasLabel(issue, DELETED_LABEL) ? 'deleted' : issue.state === 'open' ? 'new' : issue.state_reason === 'not_planned' ? 'rejected' : 'played',
       createdAt: issue.created_at, doneAt: issue.closed_at
     };
   } catch { return null; }
 }
 export function requestIssue(r) {
-  const d = {e: r.eventId, t: r.title, a: r.artist, art: r.artwork, k: r.songKey, n: r.name, m: r.message, s: r.source};
+  const d = {e: r.eventId, en: r.eventNumber, t: r.title, a: r.artist, art: r.artwork, k: r.songKey, n: r.name, m: r.message, s: r.source};
   const line = s => s.replace(/[\r\n]+/g, ' ').replace(/-->/g, '--');
   return {
     title: `[${r.eventId}] ${line(r.title)}${r.artist ? ' — ' + line(r.artist) : ''}`.slice(0, 250),
@@ -85,6 +88,11 @@ export function requestIssue(r) {
       + `<!-- vz ${JSON.stringify(d).replace(/-->/g, '--\\u003e')} -->\n`
   };
 }
+
+// Hoort een verzoekje bij dit event? Een code kan na het verwijderen van een event opnieuw gebruikt worden;
+// daarom telt ook het issue-nummer van het event (oudere verzoekjes zonder nummer: op aanmaakdatum).
+export const belongsTo = (r, ev) => !!ev && r.eventId === ev.id
+  && (r.eventNumber ? r.eventNumber === ev.number : Date.parse(r.createdAt) >= Date.parse(ev.createdAt) - 60_000);
 
 // ---- wachtwoord (beheer) ----
 const te = new TextEncoder();

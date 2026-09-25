@@ -283,10 +283,10 @@ $('#form').addEventListener('submit', async e => {
   const wait = COOLDOWN - (Date.now() - store.get('vz_last', 0));
   if (wait > 0) { err.textContent = `Even geduld: je kan over ${Math.ceil(wait / 1000)} s opnieuw aanvragen.`; return; }
   const mine = store.get('vz_mine', []);
-  const openCount = mine.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new').length;
+  const openCount = mine.filter(m => isMine(m) && (m.status || 'new') === 'new').length;
   if (openCount >= MAX_OPEN) { err.textContent = `Je hebt al ${MAX_OPEN} verzoekjes openstaan. Wacht tot er een gespeeld wordt.`; return; }
   const key = songKey(title, artist);
-  if (mine.find(m => m.eventId === settings.eventId && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
+  if (mine.find(m => isMine(m) && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
 
   const btn = $('#fSubmit'); btn.disabled = true; btn.textContent = 'Versturen…';
   try {
@@ -294,10 +294,10 @@ $('#form').addEventListener('submit', async e => {
     await refreshEvent().catch(() => {});
     if (!settings || !settings.open) { err.textContent = 'Verzoekjes zijn net gesloten.'; return; }
     const artwork = manual ? '' : safeArt(picked.artwork);
-    const issue = await api('POST', '/issues', requestIssue({eventId: settings.eventId, title, artist, artwork, songKey: key, name, message, source: manual ? 'manual' : 'itunes'}));
+    const issue = await api('POST', '/issues', requestIssue({eventId: settings.eventId, eventNumber: settings.number, title, artist, artwork, songKey: key, name, message, source: manual ? 'manual' : 'itunes'}));
     store.set('vz_name', name);
     store.set('vz_last', Date.now());
-    mine.unshift({id: issue.number, eventId: settings.eventId, key, title, artist, artwork, status: 'new', at: Date.now()});
+    mine.unshift({id: issue.number, eventId: settings.eventId, en: settings.number, key, title, artist, artwork, status: 'new', at: Date.now()});
     store.set('vz_mine', mine.slice(0, 30));
     $('#form').hidden = true; $('#done').hidden = false;
     renderMine();
@@ -312,21 +312,23 @@ $('#form').addEventListener('submit', async e => {
 });
 
 // ---------- Mijn verzoekjes (status wordt af en toe ververst) ----------
-const LABEL = {new: 'In de wachtrij', played: 'Gespeeld 🎉', rejected: 'Niet gespeeld'};
+const LABEL = {new: 'In de wachtrij', played: 'Gespeeld 🎉', rejected: 'Niet gespeeld', deleted: 'Niet gespeeld'};
+// Eigen verzoekjes van dit event (niet van een vroeger event met dezelfde code).
+const isMine = m => m.eventId === settings.eventId && (m.en ? m.en === settings.number : m.at >= Date.parse(settings.createdAt) - 60_000);
 function renderMine() {
   if (!settings) return;
-  const mine = store.get('vz_mine', []).filter(m => m.eventId === settings.eventId);
+  const mine = store.get('vz_mine', []).filter(m => isMine(m));
   $('#mine').hidden = !mine.length;
   $('#mineList').innerHTML = mine.map(m => `<li>
     <div class="art" style="${safeArt(m.artwork) ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${safeArt(m.artwork) ? '' : NOTE}</div>
     <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(m.artist)}</div></div>
-    <span class="pill ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
+    <span class="pill ${m.status === 'deleted' ? 'rejected' : esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
 }
 async function refreshMine() {
   if (!settings) return;
   const all = store.get('vz_mine', []);
   let dirty = false;
-  for (const m of all.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new')) {
+  for (const m of all.filter(m => isMine(m) && (m.status || 'new') === 'new')) {
     try {
       const {data, changed} = await api('GET', '/issues/' + m.id, null, {cond: true});
       if (!changed) continue;

@@ -213,7 +213,7 @@ ul.list{list-style:none;margin:0;padding:0}
 
 <script type="module">
 import {
-  configured, REPO, api, nextLink, setToken, encodeToken, parseEvent, parseRequest, eventIssue, EVENT_LABEL,
+  configured, REPO, api, nextLink, setToken, encodeToken, parseEvent, parseRequest, eventIssue, EVENT_LABEL, DELETED_LABEL, belongsTo,
   pwHash, checkPassword, adminHash, b64, $, esc, safeArt, toast, store, poll
 } from './gh.js';
 
@@ -382,19 +382,21 @@ function recompute() {
   // Bij dubbele codes telt het oudste event.
   events.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
   events = events.filter((e, i) => events.findIndex(x => x.id === e.id) === i).reverse();
+  allReqs = allReqs.filter(r => r.status !== 'deleted');
   pending = {};
-  allReqs.forEach(r => { if (r.status === 'new') pending[r.eventId] = (pending[r.eventId] || 0) + 1; });
+  for (const ev of events) pending[ev.id] = allReqs.filter(r => r.status === 'new' && belongsTo(r, ev)).length;
   const total = events.filter(e => !e.archived).reduce((a, e) => a + (pending[e.id] || 0), 0);
   document.title = (total ? `(${total}) ` : '') + 'Verzoekjes · Beheer';
-  reqs = allReqs.filter(r => r.eventId === current);
+  reqs = reqsOf(current);
 }
+const reqsOf = id => allReqs.filter(r => belongsTo(r, events.find(e => e.id === id)));
 const merge = issue => { issues.set(issue.number, issue); recompute(); renderTabs(); renderMain(); };
 
 // ---------- tabs ----------
 function selectEvent(id) {
   current = id;
   if (id) { store.set('vz_tab', id); history.replaceState(null, '', '#' + encodeURIComponent(id)); }
-  reqs = allReqs.filter(r => r.eventId === current);
+  reqs = reqsOf(current);
   renderTabs(); renderMain();
 }
 
@@ -460,6 +462,7 @@ function renderMain() {
             <button id="ghBtn">Bekijk issues op GitHub</button>
             <hr>
             <button id="archiveBtn">${ev.archived ? 'Uit archief halen' : 'Archiveren'}</button>
+            ${ev.archived ? '<button id="deleteBtn" class="danger">Event verwijderen…</button>' : ''}
           </div></div>
       </div>
     </div>
@@ -495,6 +498,7 @@ function groupHtml(g) {
        <button class="btn sm ok" data-act="played" title="Gespeeld">${I.check}</button>
        <button class="btn sm danger" data-act="rejected" title="Afwijzen">${I.x}</button>`
     : `<button class="btn sm" data-act="new" title="Terug naar wachtrij">${I.undo} Terugzetten</button>`;
+  const del = `<button class="btn sm danger" data-act="delete" title="Verwijderen">${I.trash}</button>`;
   return `<li class="req" data-key="${esc(g.key)}">
     <div class="art" style="${artStyle(g.artwork)}">${safeArt(g.artwork) ? '' : NOTE}</div>
     <div class="body">
@@ -502,7 +506,7 @@ function groupHtml(g) {
       <div class="a">${esc(g.artist || '')}${who ? '' : ` · <span class="small">${ago(g.items[0].createdAt)}</span>`}</div>
       ${who ? `<div class="who">${who}</div>` : ''}
     </div>
-    <div class="acts">${acts}</div></li>`;
+    <div class="acts">${acts}${del}</div></li>`;
 }
 
 function wireMain(ev, list) {
@@ -515,6 +519,7 @@ function wireMain(ev, list) {
   $('#archiveBtn').onclick = () => saveEvent(ev, ev.archived ? {archived: false} : {archived: true, open: false})
     .then(() => { if (!ev.archived) { const next = events.find(e => !e.archived && e.id !== ev.id); selectEvent(next?.id || null); toast('Event gearchiveerd'); } })
     .catch(fail);
+  $('#deleteBtn') && ($('#deleteBtn').onclick = () => deleteEvent(ev));
   $('#npClear') && ($('#npClear').onclick = () => saveEvent(ev, {nowPlaying: null}).catch(fail));
   $('#main').querySelectorAll('.seg button').forEach(b => b.onclick = () => { view = b.dataset.view; store.set('vz_view', view); renderMain(); });
   $('#sortSel') && ($('#sortSel').onchange = e => { sort = e.target.value; store.set('vz_sort', sort); renderMain(); });
@@ -528,6 +533,7 @@ document.addEventListener('click', e => { const p = $('#morePop'); if (p && !p.h
 
 // Alle aanvragen van hetzelfde nummer tegelijk afhandelen.
 async function act(ev, g, what) {
+  if (what === 'delete') return deleteGroup(g);
   const patch = what === 'new' ? {state: 'open'} : {state: 'closed', state_reason: what === 'rejected' ? 'not_planned' : 'completed'};
   try {
     const res = await Promise.all(g.items.map(i => api('PATCH', '/issues/' + i.number, patch)));
@@ -535,6 +541,48 @@ async function act(ev, g, what) {
     recompute(); renderTabs(); renderMain();
     if (what === 'play') await saveEvent(ev, {nowPlaying: {title: g.title, artist: g.artist || '', artwork: safeArt(g.artwork)}});
     if (what !== 'new') toast(`${g.title}: ${what === 'rejected' ? 'afgewezen' : 'gespeeld'}`);
+  } catch (ex) { fail(ex); }
+}
+
+// Verwijderen = sluiten + label "verwijderd" (echt verwijderen vraagt beheerrechten op de repo).
+let labelReady = false;
+async function ensureDeletedLabel() {
+  if (labelReady) return;
+  try { await api('POST', '/labels', {name: DELETED_LABEL, color: '9ca3af', description: 'Verwijderd via beheer.html'}); }
+  catch (ex) { if (ex.status !== 422) throw ex; }
+  labelReady = true;
+}
+const markDeleted = (number, extra = {}) => {
+  const labels = (issues.get(number)?.labels || []).map(l => l.name).filter(n => n !== DELETED_LABEL);
+  return api('PATCH', '/issues/' + number, {state: 'closed', state_reason: 'not_planned', labels: [...labels, DELETED_LABEL], ...extra});
+};
+
+async function deleteGroup(g) {
+  const n = g.items.length;
+  if (!confirm(`“${g.title}”${n > 1 ? ` (${n} aanvragen)` : ''} verwijderen?`)) return;
+  try {
+    await ensureDeletedLabel();
+    const res = await Promise.all(g.items.map(i => markDeleted(i.number)));
+    res.forEach(i => issues.set(i.number, i));
+    recompute(); renderTabs(); renderMain();
+    toast(`${g.title}: verwijderd`);
+  } catch (ex) { fail(ex); }
+}
+
+// Een gearchiveerd event verwijderen: het issue verliest het label "event", zodat de code opnieuw vrij is.
+// De verzoekjes blijven aan het oude event gekoppeld (via het issue-nummer) en komen niet bij een nieuw event met dezelfde code.
+async function deleteEvent(ev) {
+  if (!ev.archived) return toast('Archiveer het event eerst.');
+  if (!confirm(`“${ev.name}” verwijderen?\n\nDe link ?e=${ev.id} en de QR-code werken daarna niet meer, en de code is vrij voor een nieuw event.`)) return;
+  try {
+    await ensureDeletedLabel();
+    const issue = await api('PATCH', '/issues/' + ev.number, {state: 'closed', state_reason: 'not_planned', labels: [DELETED_LABEL], title: '🗑 ' + ev.name});
+    if (current === ev.id) current = null;
+    merge(issue);
+    const next = events.find(e => !e.archived);
+    selectEvent(next?.id || null);
+    toast('Event verwijderd');
+    $('#dArch').open && renderArchive();
   } catch (ex) { fail(ex); }
 }
 
@@ -617,12 +665,14 @@ document.querySelectorAll('dialog [data-close]').forEach(b => b.addEventListener
 function renderArchive() {
   const arch = events.filter(e => e.archived);
   $('#archList').innerHTML = arch.length ? arch.map(e => `<li><span class="grow">${esc(e.name)} <span class="muted small">?e=${esc(e.id)}</span></span>
-    <button class="btn sm" data-open="${esc(e.id)}">Bekijken</button><button class="btn sm" data-restore="${esc(e.id)}">Terugzetten</button></li>`).join('')
+    <button class="btn sm" data-open="${esc(e.id)}">Bekijken</button><button class="btn sm" data-restore="${esc(e.id)}">Terugzetten</button>
+    <button class="btn sm danger" data-del="${esc(e.id)}" title="Verwijderen">${I.trash}</button></li>`).join('')
     : '<li class="muted">Geen gearchiveerde events.</li>';
 }
 $('#archBtn').addEventListener('click', () => $('#dArch').showModal());
 $('#archList').addEventListener('click', e => {
-  const o = e.target.closest('[data-open]'), r = e.target.closest('[data-restore]');
+  const o = e.target.closest('[data-open]'), r = e.target.closest('[data-restore]'), d = e.target.closest('[data-del]');
+  if (d) deleteEvent(events.find(x => x.id === d.dataset.del));
   if (o) { selectEvent(o.dataset.open); $('#dArch').close(); }
   if (r) saveEvent(events.find(x => x.id === r.dataset.restore), {archived: false}).then(() => { selectEvent(r.dataset.restore); $('#dArch').close(); }).catch(fail);
 });
