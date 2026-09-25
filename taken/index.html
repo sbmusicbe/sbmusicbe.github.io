@@ -8,6 +8,8 @@
 <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Taken">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
@@ -52,7 +54,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .icon-btn svg{width:18px;height:18px}
 
 /* ---------- Lock ---------- */
-.lock{min-height:100%;display:grid;place-items:center;padding:24px 16px}
+.lock{min-height:100%;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
 .lock-card{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow)}
 .lock-logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:14px}
 .lock-logo svg{width:24px;height:24px}
@@ -314,7 +316,7 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .task.arch{align-items:center}
 .task.arch .restore{padding:5px 10px;font-size:13px;flex:none}
 .empty .small{color:var(--faint)}
-#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
 .only-mobile{display:none}
@@ -656,6 +658,7 @@ function scheduleSync(delay = 1500) {
 async function syncNow(pw) {
   const s = data?.settings.sync;
   if (!s || !K) { renderSync(); return; }
+  if (!navigator.onLine) { setSync('offline'); return; }
   if (syncing) { syncAgain = true; return; }
   syncing = true; setSync('busy');
   try {
@@ -700,6 +703,8 @@ function renderSync() {
   el.title = 'Klik om nu te synchroniseren';
   if (syncState.state === 'busy') el.textContent = 'Synchroniseren…';
   else if (syncState.state === 'ok') el.textContent = `Gesynchroniseerd om ${pad(syncState.at.getHours())}:${pad(syncState.at.getMinutes())}`;
+  else if (syncState.state === 'offline') { el.textContent = 'Offline · wordt gesynchroniseerd zodra je online bent'; el.title = 'Je wijzigingen staan veilig op dit toestel.'; }
+  else if (syncState.state === 'err' && !navigator.onLine) { el.textContent = 'Offline · wordt gesynchroniseerd zodra je online bent'; el.title = syncState.msg; }
   else if (syncState.state === 'err') { el.textContent = '⚠ Synchronisatie mislukt'; el.title = syncState.msg; }
   else el.textContent = 'Synchronisatie ingesteld';
 }
@@ -2617,14 +2622,32 @@ function startTimers() {
     else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); scheduleSync(0); }
   });
   setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30000);
+  addEventListener('online', () => syncNow());
+  addEventListener('offline', () => { if (data?.settings.sync) setSync('offline'); });
 }
 
+// Snel starten: heeft dit toestel al een kluis of sleutelbestand, dan meteen het wachtwoord vragen.
+try { CFG = JSON.parse(localStorage.getItem(CFG_CACHE)); } catch {}
+if (CFG || vaultBlob()) lockMode = 'unlock';
 renderLock();
 fetchConfig().then(c => {
   CFG = c;
-  lockMode = CFG || vaultBlob() ? 'unlock' : 'setup';
-  renderLock();
+  const mode = CFG || vaultBlob() ? 'unlock' : 'setup';
+  if (mode !== lockMode && !$('#lock').hidden) { lockMode = mode; renderLock(); }
 });
+
+/* ---------------- Offline & updates (service worker) ---------------- */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(e => console.warn('Service worker niet geregistreerd', e));
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type !== 'update-ready') return;
+    const el = $('#toast');
+    el.innerHTML = '<span>Nieuwe versie klaar. Wordt gebruikt bij de volgende keer openen.</span><button type="button">Nu vernieuwen</button>';
+    el.hidden = false; clearTimeout(toastTimer);
+    el.querySelector('button').onclick = () => { el.hidden = true; lock(); };
+    toastTimer = setTimeout(() => el.hidden = true, 12000);
+  });
+}
 </script>
 </body>
 </html>
