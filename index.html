@@ -43,7 +43,7 @@
   button{ font:inherit; color:inherit; }
   a:focus-visible, button:focus-visible{ outline:2px solid var(--signaal); outline-offset:4px; }
 
-  .wrap{ max-width:1400px; margin:0 auto; padding:0 clamp(20px, 5vw, 64px); }
+  .wrap{ width:fit-content; max-width:100%; margin:0 auto; padding:0 clamp(20px, 5vw, 64px); }
   .idx{
     display:block;
     font-family:'Space Mono',monospace;
@@ -350,21 +350,27 @@
     .hero-lede .cta-row{ margin-top:28px; }
 
     .sound-scene{ padding:120px 0; }
-    .sound-bars{ max-width:960px; }
+    .sound-bars{ max-width:780px; }
 
     .live-scene{ padding:120px 0 132px; clip-path:polygon(0 3%, 100% 0, 100% 100%, 0 100%); }
     .venue-stack{ columns:2; column-gap:48px; }
     .venue-stack li{ break-inside:avoid; }
 
-    .connect-scene{ flex-direction:row; align-items:stretch; }
-    .connect-social{ flex:1 1 50%; display:flex; flex-direction:column; justify-content:center; padding:100px clamp(32px,4vw,72px); }
+    .connect-scene{ flex-direction:row; align-items:stretch; max-width:1200px; margin:0 auto; }
+    .connect-social{
+      flex:1 1 50%;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:100px clamp(32px,4vw,72px);
+    }
+    .connect-social .idx, .connect-social h2, .connect-social .social-rows{ width:100%; max-width:400px; }
     .connect-book{
       flex:1 1 50%;
-      display:flex; flex-direction:column; justify-content:center;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
       padding:100px clamp(32px,4vw,72px);
       clip-path:polygon(4% 0, 100% 0, 100% 100%, 0 100%);
       margin-top:0; margin-left:-1px;
     }
+    .connect-book .idx, .connect-book h2, .connect-book p{ width:100%; max-width:400px; }
 
     .foot{ padding:40px clamp(24px, 5vw, 64px) 56px; }
   }
