@@ -390,6 +390,21 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
   dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 24px)}
   .dlg-inner{padding:18px 16px 16px}
 }
+/* ---------- Uur / nog te gaan ---------- */
+.chip.due.soon{color:#d97706;font-weight:600}
+.chip.due.late{font-weight:600}
+.card.due-soon{background:color-mix(in srgb,#f59e0b 14%,var(--panel));border-color:color-mix(in srgb,#f59e0b 45%,var(--line))}
+.card.due-late{background:color-mix(in srgb,var(--danger) 10%,var(--panel));border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+.pace{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between;margin:0 0 14px;padding:12px 16px;border-radius:10px;border:1px solid color-mix(in srgb,var(--p3) 30%,var(--line));background:color-mix(in srgb,var(--p3) 7%,var(--panel))}
+.pace>div{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.pace b{font-size:17px;font-variant-numeric:tabular-nums}
+.pace span{color:var(--muted);font-size:13.5px}
+.pace em{font-style:normal;font-weight:650;font-size:13.5px}
+.pace .ahead{color:var(--ok)} .pace .behind{color:var(--danger)}
+.pace.behind{border-color:color-mix(in srgb,var(--danger) 30%,var(--line));background:color-mix(in srgb,var(--danger) 6%,var(--panel))}
+.pace.hit{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 9%,var(--panel))}
+.pace.hit b{color:var(--ok)}
+@media (max-width:860px){.pace{flex-direction:column;gap:6px;padding:10px 12px}.pace b{font-size:16px}}
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -461,7 +476,7 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
         <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”" enterkeyhint="done">
         <button class="btn primary" type="submit">Toevoegen</button>
       </form>
-      <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
+      <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
       <div id="list"></div>
       <div id="salesPage" hidden></div>
     </div>
@@ -1070,7 +1085,8 @@ function matchFilter(t, ff, fv) {
 }
 function sortFn(key) {
   const byOrder = (a, b) => (a.order || 0) - (b.order || 0);
-  const byDue = (a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0;
+  const dk = t => (t.due || '9999') + (t.time || '99:99');
+  const byDue = (a, b) => dk(a) < dk(b) ? -1 : dk(a) > dk(b) ? 1 : 0;
   const tie = (...fs) => (a, b) => { for (const f of fs) { const r = f(a, b); if (r) return r; } return 0; };
   if (key === 'due') return tie(byDue, (a, b) => a.prio - b.prio, byOrder);
   if (key === 'priority') return tie((a, b) => a.prio - b.prio, byDue, byOrder);
@@ -1130,12 +1146,21 @@ function groupTasks(tasks, g) {
   }
   return [...groups.values()].sort((a, b) => a.order - b.order);
 }
+// '', 'today', 'soon' (binnen 30 min), 'late' (datum of uur voorbij)
+function dueState(t) {
+  if (t.done || !t.due) return '';
+  const td = today();
+  if (t.due < td) return 'late';
+  if (t.due > td) return '';
+  if (!t.time) return 'today';
+  const [h, m] = t.time.split(':').map(Number), at = new Date(); at.setHours(h, m, 0, 0);
+  const diff = at - Date.now();
+  return diff < 0 ? 'late' : diff <= 30 * 60000 ? 'soon' : 'today';
+}
 function taskMeta(t) {
   const meta = [];
-  const td = today();
   if (t.due) {
-    const cls = t.due < td && !t.done ? 'late' : t.due === td ? 'today' : '';
-    meta.push(`<span class="chip due ${cls}">${I.cal} ${esc(dueLabel(t.due))}${t.repeat ? ' ' + I.repeat : ''}</span>`);
+    meta.push(`<span class="chip due ${dueState(t)}">${I.cal} ${esc(dueLabel(t.due))}${t.time ? ' ' + esc(t.time) : ''}${t.repeat ? ' ' + I.repeat : ''}</span>`);
   }
   if (view.type !== 'project' && t.projectId !== 'inbox' && view.type !== 'inbox') {
     const p = proj(t.projectId);
@@ -1155,7 +1180,8 @@ function taskRow(t) {
     ${stageChip ? `<div class="t-meta">${stageChip}</div>` : ''}${meta}</div></li>`;
 }
 function taskCard(t) {
-  return `<article class="card ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}" style="--pc:var(--p${t.prio})">
+  const ds = t.time ? dueState(t) : '';
+  return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' ? 'due-' + ds : ''}" data-id="${t.id}" style="--pc:var(--p${t.prio})">
     <div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>${taskMeta(t)}</article>`;
 }
 function renderList() {
@@ -1340,8 +1366,9 @@ function renderAll() {
 /* ---------------- Quick add ---------------- */
 function parseQuick(text) {
   let s = ' ' + text + ' ';
-  const r = {due:null, prio:null, projectId:null, repeat:null, stage:null, custom:{}, tokens:[]};
-  const take = (re, fn) => { const m = s.match(re); if (m) { s = s.replace(re, ' '); fn(m); return true; } return false; };
+  const r = {due:null, time:null, prio:null, projectId:null, repeat:null, stage:null, custom:{}, tokens:[]};
+  // fn mag false teruggeven: dan blijft de tekst gewoon in de titel staan
+  const take = (re, fn) => { const m = s.match(re); if (m && fn(m) !== false) { s = s.replace(re, ' '); return true; } return false; };
   take(/\s[!]?p([1-4])(?=\s)/i, m => { r.prio = +m[1]; r.tokens.push(['P' + m[1], null]); });
   for (const p of [...data.projects].sort((a, b) => b.name.length - a.name.length)) {
     if (take(new RegExp('\\s#' + escRe(p.name.replace(/\s+/g, '_')) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
@@ -1367,6 +1394,11 @@ function parseQuick(text) {
   for (const [re, v] of reps) if (take(re, () => { r.repeat = v; r.tokens.push([REPEAT.find(x => x[0] === v)[1], null]); })) break;
   const td = today();
   const setDue = d => { r.due = d; r.tokens.push([dueLabel(d), null]); };
+  take(/\s(?:om\s+)?(\d{1,2})(?:[:.](\d{2})|[uh](\d{2})?)(?=\s)/i, m => {
+    const h = +m[1], mi = +(m[2] || m[3] || 0);
+    if (h > 23 || mi > 59) return false;
+    r.time = `${pad(h)}:${pad(mi)}`; r.tokens.push(['🕑 ' + r.time, null]);
+  });
   take(/\s(vandaag|today)(?=\s)/i, () => setDue(td)) ||
   take(/\s(overmorgen)(?=\s)/i, () => setDue(addDays(td, 2))) ||
   take(/\s(morgen|tomorrow)(?=\s)/i, () => setDue(addDays(td, 1))) ||
@@ -1377,20 +1409,23 @@ function parseQuick(text) {
     setDue(addDays(td, ((target - cur + 7) % 7) || 7));
   }) ||
   take(/\s(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?(?=\s)/, m => {
-    const dd = +m[1], mm = +m[2]; if (dd < 1 || dd > 31 || mm < 1 || mm > 12) return;
+    const dd = +m[1], mm = +m[2]; if (dd < 1 || dd > 31 || mm < 1 || mm > 12) return false;
+    // advertentieformaten (1/2, 1/4, 1/8, 1/12, 1/16, 1/32) zijn geen datum; 1 april typ je als 1/4/2026
+    if (!m[3] && dd === 1 && [2, 4, 8, 12, 16, 32].includes(mm)) return false;
     let y = m[3] ? +m[3] : new Date().getFullYear(); if (y < 100) y += 2000;
     let d = ymd(new Date(y, mm - 1, dd));
     if (!m[3] && d < td) d = ymd(new Date(y + 1, mm - 1, dd));
     setDue(d);
   });
   if (r.repeat && !r.due) r.due = td;
+  if (r.time && !r.due) { r.due = td; r.tokens.push(['Vandaag', null]); }
   r.title = s.trim().replace(/\s+/g, ' ');
   return r;
 }
 function renderQaPreview() {
   const v = $('#qaInput').value;
   const el = $('#qaPreview');
-  if (!v.trim()) { el.innerHTML = '<span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span>'; return; }
+  if (!v.trim()) { el.innerHTML = '<span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span>'; return; }
   const r = parseQuick(v);
   el.innerHTML = r.tokens.map(([l, c]) => c ? `<span class="chip opt" style="--c:${c}">${esc(l)}</span>` : `<span class="chip">${esc(l)}</span>`).join('');
 }
@@ -1400,7 +1435,7 @@ function createTask(r, stage) {
   const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
   const t = touch({
     id:uid(), title:r.title, notes:'', projectId,
-    due:r.due || (view.type === 'today' ? today() : null),
+    due:r.due || (view.type === 'today' ? today() : null), time:r.time || null,
     prio:r.prio || 4, repeat:r.repeat || '', stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), order:now(), custom:r.custom,
   });
@@ -1516,6 +1551,7 @@ function renderDetail(force) {
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}"></label>
+        <label class="prop"><span>Uur</span><span class="inline"><input type="time" id="dTime" value="${esc(t.time || '')}" step="300">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
         <label class="prop"><span>Herhalen</span><select id="dRepeat">${REPEAT.map(([v, l]) => `<option value="${v}" ${v === (t.repeat || '') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
         <label class="prop"><span>Prioriteit</span><select id="dPrio">${[1,2,3,4].map(n => `<option value="${n}" ${n === t.prio ? 'selected' : ''}>${PRIO[n]}</option>`).join('')}</select></label>
       </div>
@@ -1553,7 +1589,8 @@ detail.addEventListener('change', e => {
     return;
   }
   if (el.id === 'dProject') t.projectId = el.value;
-  else if (el.id === 'dDue') t.due = el.value || null;
+  else if (el.id === 'dDue') { t.due = el.value || null; if (!t.due) t.time = null; }
+  else if (el.id === 'dTime') { t.time = el.value || null; if (t.time && !t.due) t.due = today(); }
   else if (el.id === 'dRepeat') { t.repeat = el.value; if (t.repeat && !t.due) t.due = today(); }
   else if (el.id === 'dPrio') t.prio = +el.value;
   else if (el.dataset.field) {
@@ -1580,6 +1617,7 @@ detail.addEventListener('click', e => {
   switch (b.dataset.act) {
     case 'close': closeDetail(); break;
     case 'delete': deleteTask(t.id); break;
+    case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'archive': {
       const on = !t.archived;
       if (on && view.type !== 'archive') selectedId = null;
@@ -2054,6 +2092,46 @@ const salesCols = () => [...data.salesCols].sort((a, b) => (a.order || 0) - (b.o
 const salesRows = pid => data.sales.filter(r => r.pageId === pid).sort((a, b) => (a.order || 0) - (b.order || 0));
 const monthTitle = m => { const [y, mo] = m.split('-').map(Number); return `${cap(MONTHS_LONG[mo - 1])} ${y}`; };
 const toNum = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+// Werkdagen: ma–vr zonder Belgische wettelijke feestdagen.
+function easter(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+    g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+    l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), n = h + l - 7 * m + 114;
+  return new Date(y, Math.floor(n / 31) - 1, n % 31 + 1);
+}
+function beHolidays(y) {
+  const e = easter(y), plus = n => { const d = new Date(e); d.setDate(d.getDate() + n); return ymd(d); };
+  return new Set([`${y}-01-01`, plus(1), `${y}-05-01`, plus(39), plus(50), `${y}-07-21`, `${y}-08-15`, `${y}-11-01`, `${y}-11-11`, `${y}-12-25`]);
+}
+function workdaysOf(month) {
+  const [y, m] = month.split('-').map(Number), hol = beHolidays(y), out = [];
+  for (const d = new Date(y, m - 1, 1); d.getMonth() === m - 1; d.setDate(d.getDate() + 1)) {
+    const w = d.getDay(), k = ymd(d);
+    if (w > 0 && w < 6 && !hol.has(k)) out.push(k);
+  }
+  return out;
+}
+function salesPace(pg, total) {
+  const target = toNum(pg.target);
+  if (!target || !/^\d{4}-\d\d$/.test(pg.month || '')) return null;
+  const days = workdaysOf(pg.month), td = today(), n = pg.workdays > 0 ? pg.workdays : days.length;
+  let elapsed = days.filter(d => d < td).length;
+  elapsed = Math.min(elapsed, n);
+  const remaining = Math.max(0, n - elapsed);
+  const left = round2(target - total);
+  return {n, elapsed, remaining, left, perDay:remaining ? left / remaining : null,
+    diff:round2(total - target * elapsed / n), past:td.slice(0, 7) > pg.month, future:td.slice(0, 7) < pg.month};
+}
+function paceHtml(pg, total) {
+  const p = salesPace(pg, total); if (!p) return '';
+  if (p.left <= 0) return `<div class="pace hit"><b>🎉 Doel behaald!</b><span>${eur(-p.left)} boven de doelstelling · ${p.n} werkdagen</span></div>`;
+  if (p.past || !p.remaining) return `<div class="pace behind"><b>Nog ${eur(p.left)} tekort</b><span>maand afgelopen · ${p.n} werkdagen</span></div>`;
+  const sched = p.elapsed ? (p.diff >= 0 ? `<em class="ahead">${eur(p.diff)} vóór op schema</em>` : `<em class="behind">${eur(-p.diff)} achter op schema</em>`) : '';
+  return `<div class="pace ${p.elapsed && p.diff < 0 ? 'behind' : ''}">
+    <div><b>Nog ${eur(p.left)} te gaan</b><span>${p.remaining} ${p.remaining === 1 ? 'werkdag' : 'werkdagen'} over${p.future ? '' : ' (incl. vandaag)'} van ${p.n}</span></div>
+    <div><b>${eur(p.perDay)} per dag nodig</b>${sched}</div>
+  </div>`;
+}
 function salesTotals(pid) {
   const rows = salesRows(pid), cols = salesCols(), per = {};
   let money = 0;
@@ -2133,6 +2211,7 @@ function renderSales(force) {
       <button type="button" class="btn" id="spCsv">CSV</button>
       </div>
     </div>
+    <div id="spPace">${paceHtml(pg, main)}</div>
     <div class="table-wrap"><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
       <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe of klik op “Notities plakken”.</td></tr>`}</tbody>
@@ -2154,6 +2233,7 @@ function updateSalesTotals(skipNav) {
   $('[data-count]').textContent = tot.count;
   const moneyCol = cols.find(c => c.type === 'money'), dateCol = cols.find(c => c.type === 'date');
   const target = toNum(pg.target);
+  const pe = $('#spPace'); if (pe) pe.innerHTML = paceHtml(pg, moneyCol ? tot.per[moneyCol.id] : 0);
   if (target && $('[data-pct]')) {
     const pct = Math.round((moneyCol ? tot.per[moneyCol.id] : 0) / target * 100);
     $('[data-pct]').textContent = pct + '% behaald'; $('[data-bar]').style.width = Math.min(100, pct) + '%';
@@ -2255,6 +2335,8 @@ function openSalesPageDialog(pg) {
     <label class="fl">Maand<input id="pgMonth" type="month" value="${esc(month || '')}"></label>
     <label class="fl">Titel<input id="pgTitle" type="text" value="${esc(pg?.title || (month ? monthTitle(month) : ''))}"></label>
     <label class="fl">Doelstelling (€) <span class="muted">(optioneel)</span><input id="pgTarget" type="text" inputmode="decimal" value="${esc(pg?.target ? moneyFmt.format(pg.target) : '')}" placeholder="bv. 13.881,21"></label>
+    <label class="fl">Werkdagen <span class="muted" id="pgWorkHint">(leeg = automatisch${month ? ': ' + workdaysOf(month).length : ''})</span><input id="pgWork" type="number" inputmode="numeric" min="1" max="31" value="${esc(pg?.workdays || '')}" placeholder="automatisch"></label>
+    <p class="muted small" style="margin:6px 0 0">Automatisch = maandag tot vrijdag, zonder Belgische feestdagen.</p>
     <div class="dlg-actions">
       ${pg ? '<button type="button" class="btn danger" id="pgDel">Verwijderen</button>' : ''}
       <span class="grow"></span>
@@ -2262,15 +2344,19 @@ function openSalesPageDialog(pg) {
       <button type="button" class="btn primary" id="pgSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
     </div>`, d => {
     $('#pgTitle', d).oninput = () => titleTouched = true;
-    $('#pgMonth', d).onchange = e => { if (!titleTouched && e.target.value) $('#pgTitle', d).value = monthTitle(e.target.value); };
+    $('#pgMonth', d).onchange = e => {
+      if (!titleTouched && e.target.value) $('#pgTitle', d).value = monthTitle(e.target.value);
+      $('#pgWorkHint', d).textContent = `(leeg = automatisch${e.target.value ? ': ' + workdaysOf(e.target.value).length : ''})`;
+    };
     $('#pgCancel', d).onclick = () => dlg.close();
     $('#pgSave', d).onclick = () => {
       const m = $('#pgMonth', d).value, title = $('#pgTitle', d).value.trim() || (m ? monthTitle(m) : 'Verkopen');
       const target = parseAmount($('#pgTarget', d).value);
+      const workdays = parseInt($('#pgWork', d).value, 10) || null;
       if (isNew) {
-        const np = touch({id:uid(), title, month:m, notes:'', target, order:now()});
+        const np = touch({id:uid(), title, month:m, notes:'', target, workdays, order:now()});
         data.salesPages.push(np); view = {type:'sales', id:np.id};
-      } else Object.assign(pg, {title, month:m, target}, {u:now()});
+      } else Object.assign(pg, {title, month:m, target, workdays}, {u:now()});
       dlg.close(); commit();
     };
     $('#pgDel', d)?.addEventListener('click', () => {
@@ -2321,7 +2407,10 @@ function parseSalesNotes(text, month) {
       if (day.date.slice(0, 7) !== month) res.warnings.push(`${day.name} van week ${week.n} valt buiten deze maand (${day.date.split('-').reverse().join('/')}).`);
       continue;
     }
-    if ((mm = line.match(/^doelstelling\s*[:\-–]?\s*(.+)$/i))) { res.target = parseAmount(mm[1]); continue; }
+    if ((mm = line.match(/^doelstelling\s*[:\-–]?\s*(.+)$/i))) {
+      const wd = mm[1].match(/(\d+)\s*werkdag/i); if (wd) res.workdays = +wd[1];
+      res.target = parseAmount(mm[1].replace(/\(.*\)/, '')); continue;
+    }
     if ((mm = line.match(/^totaal[^:\-–]*[:\-–]\s*(.+)$/i))) { res.notedTotal = parseAmount(mm[1]); continue; }
     if ((mm = line.match(/^(?:(\d+)\s*x\s*)?(.+?)\s+[-–]\s*(-?\s*€?\s*-?[\d.,]+)\s*$/i))) {
       if (!day) { res.unknown.push(line); continue; }
@@ -2384,6 +2473,7 @@ function openSalesImportDialog() {
           <div><span>Dagen</span><b>${r.weeks.reduce((a, w) => a + w.days.length, 0)}</b></div>
           <div><span>Totaal</span><b>${eur(total)}</b></div>
           ${r.target != null ? `<div><span>Doelstelling</span><b>${eur(r.target)}</b></div>` : ''}
+          ${r.workdays ? `<div><span>Werkdagen</span><b>${r.workdays}</b></div>` : ''}
         </div>
         <table class="im-weeks">${r.weeks.map(w => `<tr><td>Week ${w.n}</td><td>${w.days.map(x => x.name.slice(0, 2).toLowerCase()).join(' ')}</td><td>${eur(round2(w.sum + (fill ? w.days.filter(x => Math.abs(x.diff) >= 1).reduce((a, x) => a + x.diff, 0) : 0)))}</td></tr>`).join('')}</table>
         ${issues.length ? `<div class="im-warn"><b>Controle</b><ul>${issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '<p class="im-ok">✓ Alle dag- en weektotalen kloppen.</p>'}
@@ -2413,6 +2503,7 @@ function openSalesImportDialog() {
         }
       }
       if (r.target != null) pg.target = r.target;
+      if (r.workdays) pg.workdays = r.workdays;
       pg.flat = false; touch(pg);
       dlg.close(); commit();
       toast(`${n} regels geïmporteerd`);
@@ -2728,7 +2819,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------------- Timers: auto-lock, periodieke sync, datumwissel ---------------- */
-let lastAct = now(), timersStarted = false, lastDay = today();
+let lastAct = now(), timersStarted = false, lastDay = today(), lastMin = -1;
 function startTimers() {
   if (timersStarted) return; timersStarted = true;
   ['pointerdown','keydown','touchstart','wheel'].forEach(ev => addEventListener(ev, () => lastAct = now(), {passive:true}));
@@ -2736,6 +2827,13 @@ function startTimers() {
     const m = data?.settings.autolock;
     if (m && now() - lastAct > m * 60000) { lock(); return; }
     if (today() !== lastDay) { lastDay = today(); renderAll(); }
+    // kleuren van kaarten met een uur elke minuut bijwerken (niet tijdens typen of slepen)
+    const min = new Date().getMinutes();
+    if (data && min !== lastMin) {
+      lastMin = min;
+      const busy = drag || document.activeElement?.closest?.('#list,#detail,#quickAdd,#toolbar');
+      if (!busy && view.type !== 'sales' && $('#lock').hidden) renderMain();
+    }
   };
   setInterval(check, 15000);
   document.addEventListener('visibilitychange', () => {
