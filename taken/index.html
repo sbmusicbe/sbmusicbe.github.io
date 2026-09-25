@@ -316,6 +316,80 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .task.arch{align-items:center}
 .task.arch .restore{padding:5px 10px;font-size:13px;flex:none}
 .empty .small{color:var(--faint)}
+/* ---------- Kolommen verbergen / kolomtabs ---------- */
+.col>header .badge,.col>header .col-arch,.col>header .col-edit,.col>header .col-hide{margin-left:0}
+.col>header .col-hide{width:26px;height:26px;opacity:0;transition:opacity .12s}
+.col>header .col-hide svg{width:16px;height:16px}
+.col:hover>header .col-hide,.col-hide:focus-visible{opacity:1}
+@media (hover:none){.col>header .col-hide{opacity:.7}}
+.board-bar{display:flex;flex-direction:column;gap:8px}
+.board-bar:empty{display:none}
+.col-tabs{display:none}
+.hidden-cols{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.hidden-cols button{display:inline-flex;align-items:center;gap:6px;border:1px dashed color-mix(in srgb,var(--c) 55%,var(--line));background:color-mix(in srgb,var(--c) 7%,transparent);border-radius:999px;padding:4px 10px;font-size:13px;color:var(--text)}
+.hidden-cols button svg{width:14px;height:14px;color:var(--muted)}
+.hidden-cols b,.col-tabs b{font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.tb-more{display:contents}
+.tb-toggle{display:none}
+
+/* ---------- Mobiel ---------- */
+.sales-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media (max-width:860px){
+  /* iOS zoomt in op velden kleiner dan 16px */
+  input,select,textarea{font-size:16px!important}
+  .main-head{margin-bottom:6px}
+  #banner{font-size:13.5px;padding:8px 10px;gap:8px;flex-wrap:nowrap;margin-bottom:10px}
+  #banner span{min-width:0}
+  #banner .btn{padding:6px 10px;font-size:13px;white-space:nowrap}
+  /* werkbalk: alleen Bord/Lijst + Filter; de rest klapt open */
+  .toolbar{gap:8px;margin-bottom:10px}
+  .toolbar .seg{flex:1 1 auto}
+  .toolbar .seg button{flex:1;padding:8px 12px}
+  .tb-toggle{display:inline-flex;align-items:center;gap:6px;position:relative;padding:8px 12px}
+  .tb-toggle svg{width:16px;height:16px}
+  .tb-toggle.active{border-color:var(--accent);color:var(--accent)}
+  .tb-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .tb-more{display:none}
+  .toolbar.open .tb-more{display:flex;flex-wrap:wrap;gap:8px;flex-basis:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  .toolbar.open .tb-more .search{flex:1 1 100%}
+  .toolbar.open .tb-more select,.toolbar.open .tb-more input:not([type=checkbox]){flex:1 1 45%;min-width:0}
+  .toolbar.open .tb-more .tb-cols{flex:1 1 100%}
+  /* nieuwe kaart: onderaan, binnen bereik van de duim */
+  #quickAdd{position:fixed;left:0;right:0;bottom:0;z-index:15;margin:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+  #quickAdd input{padding:10px 12px}
+  #quickAdd .btn{padding:10px 14px}
+  #qaPreview{display:none}
+  .main-inner{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  body:has(#quickAdd:not([hidden])) #toast{bottom:calc(76px + env(safe-area-inset-bottom))}
+  /* bord: kolomtabs om snel te springen */
+  .col-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 2px}
+  .col-tabs::-webkit-scrollbar{display:none}
+  .col-tabs button{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:550;color:var(--muted)}
+  .col-tabs button .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+  .col-tabs button.on{border-color:var(--c);color:var(--text);background:color-mix(in srgb,var(--c) 10%,var(--panel))}
+  .board{grid-template-columns:repeat(var(--ncols,4),86vw);gap:12px}
+  .card{padding:11px 12px}
+  .col-add input{padding:10px}
+  .icon-btn{width:40px;height:40px}
+  .col>header .icon-btn{width:32px;height:32px}
+  .d-head .icon-btn,.d-head .btn{min-height:40px}
+  .nav-item{padding:10px 10px}
+  /* verkopen */
+  .sales-head{gap:8px}
+  .sales-head .grow{display:none}
+  .sales-stat{flex:1 1 calc(50% - 4px);min-width:0;padding:8px 12px}
+  .sales-stat b{font-size:18px}
+  .sales-actions{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;flex:1 1 100%;scrollbar-width:none;padding-bottom:2px;margin:0 -16px;padding:0 16px 2px}
+  .sales-stat.count{display:none}
+  #toast{width:calc(100vw - 24px);justify-content:space-between}
+  .sales-actions::-webkit-scrollbar{display:none}
+  .sales-actions>*{flex:none}
+  table.sales.grouped th.t-date,table.sales.grouped td.c-date,table.sales.grouped tfoot td.t-date{display:none}
+  table.sales .cell{min-width:104px;padding:10px 8px}
+  table.sales .cell.t-money,table.sales .cell.t-number{min-width:92px}
+  dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 24px)}
+  .dlg-inner{padding:18px 16px 16px}
+}
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -329,7 +403,7 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
   #app.side-open #side{transform:none}
   #app.side-open #scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
   #detail{position:fixed;inset:0;z-index:40;border:0;padding-top:env(safe-area-inset-top)}
-  .main-inner{padding:14px 16px 90px;padding-top:max(14px,env(safe-area-inset-top))}
+  .main-inner{padding:14px 16px calc(96px + env(safe-area-inset-bottom));padding-top:max(14px,env(safe-area-inset-top))}
   .main-head h2{font-size:21px}
   .toolbar select{flex:1 1 40%}
   .prop{grid-template-columns:100px 1fr}
@@ -451,6 +525,9 @@ const I = {
   inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>',
   upcoming:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10.8 10.8 0 0112 5c6.5 0 10 7 10 7a17.6 17.6 0 01-2.6 3.6M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 004.2 4.2M3 3l18 18"/></svg>',
+  filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
   archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
   sales:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg>',
@@ -778,9 +855,11 @@ function renderLock() {
       <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required>`;
     btn.textContent = 'Herstellen'; alt.textContent = 'Terug';
   }
-  setTimeout(() => $('#lockFields input')?.focus(), 30);
+  setTimeout(() => { if (!$('#lockFields').contains(document.activeElement)) $('#lockFields input')?.focus(); }, 30);
 }
+let lockModeChosen = false;
 $('#lockAlt').addEventListener('click', () => {
+  lockModeChosen = true;
   lockMode = lockMode === 'restore' ? (vaultBlob() ? 'unlock' : 'setup') : 'restore';
   renderLock();
 });
@@ -1098,6 +1177,7 @@ function renderList() {
 }
 
 let boardExpanded = {};
+let tbOpen = false;
 const DONE_LIMIT = 30;
 function renderBoard() {
   const p = prefs();
@@ -1105,7 +1185,14 @@ function renderBoard() {
   const sorter = sortFn(p.sort);
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
-  $('#list').innerHTML = `<div class="board" style="--ncols:${stages().length}">${stages().map(st => {
+  const hidden = new Set(p.hidden || []);
+  const vis = stages().filter(st => !hidden.has(st.id)), hid = stages().filter(st => hidden.has(st.id));
+  const count = id => all.filter(t => t.stage === id).length;
+  const bar = `<div class="board-bar">
+    ${vis.length > 1 ? `<div class="col-tabs" role="tablist">${vis.map(st => `<button type="button" data-jump="${st.id}" style="--c:${st.color}"><span class="dot"></span>${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
+    ${hid.length ? `<div class="hidden-cols"><span>Verborgen:</span>${hid.map(st => `<button type="button" data-showcol="${st.id}" style="--c:${st.color}" title="${esc(st.label)} weer tonen">${I.eye}${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
+  </div>`;
+  $('#list').innerHTML = bar + (vis.length ? '' : '<div class="empty">Alle kolommen zijn verborgen in deze weergave.</div>') + `<div class="board" style="--ncols:${vis.length}">${vis.map(st => {
     let ts = all.filter(t => t.stage === st.id).sort(st.done && p.sort === 'manual' ? byDoneAt : sorter);
     const total = ts.length;
     let more = '';
@@ -1114,13 +1201,29 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}<button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button>${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
       <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
     </section>`;
   }).join('')}</div>`;
-  $('.board').scrollLeft = scroll;
+  const boardEl = $('.board');
+  boardEl.scrollLeft = scroll;
+  const markTab = () => {
+    const cols = $$('.col', boardEl); if (!cols.length) return;
+    const left = boardEl.getBoundingClientRect().left;
+    let best = cols[0], bd = Infinity;
+    for (const c of cols) { const d = Math.abs(c.getBoundingClientRect().left - left - 16); if (d < bd) { bd = d; best = c; } }
+    $$('.col-tabs button').forEach(b => b.classList.toggle('on', b.dataset.jump === best.dataset.stage));
+  };
+  boardEl.addEventListener('scroll', () => requestAnimationFrame(markTab), {passive:true});
+  markTab();
+}
+function setHiddenCols(ids) {
+  const before = prefs().hidden || [];
+  data.prefs[viewKey()] = {...(data.prefs[viewKey()] || {}), hidden:ids};
+  commit();
+  return before;
 }
 function renderMain() {
   if (view.type === 'archive') { renderArchive(); return; }
@@ -1190,15 +1293,20 @@ function renderToolbar() {
       : `<input id="tbFv" type="text" placeholder="bevat…" value="${esc(p.fv)}" aria-label="Filterwaarde">`;
   }
   const board = p.layout === 'board';
+  const active = !!(searchQ || p.fv || p.sort !== 'manual' || (!board && p.group !== 'stage'));
+  $('#toolbar').classList.toggle('open', tbOpen);
   $('#toolbar').innerHTML = `
     <div class="seg" role="group" aria-label="Weergave"><button type="button" data-layout="board" class="${board ? 'on' : ''}">Bord</button><button type="button" data-layout="list" class="${board ? '' : 'on'}">Lijst</button></div>
+    <button type="button" class="btn tb-toggle ${active ? 'active' : ''}" data-tbmore aria-expanded="${tbOpen}">${I.filter}Filter${active ? '<i class="tb-dot"></i>' : ''}</button>
+    <div class="tb-more">
     ${board ? '<button type="button" class="btn tb-cols" data-cols>Kolommen</button>' : ''}
     <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
     <select id="tbSort" aria-label="Sorteren" title="Sorteren">${sortOpts.map(([v, l]) => o(v, 'Sorteren: ' + l, p.sort)).join('')}</select>
     <select id="tbGroup" ${board ? 'hidden' : ''} aria-label="Groeperen" title="Groeperen">${groupOpts.map(([v, l]) => o(v, v ? 'Groeperen: ' + l : l, p.group)).join('')}</select>
     <select id="tbFf" aria-label="Filter" title="Filter">${filterOpts.map(([v, l]) => o(v, v ? 'Filter: ' + l : l, p.ff)).join('')}</select>
     ${fvHtml}
-    <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgewerkte tonen</label>`;
+    <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgewerkte tonen</label>
+    </div>`;
 }
 function renderAll() {
   if (!data) return;
@@ -1996,7 +2104,7 @@ function renderSales(force) {
   const el = $('#salesPage');
   const focusedNotes = active?.id === 'spNotes';
   const span = cols.length + 1;
-  const rowHtml = r => `<tr data-row="${r.id}">${cols.map(c => `<td>${cellInput(c, r)}</td>`).join('')}<td class="del"><button type="button" class="icon-btn" data-delrow aria-label="Verkoop verwijderen" title="Verwijderen">${I.trash}</button></td></tr>`;
+  const rowHtml = r => `<tr data-row="${r.id}">${cols.map(c => `<td class="c-${c.type}">${cellInput(c, r)}</td>`).join('')}<td class="del"><button type="button" class="icon-btn" data-delrow aria-label="Verkoop verwijderen" title="Verwijderen">${I.trash}</button></td></tr>`;
   let body = '';
   if (grouped) {
     const g = salesGroups(rows, dateCol, moneyCols[0]);
@@ -2016,14 +2124,16 @@ function renderSales(force) {
     <div class="sales-head">
       ${moneyCols.map(c => `<div class="sales-stat"><span>${esc(c.name)} totaal</span><b data-total="${c.id}">${eur(tot.per[c.id])}</b></div>`).join('')}
       ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
-      <div class="sales-stat"><span>Aantal regels</span><b data-count>${rows.length}</b></div>
+      <div class="sales-stat count"><span>Aantal regels</span><b data-count>${rows.length}</b></div>
       <span class="grow"></span>
+      <div class="sales-actions">
       ${dateCol ? `<div class="seg" role="group" aria-label="Weergave"><button type="button" data-flat="0" class="${grouped ? 'on' : ''}">Per week</button><button type="button" data-flat="1" class="${grouped ? '' : 'on'}">Lijst</button></div>` : ''}
       <button type="button" class="btn" id="spImport">Notities plakken</button>
       <button type="button" class="btn" id="spCols">Kolommen</button>
       <button type="button" class="btn" id="spCsv">CSV</button>
+      </div>
     </div>
-    <div class="table-wrap"><table class="sales">
+    <div class="table-wrap"><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
       <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe of klik op “Notities plakken”.</td></tr>`}</tbody>
       <tfoot><tr>${cols.map((c, i) => `<td class="t-${c.type}" data-foot="${c.id}">${c.type === 'money' ? eur(tot.per[c.id]) : c.type === 'number' ? numFmt.format(tot.per[c.id]) : i === 0 ? 'Totaal' : ''}</td>`).join('')}<td></td></tr></tfoot>
@@ -2459,6 +2569,17 @@ $('#scrim').onclick = () => $('#app').classList.remove('side-open');
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
   if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
+  const hideCol = e.target.closest('[data-hidecol]');
+  if (hideCol) {
+    const id = hideCol.dataset.hidecol, st = stageById(id);
+    const before = setHiddenCols([...new Set([...(prefs().hidden || []), id])]);
+    toast(`“${st.label}” verborgen in deze weergave`, () => setHiddenCols(before));
+    return;
+  }
+  const showCol = e.target.closest('[data-showcol]');
+  if (showCol) { setHiddenCols((prefs().hidden || []).filter(x => x !== showCol.dataset.showcol)); return; }
+  const jump = e.target.closest('[data-jump]');
+  if (jump) { $(`.col[data-stage="${jump.dataset.jump}"]`)?.scrollIntoView({behavior:'smooth', inline:'start', block:'nearest'}); return; }
   const archCol = e.target.closest('[data-archcol]');
   if (archCol) { archiveColumn(archCol.dataset.archcol); return; }
   const restore = e.target.closest('[data-restore]');
@@ -2581,6 +2702,7 @@ $('#toolbar').addEventListener('click', e => {
   const b = e.target.closest('[data-layout]');
   if (b) setPref('layout', b.dataset.layout);
   if (e.target.closest('[data-cols]')) openStagesDialog();
+  if (e.target.closest('[data-tbmore]')) { tbOpen = !tbOpen; renderToolbar(); if (tbOpen) $('#tbSearch')?.focus(); }
 });
 $('#toolbar').addEventListener('change', e => {
   const id = e.target.id;
@@ -2633,7 +2755,9 @@ renderLock();
 fetchConfig().then(c => {
   CFG = c;
   const mode = CFG || vaultBlob() ? 'unlock' : 'setup';
-  if (mode !== lockMode && !$('#lock').hidden) { lockMode = mode; renderLock(); }
+  // alleen bijsturen als je zelf nog niets gekozen of getypt hebt
+  const typed = [...$$('#lockFields input')].some(i => i.value);
+  if (mode !== lockMode && !$('#lock').hidden && !lockModeChosen && !typed) { lockMode = mode; renderLock(); }
 });
 
 /* ---------------- Offline & updates (service worker) ---------------- */
