@@ -39,6 +39,10 @@ code.uid{display:block;background:var(--hover);padding:10px 12px;border-radius:8
 
 .main{max-width:980px;margin:0 auto;padding:20px 16px 80px}
 .ev-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
+.ev-thumb{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:var(--hover)}
+.photo-pick{display:flex;gap:12px;align-items:center}
+.photo-prev{width:120px;height:80px;border-radius:10px;background:var(--hover) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint);font-size:12.5px;text-align:center}
+.photo-pick .row{flex-wrap:wrap}
 .ev-head h2{margin:0;font-size:24px;font-weight:780;min-width:0;overflow-wrap:anywhere}
 .ev-head .code{font-size:13px;color:var(--muted)}
 .ev-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
@@ -178,6 +182,15 @@ ul.list{list-style:none;margin:0;padding:0}
   <label for="evCode">Code in de link</label>
   <input id="evCode" type="text" maxlength="60" pattern="[a-z0-9][a-z0-9\-]{1,59}" required placeholder="trouw-jan-lies">
   <p class="muted small" style="margin:6px 0 0" id="evCodeHint"></p>
+  <label>Foto <span class="muted" style="font-weight:400">(optioneel, bv. van het koppel of de zaal)</span></label>
+  <div class="photo-pick">
+    <div class="photo-prev" id="evPhotoPrev">Geen foto</div>
+    <div class="row">
+      <label class="btn sm" for="evPhoto" style="margin:0;cursor:pointer">Kies foto</label>
+      <input type="file" id="evPhoto" accept="image/*" hidden>
+      <button type="button" class="btn sm danger" id="evPhotoDel" hidden>Verwijderen</button>
+    </div>
+  </div>
   <label for="evWelcome">Welkomsttekst <span class="muted" style="font-weight:400">(optioneel)</span></label>
   <textarea id="evWelcome" maxlength="300" placeholder="Welk nummer mag de DJ voor jou draaien?"></textarea>
   <label for="evClosed">Tekst als verzoekjes gesloten zijn <span class="muted" style="font-weight:400">(optioneel)</span></label>
@@ -214,6 +227,7 @@ ul.list{list-style:none;margin:0;padding:0}
 <script type="module">
 import {
   configured, REPO, api, nextLink, setToken, encodeToken, parseEvent, parseRequest, eventIssue, EVENT_LABEL, DELETED_LABEL, belongsTo,
+  loadPhoto, compressImage, savePhoto, deletePhoto,
   pwHash, checkPassword, adminHash, b64, $, esc, safeArt, toast, store, poll
 } from './gh.js';
 
@@ -451,6 +465,7 @@ function renderMain() {
   const np = ev.nowPlaying;
   $('#main').innerHTML = `
     <div class="ev-head">
+      ${ev.photo ? '<img class="ev-thumb" id="evThumb" alt="">' : ''}
       <div style="min-width:0"><h2>${esc(ev.name)}</h2><div class="code">${esc(guestUrl(ev.id).replace(/^https?:\/\//, ''))}</div></div>
       <div class="ev-tools">
         <label class="switch"><input type="checkbox" id="openTgl" ${ev.open ? 'checked' : ''}> ${ev.open ? 'Verzoekjes open' : 'Gesloten'}</label>
@@ -519,6 +534,7 @@ function wireMain(ev, list) {
   $('#archiveBtn').onclick = () => saveEvent(ev, ev.archived ? {archived: false} : {archived: true, open: false})
     .then(() => { if (!ev.archived) { const next = events.find(e => !e.archived && e.id !== ev.id); selectEvent(next?.id || null); toast('Event gearchiveerd'); } })
     .catch(fail);
+  if (ev.photo) loadPhoto(ev.photo).then(u => { const t = $('#evThumb'); if (t && u) t.src = u; else if (t) t.remove(); }).catch(() => {});
   $('#deleteBtn') && ($('#deleteBtn').onclick = () => deleteEvent(ev));
   $('#npClear') && ($('#npClear').onclick = () => saveEvent(ev, {nowPlaying: null}).catch(fail));
   $('#main').querySelectorAll('.seg button').forEach(b => b.onclick = () => { view = b.dataset.view; store.set('vz_view', view); renderMain(); });
@@ -577,6 +593,7 @@ async function deleteEvent(ev) {
   try {
     await ensureDeletedLabel();
     const issue = await api('PATCH', '/issues/' + ev.number, {state: 'closed', state_reason: 'not_planned', labels: [DELETED_LABEL], title: '🗑 ' + ev.name});
+    await deletePhoto(ev.photo);
     if (current === ev.id) current = null;
     merge(issue);
     const next = events.find(e => !e.archived);
@@ -607,6 +624,9 @@ function openEventDialog(ev) {
   $('#evOpenRow').hidden = !!ev;
   $('#evOpen').checked = true;
   $('#evErr').textContent = '';
+  photoEdit = {mode: 'keep', data: ''};
+  setPhotoPrev('');
+  if (ev?.photo) { $('#evPhotoPrev').textContent = 'Laden…'; loadPhoto(ev.photo).then(u => { if (photoEdit.mode === 'keep') setPhotoPrev(u); }).catch(() => setPhotoPrev('')); }
   $('#dEvent').showModal();
   $('#evName').focus();
 }
@@ -624,8 +644,13 @@ $('#evForm').addEventListener('submit', async e => {
   const data = {name, welcome: $('#evWelcome').value.trim(), closedMessage: $('#evClosed').value.trim(), allowMessages: $('#evMsgs').checked};
   $('#evSave').disabled = true;
   try {
-    if (editing) await saveEvent(editing, data);
-    else {
+    if (editing) {
+      const old = events.find(x => x.id === editing.id)?.photo;
+      if (photoEdit.mode === 'new') data.photo = await savePhoto(editing.number, photoEdit.data);
+      if (photoEdit.mode === 'remove') data.photo = null;
+      await saveEvent(editing, data);
+      if (photoEdit.mode !== 'keep' && old) await deletePhoto(old);
+    } else {
       if (events.some(x => x.id === code)) { $('#evErr').textContent = 'Deze code bestaat al. Kies een andere.'; return; }
       const ev = {...data, id: code, open: $('#evOpen').checked, archived: false, nowPlaying: null};
       let issue = await api('POST', '/issues', {...eventIssue(ev), labels: [EVENT_LABEL]});
@@ -635,6 +660,7 @@ $('#evForm').addEventListener('submit', async e => {
         issue = await api('GET', '/issues/' + issue.number);
       }
       merge(issue);
+      if (photoEdit.mode === 'new') await saveEvent(ev, {photo: await savePhoto(issue.number, photoEdit.data)});
       selectEvent(code);
       setTimeout(() => openShare(events.find(x => x.id === code) || ev), 50);
     }
@@ -642,6 +668,24 @@ $('#evForm').addEventListener('submit', async e => {
   } catch (ex) { $('#evErr').textContent = 'Opslaan mislukt: ' + ex.message; }
   finally { $('#evSave').disabled = false; }
 });
+
+// ---------- foto ----------
+let photoEdit = {mode: 'keep', data: ''};
+function setPhotoPrev(url) {
+  const p = $('#evPhotoPrev');
+  p.style.backgroundImage = url ? `url("${url}")` : '';
+  p.textContent = url ? '' : 'Geen foto';
+  $('#evPhotoDel').hidden = !url;
+}
+$('#evPhoto').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  $('#evErr').textContent = ''; $('#evPhotoPrev').textContent = 'Verkleinen…'; $('#evSave').disabled = true;
+  try { const url = await compressImage(f); photoEdit = {mode: 'new', data: url}; setPhotoPrev(url); }
+  catch (ex) { $('#evErr').textContent = ex.message; setPhotoPrev(photoEdit.data); }
+  finally { $('#evSave').disabled = false; }
+});
+$('#evPhotoDel').addEventListener('click', () => { photoEdit = {mode: 'remove', data: ''}; setPhotoPrev(''); });
 
 // ---------- delen / QR ----------
 const qrSrc = (url, size) => 'https://api.qrserver.com/v1/create-qr-code/?' + new URLSearchParams({size: size + 'x' + size, margin: '0', ecc: 'M', data: url});
