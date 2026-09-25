@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Beveiligingsregels voor Verzoekjes.
+// Plak dit in Firebase console → Firestore Database → Regels, en vervang JOUW_UID_HIER
+// door de UID die de beheerpagina toont na je eerste login (zie LEESMIJ.md).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in ['JOUW_UID_HIER'];
+    }
+
+    // Eén document per event; de document-ID is de code in de link (?e=...).
+    // Iedereen met de link mag dat ene event lezen, maar niet de lijst van alle events.
+    match /events/{eventId} {
+      allow get: if true;
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // Verzoekjes: gasten mogen er alleen één toevoegen aan een open event.
+    // Lezen van één verzoekje op ID mag (zo ziet een gast de status van zijn eigen aanvraag);
+    // de volledige lijst opvragen, aanpassen en verwijderen kan alleen de beheerder.
+    match /requests/{id} {
+      allow get: if true;
+      allow list, update, delete: if isAdmin();
+      allow create: if isAdmin() || validRequest(request.resource.data);
+    }
+
+    function validRequest(d) {
+      return d.keys().hasOnly(['title', 'artist', 'artwork', 'songKey', 'name', 'message', 'source', 'eventId', 'status', 'createdAt'])
+        && d.keys().hasAll(['title', 'artist', 'artwork', 'songKey', 'name', 'message', 'source', 'eventId', 'status', 'createdAt'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 200
+        && d.artist is string && d.artist.size() <= 200
+        && d.name is string && d.name.size() <= 60
+        && d.message is string && d.message.size() <= 300
+        && d.songKey is string && d.songKey.size() <= 300
+        && d.source in ['itunes', 'manual']
+        && d.artwork is string && (d.artwork == '' || d.artwork.matches('https://[a-z0-9.-]+[.]mzstatic[.]com/.{1,400}'))
+        && d.status == 'new'
+        && d.createdAt == request.time
+        && d.eventId is string && d.eventId.matches('[a-z0-9][a-z0-9-]{1,59}')
+        && eventAccepts(d);
+    }
+
+    function eventAccepts(d) {
+      let path = /databases/$(database)/documents/events/$(d.eventId);
+      return exists(path) && get(path).data.open == true
+        && (d.message == '' || get(path).data.get('allowMessages', true) != false);
+    }
+  }
+}

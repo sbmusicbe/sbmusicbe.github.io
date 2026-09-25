@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Verzoekjes · Beheer</title>
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<style>
+body{font-size:15px}
+.lock{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.lock .card{width:100%;max-width:380px;padding:28px 24px}
+.lock h1{margin:0 0 4px;font-size:22px}
+.lock p{margin:0 0 6px}
+.lock .btn.primary{width:100%;margin-top:18px;padding:11px}
+.logo{width:46px;height:46px;border-radius:13px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin-bottom:14px}
+.logo svg{width:24px;height:24px}
+code.uid{display:block;background:var(--hover);padding:10px 12px;border-radius:8px;font-size:13.5px;word-break:break-all;margin:10px 0}
+
+/* top */
+.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:980px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:8px}
+.brand{font-weight:780;font-size:17px;display:flex;align-items:center;gap:9px;margin-right:auto}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.brand i svg{width:15px;height:15px}
+.tabs{max-width:980px;margin:0 auto;padding:8px 12px 0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:9px 12px 11px;border-bottom:2.5px solid transparent;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:7px;font-size:14.5px}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-bottom-color:var(--accent)}
+.tab .badge{background:var(--accent);color:var(--on-accent);font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
+.tab .st{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.tab .st.open{background:var(--ok)}
+.tab.add{color:var(--accent)}
+.tab.add svg{width:16px;height:16px}
+
+.main{max-width:980px;margin:0 auto;padding:20px 16px 80px}
+.ev-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
+.ev-head h2{margin:0;font-size:24px;font-weight:780;min-width:0;overflow-wrap:anywhere}
+.ev-head .code{font-size:13px;color:var(--muted)}
+.ev-tools{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-weight:650;font-size:14px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 12px}
+.switch input{appearance:none;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;margin:0;cursor:pointer;transition:.2s;flex:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch input:checked{background:var(--ok)}
+.switch input:checked::after{left:19px}
+
+.np{display:flex;gap:12px;align-items:center;padding:10px 12px;margin-bottom:16px}
+.np .lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ok);display:flex;align-items:center;gap:6px}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.seg{display:inline-flex;background:var(--hover);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--muted)}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.seg .n{color:var(--faint);font-weight:500;margin-left:3px}
+.filters select,.filters input{width:auto;padding:7px 10px;font-size:14px}
+.filters input{flex:1;min-width:140px}
+
+ul.list{list-style:none;margin:0;padding:0}
+.req{display:flex;gap:12px;align-items:flex-start;padding:12px 8px;border-bottom:1px solid var(--line)}
+.req .art{width:56px;height:56px}
+.req .body{flex:1;min-width:0}
+.req .t{font-weight:650;font-size:15.5px;overflow-wrap:anywhere}
+.req .a{color:var(--muted);font-size:14px}
+.req .cnt{display:inline-grid;place-items:center;min-width:26px;height:22px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:12.5px;font-weight:750;margin-left:6px;vertical-align:1px}
+.req .who{margin-top:6px;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.req .who div{color:var(--muted)}
+.req .who b{color:var(--text);font-weight:600}
+.req .who q{font-style:italic;color:var(--text)}
+.req .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:none;max-width:50%}
+.empty{text-align:center;color:var(--muted);padding:50px 10px}
+
+.qr{display:grid;place-items:center;margin:12px 0}
+.qr img{width:240px;height:240px;border-radius:12px;background:#fff;padding:10px}
+.linkbox{display:flex;gap:6px}
+.linkbox input{font-size:14px}
+.chk{display:flex;gap:9px;align-items:center;font-weight:500;margin-top:14px}
+.chk input{width:18px;height:18px;margin:0}
+.arch li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.arch ul{list-style:none;padding:0;margin:10px 0 0}
+.menu{position:relative}
+.menu-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:10;min-width:220px;padding:6px}
+.menu-pop button{display:flex;width:100%;border:0;background:none;padding:9px 10px;border-radius:8px;text-align:left;font-size:14px;gap:8px}
+.menu-pop button:hover{background:var(--hover)}
+.menu-pop button.danger{color:var(--danger)}
+.menu-pop hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+
+@media (max-width:640px){
+  .req{flex-wrap:wrap}
+  .req .acts{max-width:none;width:100%;justify-content:flex-start;padding-left:68px}
+  .ev-tools{margin-left:0;width:100%}
+  .ev-head h2{font-size:21px}
+}
+</style>
+</head>
+<body>
+
+<div id="loading" class="spinner" style="margin-top:30vh"></div>
+
+<div id="setup" class="card setup" hidden>
+  <h1>Nog niet ingesteld</h1>
+  <p class="muted">Vul eerst <code>requests/config.js</code> in met de gegevens van je Firebase-project. De stappen staan in <code>requests/LEESMIJ.md</code>.</p>
+</div>
+
+<!-- Login -->
+<div id="login" class="lock" hidden>
+  <form class="card" id="loginForm">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+    <h1>Verzoekjes</h1>
+    <p class="muted">Log in om je verzoekjes te beheren.</p>
+    <label for="lEmail">E-mail</label>
+    <input id="lEmail" type="email" autocomplete="username" required>
+    <label for="lPw">Wachtwoord</label>
+    <input id="lPw" type="password" autocomplete="current-password" required>
+    <button class="btn primary" type="submit" id="lBtn">Inloggen</button>
+    <p class="err" id="lErr"></p>
+    <button class="link small" type="button" id="lReset">Wachtwoord vergeten?</button>
+  </form>
+</div>
+
+<!-- Ingelogd maar (nog) geen beheerder -->
+<div id="noAdmin" class="lock" hidden>
+  <div class="card">
+    <h1>Bijna klaar</h1>
+    <p class="muted">Je bent ingelogd, maar dit account heeft nog geen beheerrechten. Zet deze UID in <code>firestore.rules</code> (op de plaats van <code>JOUW_UID_HIER</code>) en publiceer de regels:</p>
+    <code class="uid" id="uid"></code>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="btn" id="copyUid" type="button">UID kopiëren</button>
+      <button class="btn" id="retry" type="button">Opnieuw proberen</button>
+      <button class="btn" id="logout2" type="button">Uitloggen</button>
+    </div>
+    <p class="err" id="naErr"></p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app" hidden>
+  <div class="top">
+    <div class="bar">
+      <div class="brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></i>Verzoekjes</div>
+      <button class="icon-btn" id="soundBtn" title="Geluid bij nieuw verzoekje" aria-pressed="false"></button>
+      <button class="icon-btn" id="archBtn" title="Archief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></svg></button>
+      <button class="icon-btn" id="logout" title="Uitloggen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+
+  <div class="main" id="main"></div>
+</div>
+
+<!-- Dialogen -->
+<dialog id="dEvent"><form class="card" method="dialog" id="evForm">
+  <h2 id="evFormTitle">Nieuw event</h2>
+  <p class="muted small" style="margin:0">Elk event krijgt een eigen tabblad, link en QR-code.</p>
+  <label for="evName">Naam</label>
+  <input id="evName" type="text" maxlength="80" required placeholder="Bv. Trouw Jan &amp; Lies">
+  <label for="evCode">Code in de link</label>
+  <input id="evCode" type="text" maxlength="60" pattern="[a-z0-9][a-z0-9-]{1,59}" required placeholder="trouw-jan-lies">
+  <p class="muted small" style="margin:6px 0 0" id="evCodeHint"></p>
+  <label for="evWelcome">Welkomsttekst <span class="muted" style="font-weight:400">(optioneel)</span></label>
+  <textarea id="evWelcome" maxlength="300" placeholder="Welk nummer mag de DJ voor jou draaien?"></textarea>
+  <label for="evClosed">Tekst als verzoekjes gesloten zijn <span class="muted" style="font-weight:400">(optioneel)</span></label>
+  <input id="evClosed" type="text" maxlength="200" placeholder="Kom later nog eens terug.">
+  <label class="chk"><input type="checkbox" id="evMsgs" checked> Gasten mogen een boodschap meesturen</label>
+  <label class="chk" id="evOpenRow"><input type="checkbox" id="evOpen" checked> Meteen open voor verzoekjes</label>
+  <p class="err" id="evErr"></p>
+  <div class="actions">
+    <button class="btn" value="cancel" formnovalidate>Annuleren</button>
+    <button class="btn primary" id="evSave" value="ok">Opslaan</button>
+  </div>
+</form></dialog>
+
+<dialog id="dShare"><div class="card">
+  <h2>Link &amp; QR-code</h2>
+  <p class="muted small" style="margin:0" id="shareName"></p>
+  <div class="qr"><img id="qrImg" alt="QR-code naar de verzoekjes-pagina"></div>
+  <div class="linkbox"><input id="shareUrl" type="text" readonly><button class="btn" id="copyUrl" type="button">Kopieer</button></div>
+  <div class="actions">
+    <a class="btn" id="openUrl" target="_blank" rel="noopener">Open gastpagina</a>
+    <a class="btn" id="dlQr" target="_blank" rel="noopener">QR (hoge resolutie)</a>
+    <a class="btn primary" id="posterUrl" target="_blank" rel="noopener">Poster afdrukken</a>
+  </div>
+  <div class="actions" style="margin-top:8px"><button class="btn" type="button" data-close>Sluiten</button></div>
+</div></dialog>
+
+<dialog id="dArch"><div class="card arch">
+  <h2>Archief</h2>
+  <p class="muted small" style="margin:0">Gearchiveerde events staan niet meer in de tabbladen en zijn gesloten voor verzoekjes.</p>
+  <ul id="archList"></ul>
+  <div class="actions"><button class="btn" type="button" data-close>Sluiten</button></div>
+</div></dialog>
+
+<script type="module">
+import {
+  configured, db, auth, eventRef, requestsCol, eventsCol,
+  doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp, writeBatch,
+  onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
+  $, esc, safeArt, toast, store
+} from './fb.js';
+
+const NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+const I = {
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
+  qr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M17 21h4v-4M14 21v-3"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>'
+};
+const show = id => { for (const s of ['loading', 'setup', 'login', 'noAdmin', 'app']) $('#' + s).hidden = s !== id; };
+const guestUrl = id => new URL('./?e=' + encodeURIComponent(id), location.href).href;
+const ms = t => t?.toMillis?.() ?? Date.now();
+const ago = t => {
+  const s = Math.max(0, (Date.now() - ms(t)) / 1000);
+  if (s < 60) return 'zojuist';
+  if (s < 3600) return Math.floor(s / 60) + ' min';
+  if (s < 86400) return Math.floor(s / 3600) + ' u';
+  return new Date(ms(t)).toLocaleDateString('nl-BE', {day: 'numeric', month: 'short'});
+};
+const slugify = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' en ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+
+// ---------- state ----------
+let events = [];               // alle events (ook gearchiveerd)
+let current = null;            // id van het open tabblad
+let reqs = [];                 // verzoekjes van het huidige event
+let pending = {};              // aantal nieuwe verzoekjes per event (voor badges)
+let view = store.get('vz_view', 'new');
+let sort = store.get('vz_sort', 'count');
+let filter = '';
+let unsubs = [], unsubReqs = null, firstNew = true;
+let sound = store.get('vz_sound', true);
+
+// ---------- auth ----------
+if (!configured) show('setup');
+else onAuthStateChanged(auth, user => { stopAll(); user ? start(user) : show('login'); });
+
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('#lErr').textContent = ''; $('#lBtn').disabled = true;
+  try { await signInWithEmailAndPassword(auth, $('#lEmail').value.trim(), $('#lPw').value); }
+  catch (ex) {
+    $('#lErr').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(ex.code)
+      ? 'E-mail of wachtwoord klopt niet.' : ex.code === 'auth/too-many-requests' ? 'Te veel pogingen. Probeer straks opnieuw.' : 'Inloggen mislukt (' + ex.code + ').';
+  } finally { $('#lBtn').disabled = false; }
+});
+$('#lReset').addEventListener('click', async () => {
+  const email = $('#lEmail').value.trim();
+  if (!email) { $('#lErr').textContent = 'Vul eerst je e-mailadres in.'; return; }
+  try { await sendPasswordResetEmail(auth, email); toast('Mail verstuurd om je wachtwoord te herstellen.'); }
+  catch { $('#lErr').textContent = 'Versturen mislukt.'; }
+});
+for (const b of ['#logout', '#logout2']) $(b).addEventListener('click', () => signOut(auth));
+$('#copyUid').addEventListener('click', () => { navigator.clipboard?.writeText($('#uid').textContent); toast('UID gekopieerd'); });
+$('#retry').addEventListener('click', () => { stopAll(); start(auth.currentUser); });
+
+function stopAll() { unsubs.forEach(u => u()); unsubs = []; unsubReqs?.(); unsubReqs = null; firstNew = true; }
+
+function start(user) {
+  show('loading');
+  // Lukt het lezen van de events-lijst, dan is dit account beheerder.
+  unsubs.push(onSnapshot(eventsCol(), snap => {
+    events = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+    if ($('#app').hidden) show('app');
+    const active = events.filter(e => !e.archived);
+    const wanted = decodeURIComponent(location.hash.slice(1)) || store.get('vz_tab', '');
+    if (!current || !events.some(e => e.id === current)) selectEvent((active.find(e => e.id === wanted) || active[0])?.id || null);
+    else { renderTabs(); renderMain(); }
+    renderArchive();
+  }, err => {
+    if (err.code === 'permission-denied') { $('#uid').textContent = user.uid; $('#naErr').textContent = ''; show('noAdmin'); }
+    else { show('noAdmin'); $('#uid').textContent = user.uid; $('#naErr').textContent = 'Fout: ' + err.message; }
+  }));
+  // Alle openstaande verzoekjes (voor de badges op de tabbladen en meldingen).
+  unsubs.push(onSnapshot(query(requestsCol(), where('status', '==', 'new')), snap => {
+    pending = {};
+    snap.docs.forEach(d => { const e = d.data().eventId; pending[e] = (pending[e] || 0) + 1; });
+    if (!firstNew) {
+      const added = snap.docChanges().filter(c => c.type === 'added' && !c.doc.metadata.hasPendingWrites);
+      if (added.length) {
+        const r = added[0].doc.data();
+        const ev = events.find(e => e.id === r.eventId);
+        toast(`Nieuw verzoekje${ev && ev.id !== current ? ' voor ' + ev.name : ''}: ${r.title}${r.artist ? ' – ' + r.artist : ''}`, 4000);
+        beep();
+      }
+    }
+    firstNew = false;
+    const total = Object.values(pending).reduce((a, b) => a + b, 0);
+    document.title = (total ? `(${total}) ` : '') + 'Verzoekjes · Beheer';
+    renderTabs();
+  }, () => {}));
+}
+
+// ---------- tabs ----------
+function selectEvent(id) {
+  current = id;
+  if (id) { store.set('vz_tab', id); history.replaceState(null, '', '#' + encodeURIComponent(id)); }
+  unsubReqs?.(); unsubReqs = null; reqs = [];
+  if (id) unsubReqs = onSnapshot(query(requestsCol(), where('eventId', '==', id)), snap => {
+    reqs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderMain();
+  }, err => toast('Kon verzoekjes niet laden: ' + err.code));
+  renderTabs(); renderMain();
+}
+
+function renderTabs() {
+  const active = events.filter(e => !e.archived || e.id === current);
+  $('#tabs').innerHTML = active.map(e => `<button class="tab ${e.id === current ? 'on' : ''}" role="tab" aria-selected="${e.id === current}" data-id="${esc(e.id)}">
+      <span class="st ${e.open ? 'open' : ''}" title="${e.open ? 'Open' : 'Gesloten'}"></span>${esc(e.name)}${e.archived ? ' <span class="muted small">(archief)</span>' : ''}
+      ${pending[e.id] ? `<span class="badge">${pending[e.id]}</span>` : ''}</button>`).join('')
+    + `<button class="tab add" id="newEv">${I.plus} Nieuw event</button>`;
+}
+$('#tabs').addEventListener('click', e => {
+  if (e.target.closest('#newEv')) return openEventDialog(null);
+  const t = e.target.closest('.tab[data-id]'); if (t && t.dataset.id !== current) selectEvent(t.dataset.id);
+});
+
+// ---------- hoofdscherm ----------
+function renderMain() {
+  const ev = events.find(e => e.id === current);
+  if (!ev) {
+    $('#main').innerHTML = `<div class="empty"><div style="font-size:40px">🎧</div><h2 style="color:var(--text)">Nog geen events</h2>
+      <p>Maak een event aan. Elk event krijgt een eigen link en QR-code voor je gasten.</p>
+      <button class="btn primary" id="firstEv">${I.plus} Nieuw event</button></div>`;
+    $('#firstEv').onclick = () => openEventDialog(null);
+    return;
+  }
+  const by = {new: [], played: [], rejected: []};
+  reqs.forEach(r => (by[r.status] || by.new).push(r));
+
+  // Zelfde nummer = één kaart, met teller.
+  const groups = new Map();
+  for (const r of by[view]) {
+    const k = r.songKey || r.id;
+    if (!groups.has(k)) groups.set(k, {key: k, items: []});
+    groups.get(k).items.push(r);
+  }
+  let list = [...groups.values()].map(g => {
+    g.items.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+    const f = g.items[0];
+    return {...g, title: f.title, artist: f.artist, artwork: g.items.find(i => i.artwork)?.artwork || '',
+      first: ms(f.createdAt), last: ms(g.items.at(-1).createdAt), done: Math.max(...g.items.map(i => ms(i.doneAt)))};
+  });
+  const q = filter.toLowerCase();
+  if (q) list = list.filter(g => (g.title + ' ' + g.artist + ' ' + g.items.map(i => i.name + ' ' + i.message).join(' ')).toLowerCase().includes(q));
+  if (view !== 'new') list.sort((a, b) => b.done - a.done);
+  else if (sort === 'count') list.sort((a, b) => b.items.length - a.items.length || a.first - b.first);
+  else if (sort === 'old') list.sort((a, b) => a.first - b.first);
+  else list.sort((a, b) => b.last - a.last);
+  const counts = {new: new Set(by.new.map(r => r.songKey)).size, played: new Set(by.played.map(r => r.songKey)).size, rejected: new Set(by.rejected.map(r => r.songKey)).size};
+
+  const focused = document.activeElement?.id === 'filter';
+  const np = ev.nowPlaying;
+  $('#main').innerHTML = `
+    <div class="ev-head">
+      <div style="min-width:0"><h2>${esc(ev.name)}</h2><div class="code">sbmusic.be/requests/?e=${esc(ev.id)}</div></div>
+      <div class="ev-tools">
+        <label class="switch"><input type="checkbox" id="openTgl" ${ev.open ? 'checked' : ''}> ${ev.open ? 'Verzoekjes open' : 'Gesloten'}</label>
+        <button class="btn" id="shareBtn">${I.qr} QR &amp; link</button>
+        <button class="btn" id="editBtn" title="Instellingen">${I.gear}</button>
+        <div class="menu"><button class="btn" id="moreBtn" title="Meer" aria-haspopup="true">${I.more}</button>
+          <div class="card menu-pop" id="morePop" hidden>
+            <button id="csvBtn">CSV exporteren</button>
+            <button id="clearPlayed">Gespeelde &amp; afgewezen wissen</button>
+            <hr>
+            <button id="archiveBtn">${ev.archived ? 'Uit archief halen' : 'Archiveren'}</button>
+            <button id="deleteBtn" class="danger">Event verwijderen…</button>
+          </div></div>
+      </div>
+    </div>
+    ${np && np.title ? `<div class="card np"><div class="art" style="${artStyle(np.artwork)}">${safeArt(np.artwork) ? '' : NOTE}</div>
+      <div class="grow" style="min-width:0"><div class="lbl live"><span class="dot"></span>Nu te horen (zichtbaar voor gasten)</div><b>${esc(np.title)}</b> <span class="muted">${esc(np.artist || '')}</span></div>
+      <button class="btn sm" id="npClear">Wissen</button></div>` : ''}
+    <div class="filters">
+      <div class="seg" role="tablist">
+        <button data-view="new" class="${view === 'new' ? 'on' : ''}">Wachtrij<span class="n">${counts.new}</span></button>
+        <button data-view="played" class="${view === 'played' ? 'on' : ''}">Gespeeld<span class="n">${counts.played}</span></button>
+        <button data-view="rejected" class="${view === 'rejected' ? 'on' : ''}">Afgewezen<span class="n">${counts.rejected}</span></button>
+      </div>
+      ${view === 'new' ? `<select id="sortSel" aria-label="Sorteren">
+        <option value="count" ${sort === 'count' ? 'selected' : ''}>Meest gevraagd</option>
+        <option value="old" ${sort === 'old' ? 'selected' : ''}>Oudste eerst</option>
+        <option value="recent" ${sort === 'recent' ? 'selected' : ''}>Nieuwste eerst</option></select>` : ''}
+      <input type="search" id="filter" placeholder="Filter…" value="${esc(filter)}">
+    </div>
+    ${list.length ? `<ul class="list">${list.map(g => groupHtml(g)).join('')}</ul>`
+      : `<div class="empty">${view === 'new' ? (ev.open ? 'Nog geen verzoekjes. Deel de QR-code met je gasten!' : 'Verzoekjes zijn gesloten. Zet ze open om aanvragen te ontvangen.') : 'Niets hier.'}</div>`}`;
+  if (focused) { const f = $('#filter'); f.focus(); f.setSelectionRange(f.value.length, f.value.length); }
+  wireMain(ev, list);
+}
+
+const artStyle = u => safeArt(u) ? `background-image:url('${esc(safeArt(u))}')` : '';
+
+function groupHtml(g) {
+  const n = g.items.length;
+  const who = g.items.filter(i => i.name || i.message).map(i =>
+    `<div>${i.name ? `<b>${esc(i.name)}</b>` : 'Anoniem'}${i.message ? `: <q>${esc(i.message)}</q>` : ''} · ${ago(i.createdAt)}</div>`).join('');
+  const acts = view === 'new'
+    ? `<button class="btn sm primary" data-act="play" title="Nu draaien: tonen aan gasten en als gespeeld markeren">${I.play} Nu</button>
+       <button class="btn sm ok" data-act="played" title="Gespeeld">${I.check}</button>
+       <button class="btn sm danger" data-act="rejected" title="Afwijzen">${I.x}</button>`
+    : `<button class="btn sm" data-act="new" title="Terug naar wachtrij">${I.undo}</button>
+       <button class="btn sm danger" data-act="delete" title="Verwijderen">${I.trash}</button>`;
+  return `<li class="req" data-key="${esc(g.key)}">
+    <div class="art" style="${artStyle(g.artwork)}">${safeArt(g.artwork) ? '' : NOTE}</div>
+    <div class="body">
+      <div class="t">${esc(g.title)}${n > 1 ? `<span class="cnt" title="${n} keer aangevraagd">×${n}</span>` : ''}</div>
+      <div class="a">${esc(g.artist || '')}${who ? '' : ` · <span class="small">${ago(g.items[0].createdAt)}</span>`}</div>
+      ${who ? `<div class="who">${who}</div>` : ''}
+    </div>
+    <div class="acts">${acts}</div></li>`;
+}
+
+function wireMain(ev, list) {
+  $('#openTgl').onchange = e => updateDoc(eventRef(ev.id), {open: e.target.checked}).catch(fail);
+  $('#shareBtn').onclick = () => openShare(ev);
+  $('#editBtn').onclick = () => openEventDialog(ev);
+  $('#moreBtn').onclick = e => { e.stopPropagation(); $('#morePop').hidden = !$('#morePop').hidden; };
+  $('#csvBtn').onclick = () => exportCsv(ev);
+  $('#clearPlayed').onclick = async () => {
+    const ids = reqs.filter(r => r.status !== 'new').map(r => r.id);
+    if (!ids.length) return toast('Niets te wissen.');
+    if (!confirm(`${ids.length} gespeelde/afgewezen verzoekjes definitief wissen?`)) return;
+    await batchAll(ids, (b, id) => b.delete(doc(db, 'requests', id))).catch(fail);
+  };
+  $('#archiveBtn').onclick = () => updateDoc(eventRef(ev.id), ev.archived ? {archived: false} : {archived: true, open: false})
+    .then(() => { if (!ev.archived) { const next = events.find(e => !e.archived && e.id !== ev.id); selectEvent(next?.id || null); toast('Event gearchiveerd'); } })
+    .catch(fail);
+  $('#deleteBtn').onclick = () => deleteEvent(ev);
+  $('#npClear') && ($('#npClear').onclick = () => updateDoc(eventRef(ev.id), {nowPlaying: null}).catch(fail));
+  $('#main').querySelectorAll('.seg button').forEach(b => b.onclick = () => { view = b.dataset.view; store.set('vz_view', view); renderMain(); });
+  $('#sortSel') && ($('#sortSel').onchange = e => { sort = e.target.value; store.set('vz_sort', sort); renderMain(); });
+  $('#filter').oninput = e => { filter = e.target.value; renderMain(); };
+  $('#main').querySelectorAll('.req [data-act]').forEach(b => b.onclick = () => {
+    const g = list.find(x => x.key === b.closest('.req').dataset.key);
+    if (g) act(ev, g, b.dataset.act);
+  });
+}
+document.addEventListener('click', e => { const p = $('#morePop'); if (p && !p.hidden && !e.target.closest('.menu')) p.hidden = true; });
+
+async function act(ev, g, what) {
+  const ids = g.items.map(i => i.id);
+  try {
+    if (what === 'delete') {
+      await batchAll(ids, (b, id) => b.delete(doc(db, 'requests', id)));
+    } else {
+      await batchAll(ids, (b, id) => b.update(doc(db, 'requests', id), {status: what === 'play' ? 'played' : what, doneAt: serverTimestamp()}));
+      if (what === 'play') await updateDoc(eventRef(ev.id), {nowPlaying: {title: g.title, artist: g.artist || '', artwork: safeArt(g.artwork)}});
+      if (what !== 'new') toast(`${g.title}: ${what === 'rejected' ? 'afgewezen' : 'gespeeld'}`);
+    }
+  } catch (ex) { fail(ex); }
+}
+
+async function batchAll(ids, fn) {
+  for (let i = 0; i < ids.length; i += 450) {
+    const b = writeBatch(db);
+    ids.slice(i, i + 450).forEach(id => fn(b, id));
+    await b.commit();
+  }
+}
+const fail = ex => { console.error(ex); toast('Er ging iets mis: ' + (ex.code || ex.message)); };
+
+// ---------- event aanmaken / bewerken ----------
+let editing = null, codeTouched = false;
+function openEventDialog(ev) {
+  editing = ev; codeTouched = !!ev;
+  $('#evFormTitle').textContent = ev ? 'Event bewerken' : 'Nieuw event';
+  $('#evName').value = ev?.name || '';
+  $('#evCode').value = ev?.id || '';
+  $('#evCode').disabled = !!ev;
+  $('#evCodeHint').textContent = ev ? 'De code kan niet meer wijzigen: je QR-codes blijven zo geldig.' : 'Gasten openen: sbmusic.be/requests/?e=' + ($('#evCode').value || '…');
+  $('#evWelcome').value = ev?.welcome || '';
+  $('#evClosed').value = ev?.closedMessage || '';
+  $('#evMsgs').checked = ev ? ev.allowMessages !== false : true;
+  $('#evOpenRow').hidden = !!ev;
+  $('#evOpen').checked = true;
+  $('#evErr').textContent = '';
+  $('#dEvent').showModal();
+  $('#evName').focus();
+}
+$('#evName').addEventListener('input', () => { if (!codeTouched) { $('#evCode').value = slugify($('#evName').value); updHint(); } });
+$('#evCode').addEventListener('input', () => { codeTouched = true; updHint(); });
+const updHint = () => { if (!editing) $('#evCodeHint').textContent = 'Gasten openen: sbmusic.be/requests/?e=' + ($('#evCode').value || '…'); };
+
+$('#evForm').addEventListener('submit', async e => {
+  if (e.submitter?.value !== 'ok') return;
+  e.preventDefault();
+  const name = $('#evName').value.trim();
+  const code = slugify($('#evCode').value);
+  if (!name) { $('#evErr').textContent = 'Geef het event een naam.'; return; }
+  if (!editing && !/^[a-z0-9][a-z0-9-]{1,59}$/.test(code)) { $('#evErr').textContent = 'Code: minstens 2 tekens, enkel kleine letters, cijfers en streepjes.'; return; }
+  const data = {name, welcome: $('#evWelcome').value.trim(), closedMessage: $('#evClosed').value.trim(), allowMessages: $('#evMsgs').checked};
+  $('#evSave').disabled = true;
+  try {
+    if (editing) await updateDoc(eventRef(editing.id), data);
+    else {
+      if ((await getDoc(eventRef(code))).exists()) { $('#evErr').textContent = 'Deze code bestaat al. Kies een andere.'; return; }
+      await setDoc(eventRef(code), {...data, open: $('#evOpen').checked, archived: false, nowPlaying: null, createdAt: serverTimestamp()});
+      current = null; selectEvent(code);
+      setTimeout(() => openShare(events.find(x => x.id === code) || {id: code, name}), 50);
+    }
+    $('#dEvent').close();
+  } catch (ex) { $('#evErr').textContent = 'Opslaan mislukt: ' + (ex.code || ex.message); }
+  finally { $('#evSave').disabled = false; }
+});
+
+async function deleteEvent(ev) {
+  const n = reqs.length;
+  if (!confirm(`“${ev.name}” en alle ${n} verzoekjes definitief verwijderen?\n\nDe QR-code van dit event werkt daarna niet meer.`)) return;
+  try {
+    const snap = await getDocs(query(requestsCol(), where('eventId', '==', ev.id)));
+    await batchAll(snap.docs.map(d => d.id), (b, id) => b.delete(doc(db, 'requests', id)));
+    await deleteDoc(eventRef(ev.id));
+    const next = events.find(e => !e.archived && e.id !== ev.id);
+    selectEvent(next?.id || null);
+    toast('Event verwijderd');
+  } catch (ex) { fail(ex); }
+}
+
+// ---------- delen / QR ----------
+const qrSrc = (url, size) => 'https://api.qrserver.com/v1/create-qr-code/?' + new URLSearchParams({size: size + 'x' + size, margin: '0', ecc: 'M', data: url});
+function openShare(ev) {
+  const url = guestUrl(ev.id);
+  $('#shareName').textContent = ev.name;
+  $('#shareUrl').value = url;
+  $('#qrImg').src = qrSrc(url, 480);
+  $('#openUrl').href = url;
+  $('#dlQr').href = qrSrc(url, 1200);
+  $('#posterUrl').href = 'poster.html?e=' + encodeURIComponent(ev.id);
+  $('#dShare').showModal();
+}
+$('#copyUrl').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('#shareUrl').value); toast('Link gekopieerd'); }
+  catch { $('#shareUrl').select(); }
+});
+document.querySelectorAll('dialog [data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+
+// ---------- archief ----------
+function renderArchive() {
+  const arch = events.filter(e => e.archived);
+  $('#archList').innerHTML = arch.length ? arch.map(e => `<li><span class="grow">${esc(e.name)} <span class="muted small">?e=${esc(e.id)}</span></span>
+    <button class="btn sm" data-open="${esc(e.id)}">Bekijken</button><button class="btn sm" data-restore="${esc(e.id)}">Terugzetten</button></li>`).join('')
+    : '<li class="muted">Geen gearchiveerde events.</li>';
+}
+$('#archBtn').addEventListener('click', () => $('#dArch').showModal());
+$('#archList').addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'), r = e.target.closest('[data-restore]');
+  if (o) { selectEvent(o.dataset.open); $('#dArch').close(); }
+  if (r) updateDoc(eventRef(r.dataset.restore), {archived: false}).then(() => { selectEvent(r.dataset.restore); $('#dArch').close(); }).catch(fail);
+});
+
+// ---------- CSV ----------
+function exportCsv(ev) {
+  const cell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const st = {new: 'wachtrij', played: 'gespeeld', rejected: 'afgewezen'};
+  const rows = [['Tijd', 'Titel', 'Artiest', 'Naam', 'Boodschap', 'Status']].concat(
+    [...reqs].sort((a, b) => ms(a.createdAt) - ms(b.createdAt)).map(r =>
+      [new Date(ms(r.createdAt)).toLocaleString('nl-BE'), r.title, r.artist, r.name, r.message, st[r.status] || r.status]));
+  const blob = new Blob(['﻿' + rows.map(r => r.map(cell).join(';')).join('\r\n')], {type: 'text/csv;charset=utf-8'});
+  const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: `verzoekjes-${ev.id}.csv`});
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- geluid ----------
+let actx;
+function beep() {
+  if (!sound) return;
+  try {
+    actx ||= new AudioContext();
+    const t = actx.currentTime;
+    [880, 1320].forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.0001, t + i * .12); g.gain.exponentialRampToValueAtTime(0.2, t + i * .12 + .02); g.gain.exponentialRampToValueAtTime(0.0001, t + i * .12 + .25);
+      o.start(t + i * .12); o.stop(t + i * .12 + .3);
+    });
+  } catch {}
+}
+const renderSound = () => { $('#soundBtn').innerHTML = sound ? I.soundOn : I.soundOff; $('#soundBtn').setAttribute('aria-pressed', sound); };
+$('#soundBtn').addEventListener('click', () => { sound = !sound; store.set('vz_sound', sound); renderSound(); if (sound) { actx ||= new AudioContext(); actx.resume(); beep(); } });
+renderSound();
+
+// "3 min geleden" actueel houden
+setInterval(() => { if (!$('#app').hidden && document.activeElement?.id !== 'filter' && $('#morePop')?.hidden !== false) renderMain(); }, 60_000);
+</script>
+</body>
+</html>
