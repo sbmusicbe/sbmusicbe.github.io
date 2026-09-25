@@ -62,6 +62,10 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
   De foto wordt in je browser automatisch verkleind (± 150 KB) en als reactie bij het event-issue bewaard.
   Een Issues-token kan namelijk geen bestanden uploaden.
 - **QR & link**: toont de QR-code, een QR in hoge resolutie en een afdrukbare poster.
+- **Poster**: A4 in de huisstijl van sbmusic.be, met het SB-logo, de foto van het event en de QR-code.
+  De titel kan je bovenaan aanpassen. Kies een zwarte achtergrond (zoals de site) of een witte (spaart inkt).
+  Via *Afdrukken / PDF* kan je ze ook als PDF bewaren. Zet in het afdrukvenster *Achtergrondafbeeldingen* aan
+  (Chrome: *Meer instellingen → Achtergrondafbeeldingen*), anders valt het zwart en de foto weg.
 - **Open/Gesloten**: schakel per event in of gasten iets kunnen aanvragen. Een groen bolletje op het tabblad betekent open.
 - **Wachtrij**: hetzelfde nummer wordt gegroepeerd, met een teller (×3) en de namen en boodschappen.
   Sorteer op *meest gevraagd*, *oudste* of *nieuwste*.
