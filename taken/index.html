@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Taken">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="https://www.adrem.be/wp-content/uploads/2023/06/adrem-logo.png" type="image/png">
+<link rel="apple-touch-icon" href="https://www.adrem.be/wp-content/uploads/2023/06/adrem-logo.png">
 <style>
 :root{
   --bg:#fafaf9; --panel:#ffffff; --side:#f3f2ef; --text:#1c1917; --muted:#78716c; --faint:#a8a29e;
@@ -55,6 +55,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .lock-card{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow)}
 .lock-logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:14px}
 .lock-logo svg{width:24px;height:24px}
+/* Adrem-logo (van adrem.be); valt terug op het vinkje als het niet laadt */
+.lock-logo img,.brand i img{display:none}
+.lock-logo.has-img,.brand i.has-img{background:none;width:auto;height:auto;border-radius:0}
+.lock-logo.has-img img{display:block;height:48px;max-width:220px;object-fit:contain}
+.brand i.has-img img{display:block;height:26px;max-width:130px;object-fit:contain}
+.lock-logo.has-img svg,.brand i.has-img svg{display:none}
 .lock-card h1{margin:0 0 4px;font-size:22px}
 .lock-card p{margin:0 0 16px}
 .lock-card label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
@@ -267,7 +273,7 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 <!-- ============ Lock screen ============ -->
 <div id="lock" class="lock">
   <form id="lockForm" class="lock-card" autocomplete="on">
-    <div class="lock-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <div class="lock-logo has-img"><img src="https://www.adrem.be/wp-content/uploads/2023/06/adrem-logo.png" alt="Adrem Intermediagroep" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
     <h1 id="lockTitle">Taken</h1>
     <p id="lockSub" class="muted"></p>
     <input type="text" name="username" autocomplete="username" value="taken" hidden>
@@ -282,7 +288,7 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 <div id="app" hidden>
   <aside id="side">
     <div class="side-head">
-      <span class="brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Taken</span>
+      <span class="brand"><i class="has-img"><img src="https://www.adrem.be/wp-content/uploads/2023/06/adrem-logo.png" alt="Adrem Intermediagroep" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Taken</span>
     </div>
     <nav id="nav"></nav>
     <div class="side-section"><span>Projecten</span><button id="addProject" class="icon-btn" title="Nieuw project" aria-label="Nieuw project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
