@@ -9,76 +9,26 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..600;1,100..125,900&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="vendor/qrcode.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 <style>
-/* Huisstijl SB (zelfde tokens als sbmusic.be) */
-:root{
-  --studio:#0A0A0A; --studio-2:#262626; --corduroy:#24312A; --krijt:#F2EFEA; --signaal:#6FA283; --white:#FFFFFF;
-  --skew:-23deg;
-}
 @page{size:A4;margin:0}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html,body{background:#1b1b1b;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
-
-/* ---------- bediening (niet afgedrukt) ---------- */
-.bar{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 16px;flex-wrap:wrap;font-family:'Inter',sans-serif}
-.bar input,.bar button,.bar select{font:inherit;font-size:14px;padding:8px 12px;border-radius:9px;border:1px solid #3a3a3a;background:#262626;color:#F2EFEA}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#1b1b1b;color:#F2EFEA;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+.bar{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 16px;flex-wrap:wrap}
+.bar input,.bar button,.bar select{font:inherit;font-size:14px;padding:9px 12px;border-radius:9px;border:1px solid #3a3a3a;background:#262626;color:#F2EFEA}
 .bar input{width:min(340px,100%)}
+.bar button{cursor:pointer}
 .bar button.primary{background:#6FA283;border-color:#6FA283;color:#0A0A0A;font-weight:600}
-
-/* ---------- A4 ---------- */
-.page{
-  --bg:var(--studio); --fg:var(--krijt); --mute:rgba(242,239,234,.55); --line:rgba(242,239,234,.18); --logo:var(--white);
-  position:relative;overflow:hidden;width:210mm;height:297mm;margin:0 auto 24px;background:var(--bg);color:var(--fg);
-  box-shadow:0 8px 30px rgba(0,0,0,.4);transform-origin:top center;display:flex;flex-direction:column
+.bar button:disabled{opacity:.5;cursor:default}
+.hint{text-align:center;font-size:13px;color:rgba(242,239,234,.55);padding:0 16px 12px}
+.sheet{display:block;width:min(210mm,calc(100vw - 32px));height:auto;margin:0 auto 32px;box-shadow:0 8px 30px rgba(0,0,0,.45);background:#0A0A0A}
+#printImg{display:none}
+@media print{
+  html,body{background:none}
+  .bar,.hint,.sheet{display:none!important}
+  #printImg{display:block;width:210mm;height:297mm}
 }
-.page.light{--bg:#FFFFFF; --fg:var(--studio); --mute:rgba(10,10,10,.55); --line:rgba(10,10,10,.18); --logo:var(--studio)}
-
-.display{font-family:'Archivo',sans-serif;font-stretch:125%;font-style:italic;font-weight:900;text-transform:uppercase;line-height:.92;letter-spacing:-.01em}
-.mono{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.12em}
-.logo{display:block;aspect-ratio:1000/429;background:var(--logo);
-  -webkit-mask:url("sb-logo.png") center/contain no-repeat;mask:url("sb-logo.png") center/contain no-repeat}
-
-/* bovenkant: foto (of Cord Green) met de schuine snede */
-.top{position:relative;height:128mm;flex:none;background:var(--corduroy);clip-path:polygon(0 0,100% 0,100% 84%,0 100%)}
-.top.nophoto{height:100mm}
-.top .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%;display:none}
-.top.has-photo .photo{display:block}
-.top .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.45) 0%,rgba(10,10,10,0) 28%,rgba(10,10,10,0) 45%,rgba(10,10,10,.8) 100%);display:none}
-.top.has-photo .shade{display:block}
-.top .logo{position:absolute;top:13mm;left:16mm;width:30mm;background:var(--white)}
-.top .ev{position:absolute;left:16mm;right:16mm;bottom:25mm;color:var(--krijt);font-size:14mm;padding-right:3mm;
-  text-shadow:0 3px 14px rgba(0,0,0,.6),0 1px 4px rgba(0,0,0,.6)}
-.top.nophoto .ev{text-shadow:none}
-
-/* schuine labels, zoals op de site */
-.tag{position:relative;isolation:isolate;display:inline-flex;align-items:center;padding:2.4mm 5mm;font-family:'Space Mono',monospace;font-weight:700;
-  font-size:3.3mm;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;color:var(--studio)}
-.tag::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--signaal);transform:skewX(var(--skew))}
-.top .tag{position:absolute;top:14mm;right:18mm}
-
-/* midden */
-.mid{flex:1;padding:6mm 16mm 0;display:flex;flex-direction:column;justify-content:center}
-.idx{display:block;font-size:3.2mm;color:var(--mute);margin-bottom:4mm}
-.mid h1{font-size:17mm;padding-right:3mm}
-.row{display:grid;grid-template-columns:1fr 84mm;gap:10mm;align-items:end;margin-top:10mm}
-.steps{list-style:none}
-.steps li{display:flex;gap:5mm;align-items:baseline;padding:3.6mm 0;border-top:.3mm solid var(--line);font-size:3.9mm;font-weight:700}
-.steps li:last-child{border-bottom:.3mm solid var(--line)}
-.steps b{color:var(--signaal);font-weight:700}
-.note{margin-top:6mm;font-size:4.2mm;line-height:1.45;color:var(--mute);max-width:70mm}
-.qrwrap{position:relative}
-.qr{background:var(--krijt);padding:5mm;aspect-ratio:1}
-.page.light .qr{background:#fff;outline:.8mm solid var(--studio);outline-offset:-.8mm}
-.qr img{width:100%;height:100%;display:block}
-.sticker{position:absolute;top:-5mm;left:-6mm;transform:rotate(-3deg);filter:drop-shadow(0 2mm 3mm rgba(0,0,0,.35))}
-
-/* voet */
-.foot{display:flex;justify-content:space-between;align-items:center;gap:6mm;margin:8mm 16mm 12mm;padding-top:4mm;border-top:.3mm solid var(--line);font-size:3.1mm;color:var(--mute)}
-.foot .logo{width:13mm;background:var(--logo)}
-.foot span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-@media (max-width:820px){.page{transform:scale(calc(100vw / 226mm));margin-bottom:calc(-297mm * (1 - 100vw / 226mm))}}
-@media print{html,body{background:none}.bar{display:none}.page{box-shadow:none;margin:0;transform:none!important}}
 </style>
 </head>
 <body>
@@ -88,77 +38,230 @@ html,body{background:#1b1b1b;font-family:'Inter',sans-serif;-webkit-font-smoothi
     <option value="dark">Zwart (zoals sbmusic.be)</option>
     <option value="light">Wit (spaart inkt)</option>
   </select>
-  <button class="primary" onclick="print()">Afdrukken / PDF</button>
+  <button class="primary" id="pdfBtn" disabled>Download PDF</button>
+  <button id="printBtn" disabled>Afdrukken</button>
 </div>
-
-<div class="page" id="page">
-  <section class="top nophoto" id="top">
-    <img class="photo" id="photo" alt="">
-    <div class="shade"></div>
-    <span class="logo" role="img" aria-label="SB"></span>
-    <span class="tag">Verzoekjes</span>
-    <h2 class="display ev" id="ev"></h2>
-  </section>
-
-  <section class="mid">
-    <span class="idx mono">Muziek op aanvraag</span>
-    <h1 class="display" id="h1">Vraag je nummer aan!</h1>
-    <div class="row">
-      <div>
-        <ol class="steps mono">
-          <li><b>01</b>Scan de code</li>
-          <li><b>02</b>Zoek je nummer</li>
-          <li><b>03</b>Verstuur naar de DJ</li>
-        </ol>
-        <p class="note">Geen app of account nodig. Open gewoon je gsm-camera.</p>
-      </div>
-      <div class="qrwrap">
-        <div class="qr"><img id="qr" alt="QR-code naar de verzoekjes-pagina"></div>
-        <span class="tag sticker">Scan mij</span>
-      </div>
-    </div>
-  </section>
-
-  <footer class="foot mono">
-    <span id="url"></span>
-    <span class="logo" role="img" aria-label="SB"></span>
-  </footer>
-</div>
+<p class="hint" id="hint">Poster wordt gemaakt…</p>
+<canvas class="sheet" id="sheet" role="img" aria-label="Poster"></canvas>
+<img id="printImg" alt="">
 
 <script type="module">
 import { configured, api, parseEvent, EVENT_LABEL, loadPhoto, store } from './gh.js';
 const $ = s => document.querySelector(s);
+
+// Huisstijl SB (zelfde kleuren als sbmusic.be)
+const C = {studio: '#0A0A0A', corduroy: '#24312A', krijt: '#F2EFEA', signaal: '#6FA283', white: '#FFFFFF'};
+const PX = 8;                             // pixels per mm → 1680 × 2376 px (± 200 dpi)
+const W = 210, H = 297;
+const TAN23 = Math.tan(23 * Math.PI / 180);
+const m = v => v * PX;
+
 const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
 const url = new URL('./?e=' + encodeURIComponent(id), location.href).href;
-const setQr = light => { $('#qr').src = 'https://api.qrserver.com/v1/create-qr-code/?' + new URLSearchParams({size: '1000x1000', margin: '0', ecc: 'M', color: '0A0A0A', bgcolor: light ? 'FFFFFF' : 'F2EFEA', data: url}); };
-$('#url').textContent = url.replace(/^https?:\/\//, '');
+const shortUrl = url.replace(/^https?:\/\//, '');
+const state = {event: null, photo: null, logo: null, headline: $('#headline').value, theme: store.get('vz_poster_theme', 'dark')};
+$('#theme').value = state.theme;
 
-// Lange titels verkleinen tot ze in de voorziene hoogte passen (in mm; offsetHeight negeert de schaal op gsm).
-const MM = 96 / 25.4;
-function fit(el, sizeMm, maxHeightMm) {
-  let size = sizeMm;
-  el.style.fontSize = size + 'mm';
-  while (el.offsetHeight > maxHeightMm * MM && size > sizeMm * 0.4) { size *= 0.94; el.style.fontSize = size + 'mm'; }
+const canvas = $('#sheet');
+canvas.width = m(W); canvas.height = m(H);
+const ctx = canvas.getContext('2d');
+
+const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+
+// Het logo is een masker (zoals op de site); kleur het in.
+function tinted(img, color) {
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  return c;
 }
-const refit = () => { fit($('#h1'), 17, 34); fit($('#ev'), 14, 28); };
-document.fonts?.ready.then(refit);
 
-$('#headline').oninput = e => { $('#h1').textContent = e.target.value || ' '; refit(); };
-const theme = store.get('vz_poster_theme', 'dark');
-const applyTheme = t => { $('#page').classList.toggle('light', t === 'light'); setQr(t === 'light'); };
-$('#theme').value = theme; applyTheme(theme);
-$('#theme').onchange = e => { store.set('vz_poster_theme', e.target.value); applyTheme(e.target.value); };
+// ---- tekst ----
+const FONT = {
+  display: size => `italic 900 expanded ${m(size)}px Archivo, "Arial Black", sans-serif`,
+  mono: (size, w = 700) => `${w} ${m(size)}px "Space Mono", ui-monospace, monospace`,
+  body: size => `400 ${m(size)}px Inter, system-ui, sans-serif`
+};
+function setFont(f) { ctx.font = f; try { ctx.fontStretch = f.includes('expanded') ? 'expanded' : 'normal'; } catch {} }
 
-if (configured && id) api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`)
-  .then(async list => {
-    const ev = list.map(parseEvent).find(e => e && e.id === id);
-    if (!ev) return;
-    document.title = ev.name + ' · Poster';
-    $('#ev').textContent = ev.name;
-    const photo = ev.photo ? await loadPhoto(ev.photo) : '';
-    if (photo) { $('#photo').src = photo; $('#top').classList.replace('nophoto', 'has-photo'); }
-    refit();
-  }).catch(() => {});
+// Tekst met letterafstand (in em), teken per teken, zodat het overal werkt.
+function spaced(text, x, y, spacing, size, align = 'left') {
+  const gap = m(size) * spacing;
+  const width = [...text].reduce((w, ch) => w + ctx.measureText(ch).width + gap, -gap);
+  let cx = align === 'right' ? x - width : x;
+  for (const ch of text) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + gap; }
+  return width;
+}
+function wrap(text, maxW) {
+  const words = text.split(/\s+/).filter(Boolean), lines = [];
+  let line = '';
+  for (const w of words) {
+    const t = line ? line + ' ' + w : w;
+    if (line && ctx.measureText(t).width > maxW) { lines.push(line); line = w; } else line = t;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+// Grote titels: verkleinen tot ze binnen maxW × maxH passen.
+function fitDisplay(text, size, maxW, maxH) {
+  text = text.toUpperCase();
+  for (let s = size; ; s *= 0.94) {
+    setFont(FONT.display(s));
+    const lines = wrap(text, m(maxW));
+    const tooWide = lines.some(l => ctx.measureText(l).width > m(maxW));
+    if ((!tooWide && lines.length * s * 0.92 <= maxH) || s < size * 0.35) return {lines, size: s};
+  }
+}
+
+// Schuin label (skewX -23°), zoals de labels op de site.
+function tag(text, x, y, {size = 3.3, align = 'left', color = C.studio, bg = C.signaal} = {}) {
+  setFont(FONT.mono(size));
+  const gap = m(size) * 0.1;
+  const tw = [...text].reduce((w, ch) => w + ctx.measureText(ch).width + gap, -gap);
+  const w = tw + m(10), h = m(size) + m(4.8), off = h * TAN23 / 2;
+  const x0 = align === 'right' ? x - w : x;
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.moveTo(x0 + off, y); ctx.lineTo(x0 + w + off, y); ctx.lineTo(x0 + w - off, y + h); ctx.lineTo(x0 - off, y + h); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = color; ctx.textBaseline = 'middle';
+  spaced(text, x0 + m(5), y + h / 2 + m(0.2), 0.1, size);
+  ctx.textBaseline = 'alphabetic';
+  return {w, h};
+}
+
+// ---- tekenen ----
+function draw() {
+  const light = state.theme === 'light';
+  const bg = light ? C.white : C.studio, fg = light ? C.studio : C.krijt;
+  const mute = light ? 'rgba(10,10,10,.55)' : 'rgba(242,239,234,.55)';
+  const line = light ? 'rgba(10,10,10,.18)' : 'rgba(242,239,234,.18)';
+  ctx.save();
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, m(W), m(H));
+
+  // Bovenkant met de schuine snede: foto, of Cord Green zonder foto.
+  const topH = state.photo ? 128 : 100;
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(m(W), 0); ctx.lineTo(m(W), m(topH * 0.84)); ctx.lineTo(0, m(topH)); ctx.closePath(); ctx.clip();
+  ctx.fillStyle = C.corduroy; ctx.fillRect(0, 0, m(W), m(topH));
+  if (state.photo) {
+    const p = state.photo, s = Math.max(m(W) / p.naturalWidth, m(topH) / p.naturalHeight);
+    const dw = p.naturalWidth * s, dh = p.naturalHeight * s;
+    ctx.drawImage(p, (m(W) - dw) / 2, (m(topH) - dh) * 0.35, dw, dh);
+    const g = ctx.createLinearGradient(0, 0, 0, m(topH));
+    g.addColorStop(0, 'rgba(10,10,10,.45)'); g.addColorStop(.28, 'rgba(10,10,10,0)'); g.addColorStop(.45, 'rgba(10,10,10,0)'); g.addColorStop(1, 'rgba(10,10,10,.8)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(topH));
+  }
+  ctx.restore();
+
+  if (state.logo) ctx.drawImage(tinted(state.logo, C.white), m(16), m(13), m(30), m(30 * 429 / 1000));
+  tag('VERZOEKJES', m(W - 18), m(14), {align: 'right'});
+
+  // Naam van het event onderaan de foto.
+  const name = state.event?.name || '';
+  if (name) {
+    const t = fitDisplay(name, 14, W - 32 - 3, 28);
+    setFont(FONT.display(t.size));
+    ctx.fillStyle = C.krijt;
+    if (state.photo) { ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = m(3.5); ctx.shadowOffsetY = m(.8); }
+    const bottom = m(topH - 25);
+    t.lines.forEach((l, i) => ctx.fillText(l, m(16), bottom - (t.lines.length - 1 - i) * m(t.size * 0.92)));
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  }
+
+  // Midden: label, titel, stappen + QR, verticaal gecentreerd tussen foto en voet.
+  const footTop = H - 12 - 8;
+  const head = fitDisplay(state.headline || ' ', 17, W - 32 - 3, 34);
+  const qrSize = 84, gapTitleRow = 10;
+  const blockH = 3.2 + 4 + head.lines.length * head.size * 0.92 + gapTitleRow + qrSize;
+  const avail = footTop - 6 - topH;
+  let y = topH + 6 + Math.max(0, (avail - blockH) / 2);
+
+  setFont(FONT.mono(3.2, 400)); ctx.fillStyle = mute;
+  spaced('MUZIEK OP AANVRAAG', m(16), m(y + 3.2 * .8), 0.12, 3.2);
+  y += 3.2 + 4;
+  setFont(FONT.display(head.size)); ctx.fillStyle = fg;
+  head.lines.forEach((l, i) => ctx.fillText(l, m(16), m(y + head.size * 0.8 + i * head.size * 0.92)));
+  y += head.lines.length * head.size * 0.92 + gapTitleRow;
+
+  // QR-code rechts.
+  const qx = W - 16 - qrSize, qy = y;
+  ctx.fillStyle = light ? C.white : C.krijt; ctx.fillRect(m(qx), m(qy), m(qrSize), m(qrSize));
+  if (light) { ctx.strokeStyle = C.studio; ctx.lineWidth = m(.8); ctx.strokeRect(m(qx + .4), m(qy + .4), m(qrSize - .8), m(qrSize - .8)); }
+  if (window.qrcode) {
+    const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+    const n = qr.getModuleCount(), inner = m(qrSize - 10), cell = inner / n, ox = m(qx + 5), oy = m(qy + 5);
+    ctx.fillStyle = C.studio;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
+      if (qr.isDark(r, c)) ctx.fillRect(Math.floor(ox + c * cell), Math.floor(oy + r * cell), Math.ceil(cell), Math.ceil(cell));
+  }
+  // "Scan mij"-sticker, licht gedraaid.
+  ctx.save();
+  ctx.translate(m(qx - 6), m(qy - 5)); ctx.rotate(-3 * Math.PI / 180);
+  ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = m(3); ctx.shadowOffsetY = m(2);
+  tag('SCAN MIJ', 0, 0);
+  ctx.restore();
+
+  // Stappen links, onderaan uitgelijnd met de QR-code.
+  const rowH = 11.1, stepsW = W - 32 - 10 - qrSize;
+  setFont(FONT.body(4.2));
+  const note = wrap('Geen app of account nodig. Open gewoon je gsm-camera.', m(70));
+  const noteH = 6 + note.length * 4.2 * 1.45;
+  let sy = qy + qrSize - noteH - 3 * rowH;
+  ctx.strokeStyle = line; ctx.lineWidth = m(.3);
+  const steps = [['01', 'SCAN DE CODE'], ['02', 'ZOEK JE NUMMER'], ['03', 'VERSTUUR NAAR DE DJ']];
+  steps.forEach(([nr, text], i) => {
+    const top = sy + i * rowH;
+    ctx.beginPath(); ctx.moveTo(m(16), m(top)); ctx.lineTo(m(16 + stepsW), m(top)); ctx.stroke();
+    setFont(FONT.mono(3.9)); ctx.fillStyle = C.signaal;
+    const nw = spaced(nr, m(16), m(top + rowH / 2 + 1.3), 0.12, 3.9);
+    ctx.fillStyle = fg;
+    spaced(text, m(16) + nw + m(5), m(top + rowH / 2 + 1.3), 0.12, 3.9);
+  });
+  ctx.beginPath(); ctx.moveTo(m(16), m(sy + 3 * rowH)); ctx.lineTo(m(16 + stepsW), m(sy + 3 * rowH)); ctx.stroke();
+  setFont(FONT.body(4.2)); ctx.fillStyle = mute;
+  note.forEach((l, i) => ctx.fillText(l, m(16), m(sy + 3 * rowH + 6 + 4.2 * 0.95 + i * 4.2 * 1.45)));
+
+  // Voet: link en logo.
+  ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(m(16), m(footTop)); ctx.lineTo(m(W - 16), m(footTop)); ctx.stroke();
+  setFont(FONT.mono(3.1, 400)); ctx.fillStyle = mute;
+  spaced(shortUrl.toUpperCase(), m(16), m(footTop + 7.2), 0.12, 3.1);
+  if (state.logo) ctx.drawImage(tinted(state.logo, light ? C.studio : C.white), m(W - 16 - 13), m(footTop + 3.4), m(13), m(13 * 429 / 1000));
+  ctx.restore();
+}
+
+// ---- PDF en afdrukken ----
+const fileName = () => 'poster-' + (id || 'verzoekjes') + '.pdf';
+$('#pdfBtn').onclick = () => {
+  const {jsPDF} = window.jspdf || {};
+  if (!jsPDF) { alert('De PDF-module kon niet laden. Controleer je internetverbinding en probeer opnieuw.'); return; }
+  const doc = new jsPDF({unit: 'mm', format: 'a4', orientation: 'portrait', compress: true});
+  doc.setProperties({title: (state.event?.name ? state.event.name + ' · ' : '') + 'Verzoekjes', creator: 'sbmusic.be'});
+  doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, W, H, undefined, 'FAST');
+  doc.save(fileName());
+};
+$('#printBtn').onclick = () => { $('#printImg').src = canvas.toDataURL('image/png'); setTimeout(() => print(), 50); };
+addEventListener('beforeprint', () => { $('#printImg').src = canvas.toDataURL('image/png'); });
+
+$('#headline').oninput = e => { state.headline = e.target.value; draw(); };
+$('#theme').onchange = e => { state.theme = e.target.value; store.set('vz_poster_theme', state.theme); draw(); };
+
+// ---- laden ----
+(async () => {
+  const fonts = document.fonts ? Promise.all([
+    document.fonts.load(`italic 900 expanded 40px Archivo`), document.fonts.load(`700 20px "Space Mono"`),
+    document.fonts.load(`400 20px "Space Mono"`), document.fonts.load(`400 20px Inter`)
+  ]).catch(() => {}) : Promise.resolve();
+  const logo = loadImg('sb-logo.png').then(i => { state.logo = i; }).catch(() => {});
+  const event = (configured && id ? api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`) : Promise.resolve([]))
+    .then(async list => {
+      state.event = list.map(parseEvent).find(e => e && e.id === id) || null;
+      if (state.event?.photo) { const u = await loadPhoto(state.event.photo); if (u) state.photo = await loadImg(u); }
+    }).catch(() => {});
+  await Promise.all([fonts, logo, event]);
+  if (state.event) document.title = state.event.name + ' · Poster';
+  draw();
+  $('#pdfBtn').disabled = $('#printBtn').disabled = false;
+  $('#hint').textContent = state.event ? 'Pas de titel aan en kies de achtergrond. Download PDF bewaart een A4-bestand om te mailen of te laten drukken.'
+    : (id ? 'Event niet gevonden. De QR-code werkt wel, maar controleer de link.' : 'Geen event gekozen: open de poster via beheer → QR & link.');
+})();
 </script>
 </body>
 </html>
