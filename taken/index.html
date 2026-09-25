@@ -193,12 +193,29 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
 .seg button{border:0;background:none;padding:6px 12px;font-size:13.5px;font-weight:550;color:var(--muted)}
 .seg button.on{background:var(--sel);color:var(--text)}
-.board{display:grid;grid-template-columns:repeat(4,minmax(250px,1fr));gap:14px;align-items:start;overflow-x:auto;padding:4px 2px 12px;margin-top:8px}
+.board{display:grid;grid-template-columns:repeat(var(--ncols,4),minmax(250px,1fr));gap:14px;align-items:start;overflow-x:auto;padding:4px 2px 12px;margin-top:8px}
 .col{background:var(--side);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:12px;padding:10px;display:flex;flex-direction:column;transition:background .12s}
 .col.over{background:color-mix(in srgb,var(--c) 9%,var(--side))}
 .col>header{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:2px 4px 10px}
 .col>header .dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
 .col>header .count{color:var(--faint);font-weight:500}
+.col>header .col-edit{width:26px;height:26px;margin-left:auto;opacity:0;transition:opacity .12s}
+.col>header .badge+.col-edit{margin-left:0}
+.col:hover>header .col-edit,.col-edit:focus-visible{opacity:1}
+@media (hover:none){.col>header .col-edit{opacity:.7}}
+.col>header .col-edit svg{width:16px;height:16px}
+.tb-cols{padding:6px 12px;font-size:13.5px}
+.st-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+.st-row input[type=text]{flex:1;min-width:0;padding:6px 8px}
+.st-row .st-done{font-size:13px;white-space:nowrap;color:var(--muted)}
+.st-row .icon-btn{width:30px;height:30px}
+.st-row .icon-btn:disabled{opacity:.3}
+.st-row [data-dir] svg{transform:rotate(-90deg)}
+@media (max-width:520px){
+  .st-row{flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .st-row input[type=text]{flex:1 1 calc(100% - 40px)}
+  .st-row .st-done{margin-left:36px;margin-right:auto}
+}
 .col>header .badge{margin-left:auto;font-size:11px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);padding:2px 7px;border-radius:999px}
 .cards{display:flex;flex-direction:column;gap:8px;min-height:44px}
 .card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--pc);border-radius:9px;padding:9px 11px;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 2px rgba(0,0,0,.05)}
@@ -220,7 +237,7 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 .col-add input:hover{background:var(--hover)}
 .col-add input:focus{background:var(--panel)}
 @media (max-width:860px){
-  .board{grid-template-columns:repeat(4,84vw);scroll-snap-type:x mandatory;margin:8px -16px 0;padding:4px 16px 12px;scroll-padding:0 16px}
+  .board{grid-template-columns:repeat(var(--ncols,4),84vw);scroll-snap-type:x mandatory;margin:8px -16px 0;padding:4px 16px 12px;scroll-padding:0 16px}
   .col{scroll-snap-align:start}
   .toolbar .seg{flex:1 1 100%}
   .toolbar .seg button{flex:1}
@@ -326,15 +343,22 @@ const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',mult
 const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
 const DAYS_SHORT = ['zo','ma','di','wo','do','vr','za'];
 const MONTHS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-// Kanban-kolommen. Kaarten in een kolom met done:true gelden als afgewerkt.
-const STAGES = [
-  {id:'callback', label:'Terugbellen', color:'#eb8909', words:['terugbellen','bellen']},
-  {id:'mail', label:'Antwoord op mail', color:'#246fe0', words:['antwoord_op_mail','mail']},
-  {id:'positive', label:'Positief', color:'#3aa655', done:true, words:['positief']},
-  {id:'negative', label:'Negatief', color:'#d1453b', done:true, words:['negatief']},
+// Kanban-kolommen (standaard). Kaarten in een kolom met done:true gelden als afgewerkt.
+// De kolommen zelf staan in data.stages en zijn aan te passen via "Kolommen".
+const DEFAULT_STAGES = [
+  {id:'callback', label:'Terugbellen', color:'#eb8909', done:false, order:0},
+  {id:'mail', label:'Antwoord op mail', color:'#246fe0', done:false, order:1},
+  {id:'positive', label:'Positief', color:'#3aa655', done:true, order:2},
+  {id:'negative', label:'Negatief', color:'#d1453b', done:true, order:3},
 ];
-const stageById = id => STAGES.find(s => s.id === id);
-const isDoneStage = id => !!stageById(id)?.done;
+// extra sneltoetsen voor snel toevoegen, naast @<kolomnaam>
+const STAGE_ALIASES = {callback:['bellen'], mail:['mail']};
+const sortStages = list => [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
+const stages = () => sortStages(data.stages);
+const firstOpen = () => stages().find(s => !s.done);
+const firstDone = () => stages().find(s => s.done);
+const stageById = id => data.stages.find(s => s.id === id) || firstOpen();
+const isDoneStage = id => !!data.stages.find(s => s.id === id)?.done;
 
 const I = {
   inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z"/></svg>',
@@ -432,18 +456,21 @@ let K = null;       // {key, salt, iter}
 let data = null;
 
 function newData() {
-  return {v:1, updatedAt:now(), projects:[{id:'inbox', name:'Inbox', color:'#246fe0', order:0, u:0}],
-    fields:[], tasks:[], deleted:{}, prefs:{}, settings:{sync:null, autolock:30}};
+  return normalize({v:1, updatedAt:now(), projects:[{id:'inbox', name:'Inbox', color:'#246fe0', order:0, u:0}],
+    fields:[], tasks:[], deleted:{}, prefs:{}, settings:{sync:null, autolock:30}});
 }
 function normalize(d) {
   d.projects ||= []; d.fields ||= []; d.tasks ||= []; d.deleted ||= {}; d.prefs ||= {}; d.settings ||= {};
   if (!d.projects.some(p => p.id === 'inbox')) d.projects.unshift({id:'inbox', name:'Inbox', color:'#246fe0', order:0, u:0});
   if (d.settings.autolock === undefined) d.settings.autolock = 30;
   if (d.settings.sync === undefined) d.settings.sync = null;
+  if (!d.stages?.length) d.stages = DEFAULT_STAGES.map(x => ({...x, u:0}));
+  const st = sortStages(d.stages);
+  const open = st.find(x => !x.done) || st[0], done = st.find(x => x.done) || st[st.length - 1];
   for (const t of d.tasks) {
     t.custom ||= {}; t.prio ||= 4;
-    if (!stageById(t.stage)) t.stage = t.done ? 'positive' : 'callback';
-    t.done = isDoneStage(t.stage);
+    if (!st.some(x => x.id === t.stage)) t.stage = t.done ? done.id : open.id;
+    t.done = !!st.find(x => x.id === t.stage).done;
   }
   for (const f of d.fields) { f.options ||= []; f.projectIds ||= []; if (f.all === undefined) f.all = true; }
   d.updatedAt ||= 0;
@@ -455,13 +482,14 @@ function merge(a, b) {
   const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
   const del = {...a.deleted};
   for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
-  for (const col of ['projects', 'fields', 'tasks']) {
+  for (const col of ['projects', 'fields', 'tasks', 'stages']) {
     const m = new Map();
     for (const it of [...a[col], ...b[col]]) {
       const cur = m.get(it.id);
       if (!cur || (it.u || 0) > (cur.u || 0)) m.set(it.id, it);
     }
     out[col] = [...m.values()].filter(it => !(del[it.id] && del[it.id] >= (it.u || 0)));
+    if (col === 'stages' && !out.stages.length) out.stages = a.stages;
   }
   // tombstones ouder dan 180 dagen opruimen
   const cutoff = now() - 180 * 864e5;
@@ -472,7 +500,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + JSON.stringify(Object.keys(d.deleted).sort());
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + JSON.stringify(Object.keys(d.deleted).sort());
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -900,7 +928,7 @@ function groupTasks(tasks, g) {
   for (const t of tasks) {
     if (g === 'project') { const p = proj(t.projectId); add(p.id, p.name, porder.indexOf(p.id), t, p.color); }
     else if (g === 'priority') add('p' + t.prio, PRIO[t.prio], t.prio, t);
-    else if (g === 'stage') { const st = stageById(t.stage); add(st.id, st.label, STAGES.indexOf(st), t, st.color); }
+    else if (g === 'stage') { const st = stageById(t.stage); add(st.id, st.label, stages().indexOf(st), t, st.color); }
     else if (g === 'due') {
       if (!t.due) add('none', 'Geen datum', 9999, t);
       else {
@@ -976,7 +1004,7 @@ function renderBoard() {
   const sorter = sortFn(p.sort);
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
-  $('#list').innerHTML = `<div class="board">${STAGES.map(st => {
+  $('#list').innerHTML = `<div class="board" style="--ncols:${stages().length}">${stages().map(st => {
     let ts = all.filter(t => t.stage === st.id).sort(st.done && p.sort === 'manual' ? byDoneAt : sorter);
     const total = ts.length;
     let more = '';
@@ -985,7 +1013,7 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}</header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
       <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
@@ -997,7 +1025,7 @@ function renderMain() {
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
   $('#app').classList.toggle('board-mode', board);
-  $('#qaInput').placeholder = board ? 'Nieuwe kaart in Terugbellen… bv. “Jan Peeters morgen p1 @mail”' : 'Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”';
+  $('#qaInput').placeholder = board ? `Nieuwe kaart in ${firstOpen().label}… bv. “Jan Peeters morgen p1”` : 'Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”';
   if (board) renderBoard(); else renderList();
 }
 
@@ -1041,7 +1069,7 @@ function renderToolbar() {
     const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
     let choices = null;
     if (p.ff === 'priority') choices = [1,2,3,4].map(n => [String(n), PRIO[n]]);
-    else if (p.ff === 'stage') choices = STAGES.map(x => [x.id, x.label]);
+    else if (p.ff === 'stage') choices = stages().map(x => [x.id, x.label]);
     else if (p.ff === 'project') choices = sortedProjects().map(x => [x.id, x.name]);
     else if (f && (f.type === 'select' || f.type === 'multiselect')) choices = [...f.options.map(x => [x.id, x.label]), ['__empty','(leeg)']];
     else if (f && f.type === 'checkbox') choices = [['1','Aangevinkt'],['0','Niet aangevinkt']];
@@ -1052,6 +1080,7 @@ function renderToolbar() {
   const board = p.layout === 'board';
   $('#toolbar').innerHTML = `
     <div class="seg" role="group" aria-label="Weergave"><button type="button" data-layout="board" class="${board ? 'on' : ''}">Bord</button><button type="button" data-layout="list" class="${board ? '' : 'on'}">Lijst</button></div>
+    ${board ? '<button type="button" class="btn tb-cols" data-cols>Kolommen</button>' : ''}
     <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
     <select id="tbSort" aria-label="Sorteren" title="Sorteren">${sortOpts.map(([v, l]) => o(v, 'Sorteren: ' + l, p.sort)).join('')}</select>
     <select id="tbGroup" ${board ? 'hidden' : ''} aria-label="Groeperen" title="Groeperen">${groupOpts.map(([v, l]) => o(v, v ? 'Groeperen: ' + l : l, p.group)).join('')}</select>
@@ -1077,8 +1106,9 @@ function parseQuick(text) {
     if (take(new RegExp('\\s#' + escRe(p.name.replace(/\s+/g, '_')) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
     if (take(new RegExp('\\s#' + escRe(p.name) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
   }
-  for (const st of STAGES)
-    if (take(new RegExp('\\s@(' + st.words.join('|') + ')(?=\\s)', 'i'), () => { r.stage = st.id; r.tokens.push([st.label, st.color]); })) break;
+  const stageWords = st => [st.label.toLowerCase().replace(/\s+/g, '_'), st.label.toLowerCase(), ...(STAGE_ALIASES[st.id] || [])];
+  for (const st of [...stages()].sort((a, b) => b.label.length - a.label.length))
+    if (take(new RegExp('\\s@(' + stageWords(st).map(escRe).join('|') + ')(?=\\s)', 'i'), () => { r.stage = st.id; r.tokens.push([st.label, st.color]); })) break;
   const opts = [];
   for (const f of data.fields) if (f.type === 'select' || f.type === 'multiselect') for (const o of f.options) opts.push([f, o]);
   opts.sort((a, b) => b[1].label.length - a[1].label.length);
@@ -1125,7 +1155,7 @@ function renderQaPreview() {
 }
 $('#qaInput').addEventListener('input', renderQaPreview);
 function createTask(r, stage) {
-  stage = stage || r.stage || 'callback';
+  stage = stage || r.stage || firstOpen().id;
   const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
   const t = touch({
     id:uid(), title:r.title, notes:'', projectId,
@@ -1182,7 +1212,7 @@ function stageToast(t, res, undo) {
 function toggleTask(id) {
   const t = taskById(id); if (!t) return;
   const undo = undoFor(t);
-  const res = setStage(t, t.done ? 'callback' : 'positive');
+  const res = setStage(t, t.done ? firstOpen().id : firstDone().id);
   commit();
   stageToast(t, res, undo);
 }
@@ -1241,7 +1271,7 @@ function renderDetail(force) {
       </div>
       <textarea id="dNotes" placeholder="Notities…" aria-label="Notities">${esc(t.notes || '')}</textarea>
       <div class="props">
-        <label class="prop"><span>Status</span><select id="dStage">${STAGES.map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
+        <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}"></label>
         <label class="prop"><span>Herhalen</span><select id="dRepeat">${REPEAT.map(([v, l]) => `<option value="${v}" ${v === (t.repeat || '') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -1388,6 +1418,89 @@ function openProjectDialog(p) {
       dlg.close(); commit();
     });
   });
+}
+
+function openStagesDialog() {
+  const draft = stages().map(x => ({...x}));
+  const count = id => data.tasks.filter(t => t.stage === id).length;
+  const read = d => $$('.st-row', d).forEach((row, i) => {
+    draft[i].label = $('input[type=text]', row).value;
+    draft[i].done = $('input[type=checkbox]', row).checked;
+  });
+  const draw = () => showDialog(`
+    <h3>Kolommen</h3>
+    <p class="muted small" style="margin:0">Hernoem, herschik, kleur of voeg kolommen toe. Kaarten in een kolom met <b>afgewerkt</b> aangevinkt tellen als afgewerkt.</p>
+    <div id="stRows" style="margin-top:12px">${draft.map((x, i) => `
+      <div class="st-row">
+        <button type="button" class="sw" style="--c:${x.color}" data-sc="${i}" title="Andere kleur" aria-label="Kleur wijzigen"></button>
+        <input type="text" value="${esc(x.label)}" placeholder="Naam van de kolom" aria-label="Naam kolom ${i + 1}">
+        <label class="chk st-done" title="Kaarten in deze kolom tellen als afgewerkt"><input type="checkbox" ${x.done ? 'checked' : ''}> afgewerkt</label>
+        <button type="button" class="icon-btn" data-sm="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Naar links">${I.up}</button>
+        <button type="button" class="icon-btn" data-sm="${i}" data-dir="1" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Naar rechts">${I.down}</button>
+        <button type="button" class="icon-btn" data-sr="${i}" aria-label="Kolom verwijderen" title="${count(x.id) ? 'Verwijderen (' + count(x.id) + ' kaarten worden verplaatst)' : 'Verwijderen'}">${I.trash}</button>
+      </div>`).join('')}</div>
+    <button type="button" class="link" id="stAdd" style="margin-top:10px;font-weight:550">+ Kolom toevoegen</button>
+    <p class="err" id="stErr"></p>
+    <div class="dlg-actions"><button type="button" class="btn" id="stReset">Standaard herstellen</button><span class="grow"></span><button type="button" class="btn" id="stCancel">Annuleren</button><button type="button" class="btn primary" id="stSave">Opslaan</button></div>`, d => {
+    $$('[data-sc]', d).forEach(b => b.onclick = () => {
+      const x = draft[+b.dataset.sc];
+      x.color = COLORS[(COLORS.indexOf(x.color) + 1) % COLORS.length];
+      b.style.setProperty('--c', x.color);
+    });
+    $$('[data-sm]', d).forEach(b => b.onclick = () => {
+      read(d);
+      const i = +b.dataset.sm, j = i + +b.dataset.dir;
+      [draft[i], draft[j]] = [draft[j], draft[i]];
+      draw();
+    });
+    $$('[data-sr]', d).forEach(b => b.onclick = () => { read(d); draft.splice(+b.dataset.sr, 1); draw(); });
+    $('#stAdd', d).onclick = () => {
+      read(d);
+      draft.push({id:uid(), label:'', color:COLORS[draft.length % COLORS.length], done:false});
+      draw();
+      setTimeout(() => $$('#stRows input[type=text]').at(-1)?.focus(), 30);
+    };
+    $('#stReset', d).onclick = () => {
+      read(d);
+      draft.splice(0, draft.length, ...DEFAULT_STAGES.map(x => ({...x, u:data.stages.find(y => y.id === x.id)?.u})));
+      draw();
+    };
+    $('#stCancel', d).onclick = () => dlg.close();
+    $('#stSave', d).onclick = () => {
+      read(d);
+      const err = $('#stErr', d);
+      draft.forEach(x => x.label = x.label.trim());
+      if (draft.some(x => !x.label)) { err.textContent = 'Geef elke kolom een naam.'; return; }
+      if (!draft.some(x => !x.done)) { err.textContent = 'Hou minstens één kolom die niet afgewerkt is.'; return; }
+      if (!draft.some(x => x.done)) { err.textContent = 'Hou minstens één kolom met “afgewerkt” aangevinkt.'; return; }
+      const removed = data.stages.filter(x => !draft.some(y => y.id === x.id));
+      const moving = data.tasks.filter(t => removed.some(x => x.id === t.stage));
+      const openTarget = draft.find(x => !x.done), doneTarget = draft.find(x => x.done);
+      if (moving.length && !confirm(`${moving.length} kaart(en) uit verwijderde kolommen worden verplaatst naar “${openTarget.label}” (open) of “${doneTarget.label}” (afgewerkt). Doorgaan?`)) return;
+      // kolommen bijwerken
+      draft.forEach((x, i) => {
+        const cur = data.stages.find(y => y.id === x.id);
+        if (!cur) { data.stages.push(touch({id:x.id, label:x.label, color:x.color, done:x.done, order:i})); delete data.deleted[x.id]; }
+        else if (cur.label !== x.label || cur.color !== x.color || cur.done !== x.done || cur.order !== i) Object.assign(cur, {label:x.label, color:x.color, done:x.done, order:i}, {u:now()});
+      });
+      for (const x of removed) { tombstone(x.id); }
+      data.stages = data.stages.filter(x => !removed.includes(x));
+      // kaarten volgen hun kolom: verplaatsen en afgewerkt-status bijwerken
+      for (const t of data.tasks) {
+        let st = t.stage;
+        if (removed.some(x => x.id === st)) st = t.done ? doneTarget.id : openTarget.id;
+        const done = isDoneStage(st);
+        if (st !== t.stage || done !== t.done) {
+          t.stage = st;
+          if (done && !t.done) t.doneAt = now();
+          if (!done) t.doneAt = null;
+          t.done = done; touch(t);
+        }
+      }
+      dlg.close(); commit(); toast('Kolommen opgeslagen');
+    };
+  });
+  draw();
 }
 
 function openFieldsDialog() {
@@ -1700,6 +1813,7 @@ $('#menuBtn').onclick = () => $('#app').classList.add('side-open');
 $('#scrim').onclick = () => $('#app').classList.remove('side-open');
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
+  if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
   const more = e.target.closest('[data-more]');
   if (more) { boardExpanded[more.dataset.more] = true; renderMain(); return; }
   const row = e.target.closest('.task,.card'); if (!row) return;
@@ -1812,6 +1926,7 @@ $('#toolbar').addEventListener('input', e => {
 $('#toolbar').addEventListener('click', e => {
   const b = e.target.closest('[data-layout]');
   if (b) setPref('layout', b.dataset.layout);
+  if (e.target.closest('[data-cols]')) openStagesDialog();
 });
 $('#toolbar').addEventListener('change', e => {
   const id = e.target.id;
