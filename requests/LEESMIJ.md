@@ -57,7 +57,15 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
 
 - **Nieuw event**: maak een tabblad aan met een naam en een code (bv. `trouw-jan-lies`).
   De link wordt `sbmusic.be/requests/?e=trouw-jan-lies`. Die code verandert nooit, dus een afgedrukte QR-code blijft werken.
+- **Foto**: geef elk event een eigen foto (bv. van het koppel of de zaal) via *Nieuw event* of het tandwiel.
+  Gasten zien ze bovenaan de pagina, en ze staat ook op de poster.
+  De foto wordt in je browser automatisch verkleind (± 150 KB) en als reactie bij het event-issue bewaard.
+  Een Issues-token kan namelijk geen bestanden uploaden.
 - **QR & link**: toont de QR-code, een QR in hoge resolutie en een afdrukbare poster.
+- **Poster**: A4 in de huisstijl van sbmusic.be, met het SB-logo, de foto van het event en de QR-code.
+  De titel kan je bovenaan aanpassen. Kies een zwarte achtergrond (zoals de site) of een witte (spaart inkt).
+  Via *Afdrukken / PDF* kan je ze ook als PDF bewaren. Zet in het afdrukvenster *Achtergrondafbeeldingen* aan
+  (Chrome: *Meer instellingen → Achtergrondafbeeldingen*), anders valt het zwart en de foto weg.
 - **Open/Gesloten**: schakel per event in of gasten iets kunnen aanvragen. Een groen bolletje op het tabblad betekent open.
 - **Wachtrij**: hetzelfde nummer wordt gegroepeerd, met een teller (×3) en de namen en boodschappen.
   Sorteer op *meest gevraagd*, *oudste* of *nieuwste*.
@@ -65,6 +73,13 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
   - ✓ gespeeld, ✕ afwijzen. Onder *Gespeeld* en *Afgewezen* kan je een nummer terugzetten.
 - **Nieuwe verzoekjes** verschijnen vanzelf (binnen ± 12 seconden), met een melding en een geluidje.
   Het geluid zet je aan of uit met het luidsprekertje. Op elk tabblad staat het aantal openstaande verzoekjes.
+- **Liedje verwijderen**: met het vuilbakje haal je een nummer (en alle aanvragen ervan) uit de lijst.
+- **Event verwijderen**: archiveer het event eerst. Kies daarna *Event verwijderen* onder ⋯, of het vuilbakje in het archief.
+  De link en de QR-code werken dan niet meer, en de code is vrij voor een nieuw event.
+  Oude verzoekjes komen niet bij het nieuwe event terecht.
+- Echt wissen kan het token niet, want daarvoor zijn beheerrechten op de repo nodig. Verwijderde items worden daarom
+  gesloten en krijgen het label `verwijderd`. Wil je ze helemaal weg, verwijder de issues dan zelf op GitHub
+  (issue openen → *Delete issue* onderaan).
 - Onder **⋯** vind je: CSV exporteren, de issues op GitHub bekijken, en archiveren.
   Gearchiveerde events vind je terug via het archief-icoon bovenaan.
 

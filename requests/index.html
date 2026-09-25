@@ -15,6 +15,7 @@ header{text-align:center;padding:14px 0 18px}
 .logo{width:54px;height:54px;border-radius:16px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin:0 auto 12px}
 .logo svg{width:28px;height:28px}
 header h1{margin:0 0 6px;font-size:26px;font-weight:780;letter-spacing:-.01em}
+.hero{display:block;width:100%;max-height:340px;object-fit:cover;border-radius:18px;margin:0 0 18px;box-shadow:var(--shadow);background:var(--hover)}
 header p{margin:0 auto;color:var(--muted);max-width:44ch;white-space:pre-line}
 .now{display:flex;gap:12px;align-items:center;padding:12px;margin:0 0 16px}
 .now .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ok);display:flex;align-items:center;gap:6px}
@@ -54,7 +55,8 @@ footer a{color:inherit}
 <body>
 <div class="wrap">
   <header>
-    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+    <img id="evPhoto" class="hero" alt="" hidden>
+    <div class="logo" id="evLogo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
     <h1 id="evName">Verzoekjes</h1>
     <p id="evWelcome"></p>
   </header>
@@ -133,7 +135,7 @@ footer a{color:inherit}
 
 <script type="module">
 import {
-  configured, api, parseEvent, parseRequest, requestIssue, EVENT_LABEL,
+  configured, api, parseEvent, parseRequest, requestIssue, EVENT_LABEL, loadPhoto,
   $, esc, songKey, safeArt, searchSongs, toast, store, poll
 } from './gh.js';
 
@@ -202,6 +204,8 @@ function render() {
   $('#evWelcome').hidden = !s.welcome;
   $('#msgField').hidden = s.allowMessages === false;
 
+  showPhoto(s.photo);
+
   const np = s.nowPlaying;
   $('#nowPlaying').hidden = !np || !np.title;
   if (np && np.title) { $('#npTitle').textContent = np.title; $('#npArtist').textContent = np.artist || ''; artEl($('#npArt'), np.artwork); }
@@ -210,6 +214,19 @@ function render() {
   $('#closed').hidden = !!s.open;
   $('#closedMsg').textContent = s.closedMessage || 'Kom later nog eens terug.';
   renderMine();
+}
+
+let photoShown = '';
+function showPhoto(photo) {
+  const key = photo ? (photo.ids || []).join('.') + '@' + photo.v : '';
+  if (key === photoShown) return;
+  photoShown = key;
+  if (!key) { $('#evPhoto').hidden = true; $('#evLogo').hidden = false; return; }
+  loadPhoto(photo).then(url => {
+    if (photoShown !== key) return;
+    $('#evPhoto').hidden = !url; $('#evLogo').hidden = !!url;
+    if (url) { $('#evPhoto').src = url; $('#evPhoto').alt = settings?.name || ''; }
+  }).catch(e => console.warn(e));
 }
 
 // ---------- Zoeken ----------
@@ -283,10 +300,10 @@ $('#form').addEventListener('submit', async e => {
   const wait = COOLDOWN - (Date.now() - store.get('vz_last', 0));
   if (wait > 0) { err.textContent = `Even geduld: je kan over ${Math.ceil(wait / 1000)} s opnieuw aanvragen.`; return; }
   const mine = store.get('vz_mine', []);
-  const openCount = mine.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new').length;
+  const openCount = mine.filter(m => isMine(m) && (m.status || 'new') === 'new').length;
   if (openCount >= MAX_OPEN) { err.textContent = `Je hebt al ${MAX_OPEN} verzoekjes openstaan. Wacht tot er een gespeeld wordt.`; return; }
   const key = songKey(title, artist);
-  if (mine.find(m => m.eventId === settings.eventId && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
+  if (mine.find(m => isMine(m) && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
 
   const btn = $('#fSubmit'); btn.disabled = true; btn.textContent = 'Versturen…';
   try {
@@ -294,10 +311,10 @@ $('#form').addEventListener('submit', async e => {
     await refreshEvent().catch(() => {});
     if (!settings || !settings.open) { err.textContent = 'Verzoekjes zijn net gesloten.'; return; }
     const artwork = manual ? '' : safeArt(picked.artwork);
-    const issue = await api('POST', '/issues', requestIssue({eventId: settings.eventId, title, artist, artwork, songKey: key, name, message, source: manual ? 'manual' : 'itunes'}));
+    const issue = await api('POST', '/issues', requestIssue({eventId: settings.eventId, eventNumber: settings.number, title, artist, artwork, songKey: key, name, message, source: manual ? 'manual' : 'itunes'}));
     store.set('vz_name', name);
     store.set('vz_last', Date.now());
-    mine.unshift({id: issue.number, eventId: settings.eventId, key, title, artist, artwork, status: 'new', at: Date.now()});
+    mine.unshift({id: issue.number, eventId: settings.eventId, en: settings.number, key, title, artist, artwork, status: 'new', at: Date.now()});
     store.set('vz_mine', mine.slice(0, 30));
     $('#form').hidden = true; $('#done').hidden = false;
     renderMine();
@@ -312,21 +329,23 @@ $('#form').addEventListener('submit', async e => {
 });
 
 // ---------- Mijn verzoekjes (status wordt af en toe ververst) ----------
-const LABEL = {new: 'In de wachtrij', played: 'Gespeeld 🎉', rejected: 'Niet gespeeld'};
+const LABEL = {new: 'In de wachtrij', played: 'Gespeeld 🎉', rejected: 'Niet gespeeld', deleted: 'Niet gespeeld'};
+// Eigen verzoekjes van dit event (niet van een vroeger event met dezelfde code).
+const isMine = m => m.eventId === settings.eventId && (m.en ? m.en === settings.number : m.at >= Date.parse(settings.createdAt) - 60_000);
 function renderMine() {
   if (!settings) return;
-  const mine = store.get('vz_mine', []).filter(m => m.eventId === settings.eventId);
+  const mine = store.get('vz_mine', []).filter(m => isMine(m));
   $('#mine').hidden = !mine.length;
   $('#mineList').innerHTML = mine.map(m => `<li>
     <div class="art" style="${safeArt(m.artwork) ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${safeArt(m.artwork) ? '' : NOTE}</div>
     <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(m.artist)}</div></div>
-    <span class="pill ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
+    <span class="pill ${m.status === 'deleted' ? 'rejected' : esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
 }
 async function refreshMine() {
   if (!settings) return;
   const all = store.get('vz_mine', []);
   let dirty = false;
-  for (const m of all.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new')) {
+  for (const m of all.filter(m => isMine(m) && (m.status || 'new') === 'new')) {
     try {
       const {data, changed} = await api('GET', '/issues/' + m.id, null, {cond: true});
       if (!changed) continue;

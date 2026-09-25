@@ -38,9 +38,12 @@ export const nextLink = link => (link.match(/<([^>]+)>;\s*rel="next"/) || [])[1]
 
 // ---- events ----
 export const EVENT_LABEL = 'event';
+// Issues echt verwijderen vraagt beheerrechten op de repo; daarom krijgen ze dit label en worden ze gesloten.
+export const DELETED_LABEL = 'verwijderd';
+const hasLabel = (issue, name) => (issue.labels || []).some(l => (l.name || l) === name);
 const JSON_RE = /```json\s*([\s\S]*?)```/;
 export function parseEvent(issue) {
-  if (!issue || issue.pull_request || !(issue.labels || []).some(l => (l.name || l) === EVENT_LABEL)) return null;
+  if (!issue || issue.pull_request || !hasLabel(issue, EVENT_LABEL) || hasLabel(issue, DELETED_LABEL)) return null;
   try {
     const d = JSON.parse((issue.body || '').match(JSON_RE)[1]);
     if (!d.code) return null;
@@ -50,7 +53,8 @@ export function parseEvent(issue) {
 }
 export function eventIssue(ev) {
   const d = {code: ev.id, name: ev.name, welcome: ev.welcome || '', closedMessage: ev.closedMessage || '',
-    allowMessages: ev.allowMessages !== false, open: !!ev.open, archived: !!ev.archived, nowPlaying: ev.nowPlaying || null};
+    allowMessages: ev.allowMessages !== false, open: !!ev.open, archived: !!ev.archived, nowPlaying: ev.nowPlaying || null,
+    photo: ev.photo || null};
   const url = new URL('./?e=' + ev.id, location.href).href;
   return {
     title: '🎧 ' + ev.name,
@@ -68,15 +72,15 @@ export function parseRequest(issue) {
     const d = JSON.parse(m[1]);
     if (!d.e || !d.t) return null;
     return {
-      id: issue.number, number: issue.number, eventId: String(d.e), title: String(d.t).slice(0, 200), artist: String(d.a || '').slice(0, 200),
+      id: issue.number, number: issue.number, eventId: String(d.e), eventNumber: +d.en || null, title: String(d.t).slice(0, 200), artist: String(d.a || '').slice(0, 200),
       artwork: safeArt(d.art), songKey: d.k || songKey(d.t, d.a), name: String(d.n || '').slice(0, 60), message: String(d.m || '').slice(0, 300),
-      status: issue.state === 'open' ? 'new' : issue.state_reason === 'not_planned' ? 'rejected' : 'played',
+      status: hasLabel(issue, DELETED_LABEL) ? 'deleted' : issue.state === 'open' ? 'new' : issue.state_reason === 'not_planned' ? 'rejected' : 'played',
       createdAt: issue.created_at, doneAt: issue.closed_at
     };
   } catch { return null; }
 }
 export function requestIssue(r) {
-  const d = {e: r.eventId, t: r.title, a: r.artist, art: r.artwork, k: r.songKey, n: r.name, m: r.message, s: r.source};
+  const d = {e: r.eventId, en: r.eventNumber, t: r.title, a: r.artist, art: r.artwork, k: r.songKey, n: r.name, m: r.message, s: r.source};
   const line = s => s.replace(/[\r\n]+/g, ' ').replace(/-->/g, '--');
   return {
     title: `[${r.eventId}] ${line(r.title)}${r.artist ? ' — ' + line(r.artist) : ''}`.slice(0, 250),
@@ -85,6 +89,76 @@ export function requestIssue(r) {
       + `<!-- vz ${JSON.stringify(d).replace(/-->/g, '--\\u003e')} -->\n`
   };
 }
+
+// ---- foto per event ----
+// Met enkel een Issues-token kunnen we geen bestanden uploaden. De foto wordt daarom verkleind tot een JPEG
+// en als base64 in (maximaal 3) reacties op het event-issue bewaard. In de event-gegevens staat {ids, v}.
+const PHOTO_CHUNK = 60000, PHOTO_MAX = 3 * PHOTO_CHUNK;
+const photoMem = new Map();
+const photoKey = p => p && Array.isArray(p.ids) && p.ids.length ? p.ids.join('.') + '@' + (p.v || 0) : '';
+
+export async function loadPhoto(photo) {
+  const key = photoKey(photo);
+  if (!key) return '';
+  if (photoMem.has(key)) return photoMem.get(key);
+  const cached = store.get('vz_photos', {});
+  let url = cached[key];
+  if (!url) {
+    const parts = await Promise.all(photo.ids.slice(0, 3).map(id => api('GET', '/issues/comments/' + (+id))));
+    url = parts.map(c => ((c.body || '').match(/<!--\s*vzfoto\s*([A-Za-z0-9+/=:;,\s]*?)-->/) || [, ''])[1].replace(/\s+/g, '')).join('');
+    if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(url)) return '';
+    // Enkel de laatste 3 foto's bijhouden in de browser.
+    const next = {[key]: url};
+    Object.keys(cached).slice(-2).forEach(k => { if (k !== key) next[k] = cached[k]; });
+    store.set('vz_photos', next);
+  }
+  photoMem.set(key, url);
+  return url;
+}
+
+// Verklein de gekozen foto tot een JPEG die in 3 reacties past.
+export async function compressImage(file) {
+  const img = await new Promise((res, rej) => {
+    const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Dit bestand is geen foto die de browser kan openen.'));
+    i.src = URL.createObjectURL(file);
+  });
+  let max = 1400;
+  for (let tries = 0; tries < 8; tries++, max = Math.round(max * 0.8)) {
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    for (const q of [0.85, 0.75, 0.65, 0.55]) {
+      const url = c.toDataURL('image/jpeg', q);
+      if (url.length <= PHOTO_MAX) { URL.revokeObjectURL(img.src); return url; }
+    }
+  }
+  URL.revokeObjectURL(img.src);
+  throw new Error('De foto is te groot.');
+}
+
+export async function savePhoto(eventNumber, dataUrl) {
+  const chunks = dataUrl.match(new RegExp(`.{1,${PHOTO_CHUNK}}`, 'g'));
+  const ids = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const c = await api('POST', `/issues/${eventNumber}/comments`, {body: `📷 Foto voor dit event (deel ${i + 1}/${chunks.length}), beheerd via beheer.html\n<!-- vzfoto\n${chunks[i]}\n-->`});
+    ids.push(c.id);
+  }
+  const photo = {ids, v: Date.now()};
+  photoMem.set(photoKey(photo), dataUrl);
+  return photo;
+}
+export async function deletePhoto(photo) {
+  for (const id of photo?.ids || []) {
+    try { await api('DELETE', '/issues/comments/' + (+id)); } catch (e) { if (e.status !== 404) console.warn(e); }
+  }
+}
+
+// Hoort een verzoekje bij dit event? Een code kan na het verwijderen van een event opnieuw gebruikt worden;
+// daarom telt ook het issue-nummer van het event (oudere verzoekjes zonder nummer: op aanmaakdatum).
+export const belongsTo = (r, ev) => !!ev && r.eventId === ev.id
+  && (r.eventNumber ? r.eventNumber === ev.number : Date.parse(r.createdAt) >= Date.parse(ev.createdAt) - 60_000);
 
 // ---- wachtwoord (beheer) ----
 const te = new TextEncoder();
