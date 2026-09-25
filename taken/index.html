@@ -1,0 +1,1480 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Taken</title>
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Taken">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#fafaf9; --panel:#ffffff; --side:#f3f2ef; --text:#1c1917; --muted:#78716c; --faint:#a8a29e;
+  --line:#e7e5e4; --hover:#ecebe7; --sel:#e6e4df; --accent:#dc4c3e; --accent-2:#c2402f; --on-accent:#fff;
+  --p1:#d1453b; --p2:#eb8909; --p3:#246fe0; --p4:#a8a29e; --danger:#dc2626; --ok:#16a34a;
+  --shadow:0 10px 40px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  --r:10px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#161514; --panel:#1e1d1b; --side:#1a1918; --text:#f5f5f4; --muted:#a8a29e; --faint:#78716c;
+    --line:#2e2c2a; --hover:#262422; --sel:#302d2a; --accent:#e5574a; --accent-2:#f06a5d;
+    --shadow:0 10px 40px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.muted{color:var(--muted)} .small{font-size:12.5px} .grow{flex:1}
+.err{color:var(--danger);font-size:13.5px;min-height:1.2em;margin:6px 0 0}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=url],select,textarea{
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:550;font-size:14px}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-2)}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.5;cursor:default}
+.link{background:none;border:0;padding:0;color:var(--accent);font-weight:550;font-size:inherit}
+.icon-btn{background:none;border:0;width:34px;height:34px;border-radius:8px;display:inline-grid;place-items:center;color:var(--muted);flex:none}
+.icon-btn:hover{background:var(--hover);color:var(--text)}
+.icon-btn svg{width:18px;height:18px}
+
+/* ---------- Lock ---------- */
+.lock{min-height:100%;display:grid;place-items:center;padding:24px 16px}
+.lock-card{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow)}
+.lock-logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:14px}
+.lock-logo svg{width:24px;height:24px}
+.lock-card h1{margin:0 0 4px;font-size:22px}
+.lock-card p{margin:0 0 16px}
+.lock-card label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
+.lock-card .btn.primary{width:100%;margin-top:14px;padding:10px}
+.lock-card .link{display:block;margin:14px auto 0;font-size:13.5px}
+
+/* ---------- Layout ---------- */
+#app{display:grid;grid-template-columns:270px 1fr;height:100%}
+#app.with-detail{grid-template-columns:270px 1fr 400px}
+#side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:auto;padding:14px 10px}
+.side-head{display:flex;align-items:center;gap:8px;padding:2px 8px 14px}
+.brand{font-weight:750;font-size:17px;display:flex;align-items:center;gap:8px}
+.brand i{width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#fff}
+.brand i svg{width:14px;height:14px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:7px 10px;border-radius:8px;text-align:left;font-size:14.5px}
+.nav-item:hover{background:var(--hover)}
+.nav-item.on{background:var(--sel);font-weight:600}
+.nav-item .ico{width:18px;height:18px;display:grid;place-items:center;color:var(--muted)}
+.nav-item .ico svg{width:18px;height:18px}
+.nav-item .dot{width:10px;height:10px;border-radius:50%;margin:0 4px}
+.nav-item .cnt{margin-left:auto;color:var(--faint);font-size:12.5px}
+.nav-item .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-section{display:flex;align-items:center;justify-content:space-between;padding:18px 10px 4px;color:var(--muted);font-size:12.5px;font-weight:650;text-transform:uppercase;letter-spacing:.04em}
+.side-section .icon-btn{width:26px;height:26px}
+.side-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line)}
+#syncStatus{font-size:12px;color:var(--muted);padding:8px 10px 2px;background:none;border:0;text-align:left;width:100%}
+#syncStatus.err{color:var(--danger)}
+
+#main{overflow:auto;min-width:0}
+.main-inner{max-width:820px;margin:0 auto;padding:22px 28px 80px}
+.main-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.main-head h2{margin:0;font-size:24px;font-weight:750;display:flex;align-items:center;gap:10px;min-width:0}
+.main-head h2 .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.main-head h2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.toolbar select,.toolbar input{width:auto;padding:6px 8px;font-size:13.5px}
+.toolbar .search{flex:1;min-width:160px}
+.toolbar .tgl{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--muted);padding:0 4px}
+.tb-label{font-size:12px;color:var(--faint);align-self:center;margin-left:4px}
+
+#quickAdd{display:flex;gap:8px;margin-bottom:4px}
+#quickAdd input{flex:1;padding:10px 12px}
+#qaPreview{display:flex;flex-wrap:wrap;gap:6px;min-height:22px;margin:6px 2px 10px}
+.qa-hint{font-size:12.5px;color:var(--faint)}
+
+.group{margin-top:18px}
+.group h3{font-size:13.5px;font-weight:700;margin:0 0 2px;padding:6px 2px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:baseline}
+.group h3 .count{color:var(--faint);font-weight:500}
+ul.tasks{list-style:none;margin:0;padding:0}
+.task{display:flex;gap:10px;align-items:flex-start;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
+.task:hover{background:var(--hover)}
+.task.sel{background:var(--sel)}
+.task.done .t-title{text-decoration:line-through;color:var(--muted)}
+.check{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--p4);background:none;display:grid;place-items:center;padding:0;margin-top:1px;color:transparent;transition:.15s}
+.check svg{width:12px;height:12px}
+.check.p1{border-color:var(--p1);background:color-mix(in srgb,var(--p1) 12%,transparent)}
+.check.p2{border-color:var(--p2);background:color-mix(in srgb,var(--p2) 12%,transparent)}
+.check.p3{border-color:var(--p3);background:color-mix(in srgb,var(--p3) 12%,transparent)}
+.check:hover{color:var(--muted)}
+.check.on{background:var(--p4);border-color:var(--p4);color:#fff}
+.check.on.p1{background:var(--p1)} .check.on.p2{background:var(--p2)} .check.on.p3{background:var(--p3)}
+.t-body{min-width:0;flex:1}
+.t-title{word-wrap:break-word}
+.t-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{font-size:12px;line-height:1;padding:4px 7px;border-radius:999px;background:var(--hover);color:var(--muted);display:inline-flex;align-items:center;gap:5px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0}
+.chip svg{width:12px;height:12px;flex:none}
+.chip.due{background:none;padding-left:0;color:var(--muted)}
+.chip.due.today{color:var(--ok)} .chip.due.late{color:var(--danger)}
+.chip.opt{background:color-mix(in srgb,var(--c) 18%,transparent);color:color-mix(in srgb,var(--c) 75%,var(--text))}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+a.chip{text-decoration:none}
+.empty{text-align:center;color:var(--muted);padding:60px 10px}
+.empty svg{width:56px;height:56px;color:var(--faint);margin-bottom:8px}
+details.done-sec{margin-top:22px}
+details.done-sec summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:650;padding:6px 2px}
+
+/* ---------- Detail ---------- */
+#detail{border-left:1px solid var(--line);background:var(--panel);overflow:auto;display:flex;flex-direction:column}
+.d-head{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.d-head .crumb{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.d-body{padding:16px 18px 40px}
+.d-title-row{display:flex;gap:10px;align-items:flex-start}
+.d-title-row .check{margin-top:9px}
+#dTitle{font-size:18px;font-weight:650;border-color:transparent;resize:none;padding:6px 8px;background:none}
+#dTitle:hover{border-color:var(--line)}
+#dNotes{margin-top:8px;min-height:80px;resize:vertical;border-color:transparent;background:none}
+#dNotes:hover{border-color:var(--line)}
+.props{display:grid;gap:10px;margin-top:14px}
+.prop{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;font-size:13.5px}
+.prop>span{color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.prop select,.prop input{padding:6px 8px;font-size:14px}
+.prop .inline{display:flex;gap:6px;align-items:center}
+.prop input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);justify-self:start}
+.d-sec{display:flex;align-items:center;justify-content:space-between;margin:24px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.d-sec .link{text-transform:none;letter-spacing:0;font-size:13px}
+.multi{display:flex;flex-wrap:wrap;gap:6px}
+.multi button{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:13px}
+.multi button.on{background:color-mix(in srgb,var(--c) 22%,transparent);border-color:color-mix(in srgb,var(--c) 50%,transparent)}
+
+/* ---------- Dialog ---------- */
+dialog{border:0;padding:0;border-radius:14px;background:var(--panel);color:var(--text);box-shadow:var(--shadow);width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+.dlg-inner{padding:22px 22px 18px}
+.dlg-inner h3{margin:0 0 4px;font-size:19px}
+.dlg-inner h4{margin:22px 0 6px;font-size:14px}
+.fl{display:block;font-size:13px;font-weight:600;margin:14px 0 0}
+.fl>input,.fl>select,.fl>textarea{margin-top:5px;font-weight:400}
+.dlg-actions{display:flex;gap:8px;align-items:center;margin-top:22px;flex-wrap:wrap}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.sw{width:26px;height:26px;border-radius:50%;background:var(--c);border:2px solid transparent;padding:0;flex:none}
+.sw.on{outline:2px solid var(--text);outline-offset:2px}
+.sw.sm{width:18px;height:18px}
+.checks{display:grid;gap:6px;margin-top:6px;font-weight:400}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400;font-size:14px}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.flist{list-style:none;padding:0;margin:14px 0 0;border-top:1px solid var(--line)}
+.flist li{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.flist li>div{flex:1;min-width:0}
+.flist b{display:block;font-weight:600}
+.flist .muted{font-size:12.5px}
+.opt-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+.opt-row input{padding:6px 8px}
+.box{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:8px;font-size:14px}
+.box p{margin:0 0 8px}
+code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;word-break:break-all}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
+#toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
+#scrim{display:none}
+.only-mobile{display:none}
+
+/* ---------- Mobile ---------- */
+@media (max-width:860px){
+  #app,#app.with-detail{grid-template-columns:1fr}
+  .only-mobile{display:inline-grid}
+  #side{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);z-index:30;transform:translateX(-102%);transition:transform .2s ease;box-shadow:var(--shadow);padding-top:max(14px,env(safe-area-inset-top))}
+  #app.side-open #side{transform:none}
+  #app.side-open #scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
+  #detail{position:fixed;inset:0;z-index:40;border:0;padding-top:env(safe-area-inset-top)}
+  .main-inner{padding:14px 16px 90px;padding-top:max(14px,env(safe-area-inset-top))}
+  .main-head h2{font-size:21px}
+  .toolbar select{flex:1 1 40%}
+  .prop{grid-template-columns:100px 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ Lock screen ============ -->
+<div id="lock" class="lock">
+  <form id="lockForm" class="lock-card" autocomplete="on">
+    <div class="lock-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h1 id="lockTitle">Taken</h1>
+    <p id="lockSub" class="muted"></p>
+    <input type="text" name="username" autocomplete="username" value="taken" hidden>
+    <div id="lockFields"></div>
+    <p id="lockErr" class="err"></p>
+    <button class="btn primary" id="lockBtn" type="submit">Ontgrendelen</button>
+    <button type="button" class="link" id="lockAlt"></button>
+  </form>
+</div>
+
+<!-- ============ App ============ -->
+<div id="app" hidden>
+  <aside id="side">
+    <div class="side-head">
+      <span class="brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Taken</span>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-section"><span>Projecten</span><button id="addProject" class="icon-btn" title="Nieuw project" aria-label="Nieuw project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    <nav id="projNav"></nav>
+    <div class="side-foot">
+      <button class="nav-item" id="openFields"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg></span>Velden</button>
+      <button class="nav-item" id="openSettings"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span>Instellingen</button>
+      <button class="nav-item" id="lockNow"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>Vergrendelen</button>
+      <button id="syncStatus" type="button"></button>
+    </div>
+  </aside>
+  <div id="scrim"></div>
+
+  <main id="main">
+    <div class="main-inner">
+      <header class="main-head">
+        <button id="menuBtn" class="icon-btn only-mobile" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <h2 id="viewTitle"></h2>
+        <span class="grow"></span>
+        <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
+      </header>
+      <div class="toolbar" id="toolbar"></div>
+      <form id="quickAdd" autocomplete="off">
+        <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”" enterkeyhint="done">
+        <button class="btn primary" type="submit">Toevoegen</button>
+      </form>
+      <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@optie</b></span></div>
+      <div id="list"></div>
+    </div>
+  </main>
+
+  <aside id="detail" hidden></aside>
+</div>
+
+<dialog id="dlg"></dialog>
+<div id="toast" hidden></div>
+
+<script>
+'use strict';
+/* =========================================================
+   Taken — persoonlijke takenlijst
+   Alle gegevens worden lokaal versleuteld (AES-256-GCM, sleutel
+   afgeleid van je wachtwoord met PBKDF2-SHA256). Optioneel
+   gesynchroniseerd als versleutelde blob in een geheime GitHub Gist.
+   ========================================================= */
+
+const VAULT = 'taken.vault.v1';
+const ITER = 310000;
+const GIST_FILE = 'taken.vault.json';
+const COLORS = ['#dc4c3e','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
+const PRIO = {1:'Prioriteit 1',2:'Prioriteit 2',3:'Prioriteit 3',4:'Geen prioriteit'};
+const REPEAT = [['','Niet herhalen'],['daily','Elke dag'],['weekdays','Elke werkdag'],['weekly','Elke week'],['monthly','Elke maand'],['yearly','Elk jaar']];
+const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',multiselect:'Meerdere keuzes',checkbox:'Vinkje',url:'Link'};
+const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+const DAYS_SHORT = ['zo','ma','di','wo','do','vr','za'];
+const MONTHS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+const I = {
+  inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z"/></svg>',
+  today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>',
+  upcoming:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/></svg>',
+  all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
+  repeat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 013-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 01-3 3H3"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  done:'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="26"/><path d="M20 33l8 8 16-17"/></svg>',
+};
+
+/* ---------------- Utilities ---------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const uid = () => crypto.randomUUID ? crypto.randomUUID() : [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2,'0')).join('');
+const now = () => Date.now();
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseYmd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const today = () => ymd(new Date());
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const daysBetween = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 864e5);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function dueLabel(s) {
+  const diff = daysBetween(today(), s);
+  if (diff === 0) return 'Vandaag';
+  if (diff === 1) return 'Morgen';
+  if (diff === -1) return 'Gisteren';
+  const d = parseYmd(s);
+  if (diff > 1 && diff < 7) return cap(DAYS[d.getDay()]);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}` + (d.getFullYear() !== new Date().getFullYear() ? ` ${d.getFullYear()}` : '');
+}
+function dateLong(s) {
+  const d = parseYmd(s);
+  return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+function daysInMonth(y, m) { return new Date(y, m+1, 0).getDate(); }
+function advance(s, r) {
+  const d = parseYmd(s);
+  switch (r) {
+    case 'daily': d.setDate(d.getDate()+1); break;
+    case 'weekdays': do { d.setDate(d.getDate()+1); } while (d.getDay() === 0 || d.getDay() === 6); break;
+    case 'weekly': d.setDate(d.getDate()+7); break;
+    case 'monthly': case 'yearly': {
+      const day = d.getDate(), add = r === 'monthly' ? 1 : 12;
+      d.setDate(1); d.setMonth(d.getMonth()+add);
+      d.setDate(Math.min(day, daysInMonth(d.getFullYear(), d.getMonth())));
+      break;
+    }
+  }
+  return ymd(d);
+}
+function nextDue(due, r) {
+  const td = today();
+  let n = advance(due || td, r);
+  while (n < td) n = advance(n, r);
+  return n;
+}
+
+/* ---------------- Crypto ---------------- */
+const te = new TextEncoder(), td = new TextDecoder();
+function b64(buf) {
+  const u = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function unb64(s) { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+}
+async function seal(k, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, k.key, te.encode(JSON.stringify(obj)));
+  return {v:1, kdf:'PBKDF2-SHA256', iter:k.iter, salt:b64(k.salt), iv:b64(iv), ct:b64(ct)};
+}
+async function unseal(key, blob) {
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(blob.iv)}, key, unb64(blob.ct));
+  return JSON.parse(td.decode(pt));
+}
+function vaultBlob() { try { return JSON.parse(localStorage.getItem(VAULT)); } catch { return null; } }
+
+/* ---------------- Data model ---------------- */
+let K = null;       // {key, salt, iter}
+let data = null;
+
+function newData() {
+  return {v:1, updatedAt:now(), projects:[{id:'inbox', name:'Inbox', color:'#246fe0', order:0, u:0}],
+    fields:[], tasks:[], deleted:{}, prefs:{}, settings:{sync:null, autolock:30}};
+}
+function normalize(d) {
+  d.projects ||= []; d.fields ||= []; d.tasks ||= []; d.deleted ||= {}; d.prefs ||= {}; d.settings ||= {};
+  if (!d.projects.some(p => p.id === 'inbox')) d.projects.unshift({id:'inbox', name:'Inbox', color:'#246fe0', order:0, u:0});
+  if (d.settings.autolock === undefined) d.settings.autolock = 30;
+  if (d.settings.sync === undefined) d.settings.sync = null;
+  for (const t of d.tasks) { t.custom ||= {}; t.prio ||= 4; }
+  for (const f of d.fields) { f.options ||= []; f.projectIds ||= []; if (f.all === undefined) f.all = true; }
+  d.updatedAt ||= 0;
+  return d;
+}
+// Samenvoegen per item (laatste wijziging wint), met tombstones voor verwijderingen.
+function merge(a, b) {
+  const newer = (a.updatedAt || 0) >= (b.updatedAt || 0) ? a : b;
+  const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
+  const del = {...a.deleted};
+  for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
+  for (const col of ['projects', 'fields', 'tasks']) {
+    const m = new Map();
+    for (const it of [...a[col], ...b[col]]) {
+      const cur = m.get(it.id);
+      if (!cur || (it.u || 0) > (cur.u || 0)) m.set(it.id, it);
+    }
+    out[col] = [...m.values()].filter(it => !(del[it.id] && del[it.id] >= (it.u || 0)));
+  }
+  // tombstones ouder dan 180 dagen opruimen
+  const cutoff = now() - 180 * 864e5;
+  for (const k of Object.keys(del)) if (del[k] < cutoff) delete del[k];
+  out.deleted = del;
+  out.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);
+  return normalize(out);
+}
+function sig(d) {
+  const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
+  return s(d.projects) + s(d.fields) + s(d.tasks) + JSON.stringify(Object.keys(d.deleted).sort());
+}
+
+const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
+const taskById = id => data.tasks.find(t => t.id === id);
+const fieldById = id => data.fields.find(f => f.id === id);
+const sortedProjects = () => [...data.projects].sort((a, b) => (a.id === 'inbox' ? -1 : b.id === 'inbox' ? 1 : (a.order || 0) - (b.order || 0)));
+const sortedFields = () => [...data.fields].sort((a, b) => (a.order || 0) - (b.order || 0));
+const fieldsFor = pid => sortedFields().filter(f => f.all || f.projectIds.includes(pid));
+const touch = o => { o.u = now(); return o; };
+function tombstone(id) { data.deleted[id] = now(); }
+
+/* ---------------- Persistence ---------------- */
+let persistChain = Promise.resolve();
+function persist() {
+  persistChain = persistChain.then(async () => {
+    const blob = await seal(K, data);
+    localStorage.setItem(VAULT, JSON.stringify(blob));
+    return blob;
+  }).catch(e => { console.error(e); toast('Opslaan mislukt: ' + e.message); });
+  return persistChain;
+}
+let saveTimer = null;
+function save(soon) {
+  data.updatedAt = now();
+  clearTimeout(saveTimer);
+  if (soon) saveTimer = setTimeout(() => { saveTimer = null; persist(); scheduleSync(); }, 400);
+  else { saveTimer = null; persist(); scheduleSync(); }
+}
+function commit() { save(); renderAll(); }
+
+/* ---------------- GitHub Gist sync ---------------- */
+async function gh(token, method, path, body) {
+  const r = await fetch('https://api.github.com' + path, {
+    method, cache:'no-store',
+    headers:{'Authorization':'Bearer ' + token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28',
+      ...(body ? {'Content-Type':'application/json'} : {})},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    throw new Error(`GitHub ${r.status}: ${j.message || r.statusText}`);
+  }
+  return r.json();
+}
+async function gistGet(s) {
+  const g = await gh(s.token, 'GET', '/gists/' + encodeURIComponent(s.gistId));
+  const f = g.files && g.files[GIST_FILE];
+  if (!f) return null;
+  let c = f.content;
+  if (f.truncated) c = await (await fetch(f.raw_url, {cache:'no-store'})).text();
+  return JSON.parse(c);
+}
+const gistPut = (s, blob) => gh(s.token, 'PATCH', '/gists/' + encodeURIComponent(s.gistId), {files:{[GIST_FILE]:{content:JSON.stringify(blob)}}});
+const gistCreate = (token, blob) => gh(token, 'POST', '/gists', {description:'Taken — versleutelde kluis', public:false, files:{[GIST_FILE]:{content:JSON.stringify(blob)}}});
+
+let syncTimer = null, syncing = false, syncAgain = false, syncState = {state:'idle'};
+function scheduleSync(delay = 1500) {
+  if (!data?.settings.sync) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => syncNow(), delay);
+}
+async function syncNow(pw) {
+  const s = data?.settings.sync;
+  if (!s || !K) { renderSync(); return; }
+  if (syncing) { syncAgain = true; return; }
+  syncing = true; setSync('busy');
+  try {
+    await persistChain;
+    const remoteBlob = await gistGet(s);
+    if (remoteBlob) {
+      let rkey = K.key;
+      const differentSalt = remoteBlob.salt !== b64(K.salt);
+      if (differentSalt) {
+        if (!pw) throw new Error('De online kluis gebruikt een ander wachtwoord. Vergrendel en kies “Herstellen vanaf GitHub Gist”.');
+        rkey = await deriveKey(pw, unb64(remoteBlob.salt), remoteBlob.iter);
+      }
+      let remote;
+      try { remote = normalize(await unseal(rkey, remoteBlob)); }
+      catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+      if (differentSalt) K = {key:rkey, salt:unb64(remoteBlob.salt), iter:remoteBlob.iter};
+      const merged = merge(data, remote);
+      merged.settings.sync = s;
+      if (sig(merged) !== sig(data) || differentSalt) {
+        data = merged;
+        await persist();
+        renderAll();
+      }
+      if (sig(merged) !== sig(remote) || differentSalt) await gistPut(s, await persist());
+    } else {
+      await gistPut(s, await persist());
+    }
+    setSync('ok');
+  } catch (e) {
+    console.error(e);
+    setSync('err', e.message);
+  } finally {
+    syncing = false;
+    if (syncAgain) { syncAgain = false; scheduleSync(300); }
+  }
+}
+function setSync(state, msg) { syncState = {state, msg, at:new Date()}; renderSync(); }
+function renderSync() {
+  const el = $('#syncStatus'); if (!el || !data) return;
+  el.classList.toggle('err', syncState.state === 'err');
+  if (!data.settings.sync) { el.textContent = 'Alleen op dit toestel opgeslagen'; el.title = 'Stel synchronisatie in via Instellingen'; return; }
+  el.title = 'Klik om nu te synchroniseren';
+  if (syncState.state === 'busy') el.textContent = 'Synchroniseren…';
+  else if (syncState.state === 'ok') el.textContent = `Gesynchroniseerd om ${pad(syncState.at.getHours())}:${pad(syncState.at.getMinutes())}`;
+  else if (syncState.state === 'err') { el.textContent = '⚠ Synchronisatie mislukt'; el.title = syncState.msg; }
+  else el.textContent = 'Synchronisatie ingesteld';
+}
+
+/* ---------------- Lock screen ---------------- */
+let lockMode = vaultBlob() ? 'unlock' : 'setup';
+function renderLock() {
+  const f = $('#lockFields'), sub = $('#lockSub'), btn = $('#lockBtn'), alt = $('#lockAlt');
+  $('#lockErr').textContent = '';
+  if (!window.crypto?.subtle) {
+    sub.textContent = 'Deze pagina moet via https geopend worden (versleuteling is anders niet beschikbaar).';
+    f.innerHTML = ''; btn.hidden = true; alt.hidden = true; return;
+  }
+  if (lockMode === 'setup') {
+    $('#lockTitle').textContent = 'Welkom bij Taken';
+    sub.textContent = 'Kies een wachtwoord. Al je taken worden daarmee versleuteld; zonder dit wachtwoord kan niemand ze lezen (ook jij niet, dus onthoud het goed).';
+    f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="8" required autofocus>
+      <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
+    btn.textContent = 'Aan de slag'; alt.textContent = 'Ik heb al een kluis in GitHub Gist';
+  } else if (lockMode === 'unlock') {
+    $('#lockTitle').textContent = 'Taken';
+    sub.textContent = 'Voer je wachtwoord in om te ontgrendelen.';
+    f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required autofocus>`;
+    btn.textContent = 'Ontgrendelen'; alt.textContent = 'Herstellen vanaf GitHub Gist';
+  } else {
+    $('#lockTitle').textContent = 'Herstellen vanaf Gist';
+    sub.textContent = 'Haal je versleutelde kluis op van GitHub. Gebruik dit op een nieuw toestel of na een wachtwoordwijziging.';
+    f.innerHTML = `<label for="rTok">GitHub-token</label><input id="rTok" type="password" autocomplete="off" required>
+      <label for="rGist">Gist-ID</label><input id="rGist" type="text" autocomplete="off" required>
+      <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required>`;
+    btn.textContent = 'Herstellen'; alt.textContent = 'Terug';
+  }
+  setTimeout(() => $('#lockFields input')?.focus(), 30);
+}
+$('#lockAlt').addEventListener('click', () => {
+  lockMode = lockMode === 'restore' ? (vaultBlob() ? 'unlock' : 'setup') : 'restore';
+  renderLock();
+});
+$('#lockForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#lockErr'), btn = $('#lockBtn');
+  const pw = $('#pw1').value;
+  err.textContent = ''; btn.disabled = true;
+  const old = btn.textContent; btn.textContent = 'Even geduld…';
+  try {
+    if (lockMode === 'setup') {
+      if (pw.length < 8) throw new Error('Gebruik minstens 8 tekens.');
+      if (pw !== $('#pw2').value) throw new Error('De wachtwoorden komen niet overeen.');
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      K = {key:await deriveKey(pw, salt, ITER), salt, iter:ITER};
+      data = newData();
+      await persist();
+      enterApp();
+    } else if (lockMode === 'unlock') {
+      const blob = vaultBlob();
+      const key = await deriveKey(pw, unb64(blob.salt), blob.iter);
+      try { data = normalize(await unseal(key, blob)); }
+      catch { throw new Error('Onjuist wachtwoord.'); }
+      K = {key, salt:unb64(blob.salt), iter:blob.iter};
+      enterApp();
+      syncNow(pw);
+    } else {
+      const s = {token:$('#rTok').value.trim(), gistId:$('#rGist').value.trim().replace(/^.*\//, '')};
+      const blob = await gistGet(s);
+      if (!blob) throw new Error(`Bestand ${GIST_FILE} niet gevonden in deze gist.`);
+      const key = await deriveKey(pw, unb64(blob.salt), blob.iter);
+      let remote;
+      try { remote = normalize(await unseal(key, blob)); }
+      catch { throw new Error('Onjuist wachtwoord voor deze kluis.'); }
+      if (vaultBlob() && !confirm('De gegevens op dit toestel worden vervangen door de kluis uit GitHub. Doorgaan?')) throw new Error('Geannuleerd.');
+      K = {key, salt:unb64(blob.salt), iter:blob.iter};
+      data = remote;
+      data.settings.sync = s;
+      await persist();
+      enterApp();
+      setSync('ok');
+    }
+  } catch (ex) {
+    err.textContent = ex.message;
+    btn.disabled = false; btn.textContent = old;
+  }
+});
+
+function enterApp() {
+  $('#lock').hidden = true;
+  $('#app').hidden = false;
+  document.title = 'Taken';
+  renderAll();
+  startTimers();
+}
+async function lock() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); }
+  await persistChain;
+  location.reload();
+}
+
+/* ---------------- App state ---------------- */
+let view = {type:'today'};
+let selectedId = null;
+let searchQ = '';
+const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle taken']];
+const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type;
+function prefs() {
+  const d = {today:{sort:'priority', group:''}, upcoming:{sort:'priority', group:'due'}}[view.type] || {sort:'manual', group:''};
+  return {sort:'manual', group:'', showDone:false, ff:'', fv:'', ...d, ...(data.prefs[viewKey()] || {})};
+}
+function setPref(k, v) {
+  data.prefs[viewKey()] = {...(data.prefs[viewKey()] || {}), [k]:v};
+  if (k === 'ff') data.prefs[viewKey()].fv = '';
+  commit();
+}
+function setView(v) {
+  view = v; searchQ = '';
+  $('#app').classList.remove('side-open');
+  if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
+  renderAll();
+  $('#main').scrollTop = 0;
+}
+function viewTitle() {
+  if (view.type === 'project') return proj(view.id).name;
+  return SMART.find(s => s[0] === view.type)[1];
+}
+
+/* ---------------- Field values ---------------- */
+function optOf(f, id) { return f.options.find(o => o.id === id); }
+function isEmpty(v) { return v === undefined || v === null || v === '' || v === false || (Array.isArray(v) && !v.length); }
+function displayValue(f, v) {
+  if (isEmpty(v)) return '';
+  switch (f.type) {
+    case 'select': return optOf(f, v)?.label || '';
+    case 'multiselect': return (Array.isArray(v) ? v : []).map(id => optOf(f, id)?.label).filter(Boolean).join(', ');
+    case 'checkbox': return v ? 'Ja' : '';
+    case 'date': return typeof v === 'string' && /^\d{4}-\d\d-\d\d$/.test(v) ? dueLabel(v) : String(v);
+    default: return String(v);
+  }
+}
+function fieldChips(t) {
+  const out = [];
+  for (const f of fieldsFor(t.projectId)) {
+    if (!f.showInList) continue;
+    const v = t.custom[f.id];
+    if (isEmpty(v)) continue;
+    if (f.type === 'select') { const o = optOf(f, v); if (o) out.push(`<span class="chip opt" style="--c:${o.color}" title="${esc(f.name)}">${esc(o.label)}</span>`); }
+    else if (f.type === 'multiselect') { for (const id of (Array.isArray(v) ? v : [])) { const o = optOf(f, id); if (o) out.push(`<span class="chip opt" style="--c:${o.color}" title="${esc(f.name)}">${esc(o.label)}</span>`); } }
+    else if (f.type === 'checkbox') out.push(`<span class="chip">${I.check} ${esc(f.name)}</span>`);
+    else if (f.type === 'url') { const href = safeUrl(v); if (href) out.push(`<a class="chip" href="${esc(href)}" target="_blank" rel="noopener" data-act="link">${I.link} ${esc(f.name)}</a>`); }
+    else out.push(`<span class="chip"><span class="muted">${esc(f.name)}:</span> ${esc(displayValue(f, v))}</span>`);
+  }
+  return out.join('');
+}
+function safeUrl(v) {
+  let s = String(v).trim(); if (!s) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = 'https://' + s;
+  return /^(https?|mailto|tel):/i.test(s) ? s : '';
+}
+
+/* ---------------- Task list ---------------- */
+function viewTasks(includeDone) {
+  const td = today(), wk = addDays(td, 6);
+  return data.tasks.filter(t => {
+    if (!includeDone && t.done) return false;
+    switch (view.type) {
+      case 'inbox': return t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId);
+      case 'today': return t.done ? (t.doneAt && ymd(new Date(t.doneAt)) === td) : (t.due && t.due <= td);
+      case 'upcoming': return t.due && t.due <= wk;
+      case 'all': return true;
+      case 'project': return t.projectId === view.id;
+    }
+  });
+}
+function matchSearch(t, q) {
+  if (!q) return true;
+  q = q.toLowerCase();
+  if (t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q)) return true;
+  return data.fields.some(f => displayValue(f, t.custom[f.id]).toLowerCase().includes(q));
+}
+function matchFilter(t, ff, fv) {
+  if (!ff || fv === '' || fv == null) return true;
+  if (ff === 'priority') return String(t.prio) === fv;
+  if (ff === 'project') return t.projectId === fv;
+  const f = fieldById(ff.slice(2)); if (!f) return true;
+  const v = t.custom[f.id];
+  if (fv === '__empty') return isEmpty(v);
+  switch (f.type) {
+    case 'select': return v === fv;
+    case 'multiselect': return Array.isArray(v) && v.includes(fv);
+    case 'checkbox': return (fv === '1') === !!v;
+    default: return String(v ?? '').toLowerCase().includes(fv.toLowerCase());
+  }
+}
+function sortFn(key) {
+  const byOrder = (a, b) => (a.order || 0) - (b.order || 0);
+  const byDue = (a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0;
+  const tie = (...fs) => (a, b) => { for (const f of fs) { const r = f(a, b); if (r) return r; } return 0; };
+  if (key === 'due') return tie(byDue, (a, b) => a.prio - b.prio, byOrder);
+  if (key === 'priority') return tie((a, b) => a.prio - b.prio, byDue, byOrder);
+  if (key === 'title') return tie((a, b) => a.title.localeCompare(b.title, 'nl', {numeric:true}), byOrder);
+  if (key === 'newest') return (a, b) => (b.order || 0) - (a.order || 0);
+  if (key?.startsWith('f:')) {
+    const f = fieldById(key.slice(2));
+    if (!f) return byOrder;
+    const val = t => {
+      const v = t.custom[f.id];
+      if (isEmpty(v)) return null;
+      if (f.type === 'number') return Number(v);
+      if (f.type === 'select') return f.options.findIndex(o => o.id === v);
+      if (f.type === 'checkbox') return 0;
+      return String(v).toLowerCase();
+    };
+    return tie((a, b) => {
+      const x = val(a), y = val(b);
+      if (x === null && y === null) return 0; if (x === null) return 1; if (y === null) return -1;
+      return typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'nl', {numeric:true});
+    }, byOrder);
+  }
+  return byOrder;
+}
+function groupTasks(tasks, g) {
+  if (!g) return [{key:'', label:'', tasks}];
+  const groups = new Map();
+  const add = (key, label, order, t, color) => {
+    if (!groups.has(key)) groups.set(key, {key, label, order, color, tasks:[]});
+    groups.get(key).tasks.push(t);
+  };
+  const td = today();
+  const f = g.startsWith('f:') ? fieldById(g.slice(2)) : null;
+  const porder = sortedProjects().map(p => p.id);
+  for (const t of tasks) {
+    if (g === 'project') { const p = proj(t.projectId); add(p.id, p.name, porder.indexOf(p.id), t, p.color); }
+    else if (g === 'priority') add('p' + t.prio, PRIO[t.prio], t.prio, t);
+    else if (g === 'due') {
+      if (!t.due) add('none', 'Geen datum', 9999, t);
+      else {
+        const diff = daysBetween(td, t.due);
+        if (diff < 0) add('late', 'Te laat', -1, t);
+        else if (diff <= 6) add(t.due, (diff === 0 ? 'Vandaag · ' : diff === 1 ? 'Morgen · ' : '') + dateLong(t.due), diff, t);
+        else add('later', 'Later', 100, t);
+      }
+    } else if (f) {
+      const v = t.custom[f.id];
+      if (f.type === 'select') { const i = f.options.findIndex(o => o.id === v); if (i >= 0) add(v, f.options[i].label, i, t, f.options[i].color); else add('none', `Geen ${f.name.toLowerCase()}`, 9999, t); }
+      else if (f.type === 'multiselect') {
+        const ids = (Array.isArray(v) ? v : []).filter(id => optOf(f, id));
+        if (!ids.length) add('none', `Geen ${f.name.toLowerCase()}`, 9999, t);
+        for (const id of ids) { const i = f.options.findIndex(o => o.id === id); add(id, f.options[i].label, i, t, f.options[i].color); }
+      } else if (f.type === 'checkbox') add(v ? 'y' : 'n', `${f.name}: ${v ? 'ja' : 'nee'}`, v ? 0 : 1, t);
+      else add('all', '', 0, t);
+    } else add('all', '', 0, t);
+  }
+  return [...groups.values()].sort((a, b) => a.order - b.order);
+}
+function taskRow(t) {
+  const meta = [];
+  const td = today();
+  if (t.due) {
+    const cls = t.due < td && !t.done ? 'late' : t.due === td ? 'today' : '';
+    meta.push(`<span class="chip due ${cls}">${I.cal} ${esc(dueLabel(t.due))}${t.repeat ? ' ' + I.repeat : ''}</span>`);
+  }
+  if (view.type !== 'project' && t.projectId !== 'inbox' && view.type !== 'inbox') {
+    const p = proj(t.projectId);
+    meta.push(`<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`);
+  }
+  if (t.notes) meta.push(`<span class="chip" title="Heeft notities">${I.note}</span>`);
+  const chips = fieldChips(t);
+  return `<li class="task ${t.done ? 'done' : ''} ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}">
+    <button class="check p${t.prio} ${t.done ? 'on' : ''}" data-act="toggle" aria-label="${t.done ? 'Heropenen' : 'Voltooien'}">${I.check}</button>
+    <div class="t-body"><div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>
+    ${meta.length || chips ? `<div class="t-meta">${meta.join('')}${chips}</div>` : ''}</div></li>`;
+}
+function renderList() {
+  const p = prefs();
+  const all = viewTasks(p.showDone).filter(t => matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv));
+  const open = all.filter(t => !t.done).sort(sortFn(p.sort));
+  const done = all.filter(t => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+  let html = '';
+  for (const g of groupTasks(open, p.group)) {
+    html += `<section class="group">${g.label ? `<h3>${g.color ? `<span class="dot" style="width:9px;height:9px;border-radius:50%;background:${g.color};align-self:center"></span>` : ''}${esc(g.label)} <span class="count">${g.tasks.length}</span></h3>` : ''}
+      <ul class="tasks">${g.tasks.map(taskRow).join('')}</ul></section>`;
+  }
+  if (!open.length) {
+    const msg = searchQ || p.fv ? 'Geen taken gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag. Geniet ervan!' : 'Nog geen taken hier.';
+    html = `<div class="empty">${I.done}<div>${msg}</div></div>`;
+  }
+  if (p.showDone && done.length) html += `<details class="done-sec" open><summary>Voltooid (${done.length})</summary><ul class="tasks">${done.map(taskRow).join('')}</ul></details>`;
+  $('#list').innerHTML = html;
+}
+
+/* ---------------- Sidebar / header / toolbar ---------------- */
+function renderNav() {
+  const open = data.tasks.filter(t => !t.done), td = today(), wk = addDays(td, 6);
+  const cnt = {
+    inbox: open.filter(t => t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId)).length,
+    today: open.filter(t => t.due && t.due <= td).length,
+    upcoming: open.filter(t => t.due && t.due <= wk).length,
+    all: open.length,
+  };
+  $('#nav').innerHTML = SMART.map(([k, label]) =>
+    `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${I[k]}</span><span class="nm">${label}</span><span class="cnt">${cnt[k] || ''}</span></button>`).join('');
+  $('#projNav').innerHTML = sortedProjects().filter(p => p.id !== 'inbox').map(p => {
+    const n = open.filter(t => t.projectId === p.id).length;
+    return `<button class="nav-item ${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico"><span class="dot" style="background:${p.color}"></span></span><span class="nm">${esc(p.name)}</span><span class="cnt">${n || ''}</span></button>`;
+  }).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen projecten</div>';
+  renderSync();
+}
+function renderHead() {
+  const isP = view.type === 'project' || view.type === 'inbox';
+  const color = view.type === 'project' ? proj(view.id).color : null;
+  $('#viewTitle').innerHTML = `${color ? `<span class="dot" style="background:${color}"></span>` : ''}<span>${esc(viewTitle())}</span>`;
+  $('#editProject').hidden = !isP;
+  document.title = `${viewTitle()} · Taken`;
+}
+function toolbarFields() {
+  return view.type === 'project' ? fieldsFor(view.id) : view.type === 'inbox' ? fieldsFor('inbox') : sortedFields();
+}
+function renderToolbar() {
+  const p = prefs(), fs = toolbarFields();
+  const o = (v, l, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`;
+  const sortOpts = [['manual','Volgorde toegevoegd'],['newest','Nieuwste eerst'],['due','Deadline'],['priority','Prioriteit'],['title','Naam'],
+    ...fs.filter(f => f.type !== 'multiselect').map(f => ['f:' + f.id, f.name])];
+  const groupOpts = [['','Niet groeperen'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ['priority','Prioriteit'], ['due','Datum'],
+    ...fs.filter(f => ['select','multiselect','checkbox'].includes(f.type)).map(f => ['f:' + f.id, f.name])];
+  const filterOpts = [['','Geen filter'], ['priority','Prioriteit'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ...fs.map(f => ['f:' + f.id, f.name])];
+  let fvHtml = '';
+  if (p.ff) {
+    const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
+    let choices = null;
+    if (p.ff === 'priority') choices = [1,2,3,4].map(n => [String(n), PRIO[n]]);
+    else if (p.ff === 'project') choices = sortedProjects().map(x => [x.id, x.name]);
+    else if (f && (f.type === 'select' || f.type === 'multiselect')) choices = [...f.options.map(x => [x.id, x.label]), ['__empty','(leeg)']];
+    else if (f && f.type === 'checkbox') choices = [['1','Aangevinkt'],['0','Niet aangevinkt']];
+    fvHtml = choices
+      ? `<select id="tbFv" aria-label="Filterwaarde">${o('', 'Kies…', p.fv)}${choices.map(([v, l]) => o(v, l, p.fv)).join('')}</select>`
+      : `<input id="tbFv" type="text" placeholder="bevat…" value="${esc(p.fv)}" aria-label="Filterwaarde">`;
+  }
+  $('#toolbar').innerHTML = `
+    <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
+    <select id="tbSort" aria-label="Sorteren" title="Sorteren">${sortOpts.map(([v, l]) => o(v, 'Sorteren: ' + l, p.sort)).join('')}</select>
+    <select id="tbGroup" aria-label="Groeperen" title="Groeperen">${groupOpts.map(([v, l]) => o(v, v ? 'Groeperen: ' + l : l, p.group)).join('')}</select>
+    <select id="tbFf" aria-label="Filter" title="Filter">${filterOpts.map(([v, l]) => o(v, v ? 'Filter: ' + l : l, p.ff)).join('')}</select>
+    ${fvHtml}
+    <label class="tgl"><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Voltooide tonen</label>`;
+}
+function renderAll() {
+  if (!data) return;
+  renderNav(); renderHead();
+  const focused = document.activeElement?.id;
+  if (focused !== 'tbSearch' && focused !== 'tbFv') renderToolbar();
+  renderList(); renderDetail();
+}
+
+/* ---------------- Quick add ---------------- */
+function parseQuick(text) {
+  let s = ' ' + text + ' ';
+  const r = {due:null, prio:null, projectId:null, repeat:null, custom:{}, tokens:[]};
+  const take = (re, fn) => { const m = s.match(re); if (m) { s = s.replace(re, ' '); fn(m); return true; } return false; };
+  take(/\s[!]?p([1-4])(?=\s)/i, m => { r.prio = +m[1]; r.tokens.push(['P' + m[1], null]); });
+  for (const p of [...data.projects].sort((a, b) => b.name.length - a.name.length)) {
+    if (take(new RegExp('\\s#' + escRe(p.name.replace(/\s+/g, '_')) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
+    if (take(new RegExp('\\s#' + escRe(p.name) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
+  }
+  const opts = [];
+  for (const f of data.fields) if (f.type === 'select' || f.type === 'multiselect') for (const o of f.options) opts.push([f, o]);
+  opts.sort((a, b) => b[1].label.length - a[1].label.length);
+  for (const [f, o] of opts) {
+    const re = new RegExp('\\s@' + escRe(o.label) + '(?=\\s)', 'i');
+    const re2 = new RegExp('\\s@' + escRe(o.label.replace(/\s+/g, '_')) + '(?=\\s)', 'i');
+    const hit = m => {
+      if (f.type === 'select') r.custom[f.id] = o.id;
+      else r.custom[f.id] = [...new Set([...(r.custom[f.id] || []), o.id])];
+      r.tokens.push([`${f.name}: ${o.label}`, o.color]);
+    };
+    take(re2, hit) || take(re, hit);
+  }
+  const reps = [[/\s(elke dag|dagelijks)(?=\s)/i,'daily'],[/\s(elke werkdag|werkdagen)(?=\s)/i,'weekdays'],[/\s(elke week|wekelijks)(?=\s)/i,'weekly'],[/\s(elke maand|maandelijks)(?=\s)/i,'monthly'],[/\s(elk jaar|jaarlijks)(?=\s)/i,'yearly']];
+  for (const [re, v] of reps) if (take(re, () => { r.repeat = v; r.tokens.push([REPEAT.find(x => x[0] === v)[1], null]); })) break;
+  const td = today();
+  const setDue = d => { r.due = d; r.tokens.push([dueLabel(d), null]); };
+  take(/\s(vandaag|today)(?=\s)/i, () => setDue(td)) ||
+  take(/\s(overmorgen)(?=\s)/i, () => setDue(addDays(td, 2))) ||
+  take(/\s(morgen|tomorrow)(?=\s)/i, () => setDue(addDays(td, 1))) ||
+  take(/\svolgende week(?=\s)/i, () => setDue(addDays(td, 7))) ||
+  take(/\sover (\d{1,3}) (dag|dagen|week|weken)(?=\s)/i, m => setDue(addDays(td, +m[1] * (m[2].startsWith('we') ? 7 : 1)))) ||
+  take(new RegExp('\\s(' + DAYS.join('|') + ')(?=\\s)', 'i'), m => {
+    const target = DAYS.indexOf(m[1].toLowerCase()), cur = new Date().getDay();
+    setDue(addDays(td, ((target - cur + 7) % 7) || 7));
+  }) ||
+  take(/\s(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?(?=\s)/, m => {
+    const dd = +m[1], mm = +m[2]; if (dd < 1 || dd > 31 || mm < 1 || mm > 12) return;
+    let y = m[3] ? +m[3] : new Date().getFullYear(); if (y < 100) y += 2000;
+    let d = ymd(new Date(y, mm - 1, dd));
+    if (!m[3] && d < td) d = ymd(new Date(y + 1, mm - 1, dd));
+    setDue(d);
+  });
+  if (r.repeat && !r.due) r.due = td;
+  r.title = s.trim().replace(/\s+/g, ' ');
+  return r;
+}
+function renderQaPreview() {
+  const v = $('#qaInput').value;
+  const el = $('#qaPreview');
+  if (!v.trim()) { el.innerHTML = '<span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@optie</b></span>'; return; }
+  const r = parseQuick(v);
+  el.innerHTML = r.tokens.map(([l, c]) => c ? `<span class="chip opt" style="--c:${c}">${esc(l)}</span>` : `<span class="chip">${esc(l)}</span>`).join('');
+}
+$('#qaInput').addEventListener('input', renderQaPreview);
+$('#quickAdd').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = $('#qaInput');
+  const r = parseQuick(input.value);
+  if (!r.title) return;
+  const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
+  const t = touch({
+    id:uid(), title:r.title, notes:'', projectId,
+    due:r.due || (view.type === 'today' ? today() : null),
+    prio:r.prio || 4, repeat:r.repeat || '', done:false, doneAt:null,
+    createdAt:now(), order:now(), custom:r.custom,
+  });
+  // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
+  const p = prefs();
+  if (p.ff && p.fv && p.fv !== '__empty') {
+    if (p.ff === 'priority' && !r.prio) t.prio = +p.fv;
+    const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
+    if (f && t.custom[f.id] === undefined) {
+      if (f.type === 'select') t.custom[f.id] = p.fv;
+      else if (f.type === 'multiselect') t.custom[f.id] = [p.fv];
+      else if (f.type === 'checkbox') t.custom[f.id] = p.fv === '1';
+    }
+  }
+  data.tasks.push(t);
+  input.value = '';
+  renderQaPreview();
+  commit();
+  if (!viewTasks(false).some(x => x.id === t.id)) toast(`Toegevoegd aan ${proj(projectId).name}`);
+});
+
+/* ---------------- Task actions ---------------- */
+function toggleTask(id) {
+  const t = taskById(id); if (!t) return;
+  if (!t.done && t.repeat) {
+    const prev = t.due;
+    t.due = nextDue(t.due, t.repeat); touch(t); commit();
+    toast(`Volgende keer: ${dueLabel(t.due)}`, () => { const x = taskById(id); if (x) { x.due = prev; touch(x); commit(); } });
+    return;
+  }
+  t.done = !t.done; t.doneAt = t.done ? now() : null; touch(t); commit();
+  if (t.done) toast('Taak voltooid', () => { const x = taskById(id); if (x) { x.done = false; x.doneAt = null; touch(x); commit(); } });
+}
+function deleteTask(id) {
+  const t = taskById(id); if (!t) return;
+  const copy = JSON.parse(JSON.stringify(t));
+  data.tasks = data.tasks.filter(x => x.id !== id);
+  tombstone(id);
+  if (selectedId === id) selectedId = null;
+  commit();
+  toast('Taak verwijderd', () => { delete data.deleted[id]; data.tasks.push(touch(copy)); commit(); });
+}
+function openTask(id) { selectedId = id; renderList(); renderDetail(true); }
+function closeDetail() { selectedId = null; renderList(); renderDetail(true); }
+
+/* ---------------- Detail panel ---------------- */
+function fieldInput(f, t) {
+  const v = t.custom[f.id];
+  const lab = `<span title="${esc(f.name)}">${esc(f.name)}</span>`;
+  const attrs = `data-field="${f.id}" aria-label="${esc(f.name)}"`;
+  switch (f.type) {
+    case 'text': return `<label class="prop">${lab}<input type="text" ${attrs} value="${esc(v ?? '')}"></label>`;
+    case 'number': return `<label class="prop">${lab}<input type="number" step="any" ${attrs} value="${esc(v ?? '')}"></label>`;
+    case 'date': return `<label class="prop">${lab}<input type="date" ${attrs} value="${esc(v ?? '')}"></label>`;
+    case 'url': {
+      const href = v ? safeUrl(v) : '';
+      return `<label class="prop">${lab}<span class="inline"><input type="url" ${attrs} value="${esc(v ?? '')}" placeholder="https://…">${href ? `<a class="icon-btn" href="${esc(href)}" target="_blank" rel="noopener" title="Openen">${I.link}</a>` : ''}</span></label>`;
+    }
+    case 'checkbox': return `<label class="prop">${lab}<input type="checkbox" ${attrs} ${v ? 'checked' : ''}></label>`;
+    case 'select': return `<label class="prop">${lab}<select ${attrs}><option value="">—</option>${f.options.map(o => `<option value="${o.id}" ${o.id === v ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select></label>`;
+    case 'multiselect': {
+      const sel = Array.isArray(v) ? v : [];
+      return `<div class="prop">${lab}<div class="multi">${f.options.map(o => `<button type="button" data-multi="${f.id}" data-opt="${o.id}" class="${sel.includes(o.id) ? 'on' : ''}" style="--c:${o.color}">${esc(o.label)}</button>`).join('') || '<span class="muted small">Geen opties</span>'}</div></div>`;
+    }
+  }
+  return '';
+}
+function renderDetail(force) {
+  const el = $('#detail'), app = $('#app');
+  const t = selectedId && taskById(selectedId);
+  if (!t) { el.hidden = true; el.innerHTML = ''; app.classList.remove('with-detail'); return; }
+  if (!force && el.contains(document.activeElement) && document.activeElement !== el) return;
+  el.hidden = false; app.classList.add('with-detail');
+  const p = proj(t.projectId), fs = fieldsFor(t.projectId);
+  const created = new Date(t.createdAt || t.order || now());
+  el.innerHTML = `
+    <div class="d-head">
+      <button class="icon-btn" data-act="close" aria-label="Sluiten">${I.close}</button>
+      <span class="crumb"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${p.color}"></span>${esc(p.name)}</span>
+      <button class="icon-btn" data-act="delete" title="Taak verwijderen" aria-label="Taak verwijderen">${I.trash}</button>
+    </div>
+    <div class="d-body">
+      <div class="d-title-row">
+        <button class="check p${t.prio} ${t.done ? 'on' : ''}" data-act="toggle" aria-label="Voltooien">${I.check}</button>
+        <textarea id="dTitle" rows="1" aria-label="Titel">${esc(t.title)}</textarea>
+      </div>
+      <textarea id="dNotes" placeholder="Notities…" aria-label="Notities">${esc(t.notes || '')}</textarea>
+      <div class="props">
+        <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+        <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}"></label>
+        <label class="prop"><span>Herhalen</span><select id="dRepeat">${REPEAT.map(([v, l]) => `<option value="${v}" ${v === (t.repeat || '') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="prop"><span>Prioriteit</span><select id="dPrio">${[1,2,3,4].map(n => `<option value="${n}" ${n === t.prio ? 'selected' : ''}>${PRIO[n]}</option>`).join('')}</select></label>
+      </div>
+      <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
+      <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
+        `<p class="muted small" style="margin:0">Nog geen eigen velden voor dit project. <button class="link" data-act="newfield">Veld toevoegen</button></p>`}</div>
+      <p class="muted small" style="margin-top:28px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
+    </div>`;
+  autosize($('#dTitle'));
+}
+function autosize(ta) { if (!ta) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 2 + 'px'; }
+function setCustom(t, fid, val) {
+  if (isEmpty(val)) delete t.custom[fid]; else t.custom[fid] = val;
+  touch(t);
+}
+const detail = $('#detail');
+detail.addEventListener('input', e => {
+  const t = taskById(selectedId); if (!t) return;
+  const el = e.target;
+  if (el.id === 'dTitle') { t.title = el.value.replace(/\n/g, ' '); autosize(el); }
+  else if (el.id === 'dNotes') t.notes = el.value;
+  else if (el.dataset.field && ['text','url','number'].includes(el.type)) {
+    const f = fieldById(el.dataset.field);
+    setCustom(t, f.id, f.type === 'number' ? (el.value === '' ? '' : Number(el.value)) : el.value);
+  } else return;
+  touch(t); save(true); renderList(); renderNav();
+});
+detail.addEventListener('change', e => {
+  const t = taskById(selectedId); if (!t) return;
+  const el = e.target;
+  if (el.id === 'dProject') t.projectId = el.value;
+  else if (el.id === 'dDue') t.due = el.value || null;
+  else if (el.id === 'dRepeat') { t.repeat = el.value; if (t.repeat && !t.due) t.due = today(); }
+  else if (el.id === 'dPrio') t.prio = +el.value;
+  else if (el.dataset.field) {
+    const f = fieldById(el.dataset.field);
+    if (f.type === 'checkbox') setCustom(t, f.id, el.checked);
+    else if (f.type === 'select' || f.type === 'date') setCustom(t, f.id, el.value);
+    else { renderDetail(true); return; } // tekst/getal/link: al opgeslagen bij 'input'; link-knop verversen
+  } else return;
+  touch(t); save(); renderNav(); renderList(); renderDetail(true);
+});
+detail.addEventListener('keydown', e => {
+  if (e.target.id === 'dTitle' && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+});
+detail.addEventListener('click', e => {
+  const b = e.target.closest('[data-act],[data-multi]'); if (!b) return;
+  const t = taskById(selectedId); if (!t) return;
+  if (b.dataset.multi) {
+    const cur = Array.isArray(t.custom[b.dataset.multi]) ? [...t.custom[b.dataset.multi]] : [];
+    const i = cur.indexOf(b.dataset.opt);
+    if (i >= 0) cur.splice(i, 1); else cur.push(b.dataset.opt);
+    setCustom(t, b.dataset.multi, cur); save(); renderList(); renderDetail(true);
+    return;
+  }
+  switch (b.dataset.act) {
+    case 'close': closeDetail(); break;
+    case 'delete': deleteTask(t.id); break;
+    case 'toggle': toggleTask(t.id); break;
+    case 'fields': openFieldsDialog(); break;
+    case 'newfield': openFieldEditor(null, t.projectId === 'inbox' ? null : t.projectId); break;
+  }
+});
+
+/* ---------------- Dialogs ---------------- */
+const dlg = $('#dlg');
+function showDialog(html, bind) {
+  dlg.innerHTML = `<div class="dlg-inner">${html}</div>`;
+  bind?.(dlg);
+  if (!dlg.open) dlg.showModal();
+  setTimeout(() => dlg.querySelector('input:not([type=checkbox]):not([disabled]),select')?.focus(), 20);
+}
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
+
+function openProjectDialog(p) {
+  const isNew = !p, isInbox = p?.id === 'inbox';
+  let color = p?.color || COLORS[data.projects.length % COLORS.length];
+  const fs = sortedFields();
+  showDialog(`
+    <h3>${isNew ? 'Nieuw project' : 'Project bewerken'}</h3>
+    <label class="fl">Naam<input id="pjName" type="text" value="${esc(p?.name || '')}" ${isInbox ? 'disabled' : ''} placeholder="bv. Werk, Gigs, Thuis"></label>
+    <div class="fl">Kleur<div class="swatches">${COLORS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="--c:${c}" data-c="${c}" aria-label="Kleur ${c}"></button>`).join('')}</div></div>
+    <div class="fl">Velden in dit project
+      ${fs.length ? `<div class="checks">${fs.map(f => `<label class="chk"><input type="checkbox" data-f="${f.id}" ${f.all || (p && f.projectIds.includes(p.id)) ? 'checked' : ''} ${f.all ? 'disabled' : ''}> ${esc(f.name)} <span class="muted small">${TYPES[f.type]}${f.all ? ' · in alle projecten' : ''}</span></label>`).join('')}</div>` : ''}
+      <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Nieuw veld</button></div>
+    </div>
+    <div class="dlg-actions">
+      ${p && !isInbox ? '<button type="button" class="btn danger" id="pjDel">Verwijderen</button>' : ''}
+      <span class="grow"></span>
+      <button type="button" class="btn" id="pjCancel">Annuleren</button>
+      <button type="button" class="btn primary" id="pjSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
+    </div>`, d => {
+    $$('.sw', d).forEach(b => b.onclick = () => { color = b.dataset.c; $$('.sw', d).forEach(x => x.classList.toggle('on', x === b)); });
+    $('#pjCancel', d).onclick = () => dlg.close();
+    $('#pjName', d).onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#pjSave', d).click(); } };
+    const doSave = () => {
+      const name = $('#pjName', d).value.trim();
+      if (!isInbox && !name) { $('#pjName', d).focus(); return null; }
+      let target = p;
+      if (isNew) {
+        target = touch({id:uid(), name, color, order:Math.max(0, ...data.projects.map(x => x.order || 0)) + 1});
+        data.projects.push(target);
+      } else { if (!isInbox) target.name = name; target.color = color; touch(target); }
+      for (const cb of $$('[data-f]', d)) {
+        const f = fieldById(cb.dataset.f); if (!f || f.all) continue;
+        const has = f.projectIds.includes(target.id);
+        if (cb.checked && !has) { f.projectIds.push(target.id); touch(f); }
+        if (!cb.checked && has) { f.projectIds = f.projectIds.filter(x => x !== target.id); touch(f); }
+      }
+      return target;
+    };
+    $('#pjSave', d).onclick = () => {
+      const target = doSave(); if (!target) return;
+      dlg.close();
+      if (isNew) view = {type:'project', id:target.id};
+      commit();
+    };
+    $('#pjNewField', d).onclick = () => {
+      const target = doSave(); if (!target) return;
+      save();
+      if (isNew) view = {type:'project', id:target.id};
+      renderAll();
+      openFieldEditor(null, target.id === 'inbox' ? null : target.id, () => openProjectDialog(target));
+    };
+    $('#pjDel', d)?.addEventListener('click', () => {
+      const n = data.tasks.filter(t => t.projectId === p.id).length;
+      if (!confirm(`Project “${p.name}”${n ? ` en de ${n} taken erin` : ''} verwijderen?`)) return;
+      data.projects = data.projects.filter(x => x.id !== p.id); tombstone(p.id);
+      for (const t of data.tasks.filter(t => t.projectId === p.id)) tombstone(t.id);
+      data.tasks = data.tasks.filter(t => t.projectId !== p.id);
+      for (const f of data.fields) if (f.projectIds.includes(p.id)) { f.projectIds = f.projectIds.filter(x => x !== p.id); touch(f); }
+      delete data.prefs['p:' + p.id];
+      if (view.type === 'project' && view.id === p.id) view = {type:'inbox'};
+      if (selectedId && !taskById(selectedId)) selectedId = null;
+      dlg.close(); commit();
+    });
+  });
+}
+
+function openFieldsDialog() {
+  const fs = sortedFields();
+  const scope = f => f.all ? 'Alle projecten' : (f.projectIds.map(id => data.projects.find(p => p.id === id)?.name).filter(Boolean).join(', ') || 'Geen projecten');
+  showDialog(`
+    <h3>Eigen velden</h3>
+    <p class="muted small" style="margin:0">Voeg extra eigenschappen toe aan je taken, zoals klant, locatie, status, budget of een link. Je kunt ze op alle projecten of enkel op bepaalde projecten gebruiken.</p>
+    ${fs.length ? `<ul class="flist">${fs.map((f, i) => `<li>
+        <div><b>${esc(f.name)}</b><span class="muted">${TYPES[f.type]} · ${esc(scope(f))}${f.showInList ? ' · zichtbaar in lijst' : ''}</span></div>
+        <button class="icon-btn" data-mv="${f.id}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Omhoog">${I.up}</button>
+        <button class="icon-btn" data-mv="${f.id}" data-dir="1" ${i === fs.length - 1 ? 'disabled' : ''} aria-label="Omlaag">${I.down}</button>
+        <button class="btn" data-edit="${f.id}">Bewerken</button></li>`).join('')}</ul>`
+      : '<div class="box muted">Je hebt nog geen velden. Maak je eerste veld aan.</div>'}
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="fClose">Sluiten</button><button type="button" class="btn primary" id="fNew">Nieuw veld</button></div>`, d => {
+    $('#fClose', d).onclick = () => dlg.close();
+    $('#fNew', d).onclick = () => openFieldEditor(null, view.type === 'project' ? view.id : null, openFieldsDialog);
+    $$('[data-edit]', d).forEach(b => b.onclick = () => openFieldEditor(fieldById(b.dataset.edit), null, openFieldsDialog));
+    $$('[data-mv]', d).forEach(b => b.onclick = () => {
+      const list = sortedFields(), i = list.findIndex(f => f.id === b.dataset.mv), j = i + +b.dataset.dir;
+      if (j < 0 || j >= list.length) return;
+      list.forEach((f, k) => { if (f.order !== k) { f.order = k; touch(f); } });
+      [list[i].order, list[j].order] = [list[j].order, list[i].order]; touch(list[i]); touch(list[j]);
+      commit(); openFieldsDialog();
+    });
+  });
+}
+
+function openFieldEditor(f, presetProject, back) {
+  const isNew = !f;
+  const draft = f ? JSON.parse(JSON.stringify(f)) : {id:uid(), name:'', type:'select', options:[], all:!presetProject, projectIds:presetProject ? [presetProject] : [], showInList:true};
+  if (isNew && draft.type === 'select') draft.options = [{id:uid(), label:'', color:COLORS[0]}];
+  const done = () => back ? back() : dlg.close();
+  const read = d => {
+    draft.name = $('#feName', d).value;
+    draft.type = $('#feType', d).value;
+    draft.showInList = $('#feList', d).checked;
+    draft.all = $('#feAll', d).checked;
+    draft.projectIds = $$('[data-pid]', d).filter(c => c.checked).map(c => c.dataset.pid);
+    $$('.opt-row', d).forEach((row, i) => { draft.options[i].label = $('input', row).value; });
+  };
+  const draw = () => showDialog(`
+    <h3>${isNew ? 'Nieuw veld' : 'Veld bewerken'}</h3>
+    <label class="fl">Naam<input id="feName" type="text" value="${esc(draft.name)}" placeholder="bv. Status, Klant, Locatie, Budget"></label>
+    <label class="fl">Type<select id="feType">${Object.entries(TYPES).map(([k, l]) => `<option value="${k}" ${k === draft.type ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    ${!isNew && f.type !== draft.type ? '<p class="err">Let op: bestaande waarden passen mogelijk niet bij het nieuwe type.</p>' : ''}
+    ${draft.type === 'select' || draft.type === 'multiselect' ? `<div class="fl">Opties
+      <div id="feOpts">${draft.options.map((o, i) => `<div class="opt-row" data-i="${i}"><button type="button" class="sw sm" style="--c:${o.color}" data-oc="${i}" title="Andere kleur" aria-label="Kleur wijzigen"></button><input type="text" value="${esc(o.label)}" placeholder="Optie ${i + 1}"><button type="button" class="icon-btn" data-orm="${i}" aria-label="Optie verwijderen">${I.close}</button></div>`).join('')}</div>
+      <button type="button" class="link" id="feAddOpt" style="margin-top:8px;font-weight:550">+ Optie toevoegen</button></div>` : ''}
+    <div class="fl">Beschikbaar in
+      <div class="checks">
+        <label class="chk"><input type="checkbox" id="feAll" ${draft.all ? 'checked' : ''}> Alle projecten</label>
+        <div id="feProjects" style="display:grid;gap:6px;padding-left:24px;${draft.all ? 'opacity:.5' : ''}">${sortedProjects().map(p => `<label class="chk"><input type="checkbox" data-pid="${p.id}" ${draft.projectIds.includes(p.id) ? 'checked' : ''} ${draft.all ? 'disabled' : ''}><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${p.color}"></span>${esc(p.name)}</label>`).join('')}</div>
+      </div></div>
+    <label class="chk" style="margin-top:14px"><input type="checkbox" id="feList" ${draft.showInList ? 'checked' : ''}> Tonen in de takenlijst</label>
+    <p class="err" id="feErr"></p>
+    <div class="dlg-actions">
+      ${!isNew ? '<button type="button" class="btn danger" id="feDel">Verwijderen</button>' : ''}
+      <span class="grow"></span>
+      <button type="button" class="btn" id="feCancel">${back ? 'Terug' : 'Annuleren'}</button>
+      <button type="button" class="btn primary" id="feSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
+    </div>`, d => {
+    $('#feType', d).onchange = () => {
+      read(d);
+      if ((draft.type === 'select' || draft.type === 'multiselect') && !draft.options.length) draft.options.push({id:uid(), label:'', color:COLORS[0]});
+      draw();
+    };
+    $('#feAll', d).onchange = () => { read(d); draw(); };
+    $('#feAddOpt', d)?.addEventListener('click', () => {
+      read(d); draft.options.push({id:uid(), label:'', color:COLORS[draft.options.length % COLORS.length]}); draw();
+      setTimeout(() => $$('#feOpts input').at(-1)?.focus(), 30);
+    });
+    $$('[data-orm]', d).forEach(b => b.onclick = () => { read(d); draft.options.splice(+b.dataset.orm, 1); draw(); });
+    $$('[data-oc]', d).forEach(b => b.onclick = () => {
+      const o = draft.options[+b.dataset.oc];
+      o.color = COLORS[(COLORS.indexOf(o.color) + 1) % COLORS.length];
+      b.style.setProperty('--c', o.color);
+    });
+    $$('#feOpts input', d).forEach(inp => inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#feAddOpt', d).click(); } });
+    $('#feCancel', d).onclick = done;
+    $('#feSave', d).onclick = () => {
+      read(d);
+      const err = $('#feErr', d);
+      draft.name = draft.name.trim();
+      if (!draft.name) { err.textContent = 'Geef het veld een naam.'; return; }
+      draft.options = draft.options.map(o => ({...o, label:o.label.trim()})).filter(o => o.label);
+      if ((draft.type === 'select' || draft.type === 'multiselect') && !draft.options.length) { err.textContent = 'Voeg minstens één optie toe.'; return; }
+      if (isNew) { draft.order = Math.max(-1, ...data.fields.map(x => x.order || 0)) + 1; data.fields.push(touch(draft)); }
+      else Object.assign(f, draft, {u:now()});
+      commit(); done();
+    };
+    $('#feDel', d)?.addEventListener('click', () => {
+      if (!confirm(`Veld “${f.name}” verwijderen? De waarden in je taken verdwijnen ook.`)) return;
+      data.fields = data.fields.filter(x => x.id !== f.id); tombstone(f.id);
+      for (const t of data.tasks) if (f.id in t.custom) { delete t.custom[f.id]; touch(t); }
+      for (const k of Object.keys(data.prefs)) {
+        const pr = data.prefs[k];
+        for (const key of ['sort','group','ff']) if (pr[key] === 'f:' + f.id) { pr[key] = key === 'sort' ? 'manual' : ''; if (key === 'ff') pr.fv = ''; }
+      }
+      commit(); done();
+    });
+  });
+  draw();
+}
+
+function openSettings() {
+  const s = data.settings.sync;
+  showDialog(`
+    <h3>Instellingen</h3>
+
+    <h4>Synchroniseren tussen toestellen</h4>
+    ${s ? `<div class="box">
+        <p>Gekoppeld aan gist <code>${esc(s.gistId)}</code>.</p>
+        <p class="muted small">Op een ander toestel: open deze pagina, kies <b>“Ik heb al een kluis in GitHub Gist”</b> en vul je token, dit gist-ID en je wachtwoord in.</p>
+        <div class="dlg-actions" style="margin-top:10px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button><button type="button" class="btn" id="stCopy">Gist-ID kopiëren</button><span class="grow"></span><button type="button" class="btn danger" id="stUnlink">Ontkoppelen</button></div>
+      </div>`
+    : `<div class="box">
+        <p class="muted small">Zonder synchronisatie staan je taken alleen in deze browser. Met een (gratis) GitHub-token bewaart Taken een <b>versleutelde</b> kopie in een geheime Gist, zodat je ze op je gsm én computer kunt gebruiken.</p>
+        <p class="muted small">1. Maak een token op <a href="https://github.com/settings/tokens/new?scopes=gist&description=Taken" target="_blank" rel="noopener">github.com/settings/tokens</a> met alleen het recht <code>gist</code>.<br>2. Plak het hieronder. Laat het gist-ID leeg om een nieuwe gist aan te maken.</p>
+        <label class="fl">GitHub-token<input id="stTok" type="password" autocomplete="off" placeholder="ghp_…"></label>
+        <label class="fl">Bestaand gist-ID <span class="muted">(optioneel)</span><input id="stGist" type="text" autocomplete="off"></label>
+        <label class="fl">Je wachtwoord <span class="muted">(alleen nodig bij een bestaand gist)</span><input id="stPw" type="password" autocomplete="current-password"></label>
+        <p class="err" id="stErr"></p>
+        <div class="dlg-actions" style="margin-top:6px"><span class="grow"></span><button type="button" class="btn primary" id="stConnect">Koppelen</button></div>
+      </div>`}
+
+    <h4>Beveiliging</h4>
+    <label class="fl">Automatisch vergrendelen na inactiviteit
+      <select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-size:14px;font-weight:600">Wachtwoord wijzigen</summary>
+      <label class="fl">Huidig wachtwoord<input id="stOld" type="password" autocomplete="current-password"></label>
+      <label class="fl">Nieuw wachtwoord<input id="stNew1" type="password" autocomplete="new-password"></label>
+      <label class="fl">Herhaal nieuw wachtwoord<input id="stNew2" type="password" autocomplete="new-password"></label>
+      <p class="err" id="stPwErr"></p>
+      <button type="button" class="btn" id="stPwSave">Wachtwoord wijzigen</button>
+    </details>
+
+    <h4>Back-up</h4>
+    <div class="dlg-actions" style="margin-top:6px">
+      <button type="button" class="btn" id="stExpEnc">Versleutelde back-up</button>
+      <button type="button" class="btn" id="stExpPlain">Leesbare export (JSON)</button>
+      <button type="button" class="btn" id="stImp">Importeren…</button>
+      <input type="file" id="stFile" accept=".json,application/json" hidden>
+    </div>
+    <p class="muted small">Importeren voegt de taken samen met wat er al is.</p>
+
+    <h4>Dit toestel</h4>
+    <button type="button" class="btn danger" id="stWipe">Alle gegevens van dit toestel wissen</button>
+
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="stClose">Klaar</button></div>`, d => {
+    $('#stClose', d).onclick = () => dlg.close();
+    $('#stAuto', d).onchange = e => { data.settings.autolock = +e.target.value; save(); };
+    $('#stSync', d)?.addEventListener('click', () => syncNow());
+    $('#stCopy', d)?.addEventListener('click', () => { navigator.clipboard?.writeText(s.gistId); toast('Gist-ID gekopieerd'); });
+    $('#stUnlink', d)?.addEventListener('click', () => {
+      if (!confirm('Synchronisatie ontkoppelen? De gist blijft bestaan op GitHub.')) return;
+      data.settings.sync = null; setSync('idle'); save(); openSettings();
+    });
+    $('#stConnect', d)?.addEventListener('click', async e => {
+      const token = $('#stTok', d).value.trim(), gistId = $('#stGist', d).value.trim().replace(/^.*\//, ''), pw = $('#stPw', d).value;
+      const err = $('#stErr', d);
+      if (!token) { err.textContent = 'Vul een token in.'; return; }
+      e.target.disabled = true; e.target.textContent = 'Bezig…'; err.textContent = '';
+      try {
+        if (!gistId) {
+          const g = await gistCreate(token, await persist());
+          data.settings.sync = {token, gistId:g.id};
+          save();
+          setSync('ok');
+        } else {
+          const blob = await gistGet({token, gistId});
+          if (blob && blob.salt !== b64(K.salt) && !pw) throw new Error('Deze gist werd met een ander wachtwoord of op een ander toestel aangemaakt. Vul je wachtwoord in.');
+          data.settings.sync = {token, gistId};
+          save();
+          await syncNow(pw);
+          if (syncState.state === 'err') { data.settings.sync = null; save(); throw new Error(syncState.msg); }
+        }
+        openSettings();
+        toast('Synchronisatie ingesteld');
+      } catch (ex) {
+        err.textContent = ex.message; e.target.disabled = false; e.target.textContent = 'Koppelen';
+      }
+    });
+    $('#stPwSave', d).onclick = async () => {
+      const err = $('#stPwErr', d), o = $('#stOld', d).value, n1 = $('#stNew1', d).value, n2 = $('#stNew2', d).value;
+      err.textContent = '';
+      if (n1.length < 8) { err.textContent = 'Gebruik minstens 8 tekens.'; return; }
+      if (n1 !== n2) { err.textContent = 'De nieuwe wachtwoorden komen niet overeen.'; return; }
+      try { await unseal(await deriveKey(o, K.salt, K.iter), await persist()); }
+      catch { err.textContent = 'Huidig wachtwoord klopt niet.'; return; }
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER};
+      const blob = await persist();
+      if (data.settings.sync) {
+        try { await gistPut(data.settings.sync, blob); setSync('ok'); }
+        catch (ex) { setSync('err', ex.message); }
+      }
+      dlg.close();
+      toast('Wachtwoord gewijzigd' + (data.settings.sync ? '. Gebruik op andere toestellen “Herstellen vanaf GitHub Gist”.' : ''));
+    };
+    const download = (name, obj) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], {type:'application/json'}));
+      a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+    $('#stExpEnc', d).onclick = async () => download(`taken-backup-${today()}.json`, await persist());
+    $('#stExpPlain', d).onclick = () => {
+      if (!confirm('De leesbare export is NIET versleuteld. Bewaar het bestand veilig. Doorgaan?')) return;
+      const copy = JSON.parse(JSON.stringify(data)); copy.settings.sync = null;
+      download(`taken-export-${today()}.json`, copy);
+    };
+    $('#stImp', d).onclick = () => $('#stFile', d).click();
+    $('#stFile', d).onchange = async e => {
+      const file = e.target.files[0]; if (!file) return;
+      try {
+        const obj = JSON.parse(await file.text());
+        let incoming;
+        if (obj.ct && obj.salt) {
+          const pw = prompt('Wachtwoord van deze back-up:'); if (pw === null) return;
+          try { incoming = await unseal(await deriveKey(pw, unb64(obj.salt), obj.iter), obj); }
+          catch { throw new Error('Onjuist wachtwoord voor deze back-up.'); }
+        } else if (Array.isArray(obj.tasks)) incoming = obj;
+        else throw new Error('Onbekend bestandsformaat.');
+        const sync = data.settings.sync;
+        data = merge(data, normalize(incoming));
+        data.settings.sync = sync;
+        commit(); dlg.close(); toast('Import voltooid');
+      } catch (ex) { alert('Importeren mislukt: ' + ex.message); }
+    };
+    $('#stWipe', d).onclick = () => {
+      if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden (een gesynchroniseerde gist blijft bestaan).')) return;
+      if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
+      localStorage.removeItem(VAULT); location.reload();
+    };
+  });
+}
+
+/* ---------------- Toast ---------------- */
+let toastTimer = null;
+function toast(msg, undo) {
+  const el = $('#toast');
+  el.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button">Ongedaan maken</button>' : ''}`;
+  el.hidden = false;
+  if (undo) el.querySelector('button').onclick = () => { el.hidden = true; undo(); };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.hidden = true, undo ? 6000 : 3500);
+}
+
+/* ---------------- Events ---------------- */
+$('#nav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView({type:b.dataset.view}); });
+$('#projNav').addEventListener('click', e => { const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
+$('#addProject').onclick = () => openProjectDialog(null);
+$('#editProject').onclick = () => openProjectDialog(proj(view.type === 'inbox' ? 'inbox' : view.id));
+$('#openFields').onclick = () => { $('#app').classList.remove('side-open'); openFieldsDialog(); };
+$('#openSettings').onclick = () => { $('#app').classList.remove('side-open'); openSettings(); };
+$('#lockNow').onclick = lock;
+$('#syncStatus').onclick = () => data.settings.sync ? syncNow() : openSettings();
+$('#menuBtn').onclick = () => $('#app').classList.add('side-open');
+$('#scrim').onclick = () => $('#app').classList.remove('side-open');
+$('#list').addEventListener('click', e => {
+  if (e.target.closest('[data-act=link]')) return;
+  const row = e.target.closest('.task'); if (!row) return;
+  if (e.target.closest('[data-act=toggle]')) toggleTask(row.dataset.id);
+  else openTask(row.dataset.id);
+});
+$('#toolbar').addEventListener('input', e => {
+  if (e.target.id === 'tbSearch') { searchQ = e.target.value; renderList(); }
+  if (e.target.id === 'tbFv' && e.target.tagName === 'INPUT') {
+    data.prefs[viewKey()] = {...(data.prefs[viewKey()] || {}), fv:e.target.value}; save(true); renderList();
+  }
+});
+$('#toolbar').addEventListener('change', e => {
+  const id = e.target.id;
+  if (id === 'tbSort') setPref('sort', e.target.value);
+  else if (id === 'tbGroup') setPref('group', e.target.value);
+  else if (id === 'tbFf') setPref('ff', e.target.value);
+  else if (id === 'tbFv' && e.target.tagName === 'SELECT') setPref('fv', e.target.value);
+  else if (id === 'tbDone') setPref('showDone', e.target.checked);
+});
+document.addEventListener('keydown', e => {
+  if (!data || dlg.open) return;
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if (e.key === 'Escape') {
+    if (typing) document.activeElement.blur();
+    else if ($('#app').classList.contains('side-open')) $('#app').classList.remove('side-open');
+    else if (selectedId) closeDetail();
+    return;
+  }
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'q' || e.key === 'n') { e.preventDefault(); $('#qaInput').focus(); }
+  else if (e.key === '/') { e.preventDefault(); $('#tbSearch')?.focus(); }
+});
+
+/* ---------------- Timers: auto-lock, periodieke sync, datumwissel ---------------- */
+let lastAct = now(), timersStarted = false, lastDay = today();
+function startTimers() {
+  if (timersStarted) return; timersStarted = true;
+  ['pointerdown','keydown','touchstart','wheel'].forEach(ev => addEventListener(ev, () => lastAct = now(), {passive:true}));
+  const check = () => {
+    const m = data?.settings.autolock;
+    if (m && now() - lastAct > m * 60000) { lock(); return; }
+    if (today() !== lastDay) { lastDay = today(); renderAll(); }
+  };
+  setInterval(check, 15000);
+  document.addEventListener('visibilitychange', () => {
+    check();
+    if (document.visibilityState === 'visible') syncNow();
+    else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); scheduleSync(0); }
+  });
+  setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 60000);
+}
+
+renderLock();
+</script>
+</body>
+</html>
