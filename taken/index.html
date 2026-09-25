@@ -280,6 +280,28 @@ table.sales .empty-row td{padding:18px 10px;color:var(--muted);text-align:center
 .pj-row{display:flex;gap:10px;align-items:flex-end}
 .pj-emo{width:80px;flex:none}
 .pj-emo input{text-align:center;font-size:18px;padding:5px}
+table.sales .grp-week td{background:var(--side);padding:9px 10px;font-weight:750;border-top:2px solid var(--line)}
+table.sales .grp-day td{padding:7px 10px 5px;font-size:12.5px;color:var(--muted);font-weight:650;text-transform:uppercase;letter-spacing:.03em}
+table.sales .grp-week td,table.sales .grp-day td{white-space:nowrap}
+table.sales .grp-week td span,table.sales .grp-day td span{margin-right:12px}
+table.sales .grp-week b,table.sales .grp-day b{font-variant-numeric:tabular-nums}
+table.sales .grp-day b{color:var(--text);font-weight:650}
+table.sales tbody tr.grp-week:hover,table.sales tbody tr.grp-day:hover{background:none}
+.sales-stat.target .bar{display:block;height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.sales-stat.target .bar i{display:block;height:100%;background:var(--p2);border-radius:3px}
+.sales-stat.target.hit .bar i{background:var(--ok)}
+.sales-stat.target.hit b{color:var(--ok)}
+.im-sum{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.im-sum div{background:var(--side);border:1px solid var(--line);border-radius:8px;padding:6px 12px;display:flex;flex-direction:column}
+.im-sum span{font-size:11.5px;color:var(--muted)} .im-sum b{font-variant-numeric:tabular-nums}
+table.im-weeks{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.im-weeks td{padding:4px 6px;border-bottom:1px solid var(--line)}
+table.im-weeks td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:650}
+table.im-weeks td:nth-child(2){color:var(--muted)}
+.im-warn{margin-top:10px;border:1px solid color-mix(in srgb,var(--p2) 45%,transparent);background:color-mix(in srgb,var(--p2) 9%,transparent);border-radius:8px;padding:8px 12px;font-size:13px}
+.im-warn ul{margin:4px 0 0;padding-left:18px}
+.im-ok{color:var(--ok);font-size:13.5px;margin:10px 0 0}
+.sales-head .seg{align-self:center}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -1899,46 +1921,111 @@ function cellInput(c, r) {
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
   return `<input type="text" ${a} value="${esc(v)}">`;
 }
+// Weeknummer binnen de maand zoals je het zelf noteert: week 1 = de (eventueel onvolledige) eerste week.
+function weekOfMonth(dateStr) {
+  const d = parseYmd(dateStr), first = new Date(d.getFullYear(), d.getMonth(), 1);
+  return Math.floor((d.getDate() + (first.getDay() + 6) % 7 - 1) / 7) + 1;
+}
+// Groepeert rijen per week en per dag; rijen zonder datum komen onderaan.
+function salesGroups(rows, dateCol, moneyCol) {
+  const amt = r => moneyCol ? (toNum(r.values[moneyCol.id]) || 0) : 0;
+  const weeks = new Map(), none = {key:'none', rows:[], sum:0};
+  const sorted = [...rows].sort((a, b) => (a.values[dateCol.id] || '9999').localeCompare(b.values[dateCol.id] || '9999') || (a.order || 0) - (b.order || 0));
+  for (const r of sorted) {
+    const d = r.values[dateCol.id];
+    if (!d || !/^\d{4}-\d\d-\d\d$/.test(d)) { none.rows.push(r); none.sum += amt(r); continue; }
+    const wk = d.slice(0, 7) + ':' + weekOfMonth(d);
+    if (!weeks.has(wk)) weeks.set(wk, {key:wk, n:weekOfMonth(d), sum:0, days:new Map()});
+    const w = weeks.get(wk);
+    if (!w.days.has(d)) w.days.set(d, {date:d, sum:0, rows:[]});
+    const day = w.days.get(d);
+    day.rows.push(r); day.sum += amt(r); w.sum += amt(r);
+  }
+  return {weeks:[...weeks.values()], none};
+}
 function renderSales(force) {
   const pg = salesPageById(view.id); if (!pg) return;
-  if (!force && document.activeElement?.classList.contains('cell') && $('#salesPage').contains(document.activeElement)) { updateSalesTotals(true); return; }
+  const active = document.activeElement;
+  const focusCell = active?.classList.contains('cell') && $('#salesPage').contains(active) ? {row:active.closest('tr').dataset.row, col:active.dataset.col} : null;
+  if (!force && focusCell) { updateSalesTotals(true); return; }
   const cols = salesCols(), rows = salesRows(pg.id), tot = salesTotals(pg.id);
   const moneyCols = cols.filter(c => c.type === 'money');
+  const dateCol = cols.find(c => c.type === 'date');
+  const grouped = !!dateCol && !pg.flat;
   const el = $('#salesPage');
-  const focusedNotes = document.activeElement?.id === 'spNotes';
+  const focusedNotes = active?.id === 'spNotes';
+  const span = cols.length + 1;
+  const rowHtml = r => `<tr data-row="${r.id}">${cols.map(c => `<td>${cellInput(c, r)}</td>`).join('')}<td class="del"><button type="button" class="icon-btn" data-delrow aria-label="Verkoop verwijderen" title="Verwijderen">${I.trash}</button></td></tr>`;
+  let body = '';
+  if (grouped) {
+    const g = salesGroups(rows, dateCol, moneyCols[0]);
+    for (const w of g.weeks) {
+      body += `<tr class="grp-week"><td colspan="${span}"><span>Week ${w.n}</span><b data-gsum="${w.key}">${eur(w.sum)}</b></td></tr>`;
+      for (const d of w.days.values()) {
+        const dt = parseYmd(d.date);
+        body += `<tr class="grp-day"><td colspan="${span}"><span>${cap(DAYS[dt.getDay()])} ${dt.getDate()} ${MONTHS[dt.getMonth()]}</span><b data-gsum="${d.date}">${eur(d.sum)}</b></td></tr>`;
+        body += d.rows.map(rowHtml).join('');
+      }
+    }
+    if (g.none.rows.length) body += `<tr class="grp-week"><td colspan="${span}"><span>Zonder datum</span><b data-gsum="none">${eur(g.none.sum)}</b></td></tr>` + g.none.rows.map(rowHtml).join('');
+  } else body = rows.map(rowHtml).join('');
+  const target = toNum(pg.target), main = moneyCols[0] ? tot.per[moneyCols[0].id] : 0;
+  const pct = target ? Math.round(main / target * 100) : 0;
   el.innerHTML = `
     <div class="sales-head">
       ${moneyCols.map(c => `<div class="sales-stat"><span>${esc(c.name)} totaal</span><b data-total="${c.id}">${eur(tot.per[c.id])}</b></div>`).join('')}
-      <div class="sales-stat"><span>Aantal verkopen</span><b data-count>${rows.length}</b></div>
+      ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
+      <div class="sales-stat"><span>Aantal regels</span><b data-count>${rows.length}</b></div>
       <span class="grow"></span>
+      ${dateCol ? `<div class="seg" role="group" aria-label="Weergave"><button type="button" data-flat="0" class="${grouped ? 'on' : ''}">Per week</button><button type="button" data-flat="1" class="${grouped ? '' : 'on'}">Lijst</button></div>` : ''}
+      <button type="button" class="btn" id="spImport">Notities plakken</button>
       <button type="button" class="btn" id="spCols">Kolommen</button>
       <button type="button" class="btn" id="spCsv">CSV</button>
     </div>
     <div class="table-wrap"><table class="sales">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
-      <tbody>${rows.map(r => `<tr data-row="${r.id}">${cols.map(c => `<td>${cellInput(c, r)}</td>`).join('')}<td class="del"><button type="button" class="icon-btn" data-delrow aria-label="Verkoop verwijderen" title="Verwijderen">${I.trash}</button></td></tr>`).join('')
-        || `<tr class="empty-row"><td colspan="${cols.length + 1}">Nog geen verkopen deze maand.</td></tr>`}</tbody>
+      <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe of klik op “Notities plakken”.</td></tr>`}</tbody>
       <tfoot><tr>${cols.map((c, i) => `<td class="t-${c.type}" data-foot="${c.id}">${c.type === 'money' ? eur(tot.per[c.id]) : c.type === 'number' ? numFmt.format(tot.per[c.id]) : i === 0 ? 'Totaal' : ''}</td>`).join('')}<td></td></tr></tfoot>
     </table></div>
     <button type="button" class="btn primary" id="spAdd" style="margin-top:12px">+ Verkoop toevoegen</button>
     <label class="fl" style="margin-top:26px">Notities<textarea id="spNotes" rows="3" placeholder="Doelen, opmerkingen…">${esc(pg.notes || '')}</textarea></label>`;
   if (focusedNotes) { const n = $('#spNotes'); n.focus(); n.selectionStart = n.selectionEnd = n.value.length; }
+  if (focusCell) $(`tr[data-row="${focusCell.row}"] .cell[data-col="${focusCell.col}"]`)?.focus();
   autosize($('#spNotes'));
 }
 function updateSalesTotals(skipNav) {
-  const tot = salesTotals(view.id);
-  for (const c of salesCols()) {
+  const pg = salesPageById(view.id); if (!pg) return;
+  const tot = salesTotals(view.id), cols = salesCols();
+  for (const c of cols) {
     if (c.type === 'money') { $(`[data-total="${c.id}"]`) && ($(`[data-total="${c.id}"]`).textContent = eur(tot.per[c.id])); $(`[data-foot="${c.id}"]`).textContent = eur(tot.per[c.id]); }
     if (c.type === 'number') $(`[data-foot="${c.id}"]`).textContent = numFmt.format(tot.per[c.id]);
   }
   $('[data-count]').textContent = tot.count;
+  const moneyCol = cols.find(c => c.type === 'money'), dateCol = cols.find(c => c.type === 'date');
+  const target = toNum(pg.target);
+  if (target && $('[data-pct]')) {
+    const pct = Math.round((moneyCol ? tot.per[moneyCol.id] : 0) / target * 100);
+    $('[data-pct]').textContent = pct + '% behaald'; $('[data-bar]').style.width = Math.min(100, pct) + '%';
+    $('[data-pct]').closest('.sales-stat').classList.toggle('hit', pct >= 100);
+  }
+  if (dateCol && !pg.flat) {
+    const g = salesGroups(salesRows(pg.id), dateCol, moneyCol);
+    for (const w of g.weeks) {
+      const e = $(`[data-gsum="${w.key}"]`); if (e) e.textContent = eur(w.sum);
+      for (const d of w.days.values()) { const e2 = $(`[data-gsum="${d.date}"]`); if (e2) e2.textContent = eur(d.sum); }
+    }
+    const en = $('[data-gsum="none"]'); if (en) en.textContent = eur(g.none.sum);
+  }
   if (!skipNav) renderNav();
 }
 function addSalesRow() {
   const pg = salesPageById(view.id); if (!pg) return;
   const r = touch({id:uid(), pageId:pg.id, order:now(), values:{}});
   const dateCol = salesCols().find(c => c.type === 'date');
-  if (dateCol) r.values[dateCol.id] = pg.month && today().startsWith(pg.month) ? today() : '';
+  if (dateCol) {
+    const last = salesRows(pg.id).map(x => x.values[dateCol.id]).filter(Boolean).sort().pop();
+    r.values[dateCol.id] = pg.month && today().startsWith(pg.month) ? today() : last || '';
+  }
   data.sales.push(r);
   save(); renderNav(); renderSales(true);
   const first = $(`tr[data-row="${r.id}"] input:not([type=date])`) || $(`tr[data-row="${r.id}"] input`);
@@ -1954,6 +2041,9 @@ sp.addEventListener('input', e => {
   const v = c.type === 'money' || c.type === 'number' ? toNum(cell.value) : cell.value;
   if (v === null || v === '') delete r.values[c.id]; else r.values[c.id] = v;
   touch(r); save(true); updateSalesTotals();
+});
+sp.addEventListener('change', e => {
+  if (e.target.matches('.cell.t-date')) setTimeout(() => renderSales(true), 0);
 });
 sp.addEventListener('focusout', e => {
   // bedragen netjes opmaken na het typen
@@ -1977,6 +2067,9 @@ sp.addEventListener('keydown', e => {
   else addSalesRow();
 });
 sp.addEventListener('click', e => {
+  const flat = e.target.closest('[data-flat]');
+  if (flat) { const pg = salesPageById(view.id); pg.flat = flat.dataset.flat === '1'; touch(pg); commit(); return; }
+  if (e.target.closest('#spImport')) { openSalesImportDialog(); return; }
   if (e.target.closest('#spAdd')) addSalesRow();
   else if (e.target.closest('#spCols')) openSalesColsDialog();
   else if (e.target.closest('#spCsv')) exportSalesCsv();
@@ -2010,6 +2103,7 @@ function openSalesPageDialog(pg) {
     <h3>${isNew ? 'Nieuwe maandpagina' : 'Pagina bewerken'}</h3>
     <label class="fl">Maand<input id="pgMonth" type="month" value="${esc(month || '')}"></label>
     <label class="fl">Titel<input id="pgTitle" type="text" value="${esc(pg?.title || (month ? monthTitle(month) : ''))}"></label>
+    <label class="fl">Doelstelling (€) <span class="muted">(optioneel)</span><input id="pgTarget" type="text" inputmode="decimal" value="${esc(pg?.target ? moneyFmt.format(pg.target) : '')}" placeholder="bv. 13.881,21"></label>
     <div class="dlg-actions">
       ${pg ? '<button type="button" class="btn danger" id="pgDel">Verwijderen</button>' : ''}
       <span class="grow"></span>
@@ -2021,10 +2115,11 @@ function openSalesPageDialog(pg) {
     $('#pgCancel', d).onclick = () => dlg.close();
     $('#pgSave', d).onclick = () => {
       const m = $('#pgMonth', d).value, title = $('#pgTitle', d).value.trim() || (m ? monthTitle(m) : 'Verkopen');
+      const target = parseAmount($('#pgTarget', d).value);
       if (isNew) {
-        const np = touch({id:uid(), title, month:m, notes:'', order:now()});
+        const np = touch({id:uid(), title, month:m, notes:'', target, order:now()});
         data.salesPages.push(np); view = {type:'sales', id:np.id};
-      } else Object.assign(pg, {title, month:m}, {u:now()});
+      } else Object.assign(pg, {title, month:m, target}, {u:now()});
       dlg.close(); commit();
     };
     $('#pgDel', d)?.addEventListener('click', () => {
@@ -2036,6 +2131,158 @@ function openSalesPageDialog(pg) {
     });
   });
 }
+/* ---- Notities plakken: je eigen notatie omzetten naar verkopen ----
+   Week 2 - €4.665
+   Maandag - €600
+   1x 1/16 - €100
+   1x 1/4 (€1295 ⇒ deler) - €647,5
+   2x annulatie - €360          (wordt afgetrokken)
+   Doelstelling: €13.881,21 */
+const WEEKDAYS_NL = {maandag:0, dinsdag:1, woensdag:2, donderdag:3, vrijdag:4, zaterdag:5, zondag:6};
+function parseAmount(v) {
+  if (v == null) return null;
+  let s = String(v).replace(/[€\s]/g, '').replace(/−/g, '-');
+  if (!s) return null;
+  const neg = s.startsWith('-'); if (neg) s = s.slice(1);
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+  const n = parseFloat(s);
+  return isNaN(n) ? null : neg ? -n : n;
+}
+const round2 = n => Math.round(n * 100) / 100;
+function parseSalesNotes(text, month) {
+  const [y, m] = month.split('-').map(Number);
+  const first = new Date(y, m - 1, 1);
+  const monday1 = new Date(y, m - 1, 1 - (first.getDay() + 6) % 7);
+  const res = {weeks:[], target:null, notedTotal:null, warnings:[], unknown:[]};
+  let week = null, day = null;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim(); if (!line) continue;
+    let mm;
+    if ((mm = line.match(/^week\s*(\d+)\s*(?:[-–:]\s*(.*))?$/i))) {
+      week = {n:+mm[1], noted:parseAmount(mm[2]), days:[]}; res.weeks.push(week); day = null; continue;
+    }
+    if ((mm = line.match(/^(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)\s*(?:[-–:]\s*(.*))?$/i))) {
+      if (!week) { week = {n:1, noted:null, days:[]}; res.weeks.push(week); }
+      const d = new Date(monday1); d.setDate(d.getDate() + (week.n - 1) * 7 + WEEKDAYS_NL[mm[1].toLowerCase()]);
+      day = {name:cap(mm[1].toLowerCase()), date:ymd(d), noted:parseAmount(mm[2]), items:[], week:week.n};
+      week.days.push(day);
+      if (day.date.slice(0, 7) !== month) res.warnings.push(`${day.name} van week ${week.n} valt buiten deze maand (${day.date.split('-').reverse().join('/')}).`);
+      continue;
+    }
+    if ((mm = line.match(/^doelstelling\s*[:\-–]?\s*(.+)$/i))) { res.target = parseAmount(mm[1]); continue; }
+    if ((mm = line.match(/^totaal[^:\-–]*[:\-–]\s*(.+)$/i))) { res.notedTotal = parseAmount(mm[1]); continue; }
+    if ((mm = line.match(/^(?:(\d+)\s*x\s*)?(.+?)\s+[-–]\s*(-?\s*€?\s*-?[\d.,]+)\s*$/i))) {
+      if (!day) { res.unknown.push(line); continue; }
+      let desc = mm[2].trim(), note = '';
+      const pm = desc.match(/^(.*?)\s*\((.*)\)\s*$/); if (pm) { desc = pm[1].trim(); note = pm[2].trim(); }
+      let qty = mm[1] ? +mm[1] : 1, amount = parseAmount(mm[3]);
+      if (amount === null) { res.unknown.push(line); continue; }
+      if (/annul/i.test(desc)) { amount = -Math.abs(amount); qty = -qty; desc = 'Annulatie'; }
+      day.items.push({qty, format:desc, amount, note});
+      continue;
+    }
+    res.unknown.push(line);
+  }
+  // controles
+  let total = 0;
+  for (const w of res.weeks) {
+    w.sum = 0;
+    for (const d of w.days) {
+      d.sum = round2(d.items.reduce((a, it) => a + it.amount, 0));
+      d.diff = d.noted == null ? 0 : round2(d.noted - d.sum);
+      w.sum += d.sum;
+    }
+    w.sum = round2(w.sum); total += w.sum;
+    w.notedDays = round2(w.days.reduce((a, d) => a + (d.noted ?? d.sum), 0));
+  }
+  res.total = round2(total);
+  return res;
+}
+function openSalesImportDialog() {
+  const pg = salesPageById(view.id); if (!pg) return;
+  const existing = salesRows(pg.id).length;
+  let text = '';
+  showDialog(`
+    <h3>Notities plakken</h3>
+    <p class="muted small" style="margin:0">Plak je verkopen zoals je ze noteert: <code>Week 2 - €4.665</code>, <code>Maandag - €600</code>, <code>2x 1/16 - €175</code>, <code>1x annulatie - €150</code>, <code>Doelstelling: €13.881,21</code>. Ze komen op <b>${esc(pg.title)}</b>.</p>
+    ${pg.month ? '' : '<p class="err">Kies eerst een maand voor deze pagina (via ⋯), anders kunnen de datums niet berekend worden.</p>'}
+    <textarea id="imText" rows="9" style="margin-top:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px" placeholder="Week 1 - €935&#10;Vrijdag - €935&#10;1x annulatie - €150&#10;…"></textarea>
+    <div id="imPreview"></div>
+    <label class="chk" style="margin-top:10px"><input type="checkbox" id="imFill" checked> Als de regels van een dag niet optellen tot het genoteerde dagtotaal: een regel “Niet gespecificeerd” toevoegen voor het verschil (vanaf € 1)</label>
+    ${existing ? `<label class="chk" style="margin-top:6px"><input type="checkbox" id="imReplace"> De ${existing} bestaande regels op deze pagina vervangen</label>` : ''}
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="imCancel">Annuleren</button><button type="button" class="btn primary" id="imGo" disabled>Importeren</button></div>`, d => {
+    const preview = () => {
+      text = $('#imText', d).value;
+      const box = $('#imPreview', d);
+      if (!text.trim() || !pg.month) { box.innerHTML = ''; $('#imGo', d).disabled = true; return; }
+      const r = parseSalesNotes(text, pg.month);
+      const fill = $('#imFill', d).checked;
+      const items = r.weeks.reduce((a, w) => a + w.days.reduce((b, x) => b + x.items.length, 0), 0);
+      const fills = r.weeks.flatMap(w => w.days.filter(x => Math.abs(x.diff) >= 1));
+      const total = round2(r.total + (fill ? fills.reduce((a, x) => a + x.diff, 0) : 0));
+      const issues = [];
+      for (const w of r.weeks) {
+        for (const x of w.days) if (Math.abs(x.diff) >= 0.01) issues.push(`Week ${w.n}, ${x.name.toLowerCase()}: regels samen ${eur(x.sum)}, genoteerd ${eur(x.noted)} (verschil ${eur(x.diff)})${Math.abs(x.diff) >= 1 ? (fill ? ' → aangevuld' : '') : ' → afronding, niet aangevuld'}.`);
+        if (w.noted != null && Math.abs(w.noted - w.notedDays) >= 0.01) issues.push(`Week ${w.n}: dagtotalen samen ${eur(w.notedDays)}, genoteerd ${eur(w.noted)}.`);
+      }
+      if (r.notedTotal != null && Math.abs(r.notedTotal - total) >= 0.01) issues.push(`Genoteerd maandtotaal ${eur(r.notedTotal)}, na import ${eur(total)} (verschil ${eur(round2(r.notedTotal - total))}).`);
+      box.innerHTML = `
+        <div class="im-sum">
+          <div><span>Regels</span><b>${items + (fill ? fills.length : 0)}</b></div>
+          <div><span>Dagen</span><b>${r.weeks.reduce((a, w) => a + w.days.length, 0)}</b></div>
+          <div><span>Totaal</span><b>${eur(total)}</b></div>
+          ${r.target != null ? `<div><span>Doelstelling</span><b>${eur(r.target)}</b></div>` : ''}
+        </div>
+        <table class="im-weeks">${r.weeks.map(w => `<tr><td>Week ${w.n}</td><td>${w.days.map(x => x.name.slice(0, 2).toLowerCase()).join(' ')}</td><td>${eur(round2(w.sum + (fill ? w.days.filter(x => Math.abs(x.diff) >= 1).reduce((a, x) => a + x.diff, 0) : 0)))}</td></tr>`).join('')}</table>
+        ${issues.length ? `<div class="im-warn"><b>Controle</b><ul>${issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '<p class="im-ok">✓ Alle dag- en weektotalen kloppen.</p>'}
+        ${r.warnings.length || r.unknown.length ? `<div class="im-warn"><b>Let op</b><ul>${r.warnings.map(x => `<li>${esc(x)}</li>`).join('')}${r.unknown.map(x => `<li>Niet herkend en overgeslagen: “${esc(x)}”</li>`).join('')}</ul></div>` : ''}`;
+      $('#imGo', d).disabled = !items && !fills.length;
+    };
+    $('#imText', d).oninput = preview;
+    $('#imFill', d).onchange = preview;
+    $('#imCancel', d).onclick = () => dlg.close();
+    $('#imGo', d).onclick = () => {
+      const r = parseSalesNotes(text, pg.month), fill = $('#imFill', d).checked;
+      if ($('#imReplace', d)?.checked) {
+        for (const x of salesRows(pg.id)) tombstone(x.id);
+        data.sales = data.sales.filter(x => x.pageId !== pg.id);
+      }
+      const cols = ensureImportCols();
+      let order = now(), n = 0;
+      for (const w of r.weeks) for (const x of w.days) {
+        const lines = [...x.items];
+        if (fill && Math.abs(x.diff) >= 1) lines.push({qty:null, format:'Niet gespecificeerd', amount:x.diff, note:`aangevuld tot genoteerd dagtotaal ${eur(x.noted)}`});
+        for (const it of lines) {
+          const values = {[cols.date.id]:x.date, [cols.money.id]:round2(it.amount)};
+          if (it.qty != null) values[cols.qty.id] = it.qty;
+          if (it.format) values[cols.format.id] = it.format;
+          if (it.note) values[cols.note.id] = it.note;
+          data.sales.push(touch({id:uid(), pageId:pg.id, order:order++, values})); n++;
+        }
+      }
+      if (r.target != null) pg.target = r.target;
+      pg.flat = false; touch(pg);
+      dlg.close(); commit();
+      toast(`${n} regels geïmporteerd`);
+    };
+    setTimeout(() => $('#imText', d).focus(), 30);
+  });
+}
+// Zorgt dat de kolommen Datum, Aantal, Formaat, Bedrag en Opmerking bestaan (bestaande kolommen worden hergebruikt).
+function ensureImportCols() {
+  const cols = salesCols();
+  const find = (type, re) => cols.find(c => c.type === type && (!re || re.test(c.name)));
+  const add = (name, type, order) => { const c = touch({id:uid(), name, type, order}); data.salesCols.push(c); cols.push(c); return c; };
+  const date = find('date') || add('Datum', 'date', -1);
+  const base = date.order || 0;
+  const qty = find('number', /aantal|stuks|#/i) || add('Aantal', 'number', base + 0.1);
+  const format = find('text', /formaat|format|product|type/i) || add('Formaat', 'text', base + 0.2);
+  const money = find('money') || add('Bedrag', 'money', base + 0.3);
+  const note = find('text', /opmerking|omschrijving|notitie/i) || add('Opmerking', 'text', 99);
+  return {date, qty, format, money, note};
+}
+
 function openSalesColsDialog() {
   const draft = salesCols().map(c => ({...c}));
   const read = d => $$('.st-row', d).forEach((row, i) => { draft[i].name = $('input', row).value; draft[i].type = $('select', row).value; });
