@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verzoekjes</title>
+<meta name="description" content="Vraag een nummer aan bij de DJ.">
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<style>
+.wrap{max-width:580px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 16px max(40px,env(safe-area-inset-bottom))}
+header{text-align:center;padding:14px 0 18px}
+.logo{width:54px;height:54px;border-radius:16px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin:0 auto 12px}
+.logo svg{width:28px;height:28px}
+header h1{margin:0 0 6px;font-size:26px;font-weight:780;letter-spacing:-.01em}
+header p{margin:0 auto;color:var(--muted);max-width:44ch;white-space:pre-line}
+.now{display:flex;gap:12px;align-items:center;padding:12px;margin:0 0 16px}
+.now .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ok);display:flex;align-items:center;gap:6px}
+.now .t{font-weight:650}
+.search{position:relative}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--faint);pointer-events:none}
+.search input{padding:14px 14px 14px 44px;font-size:17px;border-radius:14px;box-shadow:var(--shadow)}
+#results{list-style:none;margin:10px 0 0;padding:0}
+.song{display:flex;gap:12px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.song:hover,.song:focus-visible{background:var(--hover);outline:none}
+.song .meta{min-width:0;flex:1}
+.song .t,.song .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song .t{font-weight:600}
+.song .a{color:var(--muted);font-size:14px}
+.song .plus{color:var(--accent);flex:none}
+.hint{text-align:center;color:var(--muted);font-size:14.5px;padding:18px 8px}
+#form{padding:18px 16px;margin-top:4px}
+#form .picked{display:flex;gap:12px;align-items:center;padding-bottom:6px}
+#form .picked .t{font-weight:700;font-size:17px}
+#form .submit{width:100%;padding:13px;font-size:16px;margin-top:18px}
+.closed{padding:26px 18px;text-align:center}
+.closed h2{margin:0 0 6px;font-size:19px}
+.mine{margin-top:28px}
+.mine h2{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 8px;padding:0 4px}
+.mine ul{list-style:none;margin:0;padding:0}
+.mine li{display:flex;gap:12px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line)}
+.mine .art{width:40px;height:40px;border-radius:6px}
+.mine .meta{flex:1;min-width:0}
+.mine .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mine .a{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.done-card{padding:26px 18px;text-align:center}
+.done-card .big{font-size:40px;line-height:1;margin-bottom:8px}
+footer{text-align:center;color:var(--faint);font-size:12.5px;margin-top:40px}
+footer a{color:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+    <h1 id="evName">Verzoekjes</h1>
+    <p id="evWelcome"></p>
+  </header>
+
+  <div id="loading" class="spinner" aria-label="Laden"></div>
+
+  <div id="setup" class="card setup" hidden>
+    <h1>Nog niet ingesteld</h1>
+    <p class="muted">Deze verzoekjes-pagina is nog niet gekoppeld aan een GitHub-repo. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
+  </div>
+
+  <div id="nowPlaying" class="card now" hidden>
+    <div class="art" id="npArt"></div>
+    <div class="grow" style="min-width:0">
+      <div class="lbl"><span class="dot"></span> Nu te horen</div>
+      <div class="t" id="npTitle"></div>
+      <div class="muted small" id="npArtist"></div>
+    </div>
+  </div>
+
+  <div id="closed" class="card closed" hidden>
+    <h2>Verzoekjes zijn gesloten</h2>
+    <p class="muted" id="closedMsg" style="margin:0;white-space:pre-line"></p>
+  </div>
+
+  <main id="open" hidden>
+    <div id="searchBox">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Zoek een nummer of artiest…" autocomplete="off" enterkeyhint="search" aria-label="Zoek een nummer">
+      </div>
+      <ul id="results"></ul>
+      <div id="searchHint" class="hint">Typ een titel of artiest om te zoeken.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in</button></div>
+    </div>
+
+    <form id="form" class="card" hidden autocomplete="on">
+      <div class="picked">
+        <div class="art" id="fArt"></div>
+        <div class="grow" style="min-width:0">
+          <div class="t" id="fTitle"></div>
+          <div class="muted" id="fArtist"></div>
+        </div>
+        <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div id="manualFields" hidden>
+        <label for="mTitle">Titel</label>
+        <input id="mTitle" type="text" maxlength="200">
+        <label for="mArtist">Artiest</label>
+        <input id="mArtist" type="text" maxlength="200">
+      </div>
+      <label for="fName">Je naam <span class="muted" style="font-weight:400">(optioneel)</span></label>
+      <input id="fName" type="text" maxlength="60" autocomplete="given-name">
+      <div id="msgField">
+        <label for="fMsg">Boodschap voor de DJ <span class="muted" style="font-weight:400">(optioneel)</span></label>
+        <textarea id="fMsg" maxlength="300" placeholder="Bv. voor de jarige Sarah!"></textarea>
+      </div>
+      <button class="btn primary submit" id="fSubmit" type="submit">Verzoekje versturen</button>
+      <p class="err" id="fErr"></p>
+    </form>
+
+    <div id="done" class="card done-card" hidden>
+      <div class="big">🎶</div>
+      <h2 style="margin:0 0 6px;font-size:20px">Verzoekje ontvangen!</h2>
+      <p class="muted" style="margin:0 0 16px">De DJ ziet je aanvraag nu. Geen garantie, wel goede wil 😉</p>
+      <button class="btn" id="again" type="button">Nog een nummer aanvragen</button>
+    </div>
+  </main>
+
+  <section class="mine" id="mine" hidden>
+    <h2>Mijn verzoekjes</h2>
+    <ul id="mineList"></ul>
+  </section>
+
+  <footer><a href="https://sbmusic.be/">SB Music</a></footer>
+</div>
+
+<script type="module">
+import {
+  configured, api, parseEvent, parseRequest, requestIssue, EVENT_LABEL,
+  $, esc, songKey, safeArt, searchSongs, toast, store, poll
+} from './gh.js';
+
+const NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+const COOLDOWN = 20_000, MAX_OPEN = 5;
+const artEl = (el, url) => { url = safeArt(url); el.style.backgroundImage = url ? `url("${url}")` : ''; el.innerHTML = url ? '' : NOTE; };
+
+// Elk event heeft een eigen link: /requests/?e=<event-code> (zo staat het ook in de QR-code).
+const EVENT_ID = (new URLSearchParams(location.search).get('e') || location.hash.slice(1) || '').trim().toLowerCase();
+let settings = null, picked = null, manual = false;
+
+function closedCard(h, msg) {
+  $('#loading').hidden = true; $('#open').hidden = true; $('#closed').hidden = false;
+  $('#closed h2').textContent = h; $('#closedMsg').textContent = msg;
+}
+
+if (!configured) {
+  $('#loading').hidden = true; $('#setup').hidden = false;
+} else if (!/^[a-z0-9][a-z0-9-]{1,59}$/.test(EVENT_ID)) {
+  closedCard('Scan de QR-code', 'Scan de QR-code op het event of open de link die je kreeg om een nummer aan te vragen.');
+} else {
+  loadEvent().then(() => { poll(refreshEvent, 45_000); refreshMine(); }).catch(fail);
+}
+
+function fail(e) {
+  console.error(e);
+  closedCard('Even geen verbinding', e.rateLimited ? 'Het is erg druk. Probeer over enkele minuten opnieuw.' : 'Kon de verzoekjes niet laden. Probeer later opnieuw.');
+}
+
+// Zoek het issue-nummer van dit event (onthouden, zodat we daarna enkel dat ene issue opvragen).
+async function loadEvent() {
+  const cache = store.get('vz_evnum', {});
+  if (cache[EVENT_ID]) {
+    try {
+      const {data} = await api('GET', '/issues/' + cache[EVENT_ID], null, {cond: true});
+      const ev = parseEvent(data);
+      if (ev && ev.id === EVENT_ID) { settings = {...ev, eventId: ev.id}; render(); return; }
+    } catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }
+  }
+  const list = await api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`);
+  const ev = list.map(parseEvent).find(e => e && e.id === EVENT_ID);
+  if (ev) { cache[EVENT_ID] = ev.number; store.set('vz_evnum', cache); settings = {...ev, eventId: ev.id}; }
+  else settings = null;
+  render();
+}
+async function refreshEvent() {
+  if (!settings) return loadEvent();
+  const {data, changed} = await api('GET', '/issues/' + settings.number, null, {cond: true});
+  if (!changed) return;
+  const ev = parseEvent(data);
+  settings = ev && ev.id === EVENT_ID ? {...ev, eventId: ev.id} : null;
+  render();
+}
+
+function render() {
+  $('#loading').hidden = true;
+  const s = settings;
+  if (!s || s.archived) {
+    closedCard('Event niet gevonden', 'Deze link werkt (nog) niet. Controleer de QR-code of vraag de DJ om de juiste link.');
+    return;
+  }
+  $('#closed h2').textContent = 'Verzoekjes zijn gesloten';
+  $('#evName').textContent = s.name || 'Verzoekjes';
+  document.title = (s.name ? s.name + ' · ' : '') + 'Verzoekjes';
+  $('#evWelcome').textContent = s.welcome || '';
+  $('#evWelcome').hidden = !s.welcome;
+  $('#msgField').hidden = s.allowMessages === false;
+
+  const np = s.nowPlaying;
+  $('#nowPlaying').hidden = !np || !np.title;
+  if (np && np.title) { $('#npTitle').textContent = np.title; $('#npArtist').textContent = np.artist || ''; artEl($('#npArt'), np.artwork); }
+
+  $('#open').hidden = !s.open;
+  $('#closed').hidden = !!s.open;
+  $('#closedMsg').textContent = s.closedMessage || 'Kom later nog eens terug.';
+  renderMine();
+}
+
+// ---------- Zoeken ----------
+let searchT, searchSeq = 0, lastResults = [];
+$('#q').addEventListener('input', () => {
+  clearTimeout(searchT);
+  const q = $('#q').value.trim();
+  if (q.length < 2) { $('#results').innerHTML = ''; hint('Typ een titel of artiest om te zoeken.'); return; }
+  searchT = setTimeout(() => doSearch(q), 300);
+});
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchT); const q = $('#q').value.trim(); if (q.length >= 2) doSearch(q); $('#q').blur(); } });
+
+function hint(text) {
+  $('#searchHint').hidden = false;
+  $('#searchHint').innerHTML = (text ? esc(text) + '<br>' : '') + '<button class="link" type="button" data-manual>Niet te vinden? Typ het zelf in</button>';
+}
+$('#searchHint').addEventListener('click', e => { if (e.target.closest('[data-manual]')) pick(null); });
+
+async function doSearch(q) {
+  const my = ++searchSeq;
+  hint('Zoeken…');
+  try {
+    const res = await searchSongs(q);
+    if (my !== searchSeq) return;
+    lastResults = res;
+    $('#results').innerHTML = res.map((r, i) => `<li><button class="song" type="button" data-i="${i}">
+      <div class="art" style="${safeArt(r.artwork) ? `background-image:url('${esc(safeArt(r.artwork))}')` : ''}">${safeArt(r.artwork) ? '' : NOTE}</div>
+      <div class="meta"><div class="t">${esc(r.title)}</div><div class="a">${esc(r.artist)}${r.year ? ' · ' + esc(r.year) : ''}</div></div>
+      <svg class="plus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button></li>`).join('');
+    hint(res.length ? '' : 'Niets gevonden voor “' + q + '”.');
+  } catch {
+    if (my !== searchSeq) return;
+    $('#results').innerHTML = '';
+    hint('Zoeken lukt nu even niet.');
+  }
+}
+$('#results').addEventListener('click', e => {
+  const b = e.target.closest('.song'); if (b) pick(lastResults[+b.dataset.i]);
+});
+
+// ---------- Formulier ----------
+function pick(song) {
+  manual = !song;
+  picked = song;
+  $('#searchBox').hidden = true; $('#form').hidden = false; $('#done').hidden = true;
+  $('#manualFields').hidden = !manual;
+  $('#fTitle').textContent = manual ? 'Zelf ingeven' : song.title;
+  $('#fArtist').textContent = manual ? 'Titel en artiest' : song.artist;
+  artEl($('#fArt'), manual ? '' : song.artwork);
+  $('#fName').value = store.get('vz_name', '');
+  $('#fMsg').value = ''; $('#fErr').textContent = '';
+  if (manual) { $('#mTitle').value = $('#q').value.trim(); $('#mArtist').value = ''; $('#mTitle').focus(); }
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function backToSearch() {
+  $('#form').hidden = true; $('#done').hidden = true; $('#searchBox').hidden = false;
+}
+$('#fBack').addEventListener('click', backToSearch);
+$('#again').addEventListener('click', () => { $('#q').value = ''; $('#results').innerHTML = ''; hint('Typ een titel of artiest om te zoeken.'); backToSearch(); $('#q').focus(); });
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#fErr'); err.textContent = '';
+  const title = (manual ? $('#mTitle').value : picked.title).trim().slice(0, 200);
+  const artist = (manual ? $('#mArtist').value : picked.artist).trim().slice(0, 200);
+  if (!title) { err.textContent = 'Vul een titel in.'; return; }
+  const name = $('#fName').value.trim().slice(0, 60);
+  const message = settings.allowMessages === false ? '' : $('#fMsg').value.trim().slice(0, 300);
+
+  const wait = COOLDOWN - (Date.now() - store.get('vz_last', 0));
+  if (wait > 0) { err.textContent = `Even geduld: je kan over ${Math.ceil(wait / 1000)} s opnieuw aanvragen.`; return; }
+  const mine = store.get('vz_mine', []);
+  const openCount = mine.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new').length;
+  if (openCount >= MAX_OPEN) { err.textContent = `Je hebt al ${MAX_OPEN} verzoekjes openstaan. Wacht tot er een gespeeld wordt.`; return; }
+  const key = songKey(title, artist);
+  if (mine.find(m => m.eventId === settings.eventId && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
+
+  const btn = $('#fSubmit'); btn.disabled = true; btn.textContent = 'Versturen…';
+  try {
+    // Laatste check of het event nog open staat.
+    await refreshEvent().catch(() => {});
+    if (!settings || !settings.open) { err.textContent = 'Verzoekjes zijn net gesloten.'; return; }
+    const artwork = manual ? '' : safeArt(picked.artwork);
+    const issue = await api('POST', '/issues', requestIssue({eventId: settings.eventId, title, artist, artwork, songKey: key, name, message, source: manual ? 'manual' : 'itunes'}));
+    store.set('vz_name', name);
+    store.set('vz_last', Date.now());
+    mine.unshift({id: issue.number, eventId: settings.eventId, key, title, artist, artwork, status: 'new', at: Date.now()});
+    store.set('vz_mine', mine.slice(0, 30));
+    $('#form').hidden = true; $('#done').hidden = false;
+    renderMine();
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = ex.rateLimited || ex.status === 403 || ex.status === 429
+      ? 'Het is erg druk. Probeer over een minuutje opnieuw.'
+      : 'Versturen mislukt. Controleer je verbinding en probeer opnieuw.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Verzoekje versturen';
+  }
+});
+
+// ---------- Mijn verzoekjes (status wordt af en toe ververst) ----------
+const LABEL = {new: 'In de wachtrij', played: 'Gespeeld 🎉', rejected: 'Niet gespeeld'};
+function renderMine() {
+  if (!settings) return;
+  const mine = store.get('vz_mine', []).filter(m => m.eventId === settings.eventId);
+  $('#mine').hidden = !mine.length;
+  $('#mineList').innerHTML = mine.map(m => `<li>
+    <div class="art" style="${safeArt(m.artwork) ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${safeArt(m.artwork) ? '' : NOTE}</div>
+    <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(m.artist)}</div></div>
+    <span class="pill ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
+}
+async function refreshMine() {
+  if (!settings) return;
+  const all = store.get('vz_mine', []);
+  let dirty = false;
+  for (const m of all.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new')) {
+    try {
+      const {data, changed} = await api('GET', '/issues/' + m.id, null, {cond: true});
+      if (!changed) continue;
+      const r = parseRequest(data);
+      const st = r ? r.status : 'rejected';
+      if (st !== m.status) {
+        if (st === 'played') toast(`“${m.title}” wordt gespeeld! 🎉`, 4000);
+        m.status = st; dirty = true;
+      }
+    } catch (e) { if (e.status === 404 || e.status === 410) { m.status = 'rejected'; dirty = true; } }
+  }
+  if (dirty) { store.set('vz_mine', all); renderMine(); }
+}
+if (configured) poll(refreshMine, 60_000);
+</script>
+</body>
+</html>
