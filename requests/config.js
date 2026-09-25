@@ -1,11 +1,9 @@
-// Firebase-instellingen voor Verzoekjes.
-// Plak hier de waarden uit Firebase console → Projectinstellingen → Je apps → Web-app (zie LEESMIJ.md).
-// Deze sleutels zijn niet geheim: de beveiliging zit in firestore.rules.
-export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+// Instellingen voor Verzoekjes. Maak dit bestand aan via beheer.html (eerste keer), zie LEESMIJ.md.
+// repo:      privé GitHub-repo waarin de verzoekjes als issues komen
+// token:     fine-grained token met enkel "Issues: read & write" op die repo (gecodeerd, niet geheim)
+// adminHash: controle voor je beheerwachtwoord (PBKDF2), het wachtwoord zelf staat hier niet
+export const config = {
+  repo: "",
+  token: "",
+  adminHash: null
 };

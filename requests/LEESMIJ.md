@@ -1,70 +1,80 @@
 # Verzoekjes (sbmusic.be/requests)
 
-Een app waarmee gasten nummers aanvragen, zoals requestbox.app.
+Een app waarmee gasten nummers aanvragen, zoals requestbox.app. Ze draait volledig op GitHub.
 
 - **Gasten** scannen de QR-code van een event, zoeken een nummer en sturen het in. Ze hoeven niet in te loggen.
-- **Jij** logt in op `sbmusic.be/requests/beheer.html` en ziet daar per event een eigen tabblad met de wachtrij.
+- **Jij** logt met een wachtwoord in op `sbmusic.be/requests/beheer.html`. Daar heeft elk event een eigen tabblad met de wachtrij.
 
 | Pagina | Voor wie |
 | --- | --- |
 | `sbmusic.be/requests/?e=<event-code>` | Gasten (elk event heeft een eigen link en QR-code) |
-| `sbmusic.be/requests/beheer.html` | Jij (inloggen vereist) |
+| `sbmusic.be/requests/beheer.html` | Jij (wachtwoord) |
 | `sbmusic.be/requests/poster.html?e=<event-code>` | Afdrukbare A4-poster met QR-code |
 
-De site draait op GitHub Pages. Pages kan zelf geen gegevens opslaan, dus de verzoekjes gaan naar
-**Firebase** (Google). Het gratis Spark-plan is ruim genoeg. De stappen hieronder doe je maar één keer (± 10 minuten).
+## Hoe werkt het?
 
-## 1. Firebase-project aanmaken
+GitHub Pages toont enkel bestanden en kan zelf niets opslaan. Daarom komt elk verzoekje als **issue** in een aparte
+**privé-repo**. Elk event is ook een issue, met het label `event`.
 
-1. Ga naar <https://console.firebase.google.com> en klik **Project toevoegen**. Kies bv. de naam `sbmusic-requests`.
-   Google Analytics mag je uitzetten.
-2. Menu **Build → Firestore Database → Database maken**.
-   - Locatie: `eur3 (europe-west)`.
-   - Start in **productiemodus**.
-3. Menu **Build → Authentication → Aan de slag**.
-   - Tab *Sign-in method*: zet **E-mail/wachtwoord** aan.
-   - Tab *Users*: **Gebruiker toevoegen** met je eigen e-mail en een sterk wachtwoord.
-   - Tab *Settings → User actions*: vink **Enable create (sign-up)** uit, zodat niemand anders een account kan maken.
-   - Tab *Settings → Authorized domains*: voeg `sbmusic.be` toe.
+| In de app | In de repo |
+| --- | --- |
+| In de wachtrij | open issue |
+| Gespeeld | gesloten als *completed* |
+| Afgewezen | gesloten als *not planned* |
 
-## 2. Web-app koppelen
+De pagina gebruikt een fine-grained token dat enkel **Issues** mag lezen en schrijven, en enkel in die ene privé-repo.
 
-1. Klik op het tandwiel → **Projectinstellingen**. Scrol naar *Je apps* en klik op het **`</>`-icoon (Web)**.
-   Kies een naam, maar zet Hosting **niet** aan.
-2. Je krijgt een blok `const firebaseConfig = { apiKey: ..., ... }`. Neem die waarden over in
-   [`config.js`](config.js) en commit het bestand.
-   (Deze sleutels zijn niet geheim en mogen publiek op GitHub staan. De beveiliging zit in de regels van stap 3.)
+> ⚠️ **Goed om te weten.** Het token staat (enkel gecodeerd) in de pagina, want gasten hebben het nodig om een verzoekje in
+> te sturen. Iemand die de code uitplozen kan het terugvinden. Daarmee kan die persoon enkel issues in de privé-repo
+> lezen of aanpassen: spam, of de namen en boodschappen van gasten bekijken. Je andere repo's, je site en je account
+> kan die persoon niet aanraken.
+>
+> Bij misbruik trek je het token in en maak je een nieuw aan. Het beheerwachtwoord beschermt het beheerscherm, maar
+> niet de repo zelf.
 
-## 3. Beveiligingsregels
+## Eenmalig instellen (± 5 minuten)
 
-1. Open `sbmusic.be/requests/beheer.html` en log in. Je krijgt de melding "Bijna klaar" met je **UID**. Kopieer die.
-2. Open [`firestore.rules`](firestore.rules), vervang `JOUW_UID_HIER` door je UID en commit het bestand.
-3. Kopieer de volledige inhoud naar Firebase console → **Firestore Database → Regels** en klik **Publiceren**.
-4. Klik op de beheerpagina op **Opnieuw proberen**. Klaar!
+1. **Privé-repo aanmaken**: <https://github.com/new>. Kies bv. de naam `requests-data`, zet ze op **Private** en
+   vink *Add a README* aan.
+2. **Token aanmaken**: <https://github.com/settings/personal-access-tokens/new>
+   - *Token name*: `verzoekjes`. *Expiration*: kies een ruime datum, bv. 1 jaar. Zet een herinnering om het te vernieuwen.
+   - *Repository access*: **Only select repositories** → `requests-data`
+   - *Permissions → Repository permissions → Issues*: **Read and write**. Laat al de rest op *No access*.
+   - Klik **Generate token** en kopieer het (`github_pat_…`).
+3. Open **`sbmusic.be/requests/beheer.html`**. Omdat er nog niets is ingesteld, zie je het instelscherm.
+   Vul in:
+   - de repo, bv. `sbmusicbe/requests-data`
+   - het token
+   - een beheerwachtwoord naar keuze
 
-De regels bepalen:
-- Gasten kunnen alleen een verzoekje *toevoegen*, en alleen aan een event dat **open** staat.
-  Titels, namen en boodschappen hebben een maximale lengte.
-- Gasten kunnen de lijst met verzoekjes of events niet opvragen. Ze zien alleen de status van hun eigen aanvragen.
-- Alleen jouw account (je UID) kan events en verzoekjes lezen, aanpassen en verwijderen.
+   Klik op **Testen & config maken**.
+4. Je krijgt de nieuwe inhoud voor `requests/config.js`. Klik **Open config.js op GitHub**, plak de tekst, en klik
+   **Commit changes**. Na ± 1 minuut staat het online en kan je inloggen.
+
+Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 en 4.
 
 ## Gebruik
 
 - **Nieuw event**: maak een tabblad aan met een naam en een code (bv. `trouw-jan-lies`).
   De link wordt `sbmusic.be/requests/?e=trouw-jan-lies`. Die code verandert nooit, dus een afgedrukte QR-code blijft werken.
-- **QR & link**: toont de QR-code, een link naar een QR in hoge resolutie en een afdrukbare poster.
-- **Open/Gesloten**: schakel per event in of gasten iets kunnen aanvragen.
+- **QR & link**: toont de QR-code, een QR in hoge resolutie en een afdrukbare poster.
+- **Open/Gesloten**: schakel per event in of gasten iets kunnen aanvragen. Een groen bolletje op het tabblad betekent open.
 - **Wachtrij**: hetzelfde nummer wordt gegroepeerd, met een teller (×3) en de namen en boodschappen.
   Sorteer op *meest gevraagd*, *oudste* of *nieuwste*.
   - ▶ **Nu**: markeert het nummer als gespeeld en toont het bij gasten als "Nu te horen".
-  - ✓ gespeeld, ✕ afwijzen. Onder *Gespeeld* en *Afgewezen* kan je een nummer terugzetten of verwijderen.
-- Een **nieuw verzoekje** geeft een melding en een geluidje (uit te zetten met het luidsprekertje).
-  Het aantal openstaande verzoekjes staat op elk tabblad.
-- Onder **⋯** vind je: CSV exporteren, gespeelde en afgewezen verzoekjes wissen, archiveren en verwijderen.
+  - ✓ gespeeld, ✕ afwijzen. Onder *Gespeeld* en *Afgewezen* kan je een nummer terugzetten.
+- **Nieuwe verzoekjes** verschijnen vanzelf (binnen ± 12 seconden), met een melding en een geluidje.
+  Het geluid zet je aan of uit met het luidsprekertje. Op elk tabblad staat het aantal openstaande verzoekjes.
+- Onder **⋯** vind je: CSV exporteren, de issues op GitHub bekijken, en archiveren.
   Gearchiveerde events vind je terug via het archief-icoon bovenaan.
 
 Nummers worden gezocht via de gratis iTunes/Apple Music-zoekfunctie. Staat een nummer er niet tussen,
 dan kunnen gasten zelf een titel en artiest intypen.
 
-Tegen spam zit er een wachttijd van 20 seconden tussen aanvragen van dezelfde gast, en een maximum van 5 openstaande
-verzoekjes per gast. Wil je meer bescherming, dan kan je in Firebase **App Check** (reCAPTCHA) inschakelen.
+## Limieten
+
+- GitHub laat **5000 API-aanvragen per uur** toe per token. De pagina's vragen enkel wijzigingen op
+  ("is er iets veranderd?"). Een antwoord "niets veranderd" telt niet mee. En er wordt niets opgevraagd
+  zolang de pagina op de achtergrond staat. Voor een feest met honderden gasten is dat ruim voldoende.
+- GitHub staat ± **500 nieuwe issues per uur** toe.
+- Per gast geldt een wachttijd van 20 seconden tussen aanvragen, en een maximum van 5 openstaande verzoekjes.

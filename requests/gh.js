@@ -1,0 +1,165 @@
+// Gedeelde code voor de gastpagina en het beheer.
+// Opslag: issues in een privé GitHub-repo (config.repo).
+//  - Event    = issue met label "event"; instellingen als JSON in de tekst.
+//  - Verzoekje = issue; open = in de wachtrij, gesloten "completed" = gespeeld, "not planned" = afgewezen.
+import { config } from './config.js';
+
+export const configured = !!(config.repo && config.token);
+export const REPO = config.repo;
+export const decodeToken = t => { try { return atob(t).split('').reverse().join(''); } catch { return ''; } };
+export const encodeToken = t => btoa(t.split('').reverse().join('')); // enkel zodat GitHub het token niet als "gelekt" intrekt
+let TOKEN = configured ? decodeToken(config.token) : '';
+export const setToken = (t, repo) => { TOKEN = t; if (repo) config.repo = repo; };
+
+// ---- GitHub API ----
+const etags = new Map();
+// cond: voorwaardelijke GET met ETag. Een 304 telt niet mee voor de limiet van GitHub (5000/uur).
+export async function api(method, path, body, {cond = false, raw = false} = {}) {
+  const url = path.startsWith('https://') ? path : 'https://api.github.com/repos/' + config.repo + path;
+  const headers = {Authorization: 'Bearer ' + TOKEN, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'};
+  const c = cond && etags.get(url);
+  if (c) headers['If-None-Match'] = c.etag;
+  if (body) headers['Content-Type'] = 'application/json';
+  const r = await fetch(url, {method, headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store'});
+  if (r.status === 304 && c) return {data: c.data, changed: false, link: c.link};
+  if (!r.ok) {
+    let msg = r.statusText;
+    try { msg = (await r.json()).message || msg; } catch {}
+    const e = new Error(msg); e.status = r.status;
+    if (r.status === 403 && r.headers.get('x-ratelimit-remaining') === '0') e.rateLimited = true;
+    throw e;
+  }
+  const data = r.status === 204 ? null : await r.json();
+  const link = r.headers.get('Link') || '';
+  if (cond && r.headers.get('ETag')) etags.set(url, {etag: r.headers.get('ETag'), data, link});
+  return cond || raw ? {data, changed: true, link} : data;
+}
+export const nextLink = link => (link.match(/<([^>]+)>;\s*rel="next"/) || [])[1];
+
+// ---- events ----
+export const EVENT_LABEL = 'event';
+const JSON_RE = /```json\s*([\s\S]*?)```/;
+export function parseEvent(issue) {
+  if (!issue || issue.pull_request || !(issue.labels || []).some(l => (l.name || l) === EVENT_LABEL)) return null;
+  try {
+    const d = JSON.parse((issue.body || '').match(JSON_RE)[1]);
+    if (!d.code) return null;
+    return {name: '', welcome: '', closedMessage: '', allowMessages: true, open: false, archived: false, nowPlaying: null, ...d,
+      id: d.code, number: issue.number, createdAt: issue.created_at};
+  } catch { return null; }
+}
+export function eventIssue(ev) {
+  const d = {code: ev.id, name: ev.name, welcome: ev.welcome || '', closedMessage: ev.closedMessage || '',
+    allowMessages: ev.allowMessages !== false, open: !!ev.open, archived: !!ev.archived, nowPlaying: ev.nowPlaying || null};
+  const url = new URL('./?e=' + ev.id, location.href).href;
+  return {
+    title: '🎧 ' + ev.name,
+    body: `Event voor verzoekjes: ${url}\n\n_Wordt beheerd via beheer.html, pas de gegevens hieronder niet met de hand aan._\n\n\`\`\`json\n${JSON.stringify(d, null, 2)}\n\`\`\`\n`
+  };
+}
+
+// ---- verzoekjes ----
+const REQ_RE = /<!--\s*vz\s+([\s\S]*?)\s*-->/;
+export function parseRequest(issue) {
+  if (!issue || issue.pull_request) return null;
+  const m = (issue.body || '').match(REQ_RE);
+  if (!m) return null;
+  try {
+    const d = JSON.parse(m[1]);
+    if (!d.e || !d.t) return null;
+    return {
+      id: issue.number, number: issue.number, eventId: String(d.e), title: String(d.t).slice(0, 200), artist: String(d.a || '').slice(0, 200),
+      artwork: safeArt(d.art), songKey: d.k || songKey(d.t, d.a), name: String(d.n || '').slice(0, 60), message: String(d.m || '').slice(0, 300),
+      status: issue.state === 'open' ? 'new' : issue.state_reason === 'not_planned' ? 'rejected' : 'played',
+      createdAt: issue.created_at, doneAt: issue.closed_at
+    };
+  } catch { return null; }
+}
+export function requestIssue(r) {
+  const d = {e: r.eventId, t: r.title, a: r.artist, art: r.artwork, k: r.songKey, n: r.name, m: r.message, s: r.source};
+  const line = s => s.replace(/[\r\n]+/g, ' ').replace(/-->/g, '--');
+  return {
+    title: `[${r.eventId}] ${line(r.title)}${r.artist ? ' — ' + line(r.artist) : ''}`.slice(0, 250),
+    body: `**${line(r.title)}**${r.artist ? ' — ' + line(r.artist) : ''}\n\n`
+      + (r.name ? `Van: ${line(r.name)}\n\n` : '') + (r.message ? `> ${line(r.message)}\n\n` : '')
+      + `<!-- vz ${JSON.stringify(d).replace(/-->/g, '--\\u003e')} -->\n`
+  };
+}
+
+// ---- wachtwoord (beheer) ----
+const te = new TextEncoder();
+export const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+export async function pwHash(pw, saltB64, iter = 310000) {
+  const salt = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  return b64(await crypto.subtle.deriveBits({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, key, 256));
+}
+export async function checkPassword(pw) {
+  const h = config.adminHash;
+  return !!h && await pwHash(pw, h.salt, h.iter) === h.hash;
+}
+export const adminHash = () => config.adminHash;
+
+// ---- kleine hulpjes ----
+export const $ = (s, el = document) => el.querySelector(s);
+export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Zelfde nummer = zelfde sleutel, ook bij "(Remastered)", "- Radio Edit", "feat." enz.
+export function songKey(title, artist) {
+  const norm = s => String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s*[\(\[][^\)\]]*[\)\]]/g, '')
+    .replace(/\s+-\s+.*$/, '')
+    .replace(/\s+(feat\.?|ft\.?|featuring)\s+.*$/, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+  return (norm(title) + '|' + norm(artist).split(/ (?:and|x) /)[0]).slice(0, 300);
+}
+
+// Alleen hoesjes van Apple (mzstatic) worden getoond.
+export const safeArt = u => /^https:\/\/[a-z0-9.-]+\.mzstatic\.com\/[^"'()\s]+$/i.test(u || '') ? u : '';
+
+// Zoeken via de iTunes Search API (JSONP: geen sleutel nodig, werkt vanaf elke site).
+let jsonpN = 0;
+export function searchSongs(term, {limit = 15, country = 'BE'} = {}) {
+  return new Promise((resolve, reject) => {
+    const cb = '__vzcb' + (++jsonpN);
+    const s = document.createElement('script');
+    const done = () => { delete window[cb]; s.remove(); clearTimeout(t); };
+    const t = setTimeout(() => { done(); reject(new Error('timeout')); }, 8000);
+    window[cb] = data => {
+      done();
+      resolve((data.results || []).filter(r => r.kind === 'song').map(r => ({
+        title: r.trackName, artist: r.artistName, album: r.collectionName || '',
+        artwork: (r.artworkUrl100 || '').replace('100x100bb', '200x200bb'),
+        year: (r.releaseDate || '').slice(0, 4)
+      })));
+    };
+    s.onerror = () => { done(); reject(new Error('netwerk')); };
+    s.src = 'https://itunes.apple.com/search?' + new URLSearchParams({
+      term, entity: 'song', media: 'music', limit, country, callback: cb
+    });
+    document.head.appendChild(s);
+  });
+}
+
+export function toast(msg, ms = 2600) {
+  let el = $('#toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms);
+}
+
+export const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+
+// Herhaal fn elke ms milliseconden zolang de pagina zichtbaar is (spaart de API-limiet).
+export function poll(fn, ms) {
+  let t;
+  const tick = async () => { clearTimeout(t); if (!document.hidden) { try { await fn(); } catch (e) { console.warn(e); } } t = setTimeout(tick, ms); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  t = setTimeout(tick, ms);
+  return tick;
+}

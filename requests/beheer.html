@@ -41,7 +41,7 @@ code.uid{display:block;background:var(--hover);padding:10px 12px;border-radius:8
 .ev-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
 .ev-head h2{margin:0;font-size:24px;font-weight:780;min-width:0;overflow-wrap:anywhere}
 .ev-head .code{font-size:13px;color:var(--muted)}
-.ev-tools{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.ev-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
 
 .switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-weight:650;font-size:14px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 12px}
 .switch input{appearance:none;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;margin:0;cursor:pointer;transition:.2s;flex:none}
@@ -101,9 +101,29 @@ ul.list{list-style:none;margin:0;padding:0}
 
 <div id="loading" class="spinner" style="margin-top:30vh"></div>
 
-<div id="setup" class="card setup" hidden>
-  <h1>Nog niet ingesteld</h1>
-  <p class="muted">Vul eerst <code>requests/config.js</code> in met de gegevens van je Firebase-project. De stappen staan in <code>requests/LEESMIJ.md</code>.</p>
+<!-- Eerste keer instellen -->
+<div id="setup" class="lock" hidden>
+  <form class="card" id="setupForm" style="max-width:520px">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+    <h1>Verzoekjes instellen</h1>
+    <p class="muted">Eenmalig: koppel de privé-repo waarin de verzoekjes als issues terechtkomen, en kies je beheerwachtwoord. Zie <code>requests/LEESMIJ.md</code>.</p>
+    <label for="sRepo">Privé-repo (eigenaar/naam)</label>
+    <input id="sRepo" type="text" required placeholder="sbmusicbe/requests-data" autocomplete="off">
+    <label for="sTok">Fine-grained token (enkel <i>Issues: Read and write</i> op die repo)</label>
+    <input id="sTok" type="password" required autocomplete="off" placeholder="github_pat_…">
+    <label for="sPw">Beheerwachtwoord</label>
+    <input id="sPw" type="password" required minlength="8" autocomplete="new-password">
+    <label for="sPw2">Herhaal wachtwoord</label>
+    <input id="sPw2" type="password" required minlength="8" autocomplete="new-password">
+    <button class="btn primary" type="submit" id="sBtn">Testen &amp; config maken</button>
+    <p class="err" id="sErr"></p>
+    <div id="sOut" hidden>
+      <p class="small" style="margin:16px 0 6px"><b>Gelukt!</b> Vervang de inhoud van <code>requests/config.js</code> in de repo <code>sbmusicbe.github.io</code> door de tekst hieronder en commit. Een minuutje later werkt alles.</p>
+      <textarea id="sCfg" readonly rows="11" style="font:12.5px/1.4 ui-monospace,Menlo,monospace"></textarea>
+      <div class="actions" style="justify-content:flex-start"><button class="btn" type="button" id="sCopy">Kopiëren</button>
+        <a class="btn" id="sEdit" target="_blank" rel="noopener" href="https://github.com/sbmusicbe/sbmusicbe.github.io/edit/main/requests/config.js">Open config.js op GitHub</a></div>
+    </div>
+  </form>
 </div>
 
 <!-- Login -->
@@ -112,28 +132,25 @@ ul.list{list-style:none;margin:0;padding:0}
     <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
     <h1>Verzoekjes</h1>
     <p class="muted">Log in om je verzoekjes te beheren.</p>
-    <label for="lEmail">E-mail</label>
-    <input id="lEmail" type="email" autocomplete="username" required>
+    <input type="text" autocomplete="username" value="beheer" hidden aria-hidden="true">
     <label for="lPw">Wachtwoord</label>
     <input id="lPw" type="password" autocomplete="current-password" required>
+    <label class="chk"><input type="checkbox" id="lKeep" checked> Ingelogd blijven op dit toestel</label>
     <button class="btn primary" type="submit" id="lBtn">Inloggen</button>
     <p class="err" id="lErr"></p>
-    <button class="link small" type="button" id="lReset">Wachtwoord vergeten?</button>
   </form>
 </div>
 
-<!-- Ingelogd maar (nog) geen beheerder -->
+<!-- Fout bij laden -->
 <div id="noAdmin" class="lock" hidden>
   <div class="card">
-    <h1>Bijna klaar</h1>
-    <p class="muted">Je bent ingelogd, maar dit account heeft nog geen beheerrechten. Zet deze UID in <code>firestore.rules</code> (op de plaats van <code>JOUW_UID_HIER</code>) en publiceer de regels:</p>
-    <code class="uid" id="uid"></code>
+    <h1>Kan de repo niet lezen</h1>
+    <p class="muted" id="naErr"></p>
     <div class="actions" style="justify-content:flex-start">
-      <button class="btn" id="copyUid" type="button">UID kopiëren</button>
-      <button class="btn" id="retry" type="button">Opnieuw proberen</button>
+      <button class="btn primary" id="retry" type="button">Opnieuw proberen</button>
+      <a class="btn" href="?setup">Opnieuw instellen</a>
       <button class="btn" id="logout2" type="button">Uitloggen</button>
     </div>
-    <p class="err" id="naErr"></p>
   </div>
 </div>
 
@@ -159,7 +176,7 @@ ul.list{list-style:none;margin:0;padding:0}
   <label for="evName">Naam</label>
   <input id="evName" type="text" maxlength="80" required placeholder="Bv. Trouw Jan &amp; Lies">
   <label for="evCode">Code in de link</label>
-  <input id="evCode" type="text" maxlength="60" pattern="[a-z0-9][a-z0-9-]{1,59}" required placeholder="trouw-jan-lies">
+  <input id="evCode" type="text" maxlength="60" pattern="[a-z0-9][a-z0-9\-]{1,59}" required placeholder="trouw-jan-lies">
   <p class="muted small" style="margin:6px 0 0" id="evCodeHint"></p>
   <label for="evWelcome">Welkomsttekst <span class="muted" style="font-weight:400">(optioneel)</span></label>
   <textarea id="evWelcome" maxlength="300" placeholder="Welk nummer mag de DJ voor jou draaien?"></textarea>
@@ -196,11 +213,9 @@ ul.list{list-style:none;margin:0;padding:0}
 
 <script type="module">
 import {
-  configured, db, auth, eventRef, requestsCol, eventsCol,
-  doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp, writeBatch,
-  onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
-  $, esc, safeArt, toast, store
-} from './fb.js';
+  configured, REPO, api, nextLink, setToken, encodeToken, parseEvent, parseRequest, eventIssue, EVENT_LABEL,
+  pwHash, checkPassword, adminHash, b64, $, esc, safeArt, toast, store, poll
+} from './gh.js';
 
 const NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
 const I = {
@@ -218,7 +233,7 @@ const I = {
 };
 const show = id => { for (const s of ['loading', 'setup', 'login', 'noAdmin', 'app']) $('#' + s).hidden = s !== id; };
 const guestUrl = id => new URL('./?e=' + encodeURIComponent(id), location.href).href;
-const ms = t => t?.toMillis?.() ?? Date.now();
+const ms = t => t ? Date.parse(t) : Date.now();
 const ago = t => {
   const s = Math.max(0, (Date.now() - ms(t)) / 1000);
   if (s < 60) return 'zojuist';
@@ -229,86 +244,157 @@ const ago = t => {
 const slugify = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' en ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
 
 // ---------- state ----------
+const issues = new Map();      // alle issues uit de repo, op nummer
 let events = [];               // alle events (ook gearchiveerd)
+let allReqs = [];              // alle verzoekjes
 let current = null;            // id van het open tabblad
 let reqs = [];                 // verzoekjes van het huidige event
 let pending = {};              // aantal nieuwe verzoekjes per event (voor badges)
 let view = store.get('vz_view', 'new');
 let sort = store.get('vz_sort', 'count');
 let filter = '';
-let unsubs = [], unsubReqs = null, firstNew = true;
 let sound = store.get('vz_sound', true);
+let started = false;
 
-// ---------- auth ----------
-if (!configured) show('setup');
-else onAuthStateChanged(auth, user => { stopAll(); user ? start(user) : show('login'); });
+// ---------- eerste keer instellen ----------
+const wantSetup = new URLSearchParams(location.search).has('setup');
+if (!configured || !adminHash() || wantSetup) {
+  show('setup');
+  if (REPO) $('#sRepo').value = REPO;
+} else if (store.get('vz_admin', '') === adminHash().hash) start();
+else { show('login'); $('#lPw').focus(); }
 
+$('#setupForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#sErr'); err.textContent = '';
+  const repo = $('#sRepo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$|\/$/g, '');
+  const tok = $('#sTok').value.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { err.textContent = 'Geef de repo op als eigenaar/naam.'; return; }
+  if ($('#sPw').value !== $('#sPw2').value) { err.textContent = 'De wachtwoorden zijn niet gelijk.'; return; }
+  $('#sBtn').disabled = true; $('#sBtn').textContent = 'Testen…';
+  try {
+    setToken(tok, repo);
+    const r = await api('GET', '');
+    if (!r.private) throw new Error('De repo is openbaar. Maak ze privé, anders ziet iedereen de namen en boodschappen van je gasten.');
+    if (!r.has_issues) throw new Error('Issues staan uit voor deze repo (Settings → Features → Issues).');
+    await api('GET', '/issues?per_page=1');
+    try { await api('POST', '/labels', {name: EVENT_LABEL, color: '7c3aed', description: 'Verzoekjes-event'}); }
+    catch (ex) { if (ex.status !== 422) throw new Error('Kon het label "event" niet aanmaken: ' + ex.message); }
+    const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+    const iter = 310000;
+    const hash = await pwHash($('#sPw').value, salt, iter);
+    $('#sCfg').value = `// Instellingen voor Verzoekjes, gemaakt via beheer.html (zie LEESMIJ.md).
+// repo:      privé GitHub-repo waarin de verzoekjes als issues komen
+// token:     fine-grained token met enkel "Issues: read & write" op die repo (gecodeerd, niet geheim)
+// adminHash: controle voor je beheerwachtwoord (PBKDF2), het wachtwoord zelf staat hier niet
+export const config = {
+  repo: ${JSON.stringify(repo)},
+  token: ${JSON.stringify(encodeToken(tok))},
+  adminHash: ${JSON.stringify({salt, iter, hash})}
+};
+`;
+    $('#sOut').hidden = false;
+    $('#sCfg').scrollIntoView({behavior: 'smooth', block: 'center'});
+  } catch (ex) {
+    err.textContent = ex.status === 401 ? 'Het token is ongeldig of verlopen.'
+      : ex.status === 404 ? 'Repo niet gevonden. Heeft het token toegang tot deze repo?'
+      : ex.status === 403 ? 'Het token mag dit niet. Geef het "Issues: Read and write" op deze repo.'
+      : ex.message;
+  } finally { $('#sBtn').disabled = false; $('#sBtn').textContent = 'Testen & config maken'; }
+});
+$('#sCopy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('#sCfg').value); toast('Gekopieerd'); } catch { $('#sCfg').select(); }
+});
+
+// ---------- login ----------
 $('#loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   $('#lErr').textContent = ''; $('#lBtn').disabled = true;
-  try { await signInWithEmailAndPassword(auth, $('#lEmail').value.trim(), $('#lPw').value); }
-  catch (ex) {
-    $('#lErr').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(ex.code)
-      ? 'E-mail of wachtwoord klopt niet.' : ex.code === 'auth/too-many-requests' ? 'Te veel pogingen. Probeer straks opnieuw.' : 'Inloggen mislukt (' + ex.code + ').';
+  try {
+    if (await checkPassword($('#lPw').value)) {
+      if ($('#lKeep').checked) store.set('vz_admin', adminHash().hash);
+      $('#lPw').value = '';
+      start();
+    } else $('#lErr').textContent = 'Wachtwoord klopt niet.';
   } finally { $('#lBtn').disabled = false; }
 });
-$('#lReset').addEventListener('click', async () => {
-  const email = $('#lEmail').value.trim();
-  if (!email) { $('#lErr').textContent = 'Vul eerst je e-mailadres in.'; return; }
-  try { await sendPasswordResetEmail(auth, email); toast('Mail verstuurd om je wachtwoord te herstellen.'); }
-  catch { $('#lErr').textContent = 'Versturen mislukt.'; }
-});
-for (const b of ['#logout', '#logout2']) $(b).addEventListener('click', () => signOut(auth));
-$('#copyUid').addEventListener('click', () => { navigator.clipboard?.writeText($('#uid').textContent); toast('UID gekopieerd'); });
-$('#retry').addEventListener('click', () => { stopAll(); start(auth.currentUser); });
+function logout() { store.del('vz_admin'); location.reload(); }
+for (const b of ['#logout', '#logout2']) $(b).addEventListener('click', logout);
+$('#retry').addEventListener('click', () => start());
 
-function stopAll() { unsubs.forEach(u => u()); unsubs = []; unsubReqs?.(); unsubReqs = null; firstNew = true; }
-
-function start(user) {
+// ---------- gegevens ophalen ----------
+async function start() {
   show('loading');
-  // Lukt het lezen van de events-lijst, dan is dit account beheerder.
-  unsubs.push(onSnapshot(eventsCol(), snap => {
-    events = snap.docs.map(d => ({id: d.id, ...d.data()}))
-      .sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
-    if ($('#app').hidden) show('app');
-    const active = events.filter(e => !e.archived);
-    const wanted = decodeURIComponent(location.hash.slice(1)) || store.get('vz_tab', '');
-    if (!current || !events.some(e => e.id === current)) selectEvent((active.find(e => e.id === wanted) || active[0])?.id || null);
-    else { renderTabs(); renderMain(); }
-    renderArchive();
-  }, err => {
-    if (err.code === 'permission-denied') { $('#uid').textContent = user.uid; $('#naErr').textContent = ''; show('noAdmin'); }
-    else { show('noAdmin'); $('#uid').textContent = user.uid; $('#naErr').textContent = 'Fout: ' + err.message; }
-  }));
-  // Alle openstaande verzoekjes (voor de badges op de tabbladen en meldingen).
-  unsubs.push(onSnapshot(query(requestsCol(), where('status', '==', 'new')), snap => {
-    pending = {};
-    snap.docs.forEach(d => { const e = d.data().eventId; pending[e] = (pending[e] || 0) + 1; });
-    if (!firstNew) {
-      const added = snap.docChanges().filter(c => c.type === 'added' && !c.doc.metadata.hasPendingWrites);
-      if (added.length) {
-        const r = added[0].doc.data();
-        const ev = events.find(e => e.id === r.eventId);
-        toast(`Nieuw verzoekje${ev && ev.id !== current ? ' voor ' + ev.name : ''}: ${r.title}${r.artist ? ' – ' + r.artist : ''}`, 4000);
-        beep();
-      }
+  try {
+    issues.clear();
+    let url = '/issues?state=all&per_page=100&sort=created&direction=desc';
+    while (url) {
+      const {data, link} = await api('GET', url, null, {raw: true});
+      data.forEach(i => issues.set(i.number, i));
+      url = nextLink(link);
     }
-    firstNew = false;
-    const total = Object.values(pending).reduce((a, b) => a + b, 0);
-    document.title = (total ? `(${total}) ` : '') + 'Verzoekjes · Beheer';
-    renderTabs();
-  }, () => {}));
+  } catch (ex) {
+    $('#naErr').textContent = ex.status === 401 ? 'Het token in config.js is ongeldig of verlopen. Maak een nieuw token en stel opnieuw in.'
+      : ex.status === 404 ? 'De repo ' + REPO + ' is niet gevonden, of het token heeft er geen toegang toe.'
+      : ex.rateLimited ? 'De GitHub-limiet is (tijdelijk) bereikt. Probeer over enkele minuten opnieuw.'
+      : 'Fout: ' + ex.message;
+    show('noAdmin');
+    return;
+  }
+  recompute();
+  show('app');
+  const active = events.filter(e => !e.archived);
+  const wanted = decodeURIComponent(location.hash.slice(1)) || store.get('vz_tab', '');
+  selectEvent((active.find(e => e.id === wanted) || active[0])?.id || null);
+  if (!started) { started = true; poll(refresh, 12_000); }
 }
+
+// Nieuwe en gewijzigde issues ophalen (voorwaardelijk: kost niets als er niets veranderd is).
+async function refresh() {
+  if ($('#app').hidden) return;
+  const {data, changed} = await api('GET', '/issues?state=all&per_page=100&sort=updated&direction=desc', null, {cond: true});
+  if (!changed) return;
+  const fresh = [];
+  for (const i of data) {
+    const old = issues.get(i.number);
+    if (old && old.updated_at === i.updated_at) continue;
+    if (!old) fresh.push(i);
+    issues.set(i.number, i);
+  }
+  recompute();
+  const newReqs = fresh.map(parseRequest).filter(r => r && r.status === 'new');
+  if (newReqs.length) {
+    const r = newReqs[0], ev = events.find(e => e.id === r.eventId);
+    toast(`Nieuw verzoekje${ev && ev.id !== current ? ' voor ' + ev.name : ''}: ${r.title}${r.artist ? ' – ' + r.artist : ''}${newReqs.length > 1 ? ` (+${newReqs.length - 1})` : ''}`, 4000);
+    beep();
+  }
+  renderTabs(); renderMain();
+}
+
+function recompute() {
+  events = []; allReqs = [];
+  for (const i of issues.values()) {
+    const ev = parseEvent(i);
+    if (ev) { events.push(ev); continue; }
+    const r = parseRequest(i);
+    if (r) allReqs.push(r);
+  }
+  // Bij dubbele codes telt het oudste event.
+  events.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+  events = events.filter((e, i) => events.findIndex(x => x.id === e.id) === i).reverse();
+  pending = {};
+  allReqs.forEach(r => { if (r.status === 'new') pending[r.eventId] = (pending[r.eventId] || 0) + 1; });
+  const total = events.filter(e => !e.archived).reduce((a, e) => a + (pending[e.id] || 0), 0);
+  document.title = (total ? `(${total}) ` : '') + 'Verzoekjes · Beheer';
+  reqs = allReqs.filter(r => r.eventId === current);
+}
+const merge = issue => { issues.set(issue.number, issue); recompute(); renderTabs(); renderMain(); };
 
 // ---------- tabs ----------
 function selectEvent(id) {
   current = id;
   if (id) { store.set('vz_tab', id); history.replaceState(null, '', '#' + encodeURIComponent(id)); }
-  unsubReqs?.(); unsubReqs = null; reqs = [];
-  if (id) unsubReqs = onSnapshot(query(requestsCol(), where('eventId', '==', id)), snap => {
-    reqs = snap.docs.map(d => ({id: d.id, ...d.data()}));
-    renderMain();
-  }, err => toast('Kon verzoekjes niet laden: ' + err.code));
+  reqs = allReqs.filter(r => r.eventId === current);
   renderTabs(); renderMain();
 }
 
@@ -318,6 +404,7 @@ function renderTabs() {
       <span class="st ${e.open ? 'open' : ''}" title="${e.open ? 'Open' : 'Gesloten'}"></span>${esc(e.name)}${e.archived ? ' <span class="muted small">(archief)</span>' : ''}
       ${pending[e.id] ? `<span class="badge">${pending[e.id]}</span>` : ''}</button>`).join('')
     + `<button class="tab add" id="newEv">${I.plus} Nieuw event</button>`;
+  renderArchive();
 }
 $('#tabs').addEventListener('click', e => {
   if (e.target.closest('#newEv')) return openEventDialog(null);
@@ -362,7 +449,7 @@ function renderMain() {
   const np = ev.nowPlaying;
   $('#main').innerHTML = `
     <div class="ev-head">
-      <div style="min-width:0"><h2>${esc(ev.name)}</h2><div class="code">sbmusic.be/requests/?e=${esc(ev.id)}</div></div>
+      <div style="min-width:0"><h2>${esc(ev.name)}</h2><div class="code">${esc(guestUrl(ev.id).replace(/^https?:\/\//, ''))}</div></div>
       <div class="ev-tools">
         <label class="switch"><input type="checkbox" id="openTgl" ${ev.open ? 'checked' : ''}> ${ev.open ? 'Verzoekjes open' : 'Gesloten'}</label>
         <button class="btn" id="shareBtn">${I.qr} QR &amp; link</button>
@@ -370,10 +457,9 @@ function renderMain() {
         <div class="menu"><button class="btn" id="moreBtn" title="Meer" aria-haspopup="true">${I.more}</button>
           <div class="card menu-pop" id="morePop" hidden>
             <button id="csvBtn">CSV exporteren</button>
-            <button id="clearPlayed">Gespeelde &amp; afgewezen wissen</button>
+            <button id="ghBtn">Bekijk issues op GitHub</button>
             <hr>
             <button id="archiveBtn">${ev.archived ? 'Uit archief halen' : 'Archiveren'}</button>
-            <button id="deleteBtn" class="danger">Event verwijderen…</button>
           </div></div>
       </div>
     </div>
@@ -408,8 +494,7 @@ function groupHtml(g) {
     ? `<button class="btn sm primary" data-act="play" title="Nu draaien: tonen aan gasten en als gespeeld markeren">${I.play} Nu</button>
        <button class="btn sm ok" data-act="played" title="Gespeeld">${I.check}</button>
        <button class="btn sm danger" data-act="rejected" title="Afwijzen">${I.x}</button>`
-    : `<button class="btn sm" data-act="new" title="Terug naar wachtrij">${I.undo}</button>
-       <button class="btn sm danger" data-act="delete" title="Verwijderen">${I.trash}</button>`;
+    : `<button class="btn sm" data-act="new" title="Terug naar wachtrij">${I.undo} Terugzetten</button>`;
   return `<li class="req" data-key="${esc(g.key)}">
     <div class="art" style="${artStyle(g.artwork)}">${safeArt(g.artwork) ? '' : NOTE}</div>
     <div class="body">
@@ -421,22 +506,16 @@ function groupHtml(g) {
 }
 
 function wireMain(ev, list) {
-  $('#openTgl').onchange = e => updateDoc(eventRef(ev.id), {open: e.target.checked}).catch(fail);
+  $('#openTgl').onchange = e => saveEvent(ev, {open: e.target.checked}).catch(fail);
   $('#shareBtn').onclick = () => openShare(ev);
   $('#editBtn').onclick = () => openEventDialog(ev);
   $('#moreBtn').onclick = e => { e.stopPropagation(); $('#morePop').hidden = !$('#morePop').hidden; };
   $('#csvBtn').onclick = () => exportCsv(ev);
-  $('#clearPlayed').onclick = async () => {
-    const ids = reqs.filter(r => r.status !== 'new').map(r => r.id);
-    if (!ids.length) return toast('Niets te wissen.');
-    if (!confirm(`${ids.length} gespeelde/afgewezen verzoekjes definitief wissen?`)) return;
-    await batchAll(ids, (b, id) => b.delete(doc(db, 'requests', id))).catch(fail);
-  };
-  $('#archiveBtn').onclick = () => updateDoc(eventRef(ev.id), ev.archived ? {archived: false} : {archived: true, open: false})
+  $('#ghBtn').onclick = () => window.open(`https://github.com/${REPO}/issues?q=${encodeURIComponent('is:issue [' + ev.id + ']')}`, '_blank', 'noopener');
+  $('#archiveBtn').onclick = () => saveEvent(ev, ev.archived ? {archived: false} : {archived: true, open: false})
     .then(() => { if (!ev.archived) { const next = events.find(e => !e.archived && e.id !== ev.id); selectEvent(next?.id || null); toast('Event gearchiveerd'); } })
     .catch(fail);
-  $('#deleteBtn').onclick = () => deleteEvent(ev);
-  $('#npClear') && ($('#npClear').onclick = () => updateDoc(eventRef(ev.id), {nowPlaying: null}).catch(fail));
+  $('#npClear') && ($('#npClear').onclick = () => saveEvent(ev, {nowPlaying: null}).catch(fail));
   $('#main').querySelectorAll('.seg button').forEach(b => b.onclick = () => { view = b.dataset.view; store.set('vz_view', view); renderMain(); });
   $('#sortSel') && ($('#sortSel').onchange = e => { sort = e.target.value; store.set('vz_sort', sort); renderMain(); });
   $('#filter').oninput = e => { filter = e.target.value; renderMain(); };
@@ -447,27 +526,23 @@ function wireMain(ev, list) {
 }
 document.addEventListener('click', e => { const p = $('#morePop'); if (p && !p.hidden && !e.target.closest('.menu')) p.hidden = true; });
 
+// Alle aanvragen van hetzelfde nummer tegelijk afhandelen.
 async function act(ev, g, what) {
-  const ids = g.items.map(i => i.id);
+  const patch = what === 'new' ? {state: 'open'} : {state: 'closed', state_reason: what === 'rejected' ? 'not_planned' : 'completed'};
   try {
-    if (what === 'delete') {
-      await batchAll(ids, (b, id) => b.delete(doc(db, 'requests', id)));
-    } else {
-      await batchAll(ids, (b, id) => b.update(doc(db, 'requests', id), {status: what === 'play' ? 'played' : what, doneAt: serverTimestamp()}));
-      if (what === 'play') await updateDoc(eventRef(ev.id), {nowPlaying: {title: g.title, artist: g.artist || '', artwork: safeArt(g.artwork)}});
-      if (what !== 'new') toast(`${g.title}: ${what === 'rejected' ? 'afgewezen' : 'gespeeld'}`);
-    }
+    const res = await Promise.all(g.items.map(i => api('PATCH', '/issues/' + i.number, patch)));
+    res.forEach(i => issues.set(i.number, i));
+    recompute(); renderTabs(); renderMain();
+    if (what === 'play') await saveEvent(ev, {nowPlaying: {title: g.title, artist: g.artist || '', artwork: safeArt(g.artwork)}});
+    if (what !== 'new') toast(`${g.title}: ${what === 'rejected' ? 'afgewezen' : 'gespeeld'}`);
   } catch (ex) { fail(ex); }
 }
 
-async function batchAll(ids, fn) {
-  for (let i = 0; i < ids.length; i += 450) {
-    const b = writeBatch(db);
-    ids.slice(i, i + 450).forEach(id => fn(b, id));
-    await b.commit();
-  }
+async function saveEvent(ev, patch) {
+  const cur = events.find(e => e.id === ev.id) || ev;
+  merge(await api('PATCH', '/issues/' + cur.number, eventIssue({...cur, ...patch})));
 }
-const fail = ex => { console.error(ex); toast('Er ging iets mis: ' + (ex.code || ex.message)); };
+const fail = ex => { console.error(ex); toast('Er ging iets mis: ' + (ex.rateLimited ? 'GitHub-limiet bereikt' : ex.message)); };
 
 // ---------- event aanmaken / bewerken ----------
 let editing = null, codeTouched = false;
@@ -501,30 +576,24 @@ $('#evForm').addEventListener('submit', async e => {
   const data = {name, welcome: $('#evWelcome').value.trim(), closedMessage: $('#evClosed').value.trim(), allowMessages: $('#evMsgs').checked};
   $('#evSave').disabled = true;
   try {
-    if (editing) await updateDoc(eventRef(editing.id), data);
+    if (editing) await saveEvent(editing, data);
     else {
-      if ((await getDoc(eventRef(code))).exists()) { $('#evErr').textContent = 'Deze code bestaat al. Kies een andere.'; return; }
-      await setDoc(eventRef(code), {...data, open: $('#evOpen').checked, archived: false, nowPlaying: null, createdAt: serverTimestamp()});
-      current = null; selectEvent(code);
-      setTimeout(() => openShare(events.find(x => x.id === code) || {id: code, name}), 50);
+      if (events.some(x => x.id === code)) { $('#evErr').textContent = 'Deze code bestaat al. Kies een andere.'; return; }
+      const ev = {...data, id: code, open: $('#evOpen').checked, archived: false, nowPlaying: null};
+      let issue = await api('POST', '/issues', {...eventIssue(ev), labels: [EVENT_LABEL]});
+      // Labels kunnen stilzwijgend wegvallen; dan apart toevoegen.
+      if (!issue.labels.some(l => l.name === EVENT_LABEL)) {
+        await api('POST', `/issues/${issue.number}/labels`, {labels: [EVENT_LABEL]});
+        issue = await api('GET', '/issues/' + issue.number);
+      }
+      merge(issue);
+      selectEvent(code);
+      setTimeout(() => openShare(events.find(x => x.id === code) || ev), 50);
     }
     $('#dEvent').close();
-  } catch (ex) { $('#evErr').textContent = 'Opslaan mislukt: ' + (ex.code || ex.message); }
+  } catch (ex) { $('#evErr').textContent = 'Opslaan mislukt: ' + ex.message; }
   finally { $('#evSave').disabled = false; }
 });
-
-async function deleteEvent(ev) {
-  const n = reqs.length;
-  if (!confirm(`“${ev.name}” en alle ${n} verzoekjes definitief verwijderen?\n\nDe QR-code van dit event werkt daarna niet meer.`)) return;
-  try {
-    const snap = await getDocs(query(requestsCol(), where('eventId', '==', ev.id)));
-    await batchAll(snap.docs.map(d => d.id), (b, id) => b.delete(doc(db, 'requests', id)));
-    await deleteDoc(eventRef(ev.id));
-    const next = events.find(e => !e.archived && e.id !== ev.id);
-    selectEvent(next?.id || null);
-    toast('Event verwijderd');
-  } catch (ex) { fail(ex); }
-}
 
 // ---------- delen / QR ----------
 const qrSrc = (url, size) => 'https://api.qrserver.com/v1/create-qr-code/?' + new URLSearchParams({size: size + 'x' + size, margin: '0', ecc: 'M', data: url});
@@ -555,7 +624,7 @@ $('#archBtn').addEventListener('click', () => $('#dArch').showModal());
 $('#archList').addEventListener('click', e => {
   const o = e.target.closest('[data-open]'), r = e.target.closest('[data-restore]');
   if (o) { selectEvent(o.dataset.open); $('#dArch').close(); }
-  if (r) updateDoc(eventRef(r.dataset.restore), {archived: false}).then(() => { selectEvent(r.dataset.restore); $('#dArch').close(); }).catch(fail);
+  if (r) saveEvent(events.find(x => x.id === r.dataset.restore), {archived: false}).then(() => { selectEvent(r.dataset.restore); $('#dArch').close(); }).catch(fail);
 });
 
 // ---------- CSV ----------
@@ -590,7 +659,7 @@ $('#soundBtn').addEventListener('click', () => { sound = !sound; store.set('vz_s
 renderSound();
 
 // "3 min geleden" actueel houden
-setInterval(() => { if (!$('#app').hidden && document.activeElement?.id !== 'filter' && $('#morePop')?.hidden !== false) renderMain(); }, 60_000);
+setInterval(() => { if (!$('#app').hidden && current && document.activeElement?.id !== 'filter' && $('#morePop')?.hidden !== false) renderMain(); }, 60_000);
 </script>
 </body>
 </html>

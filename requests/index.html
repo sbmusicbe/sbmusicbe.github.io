@@ -63,7 +63,7 @@ footer a{color:inherit}
 
   <div id="setup" class="card setup" hidden>
     <h1>Nog niet ingesteld</h1>
-    <p class="muted">Deze verzoekjes-pagina is nog niet gekoppeld aan een database. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
+    <p class="muted">Deze verzoekjes-pagina is nog niet gekoppeld aan een GitHub-repo. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
   </div>
 
   <div id="nowPlaying" class="card now" hidden>
@@ -133,48 +133,71 @@ footer a{color:inherit}
 
 <script type="module">
 import {
-  configured, db, eventRef, requestsCol, doc, addDoc, onSnapshot, serverTimestamp,
-  $, esc, songKey, safeArt, searchSongs, toast, store
-} from './fb.js';
+  configured, api, parseEvent, parseRequest, requestIssue, EVENT_LABEL,
+  $, esc, songKey, safeArt, searchSongs, toast, store, poll
+} from './gh.js';
 
 const NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
 const COOLDOWN = 20_000, MAX_OPEN = 5;
 const artEl = (el, url) => { url = safeArt(url); el.style.backgroundImage = url ? `url("${url}")` : ''; el.innerHTML = url ? '' : NOTE; };
 
-let settings = null, picked = null, manual = false;
-
 // Elk event heeft een eigen link: /requests/?e=<event-code> (zo staat het ook in de QR-code).
 const EVENT_ID = (new URLSearchParams(location.search).get('e') || location.hash.slice(1) || '').trim().toLowerCase();
+let settings = null, picked = null, manual = false;
+
+function closedCard(h, msg) {
+  $('#loading').hidden = true; $('#open').hidden = true; $('#closed').hidden = false;
+  $('#closed h2').textContent = h; $('#closedMsg').textContent = msg;
+}
 
 if (!configured) {
   $('#loading').hidden = true; $('#setup').hidden = false;
 } else if (!/^[a-z0-9][a-z0-9-]{1,59}$/.test(EVENT_ID)) {
-  $('#loading').hidden = true; $('#closed').hidden = false;
-  $('#closed h2').textContent = 'Scan de QR-code';
-  $('#closedMsg').textContent = 'Scan de QR-code op het event of open de link die je kreeg om een nummer aan te vragen.';
+  closedCard('Scan de QR-code', 'Scan de QR-code op het event of open de link die je kreeg om een nummer aan te vragen.');
 } else {
-  onSnapshot(eventRef(EVENT_ID), snap => {
-    $('#loading').hidden = true;
-    settings = snap.exists() ? {...snap.data(), eventId: snap.id} : null;
-    render();
-  }, err => {
-    $('#loading').hidden = true;
-    console.error(err);
-    $('#closed').hidden = false; $('#closedMsg').textContent = 'Kon de verzoekjes niet laden. Probeer later opnieuw.';
-  });
+  loadEvent().then(() => { poll(refreshEvent, 45_000); refreshMine(); }).catch(fail);
+}
+
+function fail(e) {
+  console.error(e);
+  closedCard('Even geen verbinding', e.rateLimited ? 'Het is erg druk. Probeer over enkele minuten opnieuw.' : 'Kon de verzoekjes niet laden. Probeer later opnieuw.');
+}
+
+// Zoek het issue-nummer van dit event (onthouden, zodat we daarna enkel dat ene issue opvragen).
+async function loadEvent() {
+  const cache = store.get('vz_evnum', {});
+  if (cache[EVENT_ID]) {
+    try {
+      const {data} = await api('GET', '/issues/' + cache[EVENT_ID], null, {cond: true});
+      const ev = parseEvent(data);
+      if (ev && ev.id === EVENT_ID) { settings = {...ev, eventId: ev.id}; render(); return; }
+    } catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }
+  }
+  const list = await api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`);
+  const ev = list.map(parseEvent).find(e => e && e.id === EVENT_ID);
+  if (ev) { cache[EVENT_ID] = ev.number; store.set('vz_evnum', cache); settings = {...ev, eventId: ev.id}; }
+  else settings = null;
+  render();
+}
+async function refreshEvent() {
+  if (!settings) return loadEvent();
+  const {data, changed} = await api('GET', '/issues/' + settings.number, null, {cond: true});
+  if (!changed) return;
+  const ev = parseEvent(data);
+  settings = ev && ev.id === EVENT_ID ? {...ev, eventId: ev.id} : null;
+  render();
 }
 
 function render() {
+  $('#loading').hidden = true;
   const s = settings;
-  if (!s) {
-    $('#closed').hidden = false; $('#open').hidden = true;
-    $('#closed h2').textContent = 'Event niet gevonden';
-    $('#closedMsg').textContent = 'Deze link werkt (nog) niet. Controleer de QR-code of vraag de DJ om de juiste link.';
+  if (!s || s.archived) {
+    closedCard('Event niet gevonden', 'Deze link werkt (nog) niet. Controleer de QR-code of vraag de DJ om de juiste link.');
     return;
   }
   $('#closed h2').textContent = 'Verzoekjes zijn gesloten';
-  $('#evName').textContent = s.eventName || 'Verzoekjes';
-  document.title = (s.eventName ? s.eventName + ' · ' : '') + 'Verzoekjes';
+  $('#evName').textContent = s.name || 'Verzoekjes';
+  document.title = (s.name ? s.name + ' · ' : '') + 'Verzoekjes';
   $('#evWelcome').textContent = s.welcome || '';
   $('#evWelcome').hidden = !s.welcome;
   $('#msgField').hidden = s.allowMessages === false;
@@ -201,7 +224,7 @@ $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDef
 
 function hint(text) {
   $('#searchHint').hidden = false;
-  $('#searchHint').innerHTML = esc(text) + '<br><button class="link" type="button" data-manual>Niet te vinden? Typ het zelf in</button>';
+  $('#searchHint').innerHTML = (text ? esc(text) + '<br>' : '') + '<button class="link" type="button" data-manual>Niet te vinden? Typ het zelf in</button>';
 }
 $('#searchHint').addEventListener('click', e => { if (e.target.closest('[data-manual]')) pick(null); });
 
@@ -217,8 +240,7 @@ async function doSearch(q) {
       <div class="meta"><div class="t">${esc(r.title)}</div><div class="a">${esc(r.artist)}${r.year ? ' · ' + esc(r.year) : ''}</div></div>
       <svg class="plus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
     </button></li>`).join('');
-    if (res.length) { $('#searchHint').hidden = false; $('#searchHint').innerHTML = '<button class="link" type="button" data-manual>Niet te vinden? Typ het zelf in</button>'; }
-    else hint('Niets gevonden voor “' + q + '”.');
+    hint(res.length ? '' : 'Niets gevonden voor “' + q + '”.');
   } catch {
     if (my !== searchSeq) return;
     $('#results').innerHTML = '';
@@ -263,62 +285,62 @@ $('#form').addEventListener('submit', async e => {
   const mine = store.get('vz_mine', []);
   const openCount = mine.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new').length;
   if (openCount >= MAX_OPEN) { err.textContent = `Je hebt al ${MAX_OPEN} verzoekjes openstaan. Wacht tot er een gespeeld wordt.`; return; }
-  const dup = mine.find(m => m.eventId === settings.eventId && m.key === songKey(title, artist) && (m.status || 'new') === 'new');
-  if (dup) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
+  const key = songKey(title, artist);
+  if (mine.find(m => m.eventId === settings.eventId && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
 
   const btn = $('#fSubmit'); btn.disabled = true; btn.textContent = 'Versturen…';
   try {
-    const data = {
-      title, artist, name, message,
-      artwork: manual ? '' : safeArt(picked.artwork),
-      songKey: songKey(title, artist),
-      source: manual ? 'manual' : 'itunes',
-      eventId: settings.eventId,
-      status: 'new',
-      createdAt: serverTimestamp()
-    };
-    const ref = await addDoc(requestsCol(), data);
+    // Laatste check of het event nog open staat.
+    await refreshEvent().catch(() => {});
+    if (!settings || !settings.open) { err.textContent = 'Verzoekjes zijn net gesloten.'; return; }
+    const artwork = manual ? '' : safeArt(picked.artwork);
+    const issue = await api('POST', '/issues', requestIssue({eventId: settings.eventId, title, artist, artwork, songKey: key, name, message, source: manual ? 'manual' : 'itunes'}));
     store.set('vz_name', name);
     store.set('vz_last', Date.now());
-    mine.unshift({id: ref.id, eventId: settings.eventId, key: data.songKey, title, artist, artwork: data.artwork, status: 'new', at: Date.now()});
+    mine.unshift({id: issue.number, eventId: settings.eventId, key, title, artist, artwork, status: 'new', at: Date.now()});
     store.set('vz_mine', mine.slice(0, 30));
     $('#form').hidden = true; $('#done').hidden = false;
     renderMine();
   } catch (ex) {
     console.error(ex);
-    err.textContent = ex.code === 'permission-denied'
-      ? 'Verzoekjes zijn net gesloten of je aanvraag is ongeldig.'
+    err.textContent = ex.rateLimited || ex.status === 403 || ex.status === 429
+      ? 'Het is erg druk. Probeer over een minuutje opnieuw.'
       : 'Versturen mislukt. Controleer je verbinding en probeer opnieuw.';
   } finally {
     btn.disabled = false; btn.textContent = 'Verzoekje versturen';
   }
 });
 
-// ---------- Mijn verzoekjes (status live) ----------
-const watching = new Map();
+// ---------- Mijn verzoekjes (status wordt af en toe ververst) ----------
 const LABEL = {new: 'In de wachtrij', played: 'Gespeeld 🎉', rejected: 'Niet gespeeld'};
 function renderMine() {
   if (!settings) return;
   const mine = store.get('vz_mine', []).filter(m => m.eventId === settings.eventId);
   $('#mine').hidden = !mine.length;
   $('#mineList').innerHTML = mine.map(m => `<li>
-    <div class="art" style="${m.artwork ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${m.artwork ? '' : NOTE}</div>
+    <div class="art" style="${safeArt(m.artwork) ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${safeArt(m.artwork) ? '' : NOTE}</div>
     <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(m.artist)}</div></div>
     <span class="pill ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
-  for (const m of mine) {
-    if (watching.has(m.id) || m.status === 'played' || m.status === 'rejected') continue;
-    watching.set(m.id, onSnapshot(doc(db, 'requests', m.id), snap => {
-      const all = store.get('vz_mine', []);
-      const it = all.find(x => x.id === m.id); if (!it) return;
-      const st = snap.exists() ? snap.data().status : 'rejected';
-      if (st !== it.status) {
-        if (st === 'played' && it.status === 'new') toast(`“${it.title}” wordt gespeeld! 🎉`, 4000);
-        it.status = st; store.set('vz_mine', all); renderMine();
-      }
-      if (st !== 'new') { watching.get(m.id)?.(); watching.delete(m.id); }
-    }, () => { watching.get(m.id)?.(); }));
-  }
 }
+async function refreshMine() {
+  if (!settings) return;
+  const all = store.get('vz_mine', []);
+  let dirty = false;
+  for (const m of all.filter(m => m.eventId === settings.eventId && (m.status || 'new') === 'new')) {
+    try {
+      const {data, changed} = await api('GET', '/issues/' + m.id, null, {cond: true});
+      if (!changed) continue;
+      const r = parseRequest(data);
+      const st = r ? r.status : 'rejected';
+      if (st !== m.status) {
+        if (st === 'played') toast(`“${m.title}” wordt gespeeld! 🎉`, 4000);
+        m.status = st; dirty = true;
+      }
+    } catch (e) { if (e.status === 404 || e.status === 410) { m.status = 'rejected'; dirty = true; } }
+  }
+  if (dirty) { store.set('vz_mine', all); renderMine(); }
+}
+if (configured) poll(refreshMine, 60_000);
 </script>
 </body>
 </html>

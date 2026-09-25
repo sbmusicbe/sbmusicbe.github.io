@@ -41,13 +41,14 @@ h1{font-size:19mm;line-height:1.05;margin:0 0 5mm;font-weight:800;letter-spacing
   <div class="url" id="url"></div>
 </div>
 <script type="module">
-import { configured, eventRef, getDoc } from './fb.js';
+import { configured, api, parseEvent, EVENT_LABEL } from './gh.js';
 const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
 const url = new URL('./?e=' + encodeURIComponent(id), location.href).href;
 document.getElementById('qr').src = 'https://api.qrserver.com/v1/create-qr-code/?' + new URLSearchParams({size: '1000x1000', margin: '0', ecc: 'M', data: url});
 document.getElementById('url').textContent = url.replace(/^https?:\/\//, '');
 document.getElementById('headline').oninput = e => document.getElementById('h1').textContent = e.target.value;
-if (configured && id) getDoc(eventRef(id)).then(s => { if (s.exists()) document.getElementById('ev').textContent = s.data().name; }).catch(() => {});
+if (configured && id) api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`)
+  .then(list => { const ev = list.map(parseEvent).find(e => e && e.id === id); if (ev) document.getElementById('ev').textContent = ev.name; }).catch(() => {});
 </script>
 </body>
 </html>
