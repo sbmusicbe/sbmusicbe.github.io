@@ -302,6 +302,18 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .im-warn ul{margin:4px 0 0;padding-left:18px}
 .im-ok{color:var(--ok);font-size:13.5px;margin:10px 0 0}
 .sales-head .seg{align-self:center}
+/* ---------- Archief ---------- */
+.col>header .col-arch{width:26px;height:26px;margin-left:auto;color:var(--muted)}
+.col>header .col-arch+.col-edit{margin-left:0}
+.col>header .col-arch svg{width:16px;height:16px}
+.col>header .badge~.col-arch{margin-left:0}
+.d-arch{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;font-size:13px}
+.d-arch svg{width:15px;height:15px}
+.arch-bar{display:flex;gap:8px;margin:0 0 6px}
+.arch-bar .search{flex:1}
+.task.arch{align-items:center}
+.task.arch .restore{padding:5px 10px;font-size:13px;flex:none}
+.empty .small{color:var(--faint)}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -437,6 +449,7 @@ const I = {
   inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>',
   upcoming:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/></svg>',
+  archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
   sales:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -873,7 +886,7 @@ async function lock() {
 let view = {type:'all'};
 let selectedId = null;
 let searchQ = '';
-const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle taken']];
+const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle taken'],['archive','Archief']];
 const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === 'sales' ? 's:' + view.id : view.type;
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
@@ -887,7 +900,8 @@ function setPref(k, v) {
   commit();
 }
 function setView(v) {
-  view = v; searchQ = '';
+  view = v; searchQ = ''; archQ = '';
+  $('#list').innerHTML = '';
   $('#app').classList.remove('side-open');
   if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
   renderAll();
@@ -936,6 +950,8 @@ function safeUrl(v) {
 function viewTasks(includeDone) {
   const td = today(), wk = addDays(td, 6);
   return data.tasks.filter(t => {
+    // gearchiveerde kaarten zijn alleen zichtbaar in het Archief
+    if (t.archived || view.type === 'archive') return !!t.archived && view.type === 'archive';
     if (!includeDone && t.done) return false;
     switch (view.type) {
       case 'inbox': return t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId);
@@ -1093,7 +1109,7 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
       <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
@@ -1102,6 +1118,8 @@ function renderBoard() {
   $('.board').scrollLeft = scroll;
 }
 function renderMain() {
+  if (view.type === 'archive') { renderArchive(); return; }
+  if (view.type === 'sales') return;
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
   $('#app').classList.toggle('board-mode', board);
@@ -1111,8 +1129,9 @@ function renderMain() {
 
 /* ---------------- Sidebar / header / toolbar ---------------- */
 function renderNav() {
-  const open = data.tasks.filter(t => !t.done), td = today(), wk = addDays(td, 6);
+  const open = data.tasks.filter(t => !t.done && !t.archived), td = today(), wk = addDays(td, 6);
   const cnt = {
+    archive: data.tasks.filter(t => t.archived).length,
     inbox: open.filter(t => t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId)).length,
     today: open.filter(t => t.due && t.due <= td).length,
     upcoming: open.filter(t => t.due && t.due <= wk).length,
@@ -1188,6 +1207,15 @@ function renderAll() {
     $('.main-inner').classList.add('wide');
     $('#app').classList.remove('board-mode');
     renderSales();
+    renderDetail();
+    return;
+  }
+  const archive = view.type === 'archive';
+  for (const sel of ['#toolbar', '#quickAdd', '#qaPreview']) $(sel).hidden = archive;
+  if (archive) {
+    $('.main-inner').classList.remove('wide');
+    $('#app').classList.remove('board-mode');
+    renderArchive();
     renderDetail();
     return;
   }
@@ -1362,6 +1390,7 @@ function renderDetail(force) {
     <div class="d-head">
       <button class="icon-btn" data-act="close" aria-label="Sluiten">${I.close}</button>
       <span class="crumb"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${p.color}"></span>${esc(p.name)}</span>
+      <button class="btn d-arch" data-act="archive">${I.archive}${t.archived ? 'Terugzetten' : 'Archiveren'}</button>
       <button class="icon-btn" data-act="delete" title="Taak verwijderen" aria-label="Taak verwijderen">${I.trash}</button>
     </div>
     <div class="d-body">
@@ -1438,6 +1467,13 @@ detail.addEventListener('click', e => {
   switch (b.dataset.act) {
     case 'close': closeDetail(); break;
     case 'delete': deleteTask(t.id); break;
+    case 'archive': {
+      const on = !t.archived;
+      if (on && view.type !== 'archive') selectedId = null;
+      if (!on && view.type === 'archive') selectedId = null;
+      setArchived([t.id], on);
+      break;
+    }
     case 'toggle': toggleTask(t.id); break;
     case 'fields': openFieldsDialog(); break;
     case 'newfield': openFieldEditor(null, t.projectId === 'inbox' ? null : t.projectId); break;
@@ -2327,6 +2363,65 @@ function openSalesColsDialog() {
   draw();
 }
 
+/* ---------------- Archief ---------------- */
+function setArchived(ids, on) {
+  const prev = ids.map(id => { const t = taskById(id); return t && [id, !!t.archived, t.archivedAt || null]; }).filter(Boolean);
+  for (const [id] of prev) {
+    const t = taskById(id);
+    t.archived = on; t.archivedAt = on ? now() : null; touch(t);
+  }
+  commit();
+  const n = prev.length;
+  toast(`${n} kaart${n === 1 ? '' : 'en'} ${on ? 'gearchiveerd' : 'teruggezet'}`, () => {
+    for (const [id, a, at] of prev) { const t = taskById(id); if (t) { t.archived = a; t.archivedAt = at; touch(t); } }
+    commit();
+  });
+}
+function archiveColumn(stageId) {
+  const st = stageById(stageId), p = prefs();
+  const ids = viewTasks(true).filter(t => t.stage === stageId && matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv)).map(t => t.id);
+  if (!ids.length) return;
+  if (!confirm(`${ids.length} kaart${ids.length === 1 ? '' : 'en'} uit “${st.label}” archiveren?\n\nJe vindt ze terug onder Archief in de zijbalk.`)) return;
+  if (ids.includes(selectedId)) selectedId = null;
+  setArchived(ids, true);
+}
+let archQ = '';
+const archiveMatches = () => data.tasks.filter(t => t.archived && matchSearch(t, archQ));
+function renderArchive() {
+  const list = $('#list');
+  if (!$('#archSearch', list)) {
+    list.innerHTML = `
+      <div class="arch-bar">
+        <input type="search" id="archSearch" class="search" placeholder="Zoeken in het archief…" aria-label="Zoeken in het archief">
+        <button type="button" class="btn" data-restore-all>Alles terugzetten</button>
+      </div>
+      <div id="archResults"></div>`;
+  }
+  $('#archSearch').value = archQ;
+  renderArchiveResults();
+}
+function renderArchiveResults() {
+  const tasks = archiveMatches().sort((a, b) => (b.archivedAt || 0) - (a.archivedAt || 0));
+  const el = $('#archResults'); if (!el) return;
+  $('[data-restore-all]').hidden = !tasks.length;
+  if (!tasks.length) {
+    el.innerHTML = `<div class="empty">${I.archive}<div>${archQ ? 'Niets gevonden in het archief.' : 'Het archief is leeg.<br><span class="small">Archiveer kaarten via de knop bovenaan een afgewerkte kolom, of via het detailpaneel van een kaart.</span>'}</div></div>`;
+    return;
+  }
+  el.innerHTML = groupTasks(tasks, 'stage').map(g => `
+    <section class="group"><h3><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${g.color};align-self:center"></span>${esc(g.label)} <span class="count">${g.tasks.length}</span></h3>
+    <ul class="tasks">${g.tasks.map(t => {
+      const p = proj(t.projectId), at = t.archivedAt ? new Date(t.archivedAt) : null;
+      return `<li class="task arch ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}">
+        <div class="t-body"><div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>
+        <div class="t-meta">${t.projectId !== 'inbox' ? `<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>` : ''}${at ? `<span class="chip">${I.archive} ${at.getDate()} ${MONTHS[at.getMonth()]}${at.getFullYear() !== new Date().getFullYear() ? ' ' + at.getFullYear() : ''}</span>` : ''}${fieldChips(t)}</div></div>
+        <button type="button" class="btn restore" data-restore>Terugzetten</button></li>`;
+    }).join('')}</ul></section>`).join('');
+}
+$('#list').addEventListener('input', e => {
+  if (e.target.id === 'archSearch') { archQ = e.target.value; renderArchiveResults(); }
+});
+
 /* ---------------- Toast ---------------- */
 let toastTimer = null;
 function toast(msg, undo) {
@@ -2359,6 +2454,15 @@ $('#scrim').onclick = () => $('#app').classList.remove('side-open');
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
   if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
+  const archCol = e.target.closest('[data-archcol]');
+  if (archCol) { archiveColumn(archCol.dataset.archcol); return; }
+  const restore = e.target.closest('[data-restore]');
+  if (restore) { setArchived([restore.closest('.task').dataset.id], false); return; }
+  if (e.target.closest('[data-restore-all]')) {
+    const ids = archiveMatches().map(t => t.id);
+    if (ids.length && confirm(`${ids.length} kaart(en) terugzetten op het bord?`)) setArchived(ids, false);
+    return;
+  }
   const more = e.target.closest('[data-more]');
   if (more) { boardExpanded[more.dataset.more] = true; renderMain(); return; }
   const row = e.target.closest('.task,.card'); if (!row) return;
