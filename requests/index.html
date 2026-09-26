@@ -389,17 +389,18 @@ $('#form').addEventListener('submit', async e => {
 });
 
 // ---------- Mijn verzoekjes (status wordt af en toe ververst) ----------
-const LABEL = {new: 'In de wachtrij', played: 'Gespeeld', rejected: 'Niet gespeeld', deleted: 'Niet gespeeld'};
+const LABEL = {new: 'In de wachtrij', played: 'Gespeeld', rejected: 'Niet gespeeld'};
 // Eigen verzoekjes van dit event (niet van een vroeger event met dezelfde code).
 const isMine = m => m.eventId === settings.eventId && (m.en ? m.en === settings.number : m.at >= Date.parse(settings.createdAt) - 60_000);
 function renderMine() {
   if (!settings) return;
-  const mine = store.get('vz_mine', []).filter(m => isMine(m));
+  // Door de DJ verwijderde aanvragen (bv. dubbel of fout) tonen we niet: alsof ze nooit aangevraagd zijn.
+  const mine = store.get('vz_mine', []).filter(m => isMine(m) && m.status !== 'deleted');
   $('#mine').hidden = !mine.length;
   $('#mineList').innerHTML = mine.map(m => `<li>
     <div class="art" style="${safeArt(m.artwork) ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${safeArt(m.artwork) ? '' : NOTE}</div>
     <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(m.artist)}</div></div>
-    <span class="pill ${m.status === 'deleted' ? 'rejected' : esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
+    <span class="pill ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
 }
 async function refreshMine() {
   if (!settings) return;
@@ -410,14 +411,15 @@ async function refreshMine() {
       const {data, changed} = await api('GET', '/issues/' + m.id, null, {cond: true});
       if (!changed) continue;
       const r = parseRequest(data);
-      const st = r ? r.status : 'rejected';
+      const st = r ? r.status : 'deleted';
       if (st !== m.status) {
         if (st === 'played') toast(`Nu te horen: ${m.title}.`, 4000);
         m.status = st; dirty = true;
       }
-    } catch (e) { if (e.status === 404 || e.status === 410) { m.status = 'rejected'; dirty = true; } }
+    } catch (e) { if (e.status === 404 || e.status === 410) { m.status = 'deleted'; dirty = true; } }
   }
-  if (dirty) { store.set('vz_mine', all); renderMine(); }
+  // Verwijderde aanvragen vergeten; zo kan de gast hetzelfde nummer ook opnieuw aanvragen.
+  if (dirty) { store.set('vz_mine', all.filter(m => m.status !== 'deleted')); renderMine(); if (queueLoaded) renderQueue(); }
 }
 if (configured) poll(refreshMine, 60_000);
 
