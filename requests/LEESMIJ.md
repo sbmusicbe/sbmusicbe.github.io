@@ -80,6 +80,12 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
   - ✓ gespeeld, ✕ afwijzen. Onder *Gespeeld* en *Afgewezen* kan je een nummer terugzetten.
 - **Nieuwe verzoekjes** verschijnen vanzelf (binnen ± 12 seconden), met een melding en een geluidje.
   Het geluid zet je aan of uit met het luidsprekertje. Op elk tabblad staat het aantal openstaande verzoekjes.
+- **Stemmen**: gasten zien de wachtrij van het event (enkel titel en artiest) en kunnen stemmen op nummers die nog
+  niet gespeeld zijn. Ze kunnen hun stem ook weer intrekken. Eén stem per nummer per toestel; op je eigen aanvraag stem je niet.
+  In het beheer telt ×N de aanvragen en stemmen samen (bv. "1 aanvraag · 2 stemmen"), en *Meest gevraagd* sorteert daarop.
+  Zet het per event uit via het tandwiel: *Gasten zien de wachtrij en kunnen stemmen*.
+  Technisch is elke stem een reactie op het issue van het verzoekje.
+  Een GitHub-duimpje kan niet: alle gasten gebruiken hetzelfde token, en GitHub telt maar één duimpje per gebruiker.
 - **Liedje verwijderen**: met het vuilbakje haal je een nummer (en alle aanvragen ervan) uit de lijst.
 - **Event verwijderen**: archiveer het event eerst. Kies daarna *Event verwijderen* onder ⋯, of het vuilbakje in het archief.
   De link en de QR-code werken dan niet meer, en de code is vrij voor een nieuw event.
