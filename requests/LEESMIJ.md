@@ -11,6 +11,13 @@ Een app waarmee gasten nummers aanvragen, zoals requestbox.app. Ze draait volled
 | `sbmusic.be/requests/beheer.html` | Jij (wachtwoord) |
 | `sbmusic.be/requests/poster.html?e=<event-code>` | Afdrukbare A4-poster met QR-code |
 
+De app volgt de SB Design Language v1.0:
+- Kleuren: Studio Black, Graphite, Cord Green, Bone, en Moss als spaarzaam accent.
+- Lettertypes: Archivo Expanded Black Italic, Inter en Space Mono.
+- Vorm: de schuine lijn van 23° en het SB-logo.
+
+De stijl staat in `style.css`.
+
 ## Hoe werkt het?
 
 GitHub Pages toont enkel bestanden en kan zelf niets opslaan. Daarom komt elk verzoekje als **issue** in een aparte
@@ -61,7 +68,7 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
   Gasten zien ze bovenaan de pagina, en ze staat ook op de poster.
   De foto wordt in je browser automatisch verkleind (± 150 KB) en als reactie bij het event-issue bewaard.
   Een Issues-token kan namelijk geen bestanden uploaden.
-- **QR & link**: toont de QR-code, een QR in hoge resolutie en een afdrukbare poster.
+- **QR & link**: toont de link en de QR-code, met knoppen om de QR-code als PNG te downloaden en de poster te openen.
 - **Poster (PDF)**: A4 in de huisstijl van sbmusic.be, met het SB-logo, de foto van het event en de QR-code.
   Pas bovenaan de titel aan en kies een zwarte achtergrond (zoals de site) of een witte (spaart inkt).
   Klik **Download PDF** voor een A4-bestand om te mailen of te laten drukken, of **Afdrukken** om meteen te printen.
