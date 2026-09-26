@@ -51,6 +51,24 @@
 .done-card{padding:30px 22px}
 .done-card h2{margin:8px 0 10px;font-size:34px}
 .done-card p{margin:0 0 24px;color:var(--muted)}
+.queue ul{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
+.queue li{display:flex;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.queue .art{width:46px;height:46px}
+.queue .meta{flex:1;min-width:0}
+.queue .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue .a{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue .rank{font:700 12px/1 var(--mono);color:var(--faint);width:22px;flex:none}
+.vote{position:relative;isolation:isolate;border:0;background:none;display:inline-flex;align-items:center;gap:7px;padding:9px 14px;min-width:66px;justify-content:center;
+  font:700 13px/1 var(--mono);letter-spacing:.06em;color:var(--text);flex:none}
+.vote::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--graphite);transform:skewX(var(--skew));transition:background .15s}
+.vote:hover::before{background:#333}
+.vote svg{width:13px;height:13px}
+.vote.on{color:var(--studio)}
+.vote.on::before{background:var(--signaal)}
+.vote:disabled{cursor:default}
+.vote.own{color:var(--faint)}
+.vote.own::before{background:none;box-shadow:inset 0 0 0 1px var(--line-2)}
+.queue .more{margin-top:14px}
 .mine{margin-top:40px}
 .mine ul{list-style:none;margin:12px 0 0;padding:0}
 .mine li{display:flex;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -151,6 +169,15 @@ footer a.idx:hover{color:var(--krijt)}
     </div>
   </main>
 
+  <section class="queue section" id="queue" hidden>
+    <span class="idx">03 — Stem mee</span>
+    <h2 class="display">De wachtrij.</h2>
+    <p class="muted" style="margin:0">Wil jij een nummer ook horen? Geef het een stem.</p>
+    <ul id="queueList"></ul>
+    <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
+    <button class="link more" id="queueMore" type="button" hidden>Toon alles</button>
+  </section>
+
   <section class="mine" id="mine" hidden>
     <span class="idx">Mijn verzoekjes</span>
     <ul id="mineList"></ul>
@@ -164,7 +191,7 @@ footer a.idx:hover{color:var(--krijt)}
 
 <script type="module">
 import {
-  configured, api, parseEvent, parseRequest, requestIssue, EVENT_LABEL, loadPhoto,
+  configured, api, nextLink, parseEvent, parseRequest, requestIssue, EVENT_LABEL, loadPhoto, addVote, removeVote, belongsTo,
   $, esc, songKey, safeArt, searchSongs, toast, store, poll
 } from './gh.js';
 
@@ -186,7 +213,7 @@ if (!configured) {
 } else if (!/^[a-z0-9][a-z0-9-]{1,59}$/.test(EVENT_ID)) {
   closedCard('Scan de QR-code.', 'Scan de code op het event, of open de link die je kreeg.');
 } else {
-  loadEvent().then(() => { poll(refreshEvent, 45_000); refreshMine(); }).catch(fail);
+  loadEvent().then(() => { poll(refreshEvent, 45_000); refreshMine(); poll(loadQueue, 30_000); }).catch(fail);
 }
 
 function fail(e) {
@@ -243,6 +270,9 @@ function render() {
   $('#closed').hidden = !!s.open;
   $('#closedMsg').textContent = s.closedMessage || 'Kom later nog eens terug.';
   renderMine();
+  const showQueue = !!s.open && s.allowVotes !== false;
+  $('#queue').hidden = !showQueue;
+  if (showQueue && !queueLoaded) loadQueue().catch(e => console.warn(e));
 }
 
 let photoShown = '';
@@ -347,6 +377,7 @@ $('#form').addEventListener('submit', async e => {
     store.set('vz_mine', mine.slice(0, 30));
     $('#form').hidden = true; $('#done').hidden = false;
     renderMine();
+    loadQueue().catch(() => {});
   } catch (ex) {
     console.error(ex);
     err.textContent = ex.rateLimited || ex.status === 403 || ex.status === 429
@@ -389,6 +420,75 @@ async function refreshMine() {
   if (dirty) { store.set('vz_mine', all); renderMine(); }
 }
 if (configured) poll(refreshMine, 60_000);
+
+// ---------- Wachtrij en stemmen ----------
+// Gasten zien enkel titel en artiest van de nummers die nog niet gespeeld zijn, samengevoegd per nummer.
+// Score = aantal aanvragen + aantal stemmen. Eén stem per nummer per toestel; op je eigen aanvraag stem je niet.
+const UP = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4 21 18H3z"/></svg>';
+let queue = [], queueLoaded = false, queueAll = false;
+const voteKey = key => settings.number + ':' + key;
+
+async function loadQueue() {
+  if (!settings || !settings.open || settings.allowVotes === false) return;
+  // Gesorteerd op "laatst gewijzigd": een nieuwe aanvraag of stem verandert de eerste pagina (en dus de ETag).
+  const first = await api('GET', '/issues?state=open&per_page=100&sort=updated&direction=desc', null, {cond: true});
+  if (!first.changed && queueLoaded) return;
+  let all = first.data, next = nextLink(first.link || '');
+  while (next) { const p = await api('GET', next, null, {raw: true}); all = all.concat(p.data); next = nextLink(p.link); }
+  const groups = new Map();
+  for (const r of all.map(parseRequest)) {
+    if (!r || r.status !== 'new' || !belongsTo(r, settings)) continue;
+    if (!groups.has(r.songKey)) groups.set(r.songKey, {key: r.songKey, title: r.title, artist: r.artist, artwork: r.artwork, items: [], score: 0, first: Infinity});
+    const g = groups.get(r.songKey);
+    g.items.push(r); g.score += 1 + r.votes; g.first = Math.min(g.first, Date.parse(r.createdAt));
+    if (!g.artwork && r.artwork) g.artwork = r.artwork;
+  }
+  queue = [...groups.values()].sort((a, b) => b.score - a.score || a.first - b.first);
+  queue.forEach(g => g.items.sort((a, b) => a.number - b.number));
+  queueLoaded = true;
+  renderQueue();
+}
+
+function renderQueue() {
+  const votes = store.get('vz_votes', {});
+  const own = new Set(store.get('vz_mine', []).filter(m => isMine(m) && (m.status || 'new') === 'new').map(m => m.key));
+  const list = queueAll ? queue : queue.slice(0, 15);
+  $('#queueEmpty').hidden = queue.length > 0;
+  $('#queueMore').hidden = queueAll || queue.length <= 15;
+  $('#queueList').innerHTML = list.map((g, i) => {
+    const mineSong = own.has(g.key), voted = !!votes[voteKey(g.key)];
+    return `<li>
+      <span class="rank">${String(i + 1).padStart(2, '0')}</span>
+      <div class="art" style="${safeArt(g.artwork) ? `background-image:url('${esc(safeArt(g.artwork))}')` : ''}">${safeArt(g.artwork) ? '' : NOTE}</div>
+      <div class="meta"><div class="t">${esc(g.title)}</div><div class="a">${esc(g.artist)}</div></div>
+      <button class="vote ${voted ? 'on' : ''} ${mineSong ? 'own' : ''}" type="button" data-key="${esc(g.key)}" ${mineSong ? 'disabled title="Jouw nummer"' : ''}
+        aria-pressed="${voted}" aria-label="${mineSong ? 'Jouw nummer' : voted ? 'Stem intrekken' : 'Stem op dit nummer'}, ${g.score} ${g.score === 1 ? 'stem' : 'stemmen'}">${UP}<span>${g.score}</span></button>
+    </li>`;
+  }).join('');
+}
+$('#queueMore').addEventListener('click', () => { queueAll = true; renderQueue(); });
+
+$('#queueList').addEventListener('click', async e => {
+  const b = e.target.closest('.vote'); if (!b || b.disabled) return;
+  const g = queue.find(x => x.key === b.dataset.key); if (!g) return;
+  const votes = store.get('vz_votes', {}), k = voteKey(g.key);
+  b.disabled = true;
+  try {
+    if (votes[k]) {
+      await removeVote(votes[k].c);
+      delete votes[k]; g.score = Math.max(1, g.score - 1);
+    } else {
+      const c = await addVote(g.items[0].number);
+      votes[k] = {n: g.items[0].number, c}; g.score += 1;
+    }
+    store.set('vz_votes', votes);
+    renderQueue();
+  } catch (ex) {
+    console.error(ex);
+    toast(ex.rateLimited || ex.status === 403 || ex.status === 429 ? 'Het is erg druk. Probeer zo opnieuw.' : 'Stemmen lukt nu even niet.');
+    b.disabled = false;
+  }
+});
 </script>
 </body>
 </html>

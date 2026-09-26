@@ -47,13 +47,13 @@ export function parseEvent(issue) {
   try {
     const d = JSON.parse((issue.body || '').match(JSON_RE)[1]);
     if (!d.code) return null;
-    return {name: '', welcome: '', closedMessage: '', allowMessages: true, open: false, archived: false, nowPlaying: null, ...d,
+    return {name: '', welcome: '', closedMessage: '', allowMessages: true, allowVotes: true, open: false, archived: false, nowPlaying: null, ...d,
       id: d.code, number: issue.number, createdAt: issue.created_at};
   } catch { return null; }
 }
 export function eventIssue(ev) {
   const d = {code: ev.id, name: ev.name, welcome: ev.welcome || '', closedMessage: ev.closedMessage || '',
-    allowMessages: ev.allowMessages !== false, open: !!ev.open, archived: !!ev.archived, nowPlaying: ev.nowPlaying || null,
+    allowMessages: ev.allowMessages !== false, allowVotes: ev.allowVotes !== false, open: !!ev.open, archived: !!ev.archived, nowPlaying: ev.nowPlaying || null,
     photo: ev.photo || null};
   const url = new URL('./?e=' + ev.id, location.href).href;
   return {
@@ -75,7 +75,8 @@ export function parseRequest(issue) {
       id: issue.number, number: issue.number, eventId: String(d.e), eventNumber: +d.en || null, title: String(d.t).slice(0, 200), artist: String(d.a || '').slice(0, 200),
       artwork: safeArt(d.art), songKey: d.k || songKey(d.t, d.a), name: String(d.n || '').slice(0, 60), message: String(d.m || '').slice(0, 300),
       status: hasLabel(issue, DELETED_LABEL) ? 'deleted' : issue.state === 'open' ? 'new' : issue.state_reason === 'not_planned' ? 'rejected' : 'played',
-      createdAt: issue.created_at, doneAt: issue.closed_at
+      createdAt: issue.created_at, doneAt: issue.closed_at,
+      votes: issue.comments || 0  // elke stem is een reactie op het issue
     };
   } catch { return null; }
 }
@@ -153,6 +154,17 @@ export async function deletePhoto(photo) {
   for (const id of photo?.ids || []) {
     try { await api('DELETE', '/issues/comments/' + (+id)); } catch (e) { if (e.status !== 404) console.warn(e); }
   }
+}
+
+// ---- stemmen ----
+// Alle gasten gebruiken hetzelfde token, dus een GitHub-duimpje telt maar één keer. Daarom is elke stem een reactie
+// op het issue; het aantal reacties staat al in de lijst van issues (geen extra aanvragen nodig).
+export async function addVote(number) {
+  const c = await api('POST', `/issues/${number}/comments`, {body: 'Stem via de verzoekjes-pagina.\n<!-- vz-vote -->'});
+  return c.id;
+}
+export async function removeVote(commentId) {
+  try { await api('DELETE', '/issues/comments/' + (+commentId)); } catch (e) { if (e.status !== 404) throw e; }
 }
 
 // Hoort een verzoekje bij dit event? Een code kan na het verwijderen van een event opnieuw gebruikt worden;

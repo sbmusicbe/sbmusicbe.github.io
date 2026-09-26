@@ -212,6 +212,7 @@ ul.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
   <label for="evClosed">Tekst als verzoekjes dicht zijn <span class="opt">— optioneel</span></label>
   <input id="evClosed" type="text" maxlength="200" placeholder="Kom later nog eens terug.">
   <label class="chk"><input type="checkbox" id="evMsgs" checked> Gasten mogen een boodschap meesturen</label>
+  <label class="chk"><input type="checkbox" id="evVotes" checked> Gasten zien de wachtrij en kunnen stemmen</label>
   <label class="chk" id="evOpenRow"><input type="checkbox" id="evOpen" checked> Meteen open voor verzoekjes</label>
   <p class="err" id="evErr"></p>
   <div class="actions">
@@ -467,12 +468,13 @@ function renderMain() {
     g.items.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
     const f = g.items[0];
     return {...g, title: f.title, artist: f.artist, artwork: g.items.find(i => i.artwork)?.artwork || '',
-      first: ms(f.createdAt), last: ms(g.items.at(-1).createdAt), done: Math.max(...g.items.map(i => ms(i.doneAt)))};
+      first: ms(f.createdAt), last: ms(g.items.at(-1).createdAt), done: Math.max(...g.items.map(i => ms(i.doneAt))),
+      votes: g.items.reduce((a, i) => a + (i.votes || 0), 0), score: g.items.reduce((a, i) => a + 1 + (i.votes || 0), 0)};
   });
   const q = filter.toLowerCase();
   if (q) list = list.filter(g => (g.title + ' ' + g.artist + ' ' + g.items.map(i => i.name + ' ' + i.message).join(' ')).toLowerCase().includes(q));
   if (view !== 'new') list.sort((a, b) => b.done - a.done);
-  else if (sort === 'count') list.sort((a, b) => b.items.length - a.items.length || a.first - b.first);
+  else if (sort === 'count') list.sort((a, b) => b.score - a.score || a.first - b.first);
   else if (sort === 'old') list.sort((a, b) => a.first - b.first);
   else list.sort((a, b) => b.last - a.last);
   const counts = {new: new Set(by.new.map(r => r.songKey)).size, played: new Set(by.played.map(r => r.songKey)).size, rejected: new Set(by.rejected.map(r => r.songKey)).size};
@@ -533,8 +535,9 @@ function groupHtml(g) {
   return `<li class="req" data-key="${esc(g.key)}">
     <div class="art" style="${artStyle(g.artwork)}">${safeArt(g.artwork) ? '' : NOTE}</div>
     <div class="body">
-      <div class="t">${esc(g.title)}${n > 1 ? `<span class="cnt" title="${n} keer aangevraagd">×${n}</span>` : ''}</div>
+      <div class="t">${esc(g.title)}${g.score > 1 ? `<span class="cnt" title="${n} ${n === 1 ? 'aanvraag' : 'aanvragen'}, ${g.votes} ${g.votes === 1 ? 'stem' : 'stemmen'}">×${g.score}</span>` : ''}</div>
       <div class="a">${esc(g.artist || '')}${who ? '' : ` · <span class="small">${ago(g.items[0].createdAt)}</span>`}</div>
+      ${g.votes ? `<div class="idx" style="margin-top:6px">${n} ${n === 1 ? 'aanvraag' : 'aanvragen'} · ${g.votes} ${g.votes === 1 ? 'stem' : 'stemmen'}</div>` : ''}
       ${who ? `<div class="who">${who}</div>` : ''}
     </div>
     <div class="acts">${acts}${del}</div></li>`;
@@ -637,6 +640,7 @@ function openEventDialog(ev) {
   $('#evWelcome').value = ev?.welcome || '';
   $('#evClosed').value = ev?.closedMessage || '';
   $('#evMsgs').checked = ev ? ev.allowMessages !== false : true;
+  $('#evVotes').checked = ev ? ev.allowVotes !== false : true;
   $('#evOpenRow').hidden = !!ev;
   $('#evOpen').checked = true;
   $('#evErr').textContent = '';
@@ -657,7 +661,7 @@ $('#evForm').addEventListener('submit', async e => {
   const code = slugify($('#evCode').value);
   if (!name) { $('#evErr').textContent = 'Geef het event een naam.'; return; }
   if (!editing && !/^[a-z0-9][a-z0-9-]{1,59}$/.test(code)) { $('#evErr').textContent = 'Code: minstens 2 tekens, enkel kleine letters, cijfers en streepjes.'; return; }
-  const data = {name, welcome: $('#evWelcome').value.trim(), closedMessage: $('#evClosed').value.trim(), allowMessages: $('#evMsgs').checked};
+  const data = {name, welcome: $('#evWelcome').value.trim(), closedMessage: $('#evClosed').value.trim(), allowMessages: $('#evMsgs').checked, allowVotes: $('#evVotes').checked};
   $('#evSave').disabled = true;
   try {
     if (editing) {
@@ -749,9 +753,9 @@ $('#archList').addEventListener('click', e => {
 function exportCsv(ev) {
   const cell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const st = {new: 'wachtrij', played: 'gespeeld', rejected: 'afgewezen'};
-  const rows = [['Tijd', 'Titel', 'Artiest', 'Naam', 'Boodschap', 'Status']].concat(
+  const rows = [['Tijd', 'Titel', 'Artiest', 'Naam', 'Boodschap', 'Status', 'Stemmen']].concat(
     [...reqs].sort((a, b) => ms(a.createdAt) - ms(b.createdAt)).map(r =>
-      [new Date(ms(r.createdAt)).toLocaleString('nl-BE'), r.title, r.artist, r.name, r.message, st[r.status] || r.status]));
+      [new Date(ms(r.createdAt)).toLocaleString('nl-BE'), r.title, r.artist, r.name, r.message, st[r.status] || r.status, r.votes || 0]));
   const blob = new Blob(['﻿' + rows.map(r => r.map(cell).join(';')).join('\r\n')], {type: 'text/csv;charset=utf-8'});
   const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: `verzoekjes-${ev.id}.csv`});
   a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
