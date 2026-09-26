@@ -5,99 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Verzoekjes · Beheer</title>
-<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="icon" href="icon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..600;1,100..125,900&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="vendor/qrcode.js"></script>
 <style>
 body{font-size:15px}
+h1,h2{font-family:var(--display);font-stretch:125%;font-style:italic;font-weight:900;text-transform:uppercase;line-height:.92;letter-spacing:-.01em}
+
+/* login / instellen */
 .lock{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
-.lock .card{width:100%;max-width:380px;padding:28px 24px}
-.lock h1{margin:0 0 4px;font-size:22px}
+.lock .card{width:100%;max-width:400px;padding:30px 26px}
+.lock .logo{width:80px;margin-bottom:26px}
+.lock h1{margin:8px 0 10px;font-size:30px}
 .lock p{margin:0 0 6px}
-.lock .btn.primary{width:100%;margin-top:18px;padding:11px}
-.logo{width:46px;height:46px;border-radius:13px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin-bottom:14px}
-.logo svg{width:24px;height:24px}
-code.uid{display:block;background:var(--hover);padding:10px 12px;border-radius:8px;font-size:13.5px;word-break:break-all;margin:10px 0}
+.lock .btn.primary{width:calc(100% - 20px);margin:24px 10px 0;padding:14px}
+code.uid{display:block;padding:10px 12px;font-size:13.5px;word-break:break-all;margin:10px 0}
 
-/* top */
-.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.bar{max-width:980px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:8px}
-.brand{font-weight:780;font-size:17px;display:flex;align-items:center;gap:9px;margin-right:auto}
-.brand i{width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
-.brand i svg{width:15px;height:15px}
-.tabs{max-width:980px;margin:0 auto;padding:8px 12px 0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+/* bovenbalk */
+.top{position:sticky;top:0;z-index:5;background:rgba(10,10,10,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:1000px;margin:0 auto;padding:16px 20px 4px;display:flex;align-items:center;gap:6px}
+.brand{display:flex;align-items:center;gap:14px;margin-right:auto}
+.brand .logo{width:80px}
+.tabs{max-width:1000px;margin:0 auto;padding:8px 14px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{border:0;background:none;padding:9px 12px 11px;border-bottom:2.5px solid transparent;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:7px;font-size:14.5px}
+.tab{position:relative;border:0;background:none;padding:12px 12px 14px;font:700 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap;display:flex;align-items:center;gap:8px}
 .tab:hover{color:var(--text)}
-.tab.on{color:var(--text);border-bottom-color:var(--accent)}
-.tab .badge{background:var(--accent);color:var(--on-accent);font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
-.tab .st{width:7px;height:7px;border-radius:50%;background:var(--faint)}
-.tab .st.open{background:var(--ok)}
-.tab.add{color:var(--accent)}
-.tab.add svg{width:16px;height:16px}
+.tab.on{color:var(--text)}
+.tab.on::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--signaal);transform:skewX(var(--skew))}
+.tab .badge{position:relative;isolation:isolate;color:var(--studio);font-size:11px;padding:3px 8px;min-width:22px;text-align:center}
+.tab .badge::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--signaal);transform:skewX(var(--skew))}
+.tab .st{width:7px;height:7px;background:var(--faint);transform:skewX(var(--skew))}
+.tab .st.open{background:var(--signaal)}
+.tab.add{color:var(--muted)}
+.tab.add svg{width:14px;height:14px}
 
-.main{max-width:980px;margin:0 auto;padding:20px 16px 80px}
-.ev-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
-.ev-thumb{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:var(--hover)}
-.photo-pick{display:flex;gap:12px;align-items:center}
-.photo-prev{width:120px;height:80px;border-radius:10px;background:var(--hover) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint);font-size:12.5px;text-align:center}
-.photo-pick .row{flex-wrap:wrap}
-.ev-head h2{margin:0;font-size:24px;font-weight:780;min-width:0;overflow-wrap:anywhere}
-.ev-head .code{font-size:13px;color:var(--muted)}
-.ev-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+/* event */
+.main{max-width:1000px;margin:0 auto;padding:30px 20px 90px}
+.ev-head{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:24px}
+.ev-thumb{width:84px;height:60px;object-fit:cover;flex:none;background:var(--graphite);clip-path:polygon(18% 0,100% 0,82% 100%,0 100%)}
+.photo-pick{display:flex;gap:16px;align-items:center}
+.photo-prev{width:132px;height:88px;background:var(--graphite) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint);font:700 10.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;text-align:center;
+  clip-path:polygon(16% 0,100% 0,84% 100%,0 100%)}
+.photo-pick .row{flex-wrap:wrap;gap:14px}
+.ev-head h2{margin:0 0 8px;font-size:clamp(26px,4.4vw,40px);min-width:0;overflow-wrap:anywhere}
+.ev-head .code{font:400 11.5px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);overflow-wrap:anywhere}
+.ev-tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-left:auto}
 
-.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-weight:650;font-size:14px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 12px}
-.switch input{appearance:none;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;margin:0;cursor:pointer;transition:.2s;flex:none}
-.switch input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.switch input:checked{background:var(--ok)}
-.switch input:checked::after{left:19px}
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font:700 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:8px 4px;margin:0;color:var(--text)}
+.switch input{appearance:none;width:42px;height:22px;background:var(--graphite);position:relative;margin:0;cursor:pointer;transition:.2s;flex:none;transform:skewX(var(--skew))}
+.switch input::after{content:"";position:absolute;top:4px;left:5px;width:14px;height:14px;background:var(--faint);transition:.2s}
+.switch input:checked{background:var(--signaal)}
+.switch input:checked::after{left:23px;background:var(--studio)}
 
-.np{display:flex;gap:12px;align-items:center;padding:10px 12px;margin-bottom:16px}
-.np .lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ok);display:flex;align-items:center;gap:6px}
+.np{display:flex;gap:14px;align-items:center;padding:14px 16px;margin-bottom:22px}
 
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-.seg{display:inline-flex;background:var(--hover);border-radius:10px;padding:3px}
-.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--muted)}
-.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.seg .n{color:var(--faint);font-weight:500;margin-left:3px}
-.filters select,.filters input{width:auto;padding:7px 10px;font-size:14px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;gap:2px}
+.seg button{position:relative;isolation:isolate;border:0;background:none;padding:9px 14px;font:700 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.seg button::before{content:"";position:absolute;inset:0;z-index:-1;transform:skewX(var(--skew))}
+.seg button:hover{color:var(--text)}
+.seg button.on{color:var(--text)}
+.seg button.on::before{background:var(--graphite)}
+.seg .n{color:var(--faint);margin-left:6px}
+.filters select,.filters input{width:auto;padding:9px 12px;font-size:14px}
 .filters input{flex:1;min-width:140px}
 
-ul.list{list-style:none;margin:0;padding:0}
-.req{display:flex;gap:12px;align-items:flex-start;padding:12px 8px;border-bottom:1px solid var(--line)}
-.req .art{width:56px;height:56px}
+ul.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.req{display:flex;gap:16px;align-items:flex-start;padding:16px 4px;border-bottom:1px solid var(--line)}
+.req .art{width:64px;height:64px}
 .req .body{flex:1;min-width:0}
-.req .t{font-weight:650;font-size:15.5px;overflow-wrap:anywhere}
+.req .t{font-weight:600;font-size:16px;overflow-wrap:anywhere}
 .req .a{color:var(--muted);font-size:14px}
-.req .cnt{display:inline-grid;place-items:center;min-width:26px;height:22px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:12.5px;font-weight:750;margin-left:6px;vertical-align:1px}
-.req .who{margin-top:6px;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.req .cnt{position:relative;isolation:isolate;display:inline-block;margin-left:12px;padding:3px 9px;font:700 11.5px/1.2 var(--mono);color:var(--studio);vertical-align:2px}
+.req .cnt::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--signaal);transform:skewX(var(--skew))}
+.req .who{margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
 .req .who div{color:var(--muted)}
 .req .who b{color:var(--text);font-weight:600}
-.req .who q{font-style:italic;color:var(--text)}
-.req .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:none;max-width:50%}
-.empty{text-align:center;color:var(--muted);padding:50px 10px}
+.req .who q{font-style:normal;color:var(--text)}
+.req .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;flex:none;max-width:50%;padding-top:4px}
+.empty{text-align:center;color:var(--muted);padding:60px 10px}
+.empty h2{color:var(--text);font-size:32px;margin:10px 0 12px}
+.empty p{margin:0 auto 26px;max-width:40ch}
 
-.qr{display:grid;place-items:center;margin:12px 0}
-.qr img{width:240px;height:240px;border-radius:12px;background:#fff;padding:10px}
-.linkbox{display:flex;gap:6px}
+.qr{display:grid;place-items:center;margin:18px 0}
+.qr img{width:240px;height:240px;background:var(--krijt);padding:12px;image-rendering:pixelated}
+.linkbox{display:flex;gap:14px;align-items:center}
 .linkbox input{font-size:14px}
-.chk{display:flex;gap:9px;align-items:center;font-weight:500;margin-top:14px}
-.chk input{width:18px;height:18px;margin:0}
-.arch li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
-.arch ul{list-style:none;padding:0;margin:10px 0 0}
+.chk{display:flex;gap:10px;align-items:center;font:400 14.5px/1.4 var(--body);text-transform:none;letter-spacing:0;color:var(--text);margin-top:16px}
+.chk input{width:18px;height:18px;margin:0;accent-color:var(--signaal)}
+.arch li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.arch ul{list-style:none;padding:0;margin:12px 0 0}
 .menu{position:relative}
-.menu-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:10;min-width:220px;padding:6px}
-.menu-pop button{display:flex;width:100%;border:0;background:none;padding:9px 10px;border-radius:8px;text-align:left;font-size:14px;gap:8px}
+.menu-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:10;min-width:240px;padding:6px;background:var(--graphite);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.menu-pop button{display:flex;width:100%;border:0;background:none;padding:11px 12px;text-align:left;gap:8px;font:700 11.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text)}
 .menu-pop button:hover{background:var(--hover)}
 .menu-pop button.danger{color:var(--danger)}
 .menu-pop hr{border:0;border-top:1px solid var(--line);margin:4px 0}
 
 @media (max-width:640px){
   .req{flex-wrap:wrap}
-  .req .acts{max-width:none;width:100%;justify-content:flex-start;padding-left:68px}
+  .req .acts{max-width:none;width:100%;justify-content:flex-start;padding-left:80px}
   .ev-tools{margin-left:0;width:100%}
-  .ev-head h2{font-size:21px}
+  .brand .idx{display:none}
 }
 </style>
 </head>
@@ -108,8 +122,9 @@ ul.list{list-style:none;margin:0;padding:0}
 <!-- Eerste keer instellen -->
 <div id="setup" class="lock" hidden>
   <form class="card" id="setupForm" style="max-width:520px">
-    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-    <h1>Verzoekjes instellen</h1>
+    <span class="logo" role="img" aria-label="SB"></span>
+    <span class="idx accent">Eenmalig</span>
+    <h1>Verzoekjes instellen.</h1>
     <p class="muted">Eenmalig: koppel de privé-repo waarin de verzoekjes als issues terechtkomen, en kies je beheerwachtwoord. Zie <code>requests/LEESMIJ.md</code>.</p>
     <label for="sRepo">Privé-repo (eigenaar/naam)</label>
     <input id="sRepo" type="text" required placeholder="sbmusicbe/requests-data" autocomplete="off">
@@ -122,7 +137,7 @@ ul.list{list-style:none;margin:0;padding:0}
     <button class="btn primary" type="submit" id="sBtn">Testen &amp; config maken</button>
     <p class="err" id="sErr"></p>
     <div id="sOut" hidden>
-      <p class="small" style="margin:16px 0 6px"><b>Gelukt!</b> Vervang de inhoud van <code>requests/config.js</code> in de repo <code>sbmusicbe.github.io</code> door de tekst hieronder en commit. Een minuutje later werkt alles.</p>
+      <p class="small" style="margin:18px 0 8px"><b>Gelukt.</b> Vervang de inhoud van <code>requests/config.js</code> in de repo <code>sbmusicbe.github.io</code> door de tekst hieronder en commit. Een minuutje later werkt alles.</p>
       <textarea id="sCfg" readonly rows="11" style="font:12.5px/1.4 ui-monospace,Menlo,monospace"></textarea>
       <div class="actions" style="justify-content:flex-start"><button class="btn" type="button" id="sCopy">Kopiëren</button>
         <a class="btn" id="sEdit" target="_blank" rel="noopener" href="https://github.com/sbmusicbe/sbmusicbe.github.io/edit/main/requests/config.js">Open config.js op GitHub</a></div>
@@ -133,8 +148,9 @@ ul.list{list-style:none;margin:0;padding:0}
 <!-- Login -->
 <div id="login" class="lock" hidden>
   <form class="card" id="loginForm">
-    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-    <h1>Verzoekjes</h1>
+    <span class="logo" role="img" aria-label="SB"></span>
+    <span class="idx accent">Verzoekjes</span>
+    <h1>Beheer.</h1>
     <p class="muted">Log in om je verzoekjes te beheren.</p>
     <input type="text" autocomplete="username" value="beheer" hidden aria-hidden="true">
     <label for="lPw">Wachtwoord</label>
@@ -148,7 +164,7 @@ ul.list{list-style:none;margin:0;padding:0}
 <!-- Fout bij laden -->
 <div id="noAdmin" class="lock" hidden>
   <div class="card">
-    <h1>Kan de repo niet lezen</h1>
+    <h1>Repo niet leesbaar.</h1>
     <p class="muted" id="naErr"></p>
     <div class="actions" style="justify-content:flex-start">
       <button class="btn primary" id="retry" type="button">Opnieuw proberen</button>
@@ -162,7 +178,7 @@ ul.list{list-style:none;margin:0;padding:0}
 <div id="app" hidden>
   <div class="top">
     <div class="bar">
-      <div class="brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></i>Verzoekjes</div>
+      <div class="brand"><span class="logo" role="img" aria-label="SB"></span><span class="idx">Verzoekjes · Beheer</span></div>
       <button class="icon-btn" id="soundBtn" title="Geluid bij nieuw verzoekje" aria-pressed="false"></button>
       <button class="icon-btn" id="archBtn" title="Archief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></svg></button>
       <button class="icon-btn" id="logout" title="Uitloggen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
@@ -182,24 +198,24 @@ ul.list{list-style:none;margin:0;padding:0}
   <label for="evCode">Code in de link</label>
   <input id="evCode" type="text" maxlength="60" pattern="[a-z0-9][a-z0-9\-]{1,59}" required placeholder="trouw-jan-lies">
   <p class="muted small" style="margin:6px 0 0" id="evCodeHint"></p>
-  <label>Foto <span class="muted" style="font-weight:400">(optioneel, bv. van het koppel of de zaal)</span></label>
+  <label>Foto <span class="opt">— optioneel, bv. van het koppel of de zaal</span></label>
   <div class="photo-pick">
     <div class="photo-prev" id="evPhotoPrev">Geen foto</div>
     <div class="row">
-      <label class="btn sm" for="evPhoto" style="margin:0;cursor:pointer">Kies foto</label>
+      <label class="btn sm" for="evPhoto" style="margin:0 0 0 8px;cursor:pointer;color:var(--text)">Kies foto</label>
       <input type="file" id="evPhoto" accept="image/*" hidden>
       <button type="button" class="btn sm danger" id="evPhotoDel" hidden>Verwijderen</button>
     </div>
   </div>
-  <label for="evWelcome">Welkomsttekst <span class="muted" style="font-weight:400">(optioneel)</span></label>
-  <textarea id="evWelcome" maxlength="300" placeholder="Welk nummer mag de DJ voor jou draaien?"></textarea>
-  <label for="evClosed">Tekst als verzoekjes gesloten zijn <span class="muted" style="font-weight:400">(optioneel)</span></label>
+  <label for="evWelcome">Welkomsttekst <span class="opt">— optioneel</span></label>
+  <textarea id="evWelcome" maxlength="300" placeholder="Wat wil jij horen vanavond?"></textarea>
+  <label for="evClosed">Tekst als verzoekjes dicht zijn <span class="opt">— optioneel</span></label>
   <input id="evClosed" type="text" maxlength="200" placeholder="Kom later nog eens terug.">
   <label class="chk"><input type="checkbox" id="evMsgs" checked> Gasten mogen een boodschap meesturen</label>
   <label class="chk" id="evOpenRow"><input type="checkbox" id="evOpen" checked> Meteen open voor verzoekjes</label>
   <p class="err" id="evErr"></p>
   <div class="actions">
-    <button class="btn" value="cancel" formnovalidate>Annuleren</button>
+    <button class="btn ghost" value="cancel" formnovalidate>Annuleren</button>
     <button class="btn primary" id="evSave" value="ok">Opslaan</button>
   </div>
 </form></dialog>
@@ -211,17 +227,17 @@ ul.list{list-style:none;margin:0;padding:0}
   <div class="linkbox"><input id="shareUrl" type="text" readonly><button class="btn" id="copyUrl" type="button">Kopieer</button></div>
   <div class="actions">
     <a class="btn" id="openUrl" target="_blank" rel="noopener">Open gastpagina</a>
-    <a class="btn" id="dlQr" target="_blank" rel="noopener">QR (hoge resolutie)</a>
+    <a class="btn" id="dlQr" download>QR downloaden</a>
     <a class="btn primary" id="posterUrl" target="_blank" rel="noopener">Poster (PDF)</a>
   </div>
-  <div class="actions" style="margin-top:8px"><button class="btn" type="button" data-close>Sluiten</button></div>
+  <div class="actions" style="margin-top:12px"><button class="btn ghost" type="button" data-close>Sluiten</button></div>
 </div></dialog>
 
 <dialog id="dArch"><div class="card arch">
   <h2>Archief</h2>
   <p class="muted small" style="margin:0">Gearchiveerde events staan niet meer in de tabbladen en zijn gesloten voor verzoekjes.</p>
   <ul id="archList"></ul>
-  <div class="actions"><button class="btn" type="button" data-close>Sluiten</button></div>
+  <div class="actions"><button class="btn ghost" type="button" data-close>Sluiten</button></div>
 </div></dialog>
 
 <script type="module">
@@ -431,7 +447,7 @@ $('#tabs').addEventListener('click', e => {
 function renderMain() {
   const ev = events.find(e => e.id === current);
   if (!ev) {
-    $('#main').innerHTML = `<div class="empty"><div style="font-size:40px">🎧</div><h2 style="color:var(--text)">Nog geen events</h2>
+    $('#main').innerHTML = `<div class="empty"><span class="idx accent">Start</span><h2>Nog geen events.</h2>
       <p>Maak een event aan. Elk event krijgt een eigen link en QR-code voor je gasten.</p>
       <button class="btn primary" id="firstEv">${I.plus} Nieuw event</button></div>`;
     $('#firstEv').onclick = () => openEventDialog(null);
@@ -482,7 +498,7 @@ function renderMain() {
       </div>
     </div>
     ${np && np.title ? `<div class="card np"><div class="art" style="${artStyle(np.artwork)}">${safeArt(np.artwork) ? '' : NOTE}</div>
-      <div class="grow" style="min-width:0"><div class="lbl live"><span class="dot"></span>Nu te horen (zichtbaar voor gasten)</div><b>${esc(np.title)}</b> <span class="muted">${esc(np.artist || '')}</span></div>
+      <div class="grow" style="min-width:0"><div class="idx accent live"><span class="dot"></span>&nbsp; Nu te horen — zichtbaar voor gasten</div><b>${esc(np.title)}</b> <span class="muted">${esc(np.artist || '')}</span></div>
       <button class="btn sm" id="npClear">Wissen</button></div>` : ''}
     <div class="filters">
       <div class="seg" role="tablist">
@@ -497,7 +513,7 @@ function renderMain() {
       <input type="search" id="filter" placeholder="Filter…" value="${esc(filter)}">
     </div>
     ${list.length ? `<ul class="list">${list.map(g => groupHtml(g)).join('')}</ul>`
-      : `<div class="empty">${view === 'new' ? (ev.open ? 'Nog geen verzoekjes. Deel de QR-code met je gasten!' : 'Verzoekjes zijn gesloten. Zet ze open om aanvragen te ontvangen.') : 'Niets hier.'}</div>`}`;
+      : `<div class="empty">${view === 'new' ? (ev.open ? 'Nog geen verzoekjes. Deel de QR-code met je gasten.' : 'Verzoekjes zijn dicht. Zet ze open om aanvragen te ontvangen.') : 'Niets hier.'}</div>`}`;
   if (focused) { const f = $('#filter'); f.focus(); f.setSelectionRange(f.value.length, f.value.length); }
   wireMain(ev, list);
 }
@@ -688,14 +704,22 @@ $('#evPhoto').addEventListener('change', async e => {
 $('#evPhotoDel').addEventListener('click', () => { photoEdit = {mode: 'remove', data: ''}; setPhotoPrev(''); });
 
 // ---------- delen / QR ----------
-const qrSrc = (url, size) => 'https://api.qrserver.com/v1/create-qr-code/?' + new URLSearchParams({size: size + 'x' + size, margin: '0', ecc: 'M', data: url});
+// QR-code lokaal tekenen (vendor/qrcode.js), in Studio Black op Bone.
+function qrPng(url, size, pad = 0.06) {
+  const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+  const n = qr.getModuleCount(), c = document.createElement('canvas'); c.width = c.height = size;
+  const x = c.getContext('2d'), p = Math.round(size * pad), cell = (size - 2 * p) / n;
+  x.fillStyle = '#F2EFEA'; x.fillRect(0, 0, size, size); x.fillStyle = '#0A0A0A';
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) x.fillRect(Math.floor(p + k * cell), Math.floor(p + r * cell), Math.ceil(cell), Math.ceil(cell));
+  return c.toDataURL('image/png');
+}
 function openShare(ev) {
   const url = guestUrl(ev.id);
   $('#shareName').textContent = ev.name;
   $('#shareUrl').value = url;
-  $('#qrImg').src = qrSrc(url, 480);
+  $('#qrImg').src = qrPng(url, 480, 0);
   $('#openUrl').href = url;
-  $('#dlQr').href = qrSrc(url, 1200);
+  $('#dlQr').href = qrPng(url, 1200); $('#dlQr').download = `qr-${ev.id}.png`;
   $('#posterUrl').href = 'poster.html?e=' + encodeURIComponent(ev.id);
   $('#dShare').showModal();
 }
