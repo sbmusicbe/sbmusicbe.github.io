@@ -10,74 +10,72 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..600;1,100..125,900&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
 .wrap{max-width:600px;margin:0 auto;padding:0 20px max(48px,env(safe-area-inset-bottom))}
-.top{display:flex;align-items:center;justify-content:space-between;padding:max(22px,env(safe-area-inset-top)) 0 22px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:max(24px,env(safe-area-inset-top)) 0 24px}
 .top .logo{width:80px}
 
-/* Beeld in schuine snede: foto van het event, of Cord Green */
-.hero{position:relative;margin:0 -20px;min-height:190px;background:var(--corduroy);clip-path:polygon(0 0,100% 0,100% 84%,0 100%);display:flex;align-items:flex-end}
+/* Fotokader: grote radius en zachte schaduw, nooit hard afgesneden. Zonder foto: Cord Green. */
+.hero{position:relative;min-height:220px;background:var(--corduroy);border-radius:var(--r-l);overflow:hidden;box-shadow:var(--shadow);display:flex;align-items:flex-end}
 .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%}
-.hero.has-photo{aspect-ratio:4/3;max-height:420px}
-.hero.has-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.1) 30%,rgba(10,10,10,.85) 100%)}
-.hero-copy{position:relative;z-index:1;padding:28px 20px 58px}
-.hero h1{margin:8px 0 0;font-size:clamp(30px,9vw,46px);overflow-wrap:anywhere}
-.hero.has-photo h1{text-shadow:0 3px 14px rgba(0,0,0,.6)}
-.lede{margin:6px 0 0;color:var(--muted);font-size:17px;max-width:42ch;white-space:pre-line}
+.hero.has-photo{aspect-ratio:4/5;max-height:520px}
+.hero.has-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0) 40%,rgba(10,10,10,.85) 100%)}
+.hero-copy{position:relative;z-index:1;padding:28px 24px}
+.hero h1{margin:12px 0 0;font-size:clamp(32px,9vw,44px);overflow-wrap:anywhere}
+.lede{margin:24px 0 0;color:var(--muted);font-size:17px;max-width:42ch;white-space:pre-line}
 
-.now{display:flex;gap:14px;align-items:center;padding:14px 16px;margin:26px 0 0}
-.now .t{font-weight:600}
-.section{margin-top:34px}
-.section h2{margin:8px 0 18px;font-size:clamp(26px,7.4vw,34px)}
+.now{display:flex;gap:16px;align-items:center;padding:16px;margin:24px 0 0}
+.now .t{font-weight:600;margin-top:8px}
+.section{margin-top:48px}
+.section h2{margin:8px 0 20px;font-size:clamp(28px,7.6vw,36px)}
 .search{position:relative}
-.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--faint);pointer-events:none}
-.search input{padding:16px 16px 16px 46px;font-size:17px}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--faint);pointer-events:none}
+.search input{padding:16px 16px 16px 48px;font-size:17px}
 #results{list-style:none;margin:8px 0 0;padding:0}
-.song{display:flex;gap:14px;align-items:center;padding:10px 4px;cursor:pointer;border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left;color:var(--text)}
-.song:hover,.song:focus-visible{background:var(--hover);outline:none}
+.song{display:flex;gap:16px;align-items:center;padding:8px;border-radius:var(--r-m);cursor:pointer;border:0;background:none;width:100%;text-align:left;color:var(--text)}
+.song:hover,.song:focus-visible{background:var(--graphite);outline:none}
 .song .meta{min-width:0;flex:1}
 .song .t,.song .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .song .t{font-weight:600}
 .song .a{color:var(--muted);font-size:14px}
-.song .plus{color:var(--signaal);flex:none}
-.hint{text-align:center;color:var(--muted);font-size:15px;padding:22px 8px;line-height:1.9}
-#form .picked{display:flex;gap:14px;align-items:center}
+.song .plus{color:var(--faint);flex:none}
+.song:hover .plus{color:var(--krijt)}
+.hint{text-align:center;color:var(--muted);font-size:15px;padding:24px 8px;line-height:2}
+#form .picked{display:flex;gap:16px;align-items:center}
 #form .picked .t{font-weight:600;font-size:17px}
-#form .submit{width:calc(100% - 20px);margin:26px 10px 0;padding:16px}
-.closed{padding:30px 22px}
-.closed h2{margin:0 0 10px;font-size:26px}
-.done-card{padding:30px 22px}
-.done-card h2{margin:8px 0 10px;font-size:34px}
+#form .submit{width:100%;margin-top:28px;padding:16px}
+.closed{padding:32px 24px}
+.closed h2{margin:0 0 12px;font-size:28px}
+.done-card{padding:32px 24px}
+.done-card h2{margin:8px 0 12px;font-size:36px}
 .done-card p{margin:0 0 24px;color:var(--muted)}
-.queue ul{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
-.queue li{display:flex;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
-.queue .art{width:46px;height:46px}
+.queue ul{list-style:none;margin:16px 0 0;padding:0}
+.queue li{display:flex;gap:16px;align-items:center;padding:8px;border-radius:var(--r-m)}
+.queue li:nth-child(odd){background:rgba(38,38,38,.45)}
+.queue .art{width:48px;height:48px}
 .queue .meta{flex:1;min-width:0}
 .queue .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .queue .a{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .rank{font:700 12px/1 var(--mono);color:var(--faint);width:22px;flex:none}
-.vote{position:relative;isolation:isolate;border:0;background:none;display:inline-flex;align-items:center;gap:7px;padding:9px 14px;min-width:66px;justify-content:center;
-  font:700 13px/1 var(--mono);letter-spacing:.06em;color:var(--text);flex:none}
-.vote::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--graphite);transform:skewX(var(--skew));transition:background .15s}
-.vote:hover::before{background:#333}
-.vote svg{width:13px;height:13px}
-.vote.on{color:var(--studio)}
-.vote.on::before{background:var(--signaal)}
+.queue .rank{font:700 12px/1 var(--mono);color:var(--faint);width:24px;flex:none;text-align:center}
+.vote{border:0;border-radius:var(--r-round);background:var(--graphite);display:inline-flex;align-items:center;gap:8px;padding:8px 14px;min-width:68px;justify-content:center;
+  font:700 13px/1 var(--mono);color:var(--text);flex:none;transition:background .15s,transform .1s}
+.vote:hover{background:#333}
+.vote:active{transform:scale(.96)}
+.vote svg{width:12px;height:12px}
+.vote.on{background:var(--signaal);color:var(--studio)}
 .vote:disabled{cursor:default}
-.vote.own{color:var(--faint)}
-.vote.own::before{background:none;box-shadow:inset 0 0 0 1px var(--line-2)}
-.queue .more{margin-top:14px}
-.mine{margin-top:40px}
-.mine ul{list-style:none;margin:12px 0 0;padding:0}
-.mine li{display:flex;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
-.mine li:first-child{border-top:1px solid var(--line)}
-.mine .art{width:42px;height:42px}
+.vote.own{background:none;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--faint)}
+.queue .more{margin-top:16px}
+.mine{margin-top:48px}
+.mine ul{list-style:none;margin:16px 0 0;padding:0}
+.mine li{display:flex;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.mine .art{width:44px;height:44px}
 .mine .meta{flex:1;min-width:0}
 .mine .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mine .a{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-footer{display:flex;align-items:center;justify-content:space-between;margin-top:56px;padding-top:18px;border-top:1px solid var(--line)}
+footer{display:flex;align-items:center;justify-content:space-between;margin-top:64px;padding-top:24px;border-top:1px solid var(--line)}
 footer .logo{width:40px;background:var(--faint)}
 footer a.idx{text-decoration:none}
 footer a.idx:hover{color:var(--krijt)}
@@ -94,7 +92,7 @@ footer a.idx:hover{color:var(--krijt)}
     <img id="evPhoto" alt="" hidden>
     <div class="hero-copy">
       <span class="idx accent">Muziek op aanvraag</span>
-      <h1 class="display" id="evName">Verzoekjes</h1>
+      <h1 id="evName">Verzoekjes</h1>
     </div>
   </section>
   <p class="lede" id="evWelcome" hidden></p>
@@ -102,47 +100,47 @@ footer a.idx:hover{color:var(--krijt)}
   <div id="loading" class="spinner" aria-label="Laden"></div>
 
   <div id="setup" class="card setup" hidden>
-    <h1 class="display">Nog niet ingesteld.</h1>
+    <h1>Nog niet ingesteld.</h1>
     <p class="muted">Deze pagina is nog niet gekoppeld aan een GitHub-repo. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
   </div>
 
   <div id="nowPlaying" class="card now" hidden>
     <div class="art" id="npArt"></div>
     <div class="grow" style="min-width:0">
-      <div class="idx accent live"><span class="dot"></span>&nbsp; Nu te horen</div>
+      <span class="pill live"><span class="dot"></span>Nu te horen</span>
       <div class="t" id="npTitle"></div>
       <div class="muted small" id="npArtist"></div>
     </div>
   </div>
 
   <div id="closed" class="card closed section" hidden>
-    <h2 class="display">Verzoekjes zijn dicht.</h2>
+    <h2>Verzoekjes zijn dicht.</h2>
     <p class="muted" id="closedMsg" style="margin:0;white-space:pre-line"></p>
   </div>
 
   <main id="open" class="section" hidden>
     <div id="searchBox">
       <span class="idx">01 — Zoek je nummer</span>
-      <h2 class="display">Wat wil jij horen?</h2>
+      <h2>Wat wil jij horen?</h2>
       <div class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="q" type="search" placeholder="Titel of artiest" autocomplete="off" enterkeyhint="search" aria-label="Zoek een nummer">
       </div>
       <ul id="results"></ul>
-      <div id="searchHint" class="hint">Typ een titel of artiest.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in</button></div>
+      <div id="searchHint" class="hint">Typ een titel of artiest.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in.</button></div>
     </div>
 
     <form id="form" hidden autocomplete="on">
       <span class="idx">02 — Verstuur naar de DJ</span>
-      <h2 class="display">Jouw nummer.</h2>
-      <div class="card" style="padding:18px 18px 22px">
+      <h2>Jouw nummer.</h2>
+      <div class="card" style="padding:24px">
         <div class="picked">
           <div class="art" id="fArt"></div>
           <div class="grow" style="min-width:0">
             <div class="t" id="fTitle"></div>
             <div class="muted" id="fArtist"></div>
           </div>
-          <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </div>
         <div id="manualFields" hidden>
           <label for="mTitle">Titel</label>
@@ -163,7 +161,7 @@ footer a.idx:hover{color:var(--krijt)}
 
     <div id="done" class="card done-card" hidden>
       <span class="idx accent">Verstuurd</span>
-      <h2 class="display">Ontvangen.</h2>
+      <h2>Ontvangen.</h2>
       <p>De DJ ziet je nummer nu. Hou deze pagina open om te zien wanneer het speelt.</p>
       <button class="btn" id="again" type="button">Nog een nummer</button>
     </div>
@@ -171,11 +169,11 @@ footer a.idx:hover{color:var(--krijt)}
 
   <section class="queue section" id="queue" hidden>
     <span class="idx">03 — Stem mee</span>
-    <h2 class="display">De wachtrij.</h2>
+    <h2>De wachtrij.</h2>
     <p class="muted" style="margin:0">Wil jij een nummer ook horen? Geef het een stem.</p>
     <ul id="queueList"></ul>
     <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
-    <button class="link more" id="queueMore" type="button" hidden>Toon alles</button>
+    <button class="btn ghost more" id="queueMore" type="button" hidden>Toon alles</button>
   </section>
 
   <section class="mine" id="mine" hidden>
@@ -300,7 +298,7 @@ $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDef
 
 function hint(text) {
   $('#searchHint').hidden = false;
-  $('#searchHint').innerHTML = (text ? esc(text) + '<br>' : '') + '<button class="link" type="button" data-manual>Niet te vinden? Typ het zelf in</button>';
+  $('#searchHint').innerHTML = (text ? esc(text) + '<br>' : '') + '<button class="link" type="button" data-manual>Niet te vinden? Typ het zelf in.</button>';
 }
 $('#searchHint').addEventListener('click', e => { if (e.target.closest('[data-manual]')) pick(null); });
 

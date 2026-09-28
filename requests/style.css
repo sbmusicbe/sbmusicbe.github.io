@@ -1,109 +1,110 @@
-/* Verzoekjes in de huisstijl van SB (Design Language v1.0).
-   Kleur 60/20/10/7/3: Studio Black, Graphite, Cord Green, Moss (spaarzaam), Bone.
-   Display: Archivo Expanded Black Italic. Tekst: Inter. Labels: Space Mono.
-   Alles leunt 23° naar rechts; tekst blijft recht. Geen afgeronde hoeken. */
+/* Verzoekjes in de huisstijl van SB (Design Language v2.0).
+   Zacht, rustig, consequent: dezelfde afronding, dezelfde zachte schaduw, één accent per scherm.
+   Kleur: Studio Black, Graphite, Cord Green, Bone; Moss als accent op donker (enkel als vlak, nooit als lopende tekst op wit).
+   Type: Inter Black 800 voor titels (zinsopbouw, regelafstand 1,0, tracking −2,8%), Inter voor tekst,
+   Space Mono in hoofdletters (+9%) voor labels. Raster van 4 px: marges en gaps zijn veelvouden daarvan. */
 :root{
-  --studio:#0A0A0A; --graphite:#262626; --corduroy:#24312A; --corduroy-2:#34473C; --signaal:#6FA283; --krijt:#F2EFEA; --white:#FFFFFF;
+  --studio:#0A0A0A; --graphite:#262626; --corduroy:#24312A; --signaal:#6FA283; --moss-deep:#356047; --krijt:#F2EFEA; --white:#FFFFFF;
   --bg:var(--studio); --panel:var(--graphite); --text:var(--krijt);
-  --muted:rgba(242,239,234,.68); --faint:rgba(242,239,234,.42); --line:rgba(242,239,234,.1); --line-2:rgba(242,239,234,.18);
-  --hover:rgba(242,239,234,.06); --sel:rgba(242,239,234,.1);
+  --muted:rgba(242,239,234,.68); --faint:rgba(242,239,234,.42); --line:rgba(242,239,234,.08); --line-2:rgba(242,239,234,.16);
+  --hover:rgba(242,239,234,.06);
   --accent:var(--signaal); --on-accent:var(--studio);
-  --ok:var(--signaal); --danger:#E08A7A;
-  --skew:-23deg; --tan23:.4245;
-  --display:'Archivo',"Arial Black",sans-serif; --mono:'Space Mono',ui-monospace,monospace; --body:'Inter',system-ui,sans-serif;
+  --danger:#E08A7A;
+  /* radiusschaal: klein · midden · groot · rond */
+  --r-s:8px; --r-m:16px; --r-l:28px; --r-round:999px;
+  --shadow:0 16px 40px -16px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.25);
+  --shadow-s:0 6px 16px -8px rgba(0,0,0,.6);
+  --body:'Inter',system-ui,-apple-system,"Segoe UI",sans-serif; --mono:'Space Mono',ui-monospace,monospace;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{background:var(--bg)}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased;min-height:100vh}
+body{background:var(--bg);color:var(--text);font:16px/1.6 var(--body);-webkit-font-smoothing:antialiased;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 [hidden]{display:none!important}
 a{color:var(--text)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--signaal);outline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--signaal);outline-offset:3px;border-radius:var(--r-s)}
 .muted{color:var(--muted)} .small{font-size:13px} .grow{flex:1}
 
 /* ---------- typografie ---------- */
-.display{font-family:var(--display);font-stretch:125%;font-style:italic;font-weight:900;text-transform:uppercase;line-height:.92;letter-spacing:-.01em}
-.mono,.idx{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em}
+h1,h2,.display{font-family:var(--body);font-weight:800;line-height:1;letter-spacing:-.028em;text-transform:none;font-style:normal}
+.mono,.idx{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em}
 .idx{display:block;font-size:12px;color:var(--faint)}
 .idx.accent{color:var(--signaal)}
-code{font-family:var(--mono);font-size:.9em;background:var(--graphite);padding:1px 5px}
+code{font-family:var(--mono);font-size:.9em;background:var(--graphite);padding:2px 6px;border-radius:var(--r-s)}
 
-/* ---------- logo (monogram als masker, één vlakke kleur) ---------- */
+/* ---------- logo (monogram als masker, één vlakke kleur, nooit schuintrekken) ---------- */
 .logo{display:block;aspect-ratio:1000/429;background:var(--white);
   -webkit-mask:url("sb-logo.png") center/contain no-repeat;mask:url("sb-logo.png") center/contain no-repeat}
 
 /* ---------- formulieren ---------- */
 .err{color:var(--danger);font-size:14px;min-height:1.2em;margin:8px 0 0}
 input[type=text],input[type=email],input[type=password],input[type=search],select,textarea{
-  background:var(--graphite);border:1px solid transparent;border-radius:0;padding:12px 14px;width:100%;outline:none;font-size:16px;color:var(--text);
-}
+  background:var(--graphite);border:1px solid transparent;border-radius:var(--r-m);padding:12px 16px;width:100%;outline:none;font-size:16px;color:var(--text);
+  transition:border-color .15s,box-shadow .15s}
 input::placeholder,textarea::placeholder{color:var(--faint)}
-textarea{resize:vertical;min-height:80px}
-input:focus,select:focus,textarea:focus{border-color:var(--signaal)}
-label{display:block;font:700 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:18px 0 8px}
+textarea{resize:vertical;min-height:88px}
+input:focus,select:focus,textarea:focus{border-color:var(--signaal);box-shadow:0 0 0 4px rgba(111,162,131,.18)}
+label{display:block;font:700 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:20px 0 8px}
 label .opt{font-weight:400;color:var(--faint)}
 
-/* ---------- knoppen: schuine vorm, rechte tekst ---------- */
-.btn{position:relative;isolation:isolate;border:0;background:none;padding:11px 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  font:700 13px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:var(--text);white-space:nowrap}
-.btn::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--graphite);transform:skewX(var(--skew));transition:background .15s}
-.btn:hover::before{background:#333}
-.btn.primary{color:var(--on-accent)}
-.btn.primary::before{background:var(--signaal)}
-.btn.primary:hover::before{background:#7DB292}
-.btn.ghost::before{background:none;box-shadow:inset 0 0 0 1px var(--line-2)}
-.btn.ghost:hover::before{background:var(--hover)}
+/* ---------- knoppen ---------- */
+.btn{border:0;border-radius:var(--r-m);background:var(--graphite);padding:12px 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font:500 15px/1.2 var(--body);text-decoration:none;color:var(--text);white-space:nowrap;transition:background .15s,transform .1s}
+.btn:hover{background:#303030}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--krijt);color:var(--studio);font-weight:600}
+.btn.primary:hover{background:var(--white)}
+.btn.accent{background:var(--signaal);color:var(--studio);font-weight:600}
+.btn.accent:hover{background:#7DB292}
+.btn.ghost{background:none;box-shadow:inset 0 0 0 1px var(--line-2)}
+.btn.ghost:hover{background:var(--hover)}
 .btn.ok{color:var(--signaal)} .btn.danger{color:var(--danger)}
-.btn.sm{padding:8px 13px;font-size:11.5px}
+.btn.sm{padding:8px 12px;font-size:14px;border-radius:var(--r-s)}
 .btn:disabled{opacity:.45;cursor:default}
-.btn svg{width:15px;height:15px;flex:none}
-.link{background:none;border:0;padding:0;color:var(--signaal);font:700 12px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.btn svg{width:16px;height:16px;flex:none}
+.link{background:none;border:0;padding:0;color:var(--signaal);font:500 15px/1.4 var(--body)}
 .link:hover{color:var(--krijt)}
-.icon-btn{background:none;border:0;width:38px;height:38px;display:inline-grid;place-items:center;color:var(--muted);flex:none;border-radius:0}
+.icon-btn{background:none;border:0;width:40px;height:40px;display:inline-grid;place-items:center;color:var(--muted);flex:none;border-radius:var(--r-round)}
 .icon-btn:hover{background:var(--hover);color:var(--text)}
 .icon-btn svg{width:18px;height:18px}
 
 /* ---------- vlakken ---------- */
-.card{background:var(--graphite);border:0;border-radius:0}
-/* Hoesjes in de schuine snede */
-.art{width:52px;height:52px;background:var(--graphite) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint);
-  clip-path:polygon(18% 0,100% 0,82% 100%,0 100%)}
-.card .art{background-color:#333}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow)}
+.art{width:52px;height:52px;background:var(--graphite) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint);border-radius:var(--r-s)}
 .art svg{width:20px;height:20px}
 
-/* Labels: schuine vorm */
-.pill{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;font:700 10.5px/1 var(--mono);
-  letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;color:var(--muted)}
-.pill::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--graphite);transform:skewX(var(--skew))}
+/* chips: rond, neutraal; het accent markeert wat nu telt */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r-round);background:var(--graphite);
+  font:700 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;color:var(--muted)}
 .pill.new{color:var(--krijt)}
-.pill.played{color:var(--studio)} .pill.played::before{background:var(--signaal)}
-.pill.rejected{color:var(--faint)} .pill.rejected::before{background:none;box-shadow:inset 0 0 0 1px var(--line-2)}
-.pill.live{color:var(--studio)} .pill.live::before{background:var(--signaal)}
-.pill.closed{color:var(--muted)}
-.dot{width:8px;height:8px;background:currentColor;display:inline-block;transform:skewX(var(--skew))}
+.pill.played,.pill.live{background:var(--signaal);color:var(--studio)}
+.pill.rejected{background:none;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--faint)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
 .live .dot{animation:pulse 1.4s infinite}
 @keyframes pulse{50%{opacity:.25}}
 
-#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;background:var(--krijt);color:var(--studio);
-  padding:12px 18px;font:700 12.5px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;transition:.25s;pointer-events:none;z-index:99;max-width:calc(100% - 32px);text-align:center}
+#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,24px);opacity:0;background:var(--krijt);color:var(--studio);
+  padding:12px 20px;border-radius:var(--r-round);font:500 14.5px/1.4 var(--body);box-shadow:var(--shadow);transition:.25s;pointer-events:none;z-index:99;max-width:calc(100% - 32px);text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
-.setup{max-width:560px;margin:10vh auto;padding:28px 24px}
-.setup h1{margin:0 0 10px;font-size:26px}
-.spinner{width:34px;height:10px;margin:40px auto;background:var(--signaal);transform:skewX(var(--skew));animation:load 1s ease-in-out infinite}
-@keyframes load{0%,100%{opacity:.25;width:14px}50%{opacity:1;width:44px}}
-dialog{border:0;padding:0;background:transparent;color:var(--text);max-width:calc(100% - 32px);width:480px}
-dialog::backdrop{background:rgba(0,0,0,.7)}
-dialog .card{padding:26px 22px}
-dialog h2{margin:0 0 8px;font-size:22px}
+.setup{max-width:560px;margin:10vh auto;padding:32px 28px}
+.setup h1{margin:0 0 12px;font-size:28px}
+.spinner{width:28px;height:28px;margin:48px auto;border:3px solid var(--graphite);border-top-color:var(--signaal);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+dialog{border:0;padding:0;background:transparent;color:var(--text);max-width:calc(100% - 32px);width:480px;max-height:calc(100vh - 32px);overflow:auto;border-radius:var(--r-l)}
+dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
+dialog .card{padding:28px 24px}
+dialog h2{margin:0 0 8px;font-size:24px}
 .row{display:flex;gap:8px;align-items:center}
-.actions{display:flex;gap:14px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap;align-items:center}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap;align-items:center}
 
-/* Binnen een Graphite-vlak: velden en knoppen op Studio Black, zodat ze zichtbaar blijven. */
+/* binnen een kaart: velden en knoppen een tint lichter, zodat ze zichtbaar blijven */
 .card input[type=text],.card input[type=email],.card input[type=password],.card input[type=search],.card select,.card textarea{background:var(--studio)}
-.card .btn:not(.primary)::before{background:var(--studio)}
-.card .btn:not(.primary):hover::before{background:#1a1a1a}
-.card .btn.ghost::before{background:none}
-dialog{max-height:calc(100vh - 32px);overflow:auto}
+.card .btn:not(.primary):not(.accent):not(.ghost){background:var(--studio)}
+.card .btn:not(.primary):not(.accent):not(.ghost):hover{background:#1a1a1a}
+.card .art,.card .pill:not(.played):not(.live):not(.rejected){background-color:#333}
+label.btn{text-transform:none;letter-spacing:0;margin:0}
+.req .btn:not(.primary):not(.accent){background:var(--studio)}
+.req .btn:not(.primary):not(.accent):hover{background:#1a1a1a}

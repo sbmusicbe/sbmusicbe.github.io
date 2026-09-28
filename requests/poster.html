@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..600;1,100..125,900&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="vendor/qrcode.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
@@ -54,7 +54,6 @@ const $ = s => document.querySelector(s);
 const C = {studio: '#0A0A0A', corduroy: '#24312A', krijt: '#F2EFEA', signaal: '#6FA283', white: '#FFFFFF'};
 const PX = 8;                             // pixels per mm → 1680 × 2376 px (± 200 dpi)
 const W = 210, H = 297;
-const TAN23 = Math.tan(23 * Math.PI / 180);
 const m = v => v * PX;
 
 const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
@@ -76,13 +75,14 @@ function tinted(img, color) {
   return c;
 }
 
-// ---- tekst ----
+// ---- tekst (Design Language v2.0) ----
 const FONT = {
-  display: size => `italic 900 expanded ${m(size)}px Archivo, "Arial Black", sans-serif`,
+  display: size => `800 ${m(size)}px Inter, system-ui, sans-serif`,     // Inter Black 800, zinsopbouw
   mono: (size, w = 700) => `${w} ${m(size)}px "Space Mono", ui-monospace, monospace`,
-  body: size => `400 ${m(size)}px Inter, system-ui, sans-serif`
+  body: (size, w = 400) => `${w} ${m(size)}px Inter, system-ui, sans-serif`
 };
-function setFont(f) { ctx.font = f; try { ctx.fontStretch = f.includes('expanded') ? 'expanded' : 'normal'; } catch {} }
+function setFont(f) { ctx.font = f; }
+function setTracking(em, size) { try { ctx.letterSpacing = (m(size) * em) + 'px'; return true; } catch { return false; } }
 
 // Tekst met letterafstand (in em), teken per teken, zodat het overal werkt.
 function spaced(text, x, y, spacing, size, align = 'left') {
@@ -102,129 +102,131 @@ function wrap(text, maxW) {
   if (line) lines.push(line);
   return lines;
 }
-// Grote titels: verkleinen tot ze binnen maxW × maxH passen.
+// Titels: Inter 800, regelafstand 1,0, tracking −2,8%; verkleinen tot ze binnen maxW × maxH passen.
 function fitDisplay(text, size, maxW, maxH) {
-  text = text.toUpperCase();
   for (let s = size; ; s *= 0.94) {
-    setFont(FONT.display(s));
+    setFont(FONT.display(s)); setTracking(-0.028, s);
     const lines = wrap(text, m(maxW));
     const tooWide = lines.some(l => ctx.measureText(l).width > m(maxW));
-    if ((!tooWide && lines.length * s * 0.92 <= maxH) || s < size * 0.35) return {lines, size: s};
+    if ((!tooWide && lines.length * s <= maxH) || s < size * 0.35) { setTracking(0, s); return {lines, size: s}; }
   }
 }
+function drawDisplay(t, x, top, color) {
+  setFont(FONT.display(t.size)); setTracking(-0.028, t.size); ctx.fillStyle = color;
+  t.lines.forEach((l, i) => ctx.fillText(l, x, top + m(t.size * (0.82 + i))));
+  setTracking(0, t.size);
+}
 
-// Schuin label (skewX -23°), zoals de labels op de site.
-function tag(text, x, y, {size = 3.3, align = 'left', color = C.studio, bg = C.signaal} = {}) {
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+// Zachte schaduw, zoals in de vormtaal.
+function softShadow(on, light) {
+  if (on) { ctx.shadowColor = light ? 'rgba(10,10,10,.18)' : 'rgba(0,0,0,.55)'; ctx.shadowBlur = m(6); ctx.shadowOffsetY = m(2); }
+  else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
+}
+// Ronde chip met mono-label (radius "rond").
+function chip(text, x, y, {size = 3, align = 'left', color, bg, alpha = 1} = {}) {
   setFont(FONT.mono(size));
-  const gap = m(size) * 0.1;
+  const gap = m(size) * 0.09;
   const tw = [...text].reduce((w, ch) => w + ctx.measureText(ch).width + gap, -gap);
-  const w = tw + m(10), h = m(size) + m(4.8), off = h * TAN23 / 2;
-  const x0 = align === 'right' ? x - w : x;
-  ctx.fillStyle = bg;
-  ctx.beginPath(); ctx.moveTo(x0 + off, y); ctx.lineTo(x0 + w + off, y); ctx.lineTo(x0 + w - off, y + h); ctx.lineTo(x0 - off, y + h); ctx.closePath(); ctx.fill();
+  const h = m(size + 5), w = tw + m(8), x0 = align === 'right' ? x - w : x;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = bg; rrect(x0, y, w, h, h / 2); ctx.fill(); ctx.restore();
   ctx.fillStyle = color; ctx.textBaseline = 'middle';
-  spaced(text, x0 + m(5), y + h / 2 + m(0.2), 0.1, size);
+  spaced(text, x0 + m(4), y + h / 2 + m(0.15), 0.09, size);
   ctx.textBaseline = 'alphabetic';
   return {w, h};
 }
 
 // ---- tekenen ----
+// Raster van 4 mm: marges 16, gaps 8/12. Radius: groot 7 mm (fotokader, QR-kaart), rond (chips).
 function draw() {
   const light = state.theme === 'light';
   const bg = light ? C.white : C.studio, fg = light ? C.studio : C.krijt;
-  const mute = light ? 'rgba(10,10,10,.55)' : 'rgba(242,239,234,.55)';
-  const line = light ? 'rgba(10,10,10,.18)' : 'rgba(242,239,234,.18)';
+  const mute = light ? 'rgba(10,10,10,.6)' : 'rgba(242,239,234,.6)';
+  const line = light ? 'rgba(10,10,10,.14)' : 'rgba(242,239,234,.14)';
+  const labelCol = light ? '#356047' : C.signaal;          // Moss-deep op wit, Moss op donker
+  const R = m(7), X = 16, CW = W - 32;
   ctx.save();
   ctx.fillStyle = bg; ctx.fillRect(0, 0, m(W), m(H));
 
-  // Bovenkant met de schuine snede: foto, of Cord Green zonder foto.
-  const topH = state.photo ? 128 : 100;
-  ctx.save();
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(m(W), 0); ctx.lineTo(m(W), m(topH * 0.84)); ctx.lineTo(0, m(topH)); ctx.closePath(); ctx.clip();
-  ctx.fillStyle = C.corduroy; ctx.fillRect(0, 0, m(W), m(topH));
+  // Fotokader: grote radius en zachte schaduw, nooit hard afgesneden. Zonder foto: Cord Green.
+  const photoH = state.photo ? 124 : 96, py = 16;
+  ctx.save(); softShadow(true, light); ctx.fillStyle = C.corduroy; rrect(m(X), m(py), m(CW), m(photoH), R); ctx.fill(); ctx.restore();
+  ctx.save(); rrect(m(X), m(py), m(CW), m(photoH), R); ctx.clip();
   if (state.photo) {
-    const p = state.photo, s = Math.max(m(W) / p.naturalWidth, m(topH) / p.naturalHeight);
+    const p = state.photo, s = Math.max(m(CW) / p.naturalWidth, m(photoH) / p.naturalHeight);
     const dw = p.naturalWidth * s, dh = p.naturalHeight * s;
-    ctx.drawImage(p, (m(W) - dw) / 2, (m(topH) - dh) * 0.35, dw, dh);
-    const g = ctx.createLinearGradient(0, 0, 0, m(topH));
-    g.addColorStop(0, 'rgba(10,10,10,.45)'); g.addColorStop(.28, 'rgba(10,10,10,0)'); g.addColorStop(.45, 'rgba(10,10,10,0)'); g.addColorStop(1, 'rgba(10,10,10,.8)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(topH));
+    ctx.drawImage(p, m(X) + (m(CW) - dw) / 2, m(py) + (m(photoH) - dh) * 0.35, dw, dh);
+    const g = ctx.createLinearGradient(0, m(py), 0, m(py + photoH));
+    g.addColorStop(0, 'rgba(10,10,10,.35)'); g.addColorStop(.25, 'rgba(10,10,10,0)'); g.addColorStop(.5, 'rgba(10,10,10,0)'); g.addColorStop(1, 'rgba(10,10,10,.85)');
+    ctx.fillStyle = g; ctx.fillRect(m(X), m(py), m(CW), m(photoH));
   }
   ctx.restore();
-
-  if (state.logo) ctx.drawImage(tinted(state.logo, C.white), m(16), m(13), m(30), m(30 * 429 / 1000));
-  tag('VERZOEKJES', m(W - 18), m(14), {align: 'right'});
-
-  // Naam van het event onderaan de foto.
+  // Logo linksboven met ½ H vrije ruimte; label rechtsboven.
+  const logoW = 28, logoH = logoW * 429 / 1000;
+  if (state.logo) ctx.drawImage(tinted(state.logo, C.white), m(X + 8), m(py + 8), m(logoW), m(logoH));
+  chip('VERZOEKJES', m(X + CW - 8), m(py + 8 + logoH / 2 - 4), {align: 'right', color: C.krijt, bg: C.studio, alpha: .55});
   const name = state.event?.name || '';
   if (name) {
-    const t = fitDisplay(name, 14, W - 32 - 3, 28);
-    setFont(FONT.display(t.size));
-    ctx.fillStyle = C.krijt;
-    if (state.photo) { ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = m(3.5); ctx.shadowOffsetY = m(.8); }
-    const bottom = m(topH - 25);
-    t.lines.forEach((l, i) => ctx.fillText(l, m(16), bottom - (t.lines.length - 1 - i) * m(t.size * 0.92)));
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    const t = fitDisplay(name, 13, CW - 16, 27);
+    drawDisplay(t, m(X + 8), m(py + photoH - 8) - m(t.size * t.lines.length), C.krijt);
   }
 
-  // Midden: label, titel, stappen + QR, verticaal gecentreerd tussen foto en voet.
+  // Midden: label, titel, stappen + QR-kaart. Verticaal gecentreerd tussen foto en voet.
   const footTop = H - 12 - 8;
-  const head = fitDisplay(state.headline || ' ', 17, W - 32 - 3, 34);
-  const qrSize = 84, gapTitleRow = 10;
-  const blockH = 3.2 + 4 + head.lines.length * head.size * 0.92 + gapTitleRow + qrSize;
-  const avail = footTop - 6 - topH;
-  let y = topH + 6 + Math.max(0, (avail - blockH) / 2);
+  const head = fitDisplay(state.headline || ' ', 16, CW, 34);
+  const qrSize = 80, gapTitleRow = 12;
+  const blockH = 3.2 + 4 + head.lines.length * head.size + gapTitleRow + qrSize;
+  const top = py + photoH + 12, avail = footTop - 8 - top;
+  let y = top + Math.max(0, (avail - blockH) / 2);
 
-  setFont(FONT.mono(3.2, 400)); ctx.fillStyle = mute;
-  spaced('MUZIEK OP AANVRAAG', m(16), m(y + 3.2 * .8), 0.12, 3.2);
+  setFont(FONT.mono(3.2)); ctx.fillStyle = labelCol;
+  spaced('MUZIEK OP AANVRAAG', m(X), m(y + 3.2 * .8), 0.09, 3.2);
   y += 3.2 + 4;
-  setFont(FONT.display(head.size)); ctx.fillStyle = fg;
-  head.lines.forEach((l, i) => ctx.fillText(l, m(16), m(y + head.size * 0.8 + i * head.size * 0.92)));
-  y += head.lines.length * head.size * 0.92 + gapTitleRow;
+  drawDisplay(head, m(X), m(y), fg);
+  y += head.lines.length * head.size + gapTitleRow;
 
-  // QR-code rechts.
-  const qx = W - 16 - qrSize, qy = y;
-  ctx.fillStyle = light ? C.white : C.krijt; ctx.fillRect(m(qx), m(qy), m(qrSize), m(qrSize));
-  if (light) { ctx.strokeStyle = C.studio; ctx.lineWidth = m(.8); ctx.strokeRect(m(qx + .4), m(qy + .4), m(qrSize - .8), m(qrSize - .8)); }
+  // QR-kaart rechts (Bone, grote radius, zachte schaduw).
+  const qx = X + CW - qrSize, qy = y;
+  ctx.save(); softShadow(true, light); ctx.fillStyle = light ? C.white : C.krijt; rrect(m(qx), m(qy), m(qrSize), m(qrSize), R); ctx.fill(); ctx.restore();
+  if (light) { ctx.strokeStyle = line; ctx.lineWidth = m(.3); rrect(m(qx), m(qy), m(qrSize), m(qrSize), R); ctx.stroke(); }
   if (window.qrcode) {
     const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-    const n = qr.getModuleCount(), inner = m(qrSize - 10), cell = inner / n, ox = m(qx + 5), oy = m(qy + 5);
+    const n = qr.getModuleCount(), inner = m(qrSize - 16), cell = inner / n, ox = m(qx + 8), oy = m(qy + 8);
     ctx.fillStyle = C.studio;
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
       if (qr.isDark(r, c)) ctx.fillRect(Math.floor(ox + c * cell), Math.floor(oy + r * cell), Math.ceil(cell), Math.ceil(cell));
   }
-  // "Scan mij"-sticker, licht gedraaid.
-  ctx.save();
-  ctx.translate(m(qx - 6), m(qy - 5)); ctx.rotate(-3 * Math.PI / 180);
-  ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = m(3); ctx.shadowOffsetY = m(2);
-  tag('SCAN MIJ', 0, 0);
-  ctx.restore();
 
-  // Stappen links, onderaan uitgelijnd met de QR-code.
-  const rowH = 11.1, stepsW = W - 32 - 10 - qrSize;
-  setFont(FONT.body(4.2));
-  const note = wrap('Geen app of account nodig. Open gewoon je gsm-camera.', m(70));
-  const noteH = 6 + note.length * 4.2 * 1.45;
-  let sy = qy + qrSize - noteH - 3 * rowH;
+  // Links: het focusvlak (het enige Moss-vlak) + de stappen.
+  const leftW = CW - qrSize - 12;
+  const fh = 22;
+  ctx.save(); softShadow(true, light); ctx.fillStyle = C.signaal; rrect(m(X), m(qy), m(leftW), m(fh), m(4)); ctx.fill(); ctx.restore();
+  setFont(FONT.display(7)); setTracking(-0.028, 7); ctx.fillStyle = C.studio;
+  ctx.fillText('Scan de code.', m(X + 6), m(qy + 6 + 7 * .82)); setTracking(0, 7);
+  setFont(FONT.mono(2.8)); ctx.fillStyle = C.studio;
+  spaced('MET JE GSM-CAMERA', m(X + 6), m(qy + fh - 5), 0.09, 2.8);
+
+  const steps = [['01', 'Zoek je nummer.'], ['02', 'Verstuur het naar de DJ.'], ['03', 'Stem op wat je wil horen.']];
+  const rowH = 12, sy = qy + qrSize - steps.length * rowH;
   ctx.strokeStyle = line; ctx.lineWidth = m(.3);
-  const steps = [['01', 'SCAN DE CODE'], ['02', 'ZOEK JE NUMMER'], ['03', 'VERSTUUR NAAR DE DJ']];
   steps.forEach(([nr, text], i) => {
-    const top = sy + i * rowH;
-    ctx.beginPath(); ctx.moveTo(m(16), m(top)); ctx.lineTo(m(16 + stepsW), m(top)); ctx.stroke();
-    setFont(FONT.mono(3.9)); ctx.fillStyle = C.signaal;
-    const nw = spaced(nr, m(16), m(top + rowH / 2 + 1.3), 0.12, 3.9);
-    ctx.fillStyle = fg;
-    spaced(text, m(16) + nw + m(5), m(top + rowH / 2 + 1.3), 0.12, 3.9);
+    const t = sy + i * rowH;
+    ctx.beginPath(); ctx.moveTo(m(X), m(t)); ctx.lineTo(m(X + leftW), m(t)); ctx.stroke();
+    setFont(FONT.mono(3.2)); ctx.fillStyle = labelCol;
+    spaced(nr, m(X), m(t + rowH / 2 + 1.2), 0.09, 3.2);
+    setFont(FONT.body(4.6, 500)); ctx.fillStyle = fg;
+    ctx.fillText(text, m(X + 12), m(t + rowH / 2 + 1.6));
   });
-  ctx.beginPath(); ctx.moveTo(m(16), m(sy + 3 * rowH)); ctx.lineTo(m(16 + stepsW), m(sy + 3 * rowH)); ctx.stroke();
-  setFont(FONT.body(4.2)); ctx.fillStyle = mute;
-  note.forEach((l, i) => ctx.fillText(l, m(16), m(sy + 3 * rowH + 6 + 4.2 * 0.95 + i * 4.2 * 1.45)));
 
   // Voet: link en logo.
-  ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(m(16), m(footTop)); ctx.lineTo(m(W - 16), m(footTop)); ctx.stroke();
-  setFont(FONT.mono(3.1, 400)); ctx.fillStyle = mute;
-  spaced(shortUrl.toUpperCase(), m(16), m(footTop + 7.2), 0.12, 3.1);
-  if (state.logo) ctx.drawImage(tinted(state.logo, light ? C.studio : C.white), m(W - 16 - 13), m(footTop + 3.4), m(13), m(13 * 429 / 1000));
+  ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(m(X), m(footTop)); ctx.lineTo(m(X + CW), m(footTop)); ctx.stroke();
+  setFont(FONT.mono(3, 400)); ctx.fillStyle = mute;
+  spaced(shortUrl.toUpperCase(), m(X), m(footTop + 7.2), 0.09, 3);
+  if (state.logo) ctx.drawImage(tinted(state.logo, light ? C.studio : C.white), m(X + CW - 13), m(footTop + 3.4), m(13), m(13 * 429 / 1000));
   ctx.restore();
 }
 
@@ -247,7 +249,7 @@ $('#theme').onchange = e => { state.theme = e.target.value; store.set('vz_poster
 // ---- laden ----
 (async () => {
   const fonts = document.fonts ? Promise.all([
-    document.fonts.load(`italic 900 expanded 40px Archivo`), document.fonts.load(`700 20px "Space Mono"`),
+    document.fonts.load(`800 40px Inter`), document.fonts.load(`500 20px Inter`), document.fonts.load(`700 20px "Space Mono"`),
     document.fonts.load(`400 20px "Space Mono"`), document.fonts.load(`400 20px Inter`)
   ]).catch(() => {}) : Promise.resolve();
   const logo = loadImg('sb-logo.png').then(i => { state.logo = i; }).catch(() => {});

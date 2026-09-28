@@ -11,10 +11,10 @@ Een app waarmee gasten nummers aanvragen, zoals requestbox.app. Ze draait volled
 | `sbmusic.be/requests/beheer.html` | Jij (wachtwoord) |
 | `sbmusic.be/requests/poster.html?e=<event-code>` | Afdrukbare A4-poster met QR-code |
 
-De app volgt de SB Design Language v1.0:
-- Kleuren: Studio Black, Graphite, Cord Green, Bone, en Moss als spaarzaam accent.
-- Lettertypes: Archivo Expanded Black Italic, Inter en Space Mono.
-- Vorm: de schuine lijn van 23° en het SB-logo.
+De app volgt de SB Design Language v2.0: zacht, rustig en consequent.
+- Kleuren: Studio Black, Graphite, Cord Green en Bone. Moss is het accent, één keer per scherm.
+- Lettertypes: Inter Black 800 voor titels (in gewone zinsopbouw), Inter voor tekst, Space Mono voor labels.
+- Vormtaal: afgeronde hoeken volgens de radiusschaal, een zachte schaduw, een raster van 4 px, en het SB-logo.
 
 De stijl staat in `style.css`.
 
