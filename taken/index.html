@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Taken</title>
-<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -461,6 +461,393 @@ ul.comments li{background:var(--side);border:1px solid var(--line);border-radius
   .main-head h2{font-size:21px}
   .toolbar select{flex:1 1 40%}
   .prop{grid-template-columns:100px 1fr}
+}
+
+/* =====================================================================
+   Redesign — Apple-stijl (zie .agents/skills/apple-design)
+   Laag bovenop de basisstijl: tokens, materialen, typografie, beweging.
+   ===================================================================== */
+:root{
+  --bg:#f5f5f7; --panel:#ffffff; --card:#ffffff; --side:#f5f5f7;
+  --text:#1d1d1f; --muted:#6e6e73; --faint:#a1a1a6;
+  --line:rgba(0,0,0,.09); --hairline:rgba(0,0,0,.06);
+  --hover:rgba(120,120,128,.09); --sel:rgba(120,120,128,.16); --fill:rgba(118,118,128,.12);
+  --group:rgba(118,118,128,.07); --col:rgba(0,0,0,.035);
+  --accent:#f0443a; --accent-2:#d9342b; --on-accent:#fff;
+  --p2:#ff9500; --p3:#0071e3; --danger:#e0243a; --ok:#1f9d49;
+  --seg-on:#ffffff;
+  --material:rgba(250,250,252,.72); --material-strong:rgba(250,250,252,.86);
+  --shadow-card:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
+  --shadow-lift:0 0 0 .5px rgba(0,0,0,.05),0 6px 16px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow:0 0 0 .5px rgba(0,0,0,.06),0 24px 60px rgba(0,0,0,.16),0 6px 16px rgba(0,0,0,.06);
+  --spring:cubic-bezier(.32,.72,0,1);      /* iOS-sheet: kritisch gedempt, geen doorschot */
+  --bounce:cubic-bezier(.34,1.36,.64,1);   /* alleen na een gebaar met momentum */
+  --press:.97;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b0b0d; --panel:#1c1c1e; --card:#232326; --side:#141416;
+    --text:#f5f5f7; --muted:#98989f; --faint:#636366;
+    --line:rgba(255,255,255,.1); --hairline:rgba(255,255,255,.07);
+    --hover:rgba(255,255,255,.06); --sel:rgba(255,255,255,.1); --fill:rgba(118,118,128,.24);
+    --group:rgba(255,255,255,.045); --col:rgba(255,255,255,.035);
+    --accent:#ff5a4f; --accent-2:#ff7168; --p3:#2997ff; --ok:#32d74b; --danger:#ff453a;
+    --seg-on:#636366;
+    --material:rgba(28,28,30,.68); --material-strong:rgba(28,28,30,.86);
+    --shadow-card:0 0 0 .5px rgba(255,255,255,.06),0 1px 2px rgba(0,0,0,.4);
+    --shadow-lift:0 0 0 .5px rgba(255,255,255,.08),0 8px 20px rgba(0,0,0,.45);
+    --shadow:0 0 0 .5px rgba(255,255,255,.08),0 24px 60px rgba(0,0,0,.6);
+  }
+}
+
+/* ---- Typografie: systeemletter, grootte-afhankelijke tracking ---- */
+body{font:15px/1.47 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Inter,Roboto,sans-serif;letter-spacing:-.003em;text-rendering:optimizeLegibility}
+h1,h2,h3,.main-head h2,#dTitle{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,"Segoe UI",Inter,Roboto,sans-serif}
+.main-head h2{font-size:30px;font-weight:700;letter-spacing:-.024em;line-height:1.12}
+.main-head h2 .emo{font-size:28px}
+:focus-visible{outline:2px solid color-mix(in srgb,var(--accent) 70%,transparent);outline-offset:2px}
+
+/* ---- Bediening: direct reageren bij indrukken ---- */
+.btn,.icon-btn,.nav-item,.seg button,.col-tabs button,.hidden-cols button,.check,.multi button,.sw,.chip[data-act]{transition:transform .12s ease-out,background-color .15s,color .15s,box-shadow .2s}
+.btn:active,.nav-item:active,.seg button:active,.col-tabs button:active,.hidden-cols button:active,.multi button:active{transform:scale(var(--press))}
+.icon-btn:active,.check:active{transform:scale(.9)}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=search],select,textarea{
+  background:var(--fill);border:1px solid transparent;border-radius:10px;padding:9px 12px;transition:background-color .15s,box-shadow .15s,border-color .15s}
+input:hover,select:hover,textarea:hover{background:color-mix(in srgb,var(--fill) 140%,transparent)}
+input:focus,select:focus,textarea:focus{background:var(--panel);border-color:color-mix(in srgb,var(--accent) 60%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+.btn{border:0;background:var(--fill);border-radius:10px;padding:8px 15px;font-weight:590;letter-spacing:-.005em}
+.btn:hover{background:color-mix(in srgb,var(--fill) 160%,transparent)}
+.btn.primary{background:var(--accent);color:var(--on-accent);box-shadow:0 1px 2px color-mix(in srgb,var(--accent) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn.primary:hover{background:var(--accent-2)}
+.btn.danger{color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.btn.danger:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
+.icon-btn{border-radius:10px}
+.link{color:var(--accent)}
+code{background:var(--fill);border-radius:6px}
+
+/* ---- Materialen: doorschijnende lagen met inhoud eronder ---- */
+#side{background:var(--material);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border-right:1px solid var(--hairline);padding:16px 12px}
+.side-head{padding:2px 8px 16px}
+.brand{font-size:18px;letter-spacing:-.02em}
+.nav-item{border-radius:10px;padding:7px 10px;font-size:14.5px;font-weight:500;color:var(--text)}
+.nav-item:hover{background:var(--hover)}
+.nav-item.on{background:var(--sel);font-weight:600}
+.nav-item.on .ico{color:var(--accent)}
+.nav-item .cnt{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px}
+.side-section{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:650;color:var(--faint);padding:20px 10px 4px}
+.side-foot{border-top:1px solid var(--hairline)}
+#main{scroll-behavior:smooth}
+.main-head{position:sticky;top:0;z-index:12;margin:-22px -28px 10px;padding:18px 28px 10px;background:color-mix(in srgb,var(--bg) 74%,transparent);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);transition:box-shadow .2s}
+.main-head.scrolled{box-shadow:0 1px 0 var(--hairline)}
+.proj-notes{color:var(--muted);font-size:15px}
+.proj-notes:focus{color:var(--text)}
+
+/* ---- Werkbalk & segmentknop (zoals op iOS) ---- */
+.seg{background:var(--fill);border:0;border-radius:10px;padding:2px;gap:2px}
+.seg button{border-radius:8px;padding:6px 14px;color:var(--text);font-weight:550;background:none}
+.seg button.on{background:var(--seg-on);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.toolbar{gap:8px;margin-bottom:12px}
+.toolbar select,.toolbar input{padding:7px 10px}
+.tb-cols{background:var(--fill)}
+#quickAdd{gap:8px}
+#quickAdd input{padding:11px 14px;border-radius:12px;font-size:15px}
+#quickAdd .btn{border-radius:12px;padding:10px 18px}
+#banner{border:0;border-radius:14px;background:color-mix(in srgb,var(--accent) 9%,var(--panel));box-shadow:var(--shadow-card)}
+.chip{background:var(--fill);color:var(--muted);font-weight:500;padding:4px 8px}
+.chip.due{background:none;padding-left:0}
+.chip.opt{font-weight:550}
+
+/* ---- Bord ---- */
+.board{gap:16px;padding:4px 2px 16px}
+.col{background:var(--col);border:0;border-top:0;border-radius:18px;padding:12px 10px 8px}
+.col.over{background:color-mix(in srgb,var(--c) 10%,var(--col))}
+.col>header{font-size:14.5px;font-weight:650;letter-spacing:-.01em;padding:2px 6px 10px;gap:8px}
+.col>header .dot{width:9px;height:9px;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 20%,transparent)}
+.col>header .count{background:var(--fill);color:var(--muted);font-size:12px;font-weight:600;border-radius:999px;padding:1px 8px;font-variant-numeric:tabular-nums}
+.col>header .badge{background:color-mix(in srgb,var(--c) 14%,transparent);color:color-mix(in srgb,var(--c) 85%,var(--text))}
+.cards{gap:8px}
+.card{background:var(--card);border:0;border-radius:14px;padding:12px 13px;box-shadow:var(--shadow-card);transition:transform .25s var(--spring),box-shadow .25s var(--spring),background-color .2s}
+.card:hover{border:0;box-shadow:var(--shadow-lift);transform:translateY(-1px)}
+.card:active{transform:scale(.985)}
+.card.sel{box-shadow:0 0 0 2px var(--accent),var(--shadow-lift)}
+.card .t-title{font-size:15px;font-weight:550;letter-spacing:-.01em}
+.card.due-soon{background:color-mix(in srgb,#ff9f0a 13%,var(--card));box-shadow:0 0 0 1px color-mix(in srgb,#ff9f0a 45%,transparent),var(--shadow-card)}
+.card.due-late{background:color-mix(in srgb,var(--danger) 9%,var(--card));box-shadow:0 0 0 1px color-mix(in srgb,var(--danger) 40%,transparent),var(--shadow-card)}
+.card-ph{border-radius:14px;border:2px dashed color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 8%,transparent)}
+.ghost{border-radius:14px;box-shadow:0 20px 44px rgba(0,0,0,.2),0 4px 12px rgba(0,0,0,.1)!important;opacity:.97}
+.col-empty{border:0;background:transparent;color:var(--faint);border-radius:12px;padding:16px 6px}
+.col-add input{background:transparent;border-color:transparent;border-radius:10px;color:var(--muted)}
+.col-add input:hover{background:var(--hover)}
+.col-add input:focus{background:var(--card);color:var(--text)}
+.hidden-cols button{border-style:solid;border-color:transparent;background:color-mix(in srgb,var(--c) 10%,var(--fill))}
+
+/* ---- Lijst ---- */
+.group h3{border-bottom:0;font-size:13px;font-weight:650;color:var(--muted);padding:8px 8px 4px}
+.task{border-bottom:0;border-radius:12px;padding:11px 10px;transition:background-color .15s}
+.task + .task{box-shadow:0 -1px 0 var(--hairline)}
+.task:hover{background:var(--hover)}
+.task.sel{background:var(--sel)}
+.task:active{background:var(--sel)}
+.check{width:22px;height:22px;border:1.5px solid var(--faint);background:transparent}
+.check:hover{border-color:var(--accent);color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.check.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.check.pop{animation:checkPop .45s var(--bounce)}
+@keyframes checkPop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* ---- Detailpaneel: zwevend blad met gegroepeerde eigenschappen ---- */
+#detail{background:var(--panel);border-left:1px solid var(--hairline);transition:transform .45s var(--spring),opacity .3s ease}
+#detail.d-in,#detail.d-out{opacity:0;transform:translateX(28px);pointer-events:none}
+@media (min-width:861px){
+  #app.board-mode #detail{top:10px;right:10px;bottom:10px;border-radius:20px;border:0;box-shadow:var(--shadow);max-width:calc(100vw - 290px)}
+  #app.board-mode #detail.d-in,#app.board-mode #detail.d-out{opacity:1;transform:translateX(calc(100% + 24px))}
+}
+.d-head{background:var(--material-strong);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--hairline);padding:10px 14px}
+#app.board-mode .d-head{border-radius:20px 20px 0 0}
+.d-body{padding:18px 20px 44px}
+#dTitle{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2;background:none;border-color:transparent}
+#dTitle:hover{background:var(--hover)}
+#dTitle:focus{background:var(--panel)}
+#dNotes{background:var(--group);border-radius:12px;margin-top:10px}
+#dNotes:hover{background:var(--hover)}
+.props{gap:0;margin-top:16px;background:var(--group);border-radius:14px;padding:2px 14px}
+.prop{padding:7px 0;grid-template-columns:128px 1fr;font-size:14px}
+.props>.prop + .prop,.props>.prop + div.prop{box-shadow:0 -1px 0 var(--hairline)}
+.prop>span{color:var(--muted)}
+.props .prop input:not([type=checkbox]),.props .prop select{background:transparent;padding:7px 10px}
+.props .prop input:not([type=checkbox]):hover,.props .prop select:hover{background:var(--hover)}
+.props .prop input:focus,.props .prop select:focus{background:var(--panel)}
+.props>p{padding:10px 0}
+.d-sec{border-top:0;margin:26px 4px 0;padding-top:0;font-size:12.5px;font-weight:650;letter-spacing:.02em}
+ul.comments li{background:var(--group);border:0;border-radius:14px;padding:10px 12px 12px}
+.c-new textarea{border-radius:12px}
+@container (min-width:640px){
+  #detail .props>.prop:nth-child(2){box-shadow:none}
+}
+
+/* ---- Vensters: verschijnen als materiaal, geankerd in het midden ---- */
+dialog{border-radius:20px;box-shadow:var(--shadow);background:var(--panel)}
+dialog::backdrop{background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+dialog[open]{animation:dlgIn .38s var(--spring)}
+dialog[open]::backdrop{animation:fadeIn .25s ease}
+@keyframes dlgIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dlg-inner h3{font-size:21px;letter-spacing:-.018em}
+.box{border:0;background:var(--group);border-radius:14px}
+.flist{border-top:0}
+.flist li{border-bottom:1px solid var(--hairline)}
+
+/* ---- Meldingen: zacht van onderen, langs dezelfde weg ---- */
+#toast{background:rgba(29,29,31,.88);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);color:#f5f5f7;border-radius:14px;padding:11px 16px;box-shadow:0 12px 32px rgba(0,0,0,.22)}
+#toast:not([hidden]){animation:toastIn .42s var(--spring)}
+#toast button{color:#ff8a80}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,16px) scale(.98)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---- Inlogscherm ---- */
+.lock{background:radial-gradient(1200px 600px at 15% 0%,color-mix(in srgb,#ff8a3d 22%,transparent),transparent 60%),radial-gradient(900px 600px at 100% 100%,color-mix(in srgb,#e5304f 20%,transparent),transparent 60%),var(--bg)}
+.lock-card{background:var(--material-strong);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:0;border-radius:24px;box-shadow:var(--shadow);padding:32px 28px 26px;animation:dlgIn .5s var(--spring)}
+.lock-logo.has-img img{width:64px;height:64px;border-radius:15px}
+.lock-card h1{font-size:26px;letter-spacing:-.022em;margin:4px 0 6px}
+.lock-card label{font-weight:590}
+.lock-card .btn.primary{padding:12px;border-radius:12px;font-size:15px}
+
+/* ---- Verkopen ---- */
+.sales-stat{background:var(--card);border:0;border-radius:14px;box-shadow:var(--shadow-card);padding:10px 16px}
+.sales-stat b{font-size:22px;letter-spacing:-.02em}
+.table-wrap{border:0;border-radius:16px;box-shadow:var(--shadow-card);background:var(--card)}
+table.sales th{background:transparent;border-bottom:1px solid var(--hairline)}
+table.sales td{border-bottom:1px solid var(--hairline)}
+table.sales .grp-week td{background:var(--group);border-top:0}
+table.sales tfoot td{background:var(--group)}
+.pace{border:0;border-radius:14px;box-shadow:var(--shadow-card);background:color-mix(in srgb,var(--p3) 7%,var(--card))}
+.pace.behind{background:color-mix(in srgb,var(--danger) 7%,var(--card))}
+.pace.hit{background:color-mix(in srgb,var(--ok) 9%,var(--card))}
+.im-sum div{border:0;background:var(--group)}
+
+/* ---- Mobiel ---- */
+@media (max-width:860px){
+  .main-head{margin:-14px -16px 8px;padding:max(12px,env(safe-area-inset-top)) 16px 8px}
+  .main-head h2{font-size:28px}
+  #side{transition:transform .45s var(--spring);border-radius:0 20px 20px 0;background:var(--material-strong)}
+  #app.side-open #scrim{background:rgba(0,0,0,.25);animation:fadeIn .25s ease}
+  #detail{border:0;transition:transform .45s var(--spring)}
+  #detail.d-in,#detail.d-out{opacity:1;transform:translateX(100%)}
+  #detail .d-head{padding-top:max(10px,env(safe-area-inset-top))}
+  #quickAdd{background:var(--material);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid var(--hairline)}
+  .col-tabs button{border:0;background:var(--fill);color:var(--muted)}
+  .col-tabs button.on{background:var(--seg-on);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .toolbar.open .tb-more{border:0;background:var(--group);border-radius:14px}
+  .tb-toggle.active{border:0;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+  dialog{margin:auto auto 0;width:100vw;max-width:100vw;border-radius:22px 22px 0 0;padding-bottom:env(safe-area-inset-bottom)}
+  dialog[open]{animation:sheetUp .45s var(--spring)}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+  .card:hover{transform:none;box-shadow:var(--shadow-card)}
+}
+
+/* kolomkop: alles op één regel, compact */
+.col>header{gap:6px;min-width:0}
+.col>header .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.col>header .count,.col>header .badge,.col>header .icon-btn{flex:none}
+.col>header .badge{display:inline-grid;place-items:center;width:20px;height:20px;padding:0;border-radius:50%}
+.col>header .badge svg{width:11px;height:11px}
+.col>header .icon-btn{width:26px;height:26px}
+@media (max-width:860px){
+  #dTitle{font-size:22px!important}
+  .col>header .icon-btn{width:30px;height:30px}
+}
+
+/* verbergen/beheren verschijnen pas bij hover (computer); archiveren blijft altijd zichtbaar; op touch alles zichtbaar */
+@media (hover:hover){
+  .col>header .col-hide,.col>header .col-edit{display:none}
+  .col:hover>header .col-hide,.col:hover>header .col-edit,
+  .col>header:focus-within .col-hide,.col>header:focus-within .col-edit{display:inline-grid;opacity:1}
+}
+
+/* afwerking */
+.nav-item .cnt{white-space:nowrap;flex:none}
+.task{position:relative}
+.task + .task{box-shadow:none}
+.task + .task::before{content:'';position:absolute;left:42px;right:10px;top:0;height:1px;background:var(--hairline)}
+.task:hover::before,.task:hover + .task::before,.task.sel::before,.task.sel + .task::before{opacity:0}
+@media (max-width:860px){
+  .dlg-actions .grow{display:none}
+  .dlg-actions .btn{flex:1 1 40%;padding:11px 14px}
+}
+
+/* ---- Toegankelijkheid ---- */
+@media (prefers-reduced-motion:reduce){
+  /* geen glijden, veren of doorschot: zachte overgangen in dekking */
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+  .btn:active,.nav-item:active,.icon-btn:active,.check:active,.card:active,.card:hover,.seg button:active{transform:none!important}
+  #detail,#detail.d-in,#detail.d-out,#side{transition:opacity .2s ease!important}
+  #detail.d-in,#detail.d-out{transform:none!important;opacity:0!important}
+}
+@media (prefers-reduced-transparency:reduce){
+  #side,.main-head,.d-head,#quickAdd,.lock-card,#toast{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  #side,.lock-card{background:var(--side)!important}
+  .main-head{background:var(--bg)!important}
+  .d-head{background:var(--panel)!important}
+  #quickAdd{background:var(--panel)!important}
+  #toast{background:#1d1d1f!important}
+}
+@media (prefers-contrast:more){
+  :root{--hairline:rgba(0,0,0,.25);--line:rgba(0,0,0,.35)}
+  .card,.col,.sales-stat,.table-wrap{outline:1px solid var(--line)}
+}
+
+/* =====================================================================
+   Liquid Glass (iOS 26/27): een zwevende, glazen bedieningslaag boven
+   de inhoud. Inhoud (kaarten, tabellen) blijft stevig en leesbaar.
+   ===================================================================== */
+:root{
+  --glass:linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,255,255,.34));
+  --glass-strong:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6));
+  --glass-edge:rgba(255,255,255,.7);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(255,255,255,.25),0 0 0 .5px rgba(0,0,0,.06),0 10px 30px rgba(0,0,0,.10);
+  --glass-blur:blur(22px) saturate(190%) brightness(1.04);
+  --wallpaper:radial-gradient(1100px 700px at 8% -10%,rgba(255,138,61,.16),transparent 60%),radial-gradient(900px 700px at 105% 10%,rgba(0,113,227,.12),transparent 60%),radial-gradient(900px 700px at 50% 120%,rgba(229,48,79,.12),transparent 60%);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --glass:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.05));
+    --glass-strong:linear-gradient(135deg,rgba(44,44,48,.78),rgba(28,28,32,.66));
+    --glass-edge:rgba(255,255,255,.16);
+    --glass-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(255,255,255,.04),0 0 0 .5px rgba(255,255,255,.06),0 12px 34px rgba(0,0,0,.5);
+    --glass-blur:blur(24px) saturate(180%) brightness(.9);
+    --wallpaper:radial-gradient(1100px 700px at 8% -10%,rgba(255,138,61,.14),transparent 60%),radial-gradient(900px 700px at 105% 10%,rgba(41,151,255,.12),transparent 60%),radial-gradient(900px 700px at 50% 120%,rgba(229,48,79,.12),transparent 60%);
+  }
+}
+/* achtergrond met wat kleur, zodat het glas iets heeft om te breken */
+body{background:var(--wallpaper),var(--bg);background-attachment:fixed}
+#app{background:transparent}
+
+/* gedeeld glasmateriaal */
+#side,.toolbar-glass,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn:not(.primary):not(.danger),.g-pill{
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+
+/* ---- Zijbalk: zwevend glazen paneel ---- */
+@media (min-width:861px){
+  #side{margin:10px 0 10px 10px;height:calc(100% - 20px);border-radius:26px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+  #app{grid-template-columns:280px 1fr}
+  #app.with-detail{grid-template-columns:280px minmax(0,1fr) var(--detail-w,400px)}
+  #app.board-mode.with-detail{grid-template-columns:280px 1fr}
+}
+.nav-item{border-radius:14px}
+.nav-item.on{background:rgba(255,255,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 1px 3px rgba(0,0,0,.08)}
+@media (prefers-color-scheme:dark){.nav-item.on{background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}}
+.side-foot{border-top-color:transparent}
+
+/* ---- Titelbalk: glas pas zichtbaar als inhoud eronder schuift ---- */
+.main-head{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+.main-head.scrolled{background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:0 1px 0 var(--hairline)}
+
+/* ---- Bediening: capsules van glas ---- */
+.btn{border-radius:999px}
+.btn:not(.primary):not(.danger){background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+.btn:not(.primary):not(.danger):hover{background:var(--glass-strong)}
+.btn.primary{border-radius:999px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 88%,#fff),var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn.danger{border-radius:999px}
+.icon-btn{border-radius:999px}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=search],select{border-radius:14px}
+.seg{border-radius:999px;padding:3px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+.seg button{border-radius:999px;padding:6px 16px}
+.seg button.on{background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,0,0,.14)}
+@media (prefers-color-scheme:dark){.seg button.on{background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 8px rgba(0,0,0,.4)}}
+.toolbar select,.toolbar input{border-radius:999px;padding-left:14px}
+#quickAdd input{border-radius:999px;padding-left:18px}
+#quickAdd .btn{border-radius:999px}
+.chip{border-radius:999px}
+#banner{border-radius:22px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+
+/* ---- Bord: inhoud blijft stevig, iets rondere vormen (concentrisch) ---- */
+.col{border-radius:24px;background:color-mix(in srgb,var(--col) 100%,rgba(255,255,255,.25))}
+.card{border-radius:18px}
+.card-ph,.ghost{border-radius:18px}
+.table-wrap,.sales-stat,.pace{border-radius:20px}
+
+/* ---- Detailpaneel: zwevend glazen blad ---- */
+#detail{background:var(--glass-strong);border-left:0}
+@media (min-width:861px){
+  #detail{margin:10px 10px 10px 0;height:calc(100% - 20px);border-radius:26px;border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+  #app.board-mode #detail{margin:0;height:auto;border-radius:28px}
+}
+.d-head{background:transparent;border-bottom:1px solid var(--hairline)}
+#app.board-mode .d-head,#detail .d-head{border-radius:26px 26px 0 0}
+.props,#dNotes,ul.comments li{background:rgba(255,255,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+@media (prefers-color-scheme:dark){.props,#dNotes,ul.comments li{background:rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}}
+.props{border-radius:20px}
+
+/* ---- Vensters, meldingen, inloggen ---- */
+dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow),0 30px 80px rgba(0,0,0,.2);border-radius:30px}
+#toast{border-radius:999px;padding:12px 20px;background:rgba(30,30,32,.62);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 14px 34px rgba(0,0,0,.28)}
+.lock-card{background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow),0 30px 80px rgba(0,0,0,.14);border-radius:34px}
+
+/* ---- Mobiel: zwevende glazen capsules ---- */
+@media (max-width:860px){
+  #side{margin:0;border-radius:0 28px 28px 0;background:var(--glass-strong);border:1px solid var(--glass-edge);border-left:0;box-shadow:var(--glass-shadow)}
+  #detail{background:var(--panel)}
+  #detail .d-head{border-radius:0;background:var(--glass-strong);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+  #quickAdd{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+  #quickAdd input{background:transparent}
+  #quickAdd input:focus{background:transparent;box-shadow:none;border-color:transparent}
+  .main-inner{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+  body:has(#quickAdd:not([hidden])) #toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .col-tabs button{border-radius:999px;background:var(--glass);border:1px solid var(--glass-edge)}
+  .col-tabs button.on{background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,0,0,.14)}
+  .toolbar.open .tb-more{background:var(--glass);border:1px solid var(--glass-edge);border-radius:24px;box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+  dialog{border-radius:30px 30px 0 0;border-bottom:0}
+}
+@media (max-width:860px) and (prefers-color-scheme:dark){
+  .col-tabs button.on{background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+}
+
+/* ---- Toegankelijkheid: effen in plaats van glas ---- */
+@media (prefers-reduced-transparency:reduce){
+  body{background:var(--bg)}
+  #side,#detail,dialog,.lock-card,.seg,.btn:not(.primary):not(.danger),#banner,#quickAdd,.col-tabs button,.toolbar.open .tb-more{background:var(--panel)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  #toast{background:#1d1d1f!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media (prefers-contrast:more){
+  #side,#detail,dialog,.btn,.seg,#quickAdd{border-color:var(--line)!important}
 }
 </style>
 </head>
@@ -1262,7 +1649,7 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span>${st.done ? '<span class="badge">afgewerkt</span>' : ''}<button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button>${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span>${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button>${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
       <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
@@ -1511,11 +1898,50 @@ function undoFor(t) {
 function stageToast(t, res, undo) {
   if (t.done) toast(`Afgewerkt: ${stageById(t.stage).label}`, undo);
 }
+/* ---- Beweging (apple-design): paneel schuift in en uit langs dezelfde kant.
+   CSS-overgangen keren om vanaf de huidige waarde, dus heropenen tijdens het
+   sluiten is onderbreekbaar zonder sprong. ---- */
+let detailHideTimer = null;
+function showDetailPanel() {
+  const el = $('#detail'), app = $('#app');
+  clearTimeout(detailHideTimer);
+  const fresh = el.hidden;
+  el.hidden = false; app.classList.add('with-detail');
+  if (fresh) { el.classList.add('d-in'); el.getBoundingClientRect(); }
+  el.classList.remove('d-in', 'd-out');
+}
+function hideDetailPanel() {
+  const el = $('#detail'), app = $('#app');
+  if (el.hidden) return;
+  el.classList.add('d-out');
+  clearTimeout(detailHideTimer);
+  detailHideTimer = setTimeout(() => {
+    el.hidden = true; el.innerHTML = ''; el.classList.remove('d-out'); app.classList.remove('with-detail');
+  }, 380);
+}
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Kaart na het slepen met een lichte veer naar zijn plek laten zweven (FLIP):
+// het gebaar had momentum, dus een klein beetje doorschot mag.
+function settleCard(id, from) {
+  if (!from || reduceMotion()) return;
+  const el = $(`.card[data-id="${id}"]`); if (!el?.animate) return;
+  const to = el.getBoundingClientRect();
+  const dx = from.left - to.left, dy = from.top - to.top;
+  if (Math.abs(dx) + Math.abs(dy) < 2) return;
+  el.animate([
+    {transform:`translate(${dx}px, ${dy}px) rotate(2deg) scale(1.03)`, boxShadow:'0 20px 44px rgba(0,0,0,.2)'},
+    {transform:'none', boxShadow:'var(--shadow-card)'}
+  ], {duration:460, easing:'cubic-bezier(.34,1.3,.64,1)'});
+}
 function toggleTask(id) {
   const t = taskById(id); if (!t) return;
   const undo = undoFor(t);
   const res = setStage(t, t.done ? firstOpen().id : firstDone().id);
   commit();
+  if (t.done) {
+    $(`[data-id="${id}"] .check`)?.classList.add('pop');
+    navigator.vibrate?.(10);
+  }
   stageToast(t, res, undo);
 }
 function deleteTask(id) {
@@ -1555,9 +1981,9 @@ function fieldInput(f, t) {
 function renderDetail(force) {
   const el = $('#detail'), app = $('#app');
   const t = selectedId && taskById(selectedId);
-  if (!t) { el.hidden = true; el.innerHTML = ''; app.classList.remove('with-detail'); return; }
+  if (!t) { hideDetailPanel(); return; }
   if (!force && el.contains(document.activeElement) && document.activeElement !== el) return;
-  el.hidden = false; app.classList.add('with-detail');
+  showDetailPanel();
   const p = proj(t.projectId), fs = fieldsFor(t.projectId);
   const created = new Date(t.createdAt || t.order || now());
   const wide = detailIsWide(detailWidth());
@@ -1686,6 +2112,9 @@ addEventListener('resize', () => { if (detailWidth() > detailMax()) setDetailWid
     closeDetail();
   });
 }
+$('#main').addEventListener('scroll', e => {
+  $('.main-head')?.classList.toggle('scrolled', e.currentTarget.scrollTop > 4);
+}, {passive:true});
 const detail = $('#detail');
 detail.addEventListener('input', e => {
   const t = taskById(selectedId); if (!t) return;
@@ -2861,7 +3290,7 @@ function startDrag() {
 }
 function moveDrag() {
   const {x, y} = drag;
-  drag.ghost.style.transform = `translate(${x - drag.dx}px, ${y - drag.dy}px) rotate(2deg)`;
+  drag.ghost.style.transform = `translate(${x - drag.dx}px, ${y - drag.dy}px) rotate(2deg) scale(1.03)`;
   const col = document.elementFromPoint(x, y)?.closest('.col');
   if (!col) return;
   const cards = $('.cards', col);
@@ -2885,6 +3314,7 @@ function autoScroll() {
 function endDrag(drop) {
   cancelAnimationFrame(drag.raf);
   const {id, ph, ghost} = drag;
+  const from = ghost.getBoundingClientRect();
   ghost.remove();
   $$('.col.over').forEach(c => c.classList.remove('over'));
   document.body.classList.remove('is-dragging');
@@ -2893,7 +3323,7 @@ function endDrag(drop) {
   const prev = neighbour('previousElementSibling'), next = neighbour('nextElementSibling');
   drag = null; justDragged = true; setTimeout(() => justDragged = false, 60);
   const t = taskById(id);
-  if (!drop || !t || !stage) { renderMain(); return; }
+  if (!drop || !t || !stage) { renderMain(); settleCard(id, from); return; }
   const undo = undoFor(t);
   let res, changed = false;
   if (stage !== t.stage) { res = setStage(t, stage); changed = true; }
@@ -2901,8 +3331,9 @@ function endDrag(drop) {
     const order = prev && next ? (prev.order + next.order) / 2 : prev ? prev.order + 1 : next ? next.order - 1 : t.order;
     if (order !== t.order) { t.order = order; touch(t); changed = true; }
   }
-  if (!changed) { renderMain(); return; }
+  if (!changed) { renderMain(); settleCard(id, from); return; }
   commit();
+  settleCard(id, from);
   stageToast(t, res, undo);
 }
 $('#toolbar').addEventListener('input', e => {
