@@ -74,7 +74,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 
 /* ---------- Layout ---------- */
 #app{display:grid;grid-template-columns:270px 1fr;height:100%}
-#app.with-detail{grid-template-columns:270px 1fr 400px}
+#app.with-detail{grid-template-columns:270px minmax(0,1fr) var(--detail-w,400px)}
 #side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:auto;padding:14px 10px}
 .side-head{display:flex;align-items:center;gap:8px;padding:2px 8px 14px}
 .brand{font-weight:750;font-size:17px;display:flex;align-items:center;gap:8px}
@@ -143,7 +143,20 @@ details.done-sec{margin-top:22px}
 details.done-sec summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:650;padding:6px 2px}
 
 /* ---------- Detail ---------- */
-#detail{border-left:1px solid var(--line);background:var(--panel);overflow:auto;display:flex;flex-direction:column}
+#detail{border-left:1px solid var(--line);background:var(--panel);overflow:auto;display:flex;flex-direction:column;position:relative;container-type:inline-size}
+/* sleepgreep om het detailpaneel breder/smaller te maken */
+.d-resize{position:absolute;top:0;bottom:0;left:0;width:8px;cursor:col-resize;z-index:3;touch-action:none}
+.d-resize::after{content:'';position:absolute;top:50%;left:2px;width:4px;height:44px;margin-top:-22px;border-radius:3px;background:var(--line);transition:background .15s}
+.d-resize:hover::after,.d-resize:focus-visible::after,body.resizing .d-resize::after{background:var(--accent)}
+.d-resize:focus-visible{outline:none}
+body.resizing,body.resizing *{cursor:col-resize!important;user-select:none!important}
+.d-expand svg{width:17px;height:17px}
+/* breed paneel: velden in twee kolommen */
+@container (min-width:640px){
+  #detail .props{grid-template-columns:1fr 1fr;column-gap:28px}
+  #detail .props>p{grid-column:1/-1}
+  #detail .d-body{padding-left:28px;padding-right:28px}
+}
 .d-head{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
 .d-head .crumb{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex:1;min-width:0}
 .d-body{padding:16px 18px 40px}
@@ -154,7 +167,7 @@ details.done-sec summary{cursor:pointer;color:var(--muted);font-size:13.5px;font
 #dNotes{margin-top:8px;min-height:80px;resize:vertical;border-color:transparent;background:none}
 #dNotes:hover{border-color:var(--line)}
 .props{display:grid;gap:10px;margin-top:14px}
-.prop{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;font-size:13.5px}
+.prop{display:grid;grid-template-columns:128px 1fr;gap:10px;align-items:center;font-size:13.5px}
 .prop>span{color:var(--muted);overflow:hidden;text-overflow:ellipsis}
 .prop select,.prop input{padding:6px 8px;font-size:14px}
 .prop .inline{display:flex;gap:6px;align-items:center}
@@ -199,7 +212,7 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 .main-inner.wide{max-width:none}
 @media (min-width:861px){
   #app.board-mode.with-detail{grid-template-columns:270px 1fr}
-  #app.board-mode #detail{position:fixed;top:0;right:0;bottom:0;width:400px;z-index:20;box-shadow:var(--shadow)}
+  #app.board-mode #detail{position:fixed;top:0;right:0;bottom:0;width:var(--detail-w,400px);max-width:calc(100vw - 280px);z-index:20;box-shadow:var(--shadow)}
 }
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
 .seg button{border:0;background:none;padding:6px 12px;font-size:13.5px;font-weight:550;color:var(--muted)}
@@ -432,6 +445,7 @@ ul.comments li{background:var(--side);border:1px solid var(--line);border-radius
   #app.side-open #side{transform:none}
   #app.side-open #scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
   #detail{position:fixed;inset:0;z-index:40;border:0;padding-top:env(safe-area-inset-top)}
+  .d-resize,.d-expand{display:none!important}
   .main-inner{padding:14px 16px calc(96px + env(safe-area-inset-bottom));padding-top:max(14px,env(safe-area-inset-top))}
   .main-head h2{font-size:21px}
   .toolbar select{flex:1 1 40%}
@@ -555,6 +569,8 @@ const I = {
   eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
   eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10.8 10.8 0 0112 5c6.5 0 10 7 10 7a17.6 17.6 0 01-2.6 3.6M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 004.2 4.2M3 3l18 18"/></svg>',
   filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
+  shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
   archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
@@ -1531,10 +1547,13 @@ function renderDetail(force) {
   el.hidden = false; app.classList.add('with-detail');
   const p = proj(t.projectId), fs = fieldsFor(t.projectId);
   const created = new Date(t.createdAt || t.order || now());
+  const wide = detailIsWide(detailWidth());
   el.innerHTML = `
+    <div class="d-resize" role="separator" aria-orientation="vertical" tabindex="0" title="Sleep om het paneel breder of smaller te maken (dubbelklik = standaard)" aria-label="Breedte van het paneel aanpassen"></div>
     <div class="d-head">
       <button class="icon-btn" data-act="close" aria-label="Sluiten">${I.close}</button>
       <span class="crumb"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${p.color}"></span>${esc(p.name)}</span>
+      <button class="icon-btn d-expand" data-act="expand" title="${wide ? 'Verkleinen' : 'Vergroten'}" aria-label="${wide ? 'Paneel verkleinen' : 'Paneel vergroten'}">${wide ? I.shrink : I.expand}</button>
       <button class="btn d-arch" data-act="archive">${I.archive}${t.archived ? 'Terugzetten' : 'Archiveren'}</button>
       <button class="icon-btn" data-act="delete" title="Taak verwijderen" aria-label="Taak verwijderen">${I.trash}</button>
     </div>
@@ -1587,6 +1606,58 @@ function setCustom(t, fid, val) {
   if (isEmpty(val)) delete t.custom[fid]; else t.custom[fid] = val;
   touch(t);
 }
+/* ---- Breedte van het detailpaneel (per toestel onthouden) ---- */
+const DETAIL_DEFAULT = 400, DETAIL_MIN = 340, DETAIL_WIDE = 640, DETAIL_KEY = 'taken.detailWidth';
+// in de bordweergave schuift het paneel over het bord en mag het breder; anders blijft er ruimte voor de lijst
+function detailMax() { return Math.max(DETAIL_MIN, innerWidth - ($('#app').classList.contains('board-mode') ? 300 : 630)); }
+const detailIsWide = w => w >= Math.min(DETAIL_WIDE, detailMax()) - 1;
+function detailWidth() {
+  const v = parseInt(getComputedStyle($('#app')).getPropertyValue('--detail-w'), 10);
+  return v || DETAIL_DEFAULT;
+}
+function setDetailWidth(w, persist) {
+  w = Math.round(Math.min(detailMax(), Math.max(DETAIL_MIN, w)));
+  $('#app').style.setProperty('--detail-w', w + 'px');
+  const btn = $('#detail .d-expand');
+  if (btn) {
+    const wide = detailIsWide(w);
+    btn.innerHTML = wide ? I.shrink : I.expand;
+    btn.title = wide ? 'Verkleinen' : 'Vergroten';
+    btn.setAttribute('aria-label', wide ? 'Paneel verkleinen' : 'Paneel vergroten');
+  }
+  if (persist) { try { localStorage.setItem(DETAIL_KEY, String(w)); } catch {} }
+}
+try {
+  const w = parseInt(localStorage.getItem(DETAIL_KEY), 10);
+  if (w >= DETAIL_MIN) $('#app').style.setProperty('--detail-w', Math.min(w, innerWidth - 300) + 'px');
+} catch {}
+addEventListener('resize', () => { if (detailWidth() > detailMax()) setDetailWidth(detailMax()); });
+{
+  let rs = null;
+  document.addEventListener('pointerdown', e => {
+    const h = e.target.closest('.d-resize'); if (!h || e.button > 0) return;
+    e.preventDefault();
+    rs = {id:e.pointerId};
+    h.setPointerCapture?.(e.pointerId);
+    document.body.classList.add('resizing');
+  });
+  document.addEventListener('pointermove', e => {
+    if (!rs) return;
+    // het paneel staat rechts: breedte = afstand van de muis tot de rechterrand
+    setDetailWidth(innerWidth - e.clientX);
+  });
+  const end = () => { if (!rs) return; rs = null; document.body.classList.remove('resizing'); setDetailWidth(detailWidth(), true); };
+  document.addEventListener('pointerup', end);
+  document.addEventListener('pointercancel', end);
+  document.addEventListener('dblclick', e => { if (e.target.closest('.d-resize')) setDetailWidth(DETAIL_DEFAULT, true); });
+  document.addEventListener('keydown', e => {
+    if (!e.target.closest?.('.d-resize')) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      setDetailWidth(detailWidth() + (e.key === 'ArrowLeft' ? 40 : -40), true);
+    }
+  });
+}
 const detail = $('#detail');
 detail.addEventListener('input', e => {
   const t = taskById(selectedId); if (!t) return;
@@ -1637,6 +1708,7 @@ detail.addEventListener('click', e => {
   switch (b.dataset.act) {
     case 'close': closeDetail(); break;
     case 'delete': deleteTask(t.id); break;
+    case 'expand': setDetailWidth(detailIsWide(detailWidth()) ? DETAIL_DEFAULT : Math.max(DETAIL_WIDE, Math.round(innerWidth * 0.55)), true); break;
     case 'addcomment': addComment(t); break;
     case 'delcomment': deleteComment(b.closest('[data-cid]').dataset.cid); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
