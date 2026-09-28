@@ -2834,11 +2834,11 @@ function weekOfMonth(dateStr) {
   const d = parseYmd(dateStr), first = new Date(d.getFullYear(), d.getMonth(), 1);
   return Math.floor((d.getDate() + (first.getDay() + 6) % 7 - 1) / 7) + 1;
 }
-// Groepeert rijen per week en per dag; rijen zonder datum komen onderaan.
+// Groepeert rijen per week en per dag, nieuwste eerst; rijen zonder datum komen onderaan.
 function salesGroups(rows, dateCol, moneyCol) {
   const amt = r => moneyCol ? (toNum(r.values[moneyCol.id]) || 0) : 0;
   const weeks = new Map(), none = {key:'none', rows:[], sum:0};
-  const sorted = [...rows].sort((a, b) => (a.values[dateCol.id] || '9999').localeCompare(b.values[dateCol.id] || '9999') || (a.order || 0) - (b.order || 0));
+  const sorted = [...rows].sort((a, b) => (b.values[dateCol.id] || '').localeCompare(a.values[dateCol.id] || '') || (b.order || 0) - (a.order || 0));
   for (const r of sorted) {
     const d = r.values[dateCol.id];
     if (!d || !/^\d{4}-\d\d-\d\d$/.test(d)) { none.rows.push(r); none.sum += amt(r); continue; }
@@ -2876,7 +2876,7 @@ function renderSales(force) {
       }
     }
     if (g.none.rows.length) body += `<tr class="grp-week"><td colspan="${span}"><span>Zonder datum</span><b data-gsum="none">${eur(g.none.sum)}</b></td></tr>` + g.none.rows.map(rowHtml).join('');
-  } else body = rows.map(rowHtml).join('');
+  } else body = [...rows].reverse().map(rowHtml).join('');
   const target = toNum(pg.target), main = moneyCols[0] ? tot.per[moneyCols[0].id] : 0;
   const pct = target ? Math.round(main / target * 100) : 0;
   el.innerHTML = `
@@ -2893,12 +2893,12 @@ function renderSales(force) {
       </div>
     </div>
     <div id="spPace">${paceHtml(pg, main)}</div>
+    <button type="button" class="btn primary" id="spAdd" style="margin-bottom:12px">+ Verkoop toevoegen</button>
     <div class="table-wrap"><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
       <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe of klik op “Notities plakken”.</td></tr>`}</tbody>
       <tfoot><tr>${cols.map((c, i) => `<td class="t-${c.type}" data-foot="${c.id}">${c.type === 'money' ? eur(tot.per[c.id]) : c.type === 'number' ? numFmt.format(tot.per[c.id]) : i === 0 ? 'Totaal' : ''}</td>`).join('')}<td></td></tr></tfoot>
     </table></div>
-    <button type="button" class="btn primary" id="spAdd" style="margin-top:12px">+ Verkoop toevoegen</button>
     <label class="fl" style="margin-top:26px">Notities<textarea id="spNotes" rows="3" placeholder="Doelen, opmerkingen…">${esc(pg.notes || '')}</textarea></label>`;
   if (focusedNotes) { const n = $('#spNotes'); n.focus(); n.selectionStart = n.selectionEnd = n.value.length; }
   if (focusCell) $(`tr[data-row="${focusCell.row}"] .cell[data-col="${focusCell.col}"]`)?.focus();
