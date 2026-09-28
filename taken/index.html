@@ -229,8 +229,8 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 }
 .col>header .badge{margin-left:auto;font-size:11px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);padding:2px 7px;border-radius:999px}
 .cards{display:flex;flex-direction:column;gap:8px;min-height:44px}
-.card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--pc);border-radius:9px;padding:9px 11px;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.card:hover{border-color:color-mix(in srgb,var(--text) 22%,var(--line));border-left-color:var(--pc)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card:hover{border-color:color-mix(in srgb,var(--text) 22%,var(--line))}
 .card.sel{box-shadow:0 0 0 2px var(--accent)}
 .card .t-title{font-size:14.5px;line-height:1.35}
 .card .t-meta{margin-top:6px}
@@ -407,6 +407,18 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .pace.hit{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 9%,var(--panel))}
 .pace.hit b{color:var(--ok)}
 @media (max-width:860px){.pace{flex-direction:column;gap:6px;padding:10px 12px}.pace b{font-size:16px}}
+/* ---------- Opmerkingen ---------- */
+.c-count{background:var(--hover);color:var(--muted);border-radius:999px;padding:1px 7px;font-size:12px;margin-left:4px}
+ul.comments{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+ul.comments li{background:var(--side);border:1px solid var(--line);border-radius:10px;padding:8px 10px 10px}
+.c-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);font-weight:600}
+.c-meta .c-del{width:28px;height:28px;margin:-4px -4px -4px 0;opacity:.6}
+.c-meta .c-del:hover{opacity:1}
+.c-meta .c-del svg{width:15px;height:15px}
+.c-text{white-space:pre-wrap;word-wrap:break-word;font-size:14.5px;margin-top:2px}
+.c-new{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.c-new textarea{flex:1;resize:vertical;min-height:44px}
+.c-new .btn{flex:none}
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -475,10 +487,10 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
       <div id="banner" hidden></div>
       <div class="toolbar" id="toolbar"></div>
       <form id="quickAdd" autocomplete="off">
-        <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”" enterkeyhint="done">
+        <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Offerte sturen morgen #Werk”" enterkeyhint="done">
         <button class="btn primary" type="submit">Toevoegen</button>
       </form>
-      <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
+      <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
       <div id="list"></div>
       <div id="salesPage" hidden></div>
     </div>
@@ -506,8 +518,6 @@ const CONFIG_URL = 'config.json';
 const CFG_CACHE = 'taken.config.v1';
 const REPO = 'sbmusicbe/sbmusicbe.github.io', BRANCH = 'main', CONFIG_PATH = 'taken/config.json';
 const COLORS = ['#dc4c3e','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
-const PRIO = {1:'Prioriteit 1',2:'Prioriteit 2',3:'Prioriteit 3',4:'Geen prioriteit'};
-const REPEAT = [['','Niet herhalen'],['daily','Elke dag'],['weekdays','Elke werkdag'],['weekly','Elke week'],['monthly','Elke maand'],['yearly','Elk jaar']];
 const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',multiselect:'Meerdere keuzes',checkbox:'Vinkje',url:'Link'};
 const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
 const DAYS_SHORT = ['zo','ma','di','wo','do','vr','za'];
@@ -545,12 +555,12 @@ const I = {
   eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
   eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10.8 10.8 0 0112 5c6.5 0 10 7 10 7a17.6 17.6 0 01-2.6 3.6M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 004.2 4.2M3 3l18 18"/></svg>',
   filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
   archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
   sales:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
-  repeat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 013-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 01-3 3H3"/></svg>',
   note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -589,27 +599,6 @@ function dateLong(s) {
   return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
 function daysInMonth(y, m) { return new Date(y, m+1, 0).getDate(); }
-function advance(s, r) {
-  const d = parseYmd(s);
-  switch (r) {
-    case 'daily': d.setDate(d.getDate()+1); break;
-    case 'weekdays': do { d.setDate(d.getDate()+1); } while (d.getDay() === 0 || d.getDay() === 6); break;
-    case 'weekly': d.setDate(d.getDate()+7); break;
-    case 'monthly': case 'yearly': {
-      const day = d.getDate(), add = r === 'monthly' ? 1 : 12;
-      d.setDate(1); d.setMonth(d.getMonth()+add);
-      d.setDate(Math.min(day, daysInMonth(d.getFullYear(), d.getMonth())));
-      break;
-    }
-  }
-  return ymd(d);
-}
-function nextDue(due, r) {
-  const td = today();
-  let n = advance(due || td, r);
-  while (n < td) n = advance(n, r);
-  return n;
-}
 
 /* ---------------- Crypto ---------------- */
 const te = new TextEncoder(), td = new TextDecoder();
@@ -648,13 +637,13 @@ function normalize(d) {
   if (d.settings.autolock === undefined) d.settings.autolock = 30;
   if (d.settings.sync === undefined) d.settings.sync = null;
   if (!d.stages?.length) d.stages = DEFAULT_STAGES.map(x => ({...x, u:0}));
-  d.salesPages ||= []; d.sales ||= [];
+  d.salesPages ||= []; d.sales ||= []; d.comments ||= [];
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
   for (const r of d.sales) r.values ||= {};
   const st = sortStages(d.stages);
   const open = st.find(x => !x.done) || st[0], done = st.find(x => x.done) || st[st.length - 1];
   for (const t of d.tasks) {
-    t.custom ||= {}; t.prio ||= 4;
+    t.custom ||= {};
     if (!st.some(x => x.id === t.stage)) t.stage = t.done ? done.id : open.id;
     t.done = !!st.find(x => x.id === t.stage).done;
   }
@@ -668,7 +657,7 @@ function merge(a, b) {
   const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
   const del = {...a.deleted};
   for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
-  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols']) {
+  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments']) {
     const m = new Map();
     for (const it of [...a[col], ...b[col]]) {
       const cur = m.get(it.id);
@@ -687,7 +676,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + JSON.stringify(Object.keys(d.deleted).sort());
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + JSON.stringify(Object.keys(d.deleted).sort());
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -992,7 +981,7 @@ const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === '
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
   const layout = saved.layout || 'board';
-  const d = layout === 'board' ? {} : ({today:{sort:'priority'}, upcoming:{sort:'priority', group:'due'}}[view.type] || {});
+  const d = layout === 'board' ? {} : ({today:{sort:'due'}, upcoming:{sort:'due', group:'due'}}[view.type] || {});
   return {sort:'manual', group:'stage', showDone:false, ff:'', fv:'', layout, ...d, ...saved};
 }
 function setPref(k, v) {
@@ -1064,15 +1053,30 @@ function viewTasks(includeDone) {
     }
   });
 }
+// Opmerkingen staan als losse items in data.comments (per stuk gesynchroniseerd).
+const commentsOf = tid => data.comments.filter(c => c.taskId === tid).sort((a, b) => a.at - b.at);
+let ccMemo = {ref:null, len:-1, map:null};
+function commentCount(tid) {
+  if (ccMemo.ref !== data.comments || ccMemo.len !== data.comments.length) {
+    const map = new Map(); for (const c of data.comments) map.set(c.taskId, (map.get(c.taskId) || 0) + 1);
+    ccMemo = {ref:data.comments, len:data.comments.length, map};
+  }
+  return ccMemo.map.get(tid) || 0;
+}
+function stamp(ms) {
+  const d = new Date(ms);
+  return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} om ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 function matchSearch(t, q) {
   if (!q) return true;
   q = q.toLowerCase();
   if (t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q)) return true;
+  if (data.comments.some(c => c.taskId === t.id && c.text.toLowerCase().includes(q))) return true;
   return data.fields.some(f => displayValue(f, t.custom[f.id]).toLowerCase().includes(q));
 }
 function matchFilter(t, ff, fv) {
   if (!ff || fv === '' || fv == null) return true;
-  if (ff === 'priority') return String(t.prio) === fv;
+  if (ff === 'priority') return true; // prioriteit bestaat niet meer
   if (ff === 'project') return t.projectId === fv;
   if (ff === 'stage') return t.stage === fv;
   const f = fieldById(ff.slice(2)); if (!f) return true;
@@ -1090,8 +1094,7 @@ function sortFn(key) {
   const dk = t => (t.due || '9999') + (t.time || '99:99');
   const byDue = (a, b) => dk(a) < dk(b) ? -1 : dk(a) > dk(b) ? 1 : 0;
   const tie = (...fs) => (a, b) => { for (const f of fs) { const r = f(a, b); if (r) return r; } return 0; };
-  if (key === 'due') return tie(byDue, (a, b) => a.prio - b.prio, byOrder);
-  if (key === 'priority') return tie((a, b) => a.prio - b.prio, byDue, byOrder);
+  if (key === 'due' || key === 'priority') return tie(byDue, byOrder); // 'priority' = oude instelling
   if (key === 'title') return tie((a, b) => a.title.localeCompare(b.title, 'nl', {numeric:true}), byOrder);
   if (key === 'newest') return (a, b) => (b.order || 0) - (a.order || 0);
   if (key?.startsWith('f:')) {
@@ -1125,7 +1128,6 @@ function groupTasks(tasks, g) {
   const porder = sortedProjects().map(p => p.id);
   for (const t of tasks) {
     if (g === 'project') { const p = proj(t.projectId); add(p.id, p.name, porder.indexOf(p.id), t, p.color); }
-    else if (g === 'priority') add('p' + t.prio, PRIO[t.prio], t.prio, t);
     else if (g === 'stage') { const st = stageById(t.stage); add(st.id, st.label, stages().indexOf(st), t, st.color); }
     else if (g === 'due') {
       if (!t.due) add('none', 'Geen datum', 9999, t);
@@ -1162,13 +1164,15 @@ function dueState(t) {
 function taskMeta(t) {
   const meta = [];
   if (t.due) {
-    meta.push(`<span class="chip due ${dueState(t)}">${I.cal} ${esc(dueLabel(t.due))}${t.time ? ' ' + esc(t.time) : ''}${t.repeat ? ' ' + I.repeat : ''}</span>`);
+    meta.push(`<span class="chip due ${dueState(t)}">${I.cal} ${esc(dueLabel(t.due))}${t.time ? ' ' + esc(t.time) : ''}</span>`);
   }
   if (view.type !== 'project' && t.projectId !== 'inbox' && view.type !== 'inbox') {
     const p = proj(t.projectId);
     meta.push(`<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`);
   }
   if (t.notes) meta.push(`<span class="chip" title="Heeft notities">${I.note}</span>`);
+  const nc = commentCount(t.id);
+  if (nc) meta.push(`<span class="chip" title="${nc} opmerking${nc === 1 ? '' : 'en'}">${I.comment} ${nc}</span>`);
   const chips = meta.join('') + fieldChips(t);
   return chips ? `<div class="t-meta">${chips}</div>` : '';
 }
@@ -1177,13 +1181,13 @@ function taskRow(t) {
   const meta = taskMeta(t);
   const stageChip = prefs().group === 'stage' && !t.done ? '' : `<span class="chip opt" style="--c:${st.color}">${esc(st.label)}</span>`;
   return `<li class="task ${t.done ? 'done' : ''} ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}">
-    <button class="check p${t.prio} ${t.done ? 'on' : ''}" data-act="toggle" aria-label="${t.done ? 'Heropenen' : 'Voltooien'}">${I.check}</button>
+    <button class="check ${t.done ? 'on' : ''}" data-act="toggle" aria-label="${t.done ? 'Heropenen' : 'Voltooien'}">${I.check}</button>
     <div class="t-body"><div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>
     ${stageChip ? `<div class="t-meta">${stageChip}</div>` : ''}${meta}</div></li>`;
 }
 function taskCard(t) {
   const ds = t.time ? dueState(t) : '';
-  return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' ? 'due-' + ds : ''}" data-id="${t.id}" style="--pc:var(--p${t.prio})">
+  return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' ? 'due-' + ds : ''}" data-id="${t.id}">
     <div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>${taskMeta(t)}</article>`;
 }
 function renderList() {
@@ -1259,7 +1263,7 @@ function renderMain() {
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
   $('#app').classList.toggle('board-mode', board);
-  $('#qaInput').placeholder = board ? `Nieuwe kaart in ${firstOpen().label}… bv. “Jan Peeters morgen p1”` : 'Nieuwe taak… bv. “Offerte sturen morgen p1 #Werk”';
+  $('#qaInput').placeholder = board ? `Nieuwe kaart in ${firstOpen().label}… bv. “Jan Peeters morgen 14u”` : 'Nieuwe taak… bv. “Offerte sturen morgen #Werk”';
   if (board) renderBoard(); else renderList();
 }
 
@@ -1301,18 +1305,20 @@ function toolbarFields() {
 }
 function renderToolbar() {
   const p = prefs(), fs = toolbarFields();
+  if (p.sort === 'priority') p.sort = 'due';
+  if (p.group === 'priority') p.group = '';
+  if (p.ff === 'priority') { p.ff = ''; p.fv = ''; }
   const o = (v, l, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`;
-  const sortOpts = [['manual','Eigen volgorde'],['newest','Nieuwste eerst'],['due','Deadline'],['priority','Prioriteit'],['title','Naam'],
+  const sortOpts = [['manual','Eigen volgorde'],['newest','Nieuwste eerst'],['due','Deadline'],['title','Naam'],
     ...fs.filter(f => f.type !== 'multiselect').map(f => ['f:' + f.id, f.name])];
-  const groupOpts = [['','Niet groeperen'], ['stage','Status'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ['priority','Prioriteit'], ['due','Datum'],
+  const groupOpts = [['','Niet groeperen'], ['stage','Status'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ['due','Datum'],
     ...fs.filter(f => ['select','multiselect','checkbox'].includes(f.type)).map(f => ['f:' + f.id, f.name])];
-  const filterOpts = [['','Geen filter'], ['stage','Status'], ['priority','Prioriteit'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ...fs.map(f => ['f:' + f.id, f.name])];
+  const filterOpts = [['','Geen filter'], ['stage','Status'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ...fs.map(f => ['f:' + f.id, f.name])];
   let fvHtml = '';
   if (p.ff) {
     const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
     let choices = null;
-    if (p.ff === 'priority') choices = [1,2,3,4].map(n => [String(n), PRIO[n]]);
-    else if (p.ff === 'stage') choices = stages().map(x => [x.id, x.label]);
+    if (p.ff === 'stage') choices = stages().map(x => [x.id, x.label]);
     else if (p.ff === 'project') choices = sortedProjects().map(x => [x.id, x.name]);
     else if (f && (f.type === 'select' || f.type === 'multiselect')) choices = [...f.options.map(x => [x.id, x.label]), ['__empty','(leeg)']];
     else if (f && f.type === 'checkbox') choices = [['1','Aangevinkt'],['0','Niet aangevinkt']];
@@ -1368,10 +1374,9 @@ function renderAll() {
 /* ---------------- Quick add ---------------- */
 function parseQuick(text) {
   let s = ' ' + text + ' ';
-  const r = {due:null, time:null, prio:null, projectId:null, repeat:null, stage:null, custom:{}, tokens:[]};
+  const r = {due:null, time:null, projectId:null, stage:null, custom:{}, tokens:[]};
   // fn mag false teruggeven: dan blijft de tekst gewoon in de titel staan
   const take = (re, fn) => { const m = s.match(re); if (m && fn(m) !== false) { s = s.replace(re, ' '); return true; } return false; };
-  take(/\s[!]?p([1-4])(?=\s)/i, m => { r.prio = +m[1]; r.tokens.push(['P' + m[1], null]); });
   for (const p of [...data.projects].sort((a, b) => b.name.length - a.name.length)) {
     if (take(new RegExp('\\s#' + escRe(p.name.replace(/\s+/g, '_')) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
     if (take(new RegExp('\\s#' + escRe(p.name) + '(?=\\s)', 'i'), () => { r.projectId = p.id; r.tokens.push(['#' + p.name, p.color]); })) break;
@@ -1392,8 +1397,6 @@ function parseQuick(text) {
     };
     take(re2, hit) || take(re, hit);
   }
-  const reps = [[/\s(elke dag|dagelijks)(?=\s)/i,'daily'],[/\s(elke werkdag|werkdagen)(?=\s)/i,'weekdays'],[/\s(elke week|wekelijks)(?=\s)/i,'weekly'],[/\s(elke maand|maandelijks)(?=\s)/i,'monthly'],[/\s(elk jaar|jaarlijks)(?=\s)/i,'yearly']];
-  for (const [re, v] of reps) if (take(re, () => { r.repeat = v; r.tokens.push([REPEAT.find(x => x[0] === v)[1], null]); })) break;
   const td = today();
   const setDue = d => { r.due = d; r.tokens.push([dueLabel(d), null]); };
   take(/\s(?:om\s+)?(\d{1,2})(?:[:.](\d{2})|[uh](\d{2})?)(?=\s)/i, m => {
@@ -1419,7 +1422,6 @@ function parseQuick(text) {
     if (!m[3] && d < td) d = ymd(new Date(y + 1, mm - 1, dd));
     setDue(d);
   });
-  if (r.repeat && !r.due) r.due = td;
   if (r.time && !r.due) { r.due = td; r.tokens.push(['Vandaag', null]); }
   r.title = s.trim().replace(/\s+/g, ' ');
   return r;
@@ -1427,7 +1429,7 @@ function parseQuick(text) {
 function renderQaPreview() {
   const v = $('#qaInput').value;
   const el = $('#qaPreview');
-  if (!v.trim()) { el.innerHTML = '<span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>elke week</b>, <b>p1</b>–<b>p4</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span>'; return; }
+  if (!v.trim()) { el.innerHTML = '<span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span>'; return; }
   const r = parseQuick(v);
   el.innerHTML = r.tokens.map(([l, c]) => c ? `<span class="chip opt" style="--c:${c}">${esc(l)}</span>` : `<span class="chip">${esc(l)}</span>`).join('');
 }
@@ -1438,13 +1440,12 @@ function createTask(r, stage) {
   const t = touch({
     id:uid(), title:r.title, notes:'', projectId,
     due:r.due || (view.type === 'today' ? today() : null), time:r.time || null,
-    prio:r.prio || 4, repeat:r.repeat || '', stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
+    stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), order:now(), custom:r.custom,
   });
   // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
   const p = prefs();
   if (p.ff && p.fv && p.fv !== '__empty') {
-    if (p.ff === 'priority' && !r.prio) t.prio = +p.fv;
     const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
     if (f && t.custom[f.id] === undefined) {
       if (f.type === 'select') t.custom[f.id] = p.fv;
@@ -1468,13 +1469,8 @@ $('#quickAdd').addEventListener('submit', e => {
 });
 
 /* ---------------- Task actions ---------------- */
-// Verplaatst een kaart naar een kolom. Een herhalende taak die afgewerkt wordt,
-// blijft open en schuift door naar de volgende datum.
+// Verplaatst een kaart naar een kolom.
 function setStage(t, st) {
-  if (isDoneStage(st) && !t.done && t.repeat) {
-    t.due = nextDue(t.due, t.repeat); touch(t);
-    return 'repeat';
-  }
   if (isDoneStage(st) && !t.done) t.doneAt = now();
   if (!isDoneStage(st)) t.doneAt = null;
   t.stage = st; t.done = isDoneStage(st); touch(t);
@@ -1484,8 +1480,7 @@ function undoFor(t) {
   return () => { const x = taskById(id); if (x) { Object.assign(x, prev); touch(x); commit(); } };
 }
 function stageToast(t, res, undo) {
-  if (res === 'repeat') toast(`Volgende keer: ${dueLabel(t.due)}`, undo);
-  else if (t.done) toast(`Afgewerkt: ${stageById(t.stage).label}`, undo);
+  if (t.done) toast(`Afgewerkt: ${stageById(t.stage).label}`, undo);
 }
 function toggleTask(id) {
   const t = taskById(id); if (!t) return;
@@ -1545,7 +1540,7 @@ function renderDetail(force) {
     </div>
     <div class="d-body">
       <div class="d-title-row">
-        <button class="check p${t.prio} ${t.done ? 'on' : ''}" data-act="toggle" aria-label="Voltooien">${I.check}</button>
+        <button class="check ${t.done ? 'on' : ''}" data-act="toggle" aria-label="Voltooien">${I.check}</button>
         <textarea id="dTitle" rows="1" aria-label="Titel">${esc(t.title)}</textarea>
       </div>
       <textarea id="dNotes" placeholder="Notities…" aria-label="Notities">${esc(t.notes || '')}</textarea>
@@ -1554,15 +1549,38 @@ function renderDetail(force) {
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="time" id="dTime" value="${esc(t.time || '')}" step="300">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
-        <label class="prop"><span>Herhalen</span><select id="dRepeat">${REPEAT.map(([v, l]) => `<option value="${v}" ${v === (t.repeat || '') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-        <label class="prop"><span>Prioriteit</span><select id="dPrio">${[1,2,3,4].map(n => `<option value="${n}" ${n === t.prio ? 'selected' : ''}>${PRIO[n]}</option>`).join('')}</select></label>
       </div>
       <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
       <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
         `<p class="muted small" style="margin:0">Nog geen eigen velden voor dit project. <button class="link" data-act="newfield">Veld toevoegen</button></p>`}</div>
+      <div class="d-sec"><span>Opmerkingen${commentsOf(t.id).length ? ` <b class="c-count">${commentsOf(t.id).length}</b>` : ''}</span></div>
+      <ul class="comments">${commentsOf(t.id).map(c => `
+        <li data-cid="${c.id}"><div class="c-meta"><span>${esc(stamp(c.at))}</span><button type="button" class="icon-btn c-del" data-act="delcomment" title="Opmerking verwijderen" aria-label="Opmerking verwijderen">${I.trash}</button></div>
+        <div class="c-text">${esc(c.text)}</div></li>`).join('')}</ul>
+      <div class="c-new">
+        <textarea id="dComment" rows="2" placeholder="Schrijf een opmerking…" aria-label="Nieuwe opmerking">${esc(commentDrafts[t.id] || '')}</textarea>
+        <button type="button" class="btn primary" data-act="addcomment">Plaatsen</button>
+      </div>
       <p class="muted small" style="margin-top:28px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
     </div>`;
   autosize($('#dTitle'));
+}
+const commentDrafts = {};
+function addComment(t) {
+  const ta = $('#dComment'), text = ta?.value.trim();
+  if (!text) { ta?.focus(); return; }
+  data.comments.push(touch({id:uid(), taskId:t.id, text, at:now()}));
+  delete commentDrafts[t.id];
+  save(); renderMain(); renderDetail(true);
+  const list = $('#detail .comments'); list?.lastElementChild?.scrollIntoView({block:'nearest'});
+  $('#dComment')?.focus();
+}
+function deleteComment(cid) {
+  const c = data.comments.find(x => x.id === cid); if (!c) return;
+  const copy = {...c};
+  data.comments = data.comments.filter(x => x.id !== cid); tombstone(cid);
+  save(); renderMain(); renderDetail(true);
+  toast('Opmerking verwijderd', () => { delete data.deleted[cid]; data.comments.push(touch(copy)); save(); renderMain(); renderDetail(true); });
 }
 function autosize(ta) { if (!ta) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 2 + 'px'; }
 function setCustom(t, fid, val) {
@@ -1573,6 +1591,7 @@ const detail = $('#detail');
 detail.addEventListener('input', e => {
   const t = taskById(selectedId); if (!t) return;
   const el = e.target;
+  if (el.id === 'dComment') { commentDrafts[t.id] = el.value; autosize(el); return; }
   if (el.id === 'dTitle') { t.title = el.value.replace(/\n/g, ' '); autosize(el); }
   else if (el.id === 'dNotes') t.notes = el.value;
   else if (el.dataset.field && ['text','url','number'].includes(el.type)) {
@@ -1593,8 +1612,6 @@ detail.addEventListener('change', e => {
   if (el.id === 'dProject') t.projectId = el.value;
   else if (el.id === 'dDue') { t.due = el.value || null; if (!t.due) t.time = null; }
   else if (el.id === 'dTime') { t.time = el.value || null; if (t.time && !t.due) t.due = today(); }
-  else if (el.id === 'dRepeat') { t.repeat = el.value; if (t.repeat && !t.due) t.due = today(); }
-  else if (el.id === 'dPrio') t.prio = +el.value;
   else if (el.dataset.field) {
     const f = fieldById(el.dataset.field);
     if (f.type === 'checkbox') setCustom(t, f.id, el.checked);
@@ -1604,6 +1621,7 @@ detail.addEventListener('change', e => {
   touch(t); save(); renderNav(); renderMain(); renderDetail(true);
 });
 detail.addEventListener('keydown', e => {
+  if (e.target.id === 'dComment' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); const t = taskById(selectedId); if (t) addComment(t); return; }
   if (e.target.id === 'dTitle' && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
 });
 detail.addEventListener('click', e => {
@@ -1619,6 +1637,8 @@ detail.addEventListener('click', e => {
   switch (b.dataset.act) {
     case 'close': closeDetail(); break;
     case 'delete': deleteTask(t.id); break;
+    case 'addcomment': addComment(t); break;
+    case 'delcomment': deleteComment(b.closest('[data-cid]').dataset.cid); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'archive': {
       const on = !t.archived;
@@ -2777,7 +2797,7 @@ function endDrag(drop) {
   const undo = undoFor(t);
   let res, changed = false;
   if (stage !== t.stage) { res = setStage(t, stage); changed = true; }
-  if (prefs().sort === 'manual' && !isDoneStage(stage) && res !== 'repeat') {
+  if (prefs().sort === 'manual' && !isDoneStage(stage)) {
     const order = prev && next ? (prev.order + next.order) / 2 : prev ? prev.order + 1 : next ? next.order - 1 : t.order;
     if (order !== t.order) { t.order = order; touch(t); changed = true; }
   }
