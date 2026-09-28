@@ -1,110 +1,140 @@
-/* Verzoekjes in de huisstijl van SB (Design Language v2.0).
-   Zacht, rustig, consequent: dezelfde afronding, dezelfde zachte schaduw, één accent per scherm.
-   Kleur: Studio Black, Graphite, Cord Green, Bone; Moss als accent op donker (enkel als vlak, nooit als lopende tekst op wit).
-   Type: Inter Black 800 voor titels (zinsopbouw, regelafstand 1,0, tracking −2,8%), Inter voor tekst,
-   Space Mono in hoofdletters (+9%) voor labels. Raster van 4 px: marges en gaps zijn veelvouden daarvan. */
+/* Verzoekjes in de stijl van sbmusic.be (SB Design Language v2.0).
+   Dezelfde tokens en bouwstenen als de site: Studio Black, Graphite, Cord Green, Bone, Moss;
+   Inter 800 voor koppen, Space Mono voor labels; radius 8/16/26; zachte schaduw; hairlines. */
 :root{
-  --studio:#0A0A0A; --graphite:#262626; --corduroy:#24312A; --signaal:#6FA283; --moss-deep:#356047; --krijt:#F2EFEA; --white:#FFFFFF;
-  --bg:var(--studio); --panel:var(--graphite); --text:var(--krijt);
-  --muted:rgba(242,239,234,.68); --faint:rgba(242,239,234,.42); --line:rgba(242,239,234,.08); --line-2:rgba(242,239,234,.16);
-  --hover:rgba(242,239,234,.06);
-  --accent:var(--signaal); --on-accent:var(--studio);
+  --bg:#0A0A0A;          /* Studio Black — hoofdkleur */
+  --bg-elevated:#262626; /* Graphite — vlakken en kaarten op donker */
+  --cord:#24312A;        /* Cord Green — secundair vlak */
+  --text:#F2EFEA;        /* Bone — warm wit */
+  --text-secondary:rgba(242,239,234,.6);
+  --text-faint:rgba(242,239,234,.38);
+  --hairline:rgba(242,239,234,.12);
+  --hairline-strong:rgba(242,239,234,.3);
+  --accent:#6FA283;      /* Moss — accent */
+  --accent-deep:#356047; /* Moss-deep */
+  --accent-text:#0A0A0A;
+  --white:#FFFFFF;       /* enkel voor het logo */
   --danger:#E08A7A;
-  /* radiusschaal: klein · midden · groot · rond */
-  --r-s:8px; --r-m:16px; --r-l:28px; --r-round:999px;
-  --shadow:0 16px 40px -16px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.25);
-  --shadow-s:0 6px 16px -8px rgba(0,0,0,.6);
-  --body:'Inter',system-ui,-apple-system,"Segoe UI",sans-serif; --mono:'Space Mono',ui-monospace,monospace;
+  --r-sm:8px; --r-md:16px; --r-lg:26px;
+  --shadow-card:0 24px 48px -30px rgba(0,0,0,.6);
+  --shadow-photo:0 30px 60px -24px rgba(0,0,0,.6);
+  --shadow-pop:0 30px 60px -20px rgba(0,0,0,.6);
+
+  /* aliassen voor de bestaande code */
+  --studio:var(--bg); --graphite:var(--bg-elevated); --corduroy:var(--cord); --krijt:var(--text); --signaal:var(--accent);
+  --muted:var(--text-secondary); --faint:var(--text-faint); --line:var(--hairline); --line-2:var(--hairline-strong);
+  --hover:rgba(242,239,234,.06);
   color-scheme:dark;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg)}
-html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:16px/1.6 var(--body);-webkit-font-smoothing:antialiased;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
 button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
+button{cursor:pointer;background:none;border:none}
 [hidden]{display:none!important}
-a{color:var(--text)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--signaal);outline-offset:3px;border-radius:var(--r-s)}
-.muted{color:var(--muted)} .small{font-size:13px} .grow{flex:1}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+.muted{color:var(--text-secondary)} .small{font-size:13px} .grow{flex:1}
+p{margin:0}
 
-/* ---------- typografie ---------- */
-h1,h2,.display{font-family:var(--body);font-weight:800;line-height:1;letter-spacing:-.028em;text-transform:none;font-style:normal}
-.mono,.idx{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em}
-.idx{display:block;font-size:12px;color:var(--faint)}
-.idx.accent{color:var(--signaal)}
-code{font-family:var(--mono);font-size:.9em;background:var(--graphite);padding:2px 6px;border-radius:var(--r-s)}
+/* ---------- typografie: Inter Black voor koppen (sentence case), Space Mono voor detail ---------- */
+h1,h2,.display{font-family:'Inter',sans-serif;font-weight:800;letter-spacing:-.028em;line-height:1.0}
+.idx{display:block;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:10px}
+.idx.plain{color:var(--text-secondary)}
+.mono{font-family:'Space Mono',monospace;font-size:12px;font-weight:400;text-transform:uppercase;letter-spacing:.09em;color:var(--text-secondary)}
+code{font-family:'Space Mono',monospace;font-size:.88em;background:var(--bg);border:1px solid var(--hairline);padding:1px 6px;border-radius:6px}
 
-/* ---------- logo (monogram als masker, één vlakke kleur, nooit schuintrekken) ---------- */
+/* ---------- logo (monogram, één vlakke kleur) ---------- */
 .logo{display:block;aspect-ratio:1000/429;background:var(--white);
   -webkit-mask:url("sb-logo.png") center/contain no-repeat;mask:url("sb-logo.png") center/contain no-repeat}
 
-/* ---------- formulieren ---------- */
-.err{color:var(--danger);font-size:14px;min-height:1.2em;margin:8px 0 0}
-input[type=text],input[type=email],input[type=password],input[type=search],select,textarea{
-  background:var(--graphite);border:1px solid transparent;border-radius:var(--r-m);padding:12px 16px;width:100%;outline:none;font-size:16px;color:var(--text);
-  transition:border-color .15s,box-shadow .15s}
-input::placeholder,textarea::placeholder{color:var(--faint)}
-textarea{resize:vertical;min-height:88px}
-input:focus,select:focus,textarea:focus{border-color:var(--signaal);box-shadow:0 0 0 4px rgba(111,162,131,.18)}
-label{display:block;font:700 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:20px 0 8px}
-label .opt{font-weight:400;color:var(--faint)}
+/* ---------- topbar ---------- */
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 22px;height:64px;background:var(--bg);border-bottom:1px solid var(--hairline)}
+.topbar .logo{width:32px}
+.topbar .tag,.topbar .btn{padding:8px 18px;font-size:13px}
 
-/* ---------- knoppen ---------- */
-.btn{border:0;border-radius:var(--r-m);background:var(--graphite);padding:12px 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  font:500 15px/1.2 var(--body);text-decoration:none;color:var(--text);white-space:nowrap;transition:background .15s,transform .1s}
-.btn:hover{background:#303030}
-.btn:active{transform:scale(.98)}
-.btn.primary{background:var(--krijt);color:var(--studio);font-weight:600}
-.btn.primary:hover{background:var(--white)}
-.btn.accent{background:var(--signaal);color:var(--studio);font-weight:600}
-.btn.accent:hover{background:#7DB292}
-.btn.ghost{background:none;box-shadow:inset 0 0 0 1px var(--line-2)}
-.btn.ghost:hover{background:var(--hover)}
-.btn.ok{color:var(--signaal)} .btn.danger{color:var(--danger)}
-.btn.sm{padding:8px 12px;font-size:14px;border-radius:var(--r-s)}
-.btn:disabled{opacity:.45;cursor:default}
-.btn svg{width:16px;height:16px;flex:none}
-.link{background:none;border:0;padding:0;color:var(--signaal);font:500 15px/1.4 var(--body)}
-.link:hover{color:var(--krijt)}
-.icon-btn{background:none;border:0;width:40px;height:40px;display:inline-grid;place-items:center;color:var(--muted);flex:none;border-radius:var(--r-round)}
-.icon-btn:hover{background:var(--hover);color:var(--text)}
+/* ---------- knoppen (zoals .tag op sbmusic.be) ---------- */
+.btn,.tag{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 22px;border-radius:var(--r-md);font-size:15px;font-weight:500;letter-spacing:-.011em;white-space:nowrap;
+  background:var(--bg-elevated);border:1px solid var(--hairline);color:var(--text);text-decoration:none;transition:background .2s ease,border-color .2s ease,transform .15s ease}
+.btn:hover,.tag:hover{border-color:var(--hairline-strong)}
+.btn:active,.tag:active{transform:scale(.97)}
+.btn.primary,.tag.signaal{background:var(--accent);color:var(--accent-text);border-color:transparent;font-weight:700}
+.btn.primary:hover,.tag.signaal:hover{background:var(--accent-deep);color:var(--text)}
+.btn.krijt,.tag.krijt{background:var(--text);color:var(--bg);border-color:transparent}
+.btn.krijt:hover,.tag.krijt:hover{background:var(--white)}
+.btn.ghost{background:none}
+.btn.ok{color:var(--accent)} .btn.danger{color:var(--danger)}
+.btn.sm{padding:8px 14px;font-size:13px;border-radius:var(--r-sm)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn svg{width:15px;height:15px;flex:none}
+.link{color:var(--accent);font-size:15px;font-weight:500}
+.link:hover{color:var(--text)}
+.icon-btn{width:36px;height:36px;display:inline-grid;place-items:center;color:var(--text-secondary);flex:none;border-radius:50%;border:1px solid transparent;transition:color .2s,border-color .2s}
+.icon-btn:hover{color:var(--text);border-color:var(--hairline)}
 .icon-btn svg{width:18px;height:18px}
 
-/* ---------- vlakken ---------- */
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow)}
-.art{width:52px;height:52px;background:var(--graphite) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--faint);border-radius:var(--r-s)}
-.art svg{width:20px;height:20px}
-
-/* chips: rond, neutraal; het accent markeert wat nu telt */
-.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r-round);background:var(--graphite);
-  font:700 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;color:var(--muted)}
-.pill.new{color:var(--krijt)}
-.pill.played,.pill.live{background:var(--signaal);color:var(--studio)}
-.pill.rejected{background:none;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--faint)}
-.dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+/* ---------- chips ---------- */
+.pill,.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:500;white-space:nowrap;
+  color:var(--text-secondary);background:var(--bg-elevated);border:1px solid var(--hairline)}
+.pill.new{color:var(--text)}
+.pill.played,.pill.live{background:var(--accent);color:var(--accent-text);border-color:transparent;font-weight:700}
+.pill.rejected{background:none;color:var(--text-faint)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
 .live .dot{animation:pulse 1.4s infinite}
 @keyframes pulse{50%{opacity:.25}}
 
-#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,24px);opacity:0;background:var(--krijt);color:var(--studio);
-  padding:12px 20px;border-radius:var(--r-round);font:500 14.5px/1.4 var(--body);box-shadow:var(--shadow);transition:.25s;pointer-events:none;z-index:99;max-width:calc(100% - 32px);text-align:center}
-#toast.on{opacity:1;transform:translate(-50%,0)}
-.setup{max-width:560px;margin:10vh auto;padding:32px 28px}
-.setup h1{margin:0 0 12px;font-size:28px}
-.spinner{width:28px;height:28px;margin:48px auto;border:3px solid var(--graphite);border-top-color:var(--signaal);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-dialog{border:0;padding:0;background:transparent;color:var(--text);max-width:calc(100% - 32px);width:480px;max-height:calc(100vh - 32px);overflow:auto;border-radius:var(--r-l)}
-dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
-dialog .card{padding:28px 24px}
-dialog h2{margin:0 0 8px;font-size:24px}
-.row{display:flex;gap:8px;align-items:center}
-.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap;align-items:center}
+/* ---------- vlakken ---------- */
+.card{background:var(--bg-elevated);border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-card)}
+.art{width:48px;height:48px;background:var(--bg-elevated) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--text-faint);border-radius:var(--r-sm);border:1px solid var(--hairline)}
+.card .art{background-color:var(--bg)}
+.art svg{width:20px;height:20px}
 
-/* binnen een kaart: velden en knoppen een tint lichter, zodat ze zichtbaar blijven */
-.card input[type=text],.card input[type=email],.card input[type=password],.card input[type=search],.card select,.card textarea{background:var(--studio)}
-.card .btn:not(.primary):not(.accent):not(.ghost){background:var(--studio)}
-.card .btn:not(.primary):not(.accent):not(.ghost):hover{background:#1a1a1a}
-.card .art,.card .pill:not(.played):not(.live):not(.rejected){background-color:#333}
-label.btn{text-transform:none;letter-spacing:0;margin:0}
-.req .btn:not(.primary):not(.accent){background:var(--studio)}
-.req .btn:not(.primary):not(.accent):hover{background:#1a1a1a}
+/* ---------- formulieren (zoals het boekingsformulier) ---------- */
+label{display:block;font-size:13px;font-weight:600;color:var(--text-secondary);margin:16px 0 6px}
+label .opt{font-weight:400;color:var(--text-faint)}
+input[type=text],input[type=email],input[type=password],input[type=search],select,textarea{
+  width:100%;font-size:16px;color:var(--text);background:var(--bg);border:1px solid var(--hairline);border-radius:var(--r-sm);padding:12px 14px;color-scheme:dark;outline:none;transition:border-color .2s ease}
+input::placeholder,textarea::placeholder{color:rgba(242,239,234,.3)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(111,162,131,.25)}
+textarea{resize:vertical;min-height:90px}
+.err{color:var(--danger);font-size:14px;min-height:1.2em;margin-top:8px}
+label.btn{margin:0;font-size:13px;color:var(--text);font-weight:500}
+.chk{display:flex;gap:10px;align-items:center;font-size:15px;font-weight:400;color:var(--text);margin-top:14px}
+.chk input{width:18px;height:18px;margin:0;accent-color:var(--accent)}
+
+/* ---------- rijen (zoals de socials) ---------- */
+.rows{list-style:none}
+.rows > li,.rows > .row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--hairline)}
+.rows > li:last-child{border-bottom:1px solid var(--hairline)}
+
+/* ---------- voet ---------- */
+.foot{padding:32px 0 40px;margin-top:64px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid var(--hairline)}
+.foot .copy{font-size:12px}
+.foot a{font-size:12px;color:var(--text-secondary);text-decoration:underline;text-underline-offset:2px}
+.foot a:hover{color:var(--text)}
+
+/* ---------- meldingen, laden, dialogen ---------- */
+#toast{position:fixed;left:16px;right:16px;bottom:16px;margin:0 auto;max-width:480px;transform:translateY(140%);background:var(--bg-elevated);color:var(--text);border:1px solid var(--hairline);
+  padding:14px 20px;border-radius:var(--r-lg);font-size:14px;line-height:1.5;box-shadow:0 24px 48px -20px rgba(0,0,0,.7);transition:transform .4s ease;z-index:250;text-align:center;pointer-events:none}
+#toast.on{transform:translateY(0)}
+.setup{max-width:560px;margin:10vh auto;padding:32px 28px}
+.setup h1{margin:0 0 12px;font-size:26px}
+.spinner{width:28px;height:28px;margin:48px auto;border:3px solid var(--bg-elevated);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+dialog{border:0;padding:0;background:transparent;color:var(--text);width:100%;max-width:440px;max-height:calc(100svh - 32px);overflow:visible;margin:auto}
+dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+dialog .card{padding:32px 28px 28px;box-shadow:var(--shadow-pop);max-height:calc(100svh - 32px);overflow-y:auto}
+dialog h2{font-size:26px;margin-bottom:10px}
+dialog[open] .card{animation:pop .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.row{display:flex;gap:8px;align-items:center}
+.actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap;align-items:center}
+
+@media (prefers-reduced-motion: reduce){
+  .btn,.tag,#toast,.icon-btn{transition:none}
+  dialog[open] .card,.live .dot,.spinner{animation:none}
+}
+@media (prefers-reduced-transparency: reduce){
+  dialog::backdrop{background:rgba(0,0,0,.86);backdrop-filter:none;-webkit-backdrop-filter:none}
+}

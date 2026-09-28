@@ -13,89 +13,88 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.wrap{max-width:600px;margin:0 auto;padding:0 20px max(48px,env(safe-area-inset-bottom))}
-.top{display:flex;align-items:center;justify-content:space-between;padding:max(24px,env(safe-area-inset-top)) 0 24px}
-.top .logo{width:80px}
+.wrap{max-width:684px;margin:0 auto;padding:0 22px max(40px,env(safe-area-inset-bottom))}
 
-/* Fotokader: grote radius en zachte schaduw, nooit hard afgesneden. Zonder foto: Cord Green. */
-.hero{position:relative;min-height:220px;background:var(--corduroy);border-radius:var(--r-l);overflow:hidden;box-shadow:var(--shadow);display:flex;align-items:flex-end}
-.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%}
-.hero.has-photo{aspect-ratio:4/5;max-height:520px}
-.hero.has-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0) 40%,rgba(10,10,10,.85) 100%)}
-.hero-copy{position:relative;z-index:1;padding:28px 24px}
-.hero h1{margin:12px 0 0;font-size:clamp(32px,9vw,44px);overflow-wrap:anywhere}
-.lede{margin:24px 0 0;color:var(--muted);font-size:17px;max-width:42ch;white-space:pre-line}
+/* hero: poster-stijl zoals sbmusic.be — titel op de foto */
+.hero-scene{padding:16px 0 0}
+.hero-photo{position:relative;aspect-ratio:4/5;border-radius:var(--r-lg);overflow:hidden;background:var(--cord);box-shadow:var(--shadow-photo)}
+.hero-photo.nophoto{aspect-ratio:auto;min-height:260px}
+.hero-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.hero-scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,10,.88) 0%,rgba(10,10,10,.5) 30%,transparent 58%);pointer-events:none;z-index:1}
+.hero-photo.nophoto .hero-scrim{display:none}
+.hero-cta{position:absolute;top:18px;right:18px;z-index:2;padding:10px 18px;font-size:13px}
+.hero-copy{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:24px 24px 28px}
+.hero-copy .idx{margin-bottom:12px}
+.hero-copy h1{font-size:clamp(26px,6.4vw,40px);overflow-wrap:anywhere}
+.lede{margin-top:32px;font-size:17px;line-height:1.5;color:var(--text-secondary);white-space:pre-line}
 
-.now{display:flex;gap:16px;align-items:center;padding:16px;margin:24px 0 0}
-.now .t{font-weight:600;margin-top:8px}
-.section{margin-top:48px}
-.section h2{margin:8px 0 20px;font-size:clamp(28px,7.6vw,36px)}
+.now{display:flex;gap:14px;align-items:center;padding:18px 20px;margin-top:24px}
+.now .t{font-weight:600;margin-top:6px}
+.section{padding-top:64px;scroll-margin-top:24px}
+#form,#done{scroll-margin-top:16px}
+.section h2{font-size:clamp(26px,5vw,38px);margin-bottom:16px}
+.section .note{font-size:17px;color:var(--text-secondary);margin-bottom:24px;max-width:44ch}
 .search{position:relative}
-.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--faint);pointer-events:none}
-.search input{padding:16px 16px 16px 48px;font-size:17px}
-#results{list-style:none;margin:8px 0 0;padding:0}
-.song{display:flex;gap:16px;align-items:center;padding:8px;border-radius:var(--r-m);cursor:pointer;border:0;background:none;width:100%;text-align:left;color:var(--text)}
-.song:hover,.song:focus-visible{background:var(--graphite);outline:none}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-secondary);pointer-events:none}
+.search input{padding-left:42px}
+#results{list-style:none;margin-top:16px}
+#results li{border-top:1px solid var(--hairline)}
+#results li:last-child{border-bottom:1px solid var(--hairline)}
+.song{display:flex;gap:14px;align-items:center;padding:12px 0;width:100%;text-align:left;color:var(--text)}
 .song .meta{min-width:0;flex:1}
 .song .t,.song .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .song .t{font-weight:600}
-.song .a{color:var(--muted);font-size:14px}
-.song .plus{color:var(--faint);flex:none}
-.song:hover .plus{color:var(--krijt)}
-.hint{text-align:center;color:var(--muted);font-size:15px;padding:24px 8px;line-height:2}
-#form .picked{display:flex;gap:16px;align-items:center}
+.song .a{color:var(--text-secondary);font-size:13px}
+.song .plus{color:var(--text-secondary);flex:none;transition:color .2s,transform .2s}
+.song:hover .plus,.song:focus-visible .plus{color:var(--accent);transform:translateX(3px)}
+.hint{text-align:center;color:var(--text-secondary);font-size:15px;padding:24px 8px;line-height:2}
+.formcard{padding:32px 28px 28px}
+#form .picked{display:flex;gap:14px;align-items:center;padding-bottom:8px}
 #form .picked .t{font-weight:600;font-size:17px}
-#form .submit{width:100%;margin-top:28px;padding:16px}
-.closed{padding:32px 24px}
-.closed h2{margin:0 0 12px;font-size:28px}
-.done-card{padding:32px 24px}
-.done-card h2{margin:8px 0 12px;font-size:36px}
-.done-card p{margin:0 0 24px;color:var(--muted)}
-.queue ul{list-style:none;margin:16px 0 0;padding:0}
-.queue li{display:flex;gap:16px;align-items:center;padding:8px;border-radius:var(--r-m)}
-.queue li:nth-child(odd){background:rgba(38,38,38,.45)}
-.queue .art{width:48px;height:48px}
-.queue .meta{flex:1;min-width:0}
-.queue .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .a{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .rank{font:700 12px/1 var(--mono);color:var(--faint);width:24px;flex:none;text-align:center}
-.vote{border:0;border-radius:var(--r-round);background:var(--graphite);display:inline-flex;align-items:center;gap:8px;padding:8px 14px;min-width:68px;justify-content:center;
-  font:700 13px/1 var(--mono);color:var(--text);flex:none;transition:background .15s,transform .1s}
-.vote:hover{background:#333}
-.vote:active{transform:scale(.96)}
-.vote svg{width:12px;height:12px}
-.vote.on{background:var(--signaal);color:var(--studio)}
-.vote:disabled{cursor:default}
-.vote.own{background:none;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--faint)}
-.queue .more{margin-top:16px}
-.mine{margin-top:48px}
-.mine ul{list-style:none;margin:16px 0 0;padding:0}
-.mine li{display:flex;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-.mine .art{width:44px;height:44px}
-.mine .meta{flex:1;min-width:0}
-.mine .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mine .a{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-footer{display:flex;align-items:center;justify-content:space-between;margin-top:64px;padding-top:24px;border-top:1px solid var(--line)}
-footer .logo{width:40px;background:var(--faint)}
-footer a.idx{text-decoration:none}
-footer a.idx:hover{color:var(--krijt)}
+#form .submit{margin-top:24px;padding:14px 26px}
+.closed{padding:32px 28px;margin-top:64px}
+.closed h2{font-size:26px;margin-bottom:10px}
+.done-card{padding:32px 28px}
+.done-card h2{font-size:clamp(26px,5vw,38px);margin-bottom:12px}
+.done-card p{color:var(--text-secondary);margin-bottom:24px}
+
+.queue ul,.mine ul{list-style:none}
+.queue li,.mine li{display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--hairline)}
+.queue li:last-child,.mine li:last-child{border-bottom:1px solid var(--hairline)}
+.queue .meta,.mine .meta{flex:1;min-width:0}
+.queue .t,.mine .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue .a,.mine .a{font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue .rank{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-secondary);width:22px;flex:none}
+.vote{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:64px;padding:8px 14px;border-radius:var(--r-sm);font-size:14px;font-weight:600;
+  background:var(--bg-elevated);border:1px solid var(--hairline);color:var(--text);flex:none;transition:background .2s,border-color .2s,transform .15s}
+.vote:hover{border-color:var(--hairline-strong)}
+.vote:active{transform:scale(.97)}
+.vote svg{width:11px;height:11px}
+.vote.on{background:var(--accent);color:var(--accent-text);border-color:transparent;font-weight:700}
+.vote:disabled{cursor:default;transform:none}
+.vote.own{background:none;color:var(--text-faint)}
+.queue .more{margin-top:20px}
+.mine{padding-top:64px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <a class="logo" href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"></a>
-    <span class="pill">Verzoekjes</span>
-  </header>
+<header class="topbar">
+  <a href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"><span class="logo" role="img" aria-label="SB"></span></a>
+  <span class="chip">Verzoekjes</span>
+</header>
 
-  <section class="hero" id="hero">
-    <img id="evPhoto" alt="" hidden>
-    <div class="hero-copy">
-      <span class="idx accent">Muziek op aanvraag</span>
-      <h1 id="evName">Verzoekjes</h1>
+<div class="wrap">
+  <section class="hero-scene">
+    <div class="hero-photo nophoto" id="hero">
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <img id="evPhoto" alt="" hidden>
+      <div class="hero-copy">
+        <span class="idx">Muziek op aanvraag</span>
+        <h1 class="display" id="evName">Verzoekjes</h1>
+      </div>
     </div>
+    <p class="lede" id="evWelcome" hidden></p>
   </section>
-  <p class="lede" id="evWelcome" hidden></p>
 
   <div id="loading" class="spinner" aria-label="Laden"></div>
 
@@ -113,14 +112,14 @@ footer a.idx:hover{color:var(--krijt)}
     </div>
   </div>
 
-  <div id="closed" class="card closed section" hidden>
+  <div id="closed" class="card closed" hidden>
     <h2>Verzoekjes zijn dicht.</h2>
-    <p class="muted" id="closedMsg" style="margin:0;white-space:pre-line"></p>
+    <p class="muted" id="closedMsg" style="white-space:pre-line"></p>
   </div>
 
-  <main id="open" class="section" hidden>
-    <div id="searchBox">
-      <span class="idx">01 — Zoek je nummer</span>
+  <main id="open" hidden>
+    <section class="section" id="searchBox">
+      <span class="idx">01 — Zoek</span>
       <h2>Wat wil jij horen?</h2>
       <div class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -128,17 +127,17 @@ footer a.idx:hover{color:var(--krijt)}
       </div>
       <ul id="results"></ul>
       <div id="searchHint" class="hint">Typ een titel of artiest.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in.</button></div>
-    </div>
+    </section>
 
-    <form id="form" hidden autocomplete="on">
-      <span class="idx">02 — Verstuur naar de DJ</span>
+    <form id="form" class="section" hidden autocomplete="on">
+      <span class="idx">02 — Verstuur</span>
       <h2>Jouw nummer.</h2>
-      <div class="card" style="padding:24px">
+      <div class="card formcard">
         <div class="picked">
           <div class="art" id="fArt"></div>
           <div class="grow" style="min-width:0">
             <div class="t" id="fTitle"></div>
-            <div class="muted" id="fArtist"></div>
+            <div class="muted small" id="fArtist"></div>
           </div>
           <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </div>
@@ -148,10 +147,10 @@ footer a.idx:hover{color:var(--krijt)}
           <label for="mArtist">Artiest</label>
           <input id="mArtist" type="text" maxlength="200">
         </div>
-        <label for="fName">Je naam <span class="opt">— optioneel</span></label>
+        <label for="fName">Je naam <span class="opt">(optioneel)</span></label>
         <input id="fName" type="text" maxlength="60" autocomplete="given-name">
         <div id="msgField">
-          <label for="fMsg">Boodschap voor de DJ <span class="opt">— optioneel</span></label>
+          <label for="fMsg">Boodschap voor de DJ <span class="opt">(optioneel)</span></label>
           <textarea id="fMsg" maxlength="300" placeholder="Bv. voor de jarige Sarah"></textarea>
         </div>
         <button class="btn primary submit" id="fSubmit" type="submit">Verstuur naar de DJ</button>
@@ -159,21 +158,23 @@ footer a.idx:hover{color:var(--krijt)}
       </div>
     </form>
 
-    <div id="done" class="card done-card" hidden>
-      <span class="idx accent">Verstuurd</span>
-      <h2>Ontvangen.</h2>
-      <p>De DJ ziet je nummer nu. Hou deze pagina open om te zien wanneer het speelt.</p>
-      <button class="btn" id="again" type="button">Nog een nummer</button>
+    <div id="done" class="section" hidden>
+      <div class="card done-card">
+        <span class="idx">Verstuurd</span>
+        <h2>Ontvangen.</h2>
+        <p>De DJ ziet je nummer nu. Hou deze pagina open om te zien wanneer het speelt.</p>
+        <button class="btn" id="again" type="button">Nog een nummer</button>
+      </div>
     </div>
   </main>
 
   <section class="queue section" id="queue" hidden>
     <span class="idx">03 — Stem mee</span>
     <h2>De wachtrij.</h2>
-    <p class="muted" style="margin:0">Wil jij een nummer ook horen? Geef het een stem.</p>
+    <p class="note">Wil jij een nummer ook horen? Geef het een stem.</p>
     <ul id="queueList"></ul>
     <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
-    <button class="btn ghost more" id="queueMore" type="button" hidden>Toon alles</button>
+    <button class="btn more" id="queueMore" type="button" hidden>Toon alles</button>
   </section>
 
   <section class="mine" id="mine" hidden>
@@ -181,9 +182,9 @@ footer a.idx:hover{color:var(--krijt)}
     <ul id="mineList"></ul>
   </section>
 
-  <footer>
-    <span class="logo" role="img" aria-label="SB"></span>
-    <a class="idx" href="https://sbmusic.be/">sbmusic.be</a>
+  <footer class="foot">
+    <div class="copy mono">© 2026 SB — Allround DJ</div>
+    <a class="mono" href="https://sbmusic.be/">sbmusic.be</a>
   </footer>
 </div>
 
@@ -278,10 +279,10 @@ function showPhoto(photo) {
   const key = photo ? (photo.ids || []).join('.') + '@' + photo.v : '';
   if (key === photoShown) return;
   photoShown = key;
-  if (!key) { $('#evPhoto').hidden = true; $('#hero').classList.remove('has-photo'); return; }
+  if (!key) { $('#evPhoto').hidden = true; $('#hero').classList.add('nophoto'); return; }
   loadPhoto(photo).then(url => {
     if (photoShown !== key) return;
-    $('#evPhoto').hidden = !url; $('#hero').classList.toggle('has-photo', !!url);
+    $('#evPhoto').hidden = !url; $('#hero').classList.toggle('nophoto', !url);
     if (url) { $('#evPhoto').src = url; $('#evPhoto').alt = settings?.name || ''; }
   }).catch(e => console.warn(e));
 }
