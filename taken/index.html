@@ -733,6 +733,122 @@ table.sales tfoot td{background:var(--group)}
   :root{--hairline:rgba(0,0,0,.25);--line:rgba(0,0,0,.35)}
   .card,.col,.sales-stat,.table-wrap{outline:1px solid var(--line)}
 }
+
+/* =====================================================================
+   Liquid Glass (iOS 26/27): een zwevende, glazen bedieningslaag boven
+   de inhoud. Inhoud (kaarten, tabellen) blijft stevig en leesbaar.
+   ===================================================================== */
+:root{
+  --glass:linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,255,255,.34));
+  --glass-strong:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6));
+  --glass-edge:rgba(255,255,255,.7);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(255,255,255,.25),0 0 0 .5px rgba(0,0,0,.06),0 10px 30px rgba(0,0,0,.10);
+  --glass-blur:blur(22px) saturate(190%) brightness(1.04);
+  --wallpaper:radial-gradient(1100px 700px at 8% -10%,rgba(255,138,61,.16),transparent 60%),radial-gradient(900px 700px at 105% 10%,rgba(0,113,227,.12),transparent 60%),radial-gradient(900px 700px at 50% 120%,rgba(229,48,79,.12),transparent 60%);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --glass:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.05));
+    --glass-strong:linear-gradient(135deg,rgba(44,44,48,.78),rgba(28,28,32,.66));
+    --glass-edge:rgba(255,255,255,.16);
+    --glass-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(255,255,255,.04),0 0 0 .5px rgba(255,255,255,.06),0 12px 34px rgba(0,0,0,.5);
+    --glass-blur:blur(24px) saturate(180%) brightness(.9);
+    --wallpaper:radial-gradient(1100px 700px at 8% -10%,rgba(255,138,61,.14),transparent 60%),radial-gradient(900px 700px at 105% 10%,rgba(41,151,255,.12),transparent 60%),radial-gradient(900px 700px at 50% 120%,rgba(229,48,79,.12),transparent 60%);
+  }
+}
+/* achtergrond met wat kleur, zodat het glas iets heeft om te breken */
+body{background:var(--wallpaper),var(--bg);background-attachment:fixed}
+#app{background:transparent}
+
+/* gedeeld glasmateriaal */
+#side,.toolbar-glass,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn:not(.primary):not(.danger),.g-pill{
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+
+/* ---- Zijbalk: zwevend glazen paneel ---- */
+@media (min-width:861px){
+  #side{margin:10px 0 10px 10px;height:calc(100% - 20px);border-radius:26px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+  #app{grid-template-columns:280px 1fr}
+  #app.with-detail{grid-template-columns:280px minmax(0,1fr) var(--detail-w,400px)}
+  #app.board-mode.with-detail{grid-template-columns:280px 1fr}
+}
+.nav-item{border-radius:14px}
+.nav-item.on{background:rgba(255,255,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 1px 3px rgba(0,0,0,.08)}
+@media (prefers-color-scheme:dark){.nav-item.on{background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}}
+.side-foot{border-top-color:transparent}
+
+/* ---- Titelbalk: glas pas zichtbaar als inhoud eronder schuift ---- */
+.main-head{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+.main-head.scrolled{background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:0 1px 0 var(--hairline)}
+
+/* ---- Bediening: capsules van glas ---- */
+.btn{border-radius:999px}
+.btn:not(.primary):not(.danger){background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+.btn:not(.primary):not(.danger):hover{background:var(--glass-strong)}
+.btn.primary{border-radius:999px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 88%,#fff),var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn.danger{border-radius:999px}
+.icon-btn{border-radius:999px}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=search],select{border-radius:14px}
+.seg{border-radius:999px;padding:3px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+.seg button{border-radius:999px;padding:6px 16px}
+.seg button.on{background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,0,0,.14)}
+@media (prefers-color-scheme:dark){.seg button.on{background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 8px rgba(0,0,0,.4)}}
+.toolbar select,.toolbar input{border-radius:999px;padding-left:14px}
+#quickAdd input{border-radius:999px;padding-left:18px}
+#quickAdd .btn{border-radius:999px}
+.chip{border-radius:999px}
+#banner{border-radius:22px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+
+/* ---- Bord: inhoud blijft stevig, iets rondere vormen (concentrisch) ---- */
+.col{border-radius:24px;background:color-mix(in srgb,var(--col) 100%,rgba(255,255,255,.25))}
+.card{border-radius:18px}
+.card-ph,.ghost{border-radius:18px}
+.table-wrap,.sales-stat,.pace{border-radius:20px}
+
+/* ---- Detailpaneel: zwevend glazen blad ---- */
+#detail{background:var(--glass-strong);border-left:0}
+@media (min-width:861px){
+  #detail{margin:10px 10px 10px 0;height:calc(100% - 20px);border-radius:26px;border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+  #app.board-mode #detail{margin:0;height:auto;border-radius:28px}
+}
+.d-head{background:transparent;border-bottom:1px solid var(--hairline)}
+#app.board-mode .d-head,#detail .d-head{border-radius:26px 26px 0 0}
+.props,#dNotes,ul.comments li{background:rgba(255,255,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+@media (prefers-color-scheme:dark){.props,#dNotes,ul.comments li{background:rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}}
+.props{border-radius:20px}
+
+/* ---- Vensters, meldingen, inloggen ---- */
+dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow),0 30px 80px rgba(0,0,0,.2);border-radius:30px}
+#toast{border-radius:999px;padding:12px 20px;background:rgba(30,30,32,.62);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 14px 34px rgba(0,0,0,.28)}
+.lock-card{background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow),0 30px 80px rgba(0,0,0,.14);border-radius:34px}
+
+/* ---- Mobiel: zwevende glazen capsules ---- */
+@media (max-width:860px){
+  #side{margin:0;border-radius:0 28px 28px 0;background:var(--glass-strong);border:1px solid var(--glass-edge);border-left:0;box-shadow:var(--glass-shadow)}
+  #detail{background:var(--panel)}
+  #detail .d-head{border-radius:0;background:var(--glass-strong);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+  #quickAdd{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+  #quickAdd input{background:transparent}
+  #quickAdd input:focus{background:transparent;box-shadow:none;border-color:transparent}
+  .main-inner{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+  body:has(#quickAdd:not([hidden])) #toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .col-tabs button{border-radius:999px;background:var(--glass);border:1px solid var(--glass-edge)}
+  .col-tabs button.on{background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,0,0,.14)}
+  .toolbar.open .tb-more{background:var(--glass);border:1px solid var(--glass-edge);border-radius:24px;box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+  dialog{border-radius:30px 30px 0 0;border-bottom:0}
+}
+@media (max-width:860px) and (prefers-color-scheme:dark){
+  .col-tabs button.on{background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+}
+
+/* ---- Toegankelijkheid: effen in plaats van glas ---- */
+@media (prefers-reduced-transparency:reduce){
+  body{background:var(--bg)}
+  #side,#detail,dialog,.lock-card,.seg,.btn:not(.primary):not(.danger),#banner,#quickAdd,.col-tabs button,.toolbar.open .tb-more{background:var(--panel)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  #toast{background:#1d1d1f!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media (prefers-contrast:more){
+  #side,#detail,dialog,.btn,.seg,#quickAdd{border-color:var(--line)!important}
+}
 </style>
 </head>
 <body>
