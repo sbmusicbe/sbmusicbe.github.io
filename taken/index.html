@@ -432,6 +432,17 @@ ul.comments li{background:var(--side);border:1px solid var(--line);border-radius
 .c-new{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
 .c-new textarea{flex:1;resize:vertical;min-height:44px}
 .c-new .btn{flex:none}
+/* ---------- Velden op de kaart: onder elkaar ---------- */
+.t-fields{display:grid;gap:3px;margin-top:7px;font-size:13px;line-height:1.35}
+.t-field{display:flex;flex-wrap:wrap;column-gap:6px;row-gap:0;align-items:baseline;min-width:0}
+.tf-l{color:var(--muted);flex:0 1 auto;max-width:62%}
+.tf-l::after{content:':'}
+.tf-v{min-width:0;flex:0 1 auto;overflow-wrap:break-word;word-break:break-word}
+.tf-v svg{width:12px;height:12px;vertical-align:-1px}
+.tf-v .chip{padding:2px 8px;font-size:12px}
+.tf-v a{color:var(--p3);text-decoration:none}
+.tf-v a:hover{text-decoration:underline}
+.task.done .t-fields,.done-col .t-fields{opacity:.75}
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#292524;color:#fafaf9;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;z-index:50;max-width:calc(100vw - 32px)}
 #toast button{background:none;border:0;color:#fca5a5;font-weight:650;padding:0}
 #scrim{display:none}
@@ -1032,19 +1043,22 @@ function displayValue(f, v) {
     default: return String(v);
   }
 }
-function fieldChips(t) {
+// Ingevulde velden op de kaart: elk veld op een eigen regel ("Label: waarde").
+function fieldLines(t) {
   const out = [];
+  const line = (f, html) => out.push(`<div class="t-field"><span class="tf-l">${esc(f.name)}</span><span class="tf-v">${html}</span></div>`);
+  const pill = o => `<span class="chip opt" style="--c:${o.color}">${esc(o.label)}</span>`;
   for (const f of fieldsFor(t.projectId)) {
     if (!f.showInList) continue;
     const v = t.custom[f.id];
     if (isEmpty(v)) continue;
-    if (f.type === 'select') { const o = optOf(f, v); if (o) out.push(`<span class="chip opt" style="--c:${o.color}" title="${esc(f.name)}">${esc(o.label)}</span>`); }
-    else if (f.type === 'multiselect') { for (const id of (Array.isArray(v) ? v : [])) { const o = optOf(f, id); if (o) out.push(`<span class="chip opt" style="--c:${o.color}" title="${esc(f.name)}">${esc(o.label)}</span>`); } }
-    else if (f.type === 'checkbox') out.push(`<span class="chip">${I.check} ${esc(f.name)}</span>`);
-    else if (f.type === 'url') { const href = safeUrl(v); if (href) out.push(`<a class="chip" href="${esc(href)}" target="_blank" rel="noopener" data-act="link">${I.link} ${esc(f.name)}</a>`); }
-    else out.push(`<span class="chip"><span class="muted">${esc(f.name)}:</span> ${esc(displayValue(f, v))}</span>`);
+    if (f.type === 'select') { const o = optOf(f, v); if (o) line(f, pill(o)); }
+    else if (f.type === 'multiselect') { const os = (Array.isArray(v) ? v : []).map(id => optOf(f, id)).filter(Boolean); if (os.length) line(f, os.map(pill).join(' ')); }
+    else if (f.type === 'checkbox') line(f, `${I.check} Ja`);
+    else if (f.type === 'url') { const href = safeUrl(v); if (href) line(f, `<a href="${esc(href)}" target="_blank" rel="noopener" data-act="link">${esc(String(v).replace(/^https?:\/\//, ''))}</a>`); }
+    else line(f, esc(displayValue(f, v)));
   }
-  return out.join('');
+  return out.length ? `<div class="t-fields">${out.join('')}</div>` : '';
 }
 function safeUrl(v) {
   let s = String(v).trim(); if (!s) return '';
@@ -1189,8 +1203,7 @@ function taskMeta(t) {
   if (t.notes) meta.push(`<span class="chip" title="Heeft notities">${I.note}</span>`);
   const nc = commentCount(t.id);
   if (nc) meta.push(`<span class="chip" title="${nc} opmerking${nc === 1 ? '' : 'en'}">${I.comment} ${nc}</span>`);
-  const chips = meta.join('') + fieldChips(t);
-  return chips ? `<div class="t-meta">${chips}</div>` : '';
+  return (meta.length ? `<div class="t-meta">${meta.join('')}</div>` : '') + fieldLines(t);
 }
 function taskRow(t) {
   const st = stageById(t.stage);
@@ -1656,6 +1669,21 @@ addEventListener('resize', () => { if (detailWidth() > detailMax()) setDetailWid
       e.preventDefault();
       setDetailWidth(detailWidth() + (e.key === 'ArrowLeft' ? 40 : -40), true);
     }
+  });
+}
+/* ---- Klik buiten het detailpaneel = sluiten ----
+   Alleen als de klik ook buiten het paneel begon (tekst selecteren en erbuiten
+   loslaten sluit dus niet). Kaarten openen zichzelf, vensters en slepen tellen niet. */
+{
+  let downOutside = false;
+  document.addEventListener('pointerdown', e => {
+    downOutside = !e.target.closest('#detail');
+  }, true);
+  document.addEventListener('click', e => {
+    if (!selectedId || !downOutside || justDragged || drag || dlg.open) return;
+    if (document.body.classList.contains('resizing')) return;
+    if (e.target.closest('#detail, #dlg, #toast, .card, .task, [data-act], #lock')) return;
+    closeDetail();
   });
 }
 const detail = $('#detail');
@@ -2139,7 +2167,7 @@ function openSettings() {
     const download = (name, obj) => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], {type:'application/json'}));
-      a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#stExpEnc', d).onclick = async () => download(`taken-backup-${today()}.json`, await persist());
     $('#stExpPlain', d).onclick = () => {
@@ -2413,7 +2441,7 @@ function exportSalesCsv() {
   const lines = [cols.map(c => q(c.name)).join(';'), ...salesRows(pg.id).map(r => cols.map(c => q(fmt(c, r.values[c.id]))).join(';'))];
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv;charset=utf-8'}));
-  a.download = `verkopen-${pg.month || pg.title}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  a.download = `verkopen-${pg.month || pg.title}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
 }
 function openSalesPageDialog(pg) {
   const isNew = !pg;
@@ -2714,7 +2742,7 @@ function renderArchiveResults() {
       const p = proj(t.projectId), at = t.archivedAt ? new Date(t.archivedAt) : null;
       return `<li class="task arch ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}">
         <div class="t-body"><div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>
-        <div class="t-meta">${t.projectId !== 'inbox' ? `<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>` : ''}${at ? `<span class="chip">${I.archive} ${at.getDate()} ${MONTHS[at.getMonth()]}${at.getFullYear() !== new Date().getFullYear() ? ' ' + at.getFullYear() : ''}</span>` : ''}${fieldChips(t)}</div></div>
+        <div class="t-meta">${t.projectId !== 'inbox' ? `<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>` : ''}${at ? `<span class="chip">${I.archive} ${at.getDate()} ${MONTHS[at.getMonth()]}${at.getFullYear() !== new Date().getFullYear() ? ' ' + at.getFullYear() : ''}</span>` : ''}</div>${fieldLines(t)}</div>
         <button type="button" class="btn restore" data-restore>Terugzetten</button></li>`;
     }).join('')}</ul></section>`).join('');
 }
