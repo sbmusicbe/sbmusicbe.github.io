@@ -849,6 +849,77 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
 @media (prefers-contrast:more){
   #side,#detail,dialog,.btn,.seg,#quickAdd{border-color:var(--line)!important}
 }
+
+/* =====================================================================
+   Rust & iOS 27 (gsm): geen verspringen, zwevende tabbalk, krimpende
+   titel, detail als sheet.
+   ===================================================================== */
+/* geen verspringen: kolomkop heeft een vaste hoogte, kaarten tillen niet op */
+.col>header{height:32px;padding-top:0;padding-bottom:0;margin-bottom:8px;box-sizing:content-box}
+.card:hover{transform:none}
+/* geen glas rond de invoerbalk op de computer (gaf lichte hoeken) */
+@media (min-width:861px){
+  #quickAdd{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:none!important;border:0!important;box-shadow:none!important}
+}
+#quickAdd input{-webkit-backdrop-filter:none;backdrop-filter:none}
+
+#miniBar,#tabBar,#fab,.d-grab{display:none}
+@media (max-width:860px){
+  #menuBtn{display:none!important}
+  /* zwevende glazen tabbalk + ronde +-knop */
+  #tabBar{display:flex;position:fixed;z-index:16;left:12px;right:84px;bottom:calc(10px + env(safe-area-inset-bottom));height:62px;padding:5px;gap:2px;border-radius:999px;
+    background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+  #tabBar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;border-radius:999px;color:var(--muted);font-size:10.5px;font-weight:600;transition:background-color .2s,color .2s,transform .12s}
+  #tabBar button .ti,#tabBar button .ti svg{width:22px;height:22px;display:grid;place-items:center}
+  #tabBar button.on{color:var(--accent);background:rgba(255,255,255,.7);box-shadow:inset 0 1px 0 #fff,0 1px 4px rgba(0,0,0,.08)}
+  #tabBar button:active{transform:scale(.94)}
+  #fab{display:grid;place-items:center;position:fixed;z-index:16;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;border:0;color:#fff;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 85%,#fff),var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 22px color-mix(in srgb,var(--accent) 40%,transparent);transition:transform .35s var(--spring)}
+  #fab svg{width:26px;height:26px;transition:transform .35s var(--spring)}
+  #fab:active{transform:scale(.92)}
+  #fab[hidden]{display:none}
+  body.qa-open #fab svg{transform:rotate(45deg)}
+  /* invoerbalk verschijnt als capsule boven de tabbalk */
+  #quickAdd{display:none;left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom))}
+  body.qa-open #quickAdd{display:flex;animation:qaIn .38s var(--spring)}
+  @keyframes qaIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  .main-inner{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  body.qa-open .main-inner{padding-bottom:calc(160px + env(safe-area-inset-bottom))}
+  #toast{bottom:calc(84px + env(safe-area-inset-bottom))!important}
+  body.qa-open #toast{bottom:calc(146px + env(safe-area-inset-bottom))!important}
+  body.sheet-open #tabBar,body.sheet-open #fab,body.sheet-open #quickAdd{opacity:0;pointer-events:none}
+  #tabBar,#fab{transition:opacity .25s}
+
+  /* grote titel scrolt mee; compacte titel verschijnt in een glazen balk */
+  .main-head{position:static;margin:0 0 8px;padding:max(10px,env(safe-area-inset-top)) 0 0;background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .main-head h2{font-size:32px;letter-spacing:-.026em}
+  #miniBar{display:flex;align-items:flex-end;justify-content:center;position:fixed;z-index:14;top:0;left:0;right:0;height:calc(44px + env(safe-area-inset-top));padding-bottom:11px;
+    background:var(--glass-strong);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:0 1px 0 var(--hairline);
+    opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s ease,transform .35s var(--spring)}
+  #miniTitle{font-weight:650;font-size:17px;letter-spacing:-.01em;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.mini-title #miniBar{opacity:1;transform:none}
+  body.sheet-open #miniBar{opacity:0}
+  body.sheet-open #toast{bottom:calc(16px + env(safe-area-inset-bottom))!important}
+
+  /* detail als sheet van onderen, met greep; veeg naar beneden om te sluiten */
+  #detail{inset:auto 0 0 0;top:max(14px,env(safe-area-inset-top));border-radius:28px 28px 0 0;padding-top:0;background:var(--panel);
+    box-shadow:0 -10px 40px rgba(0,0,0,.18);transition:transform .5s var(--spring)}
+  #detail.d-in,#detail.d-out{transform:translateY(100%)}
+  #detail .d-head{padding-top:8px;border-radius:0;touch-action:none;background:var(--panel)}
+  .d-grab{display:block;position:sticky;top:0;z-index:4;height:18px;margin-bottom:-18px;touch-action:none}
+  .d-grab::before{content:'';position:absolute;left:50%;top:7px;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:var(--faint);opacity:.7}
+  body.sheet-open #scrim{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.28);animation:fadeIn .3s ease}
+}
+@media (max-width:860px) and (prefers-color-scheme:dark){
+  #tabBar button.on{background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+}
+@media (prefers-reduced-motion:reduce){
+  #detail.d-in,#detail.d-out{transform:none!important}
+  #miniBar{transform:none!important}
+}
+@media (prefers-reduced-transparency:reduce){
+  #tabBar,#miniBar{background:var(--panel)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
 </style>
 </head>
 <body>
@@ -909,6 +980,15 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
   </main>
 
   <aside id="detail" hidden></aside>
+  <!-- iOS 27: compacte titelbalk, zwevende tabbalk en +-knop (alleen gsm) -->
+  <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
+  <nav id="tabBar" aria-label="Hoofdnavigatie">
+    <button type="button" data-tab="all"><span class="ti"></span><span>Taken</span></button>
+    <button type="button" data-tab="today"><span class="ti"></span><span>Vandaag</span></button>
+    <button type="button" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
+    <button type="button" data-tab="more"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Meer</span></button>
+  </nav>
+  <button type="button" id="fab" aria-label="Nieuwe kaart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
 
 <dialog id="dlg"></dialog>
@@ -1715,6 +1795,7 @@ function renderHead() {
   $('#editProject').hidden = !isP;
   $('#editProject').title = view.type === 'sales' ? 'Pagina bewerken' : 'Project bewerken';
   document.title = `${viewTitle()} · Taken`;
+  $('#miniTitle').textContent = viewTitle();
 }
 function toolbarFields() {
   return view.type === 'project' ? fieldsFor(view.id) : view.type === 'inbox' ? fieldsFor('inbox') : sortedFields();
@@ -1758,8 +1839,16 @@ function renderToolbar() {
     <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgewerkte tonen</label>
     </div>`;
 }
+function renderTabBar() {
+  const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : 'all';
+  $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('#fab').hidden = view.type === 'archive';
+  $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
+  if (view.type === 'sales' || view.type === 'archive') document.body.classList.remove('qa-open');
+}
 function renderAll() {
   if (!data) return;
+  renderTabBar();
   if (view.type === 'sales' && !salesPageById(view.id)) view = {type:'all'};
   const sales = view.type === 'sales';
   if (sales) selectedId = null;
@@ -1906,14 +1995,14 @@ function showDetailPanel() {
   const el = $('#detail'), app = $('#app');
   clearTimeout(detailHideTimer);
   const fresh = el.hidden;
-  el.hidden = false; app.classList.add('with-detail');
+  el.hidden = false; app.classList.add('with-detail'); document.body.classList.add('sheet-open');
   if (fresh) { el.classList.add('d-in'); el.getBoundingClientRect(); }
   el.classList.remove('d-in', 'd-out');
 }
 function hideDetailPanel() {
   const el = $('#detail'), app = $('#app');
   if (el.hidden) return;
-  el.classList.add('d-out');
+  el.classList.add('d-out'); document.body.classList.remove('sheet-open');
   clearTimeout(detailHideTimer);
   detailHideTimer = setTimeout(() => {
     el.hidden = true; el.innerHTML = ''; el.classList.remove('d-out'); app.classList.remove('with-detail');
@@ -1988,6 +2077,7 @@ function renderDetail(force) {
   const created = new Date(t.createdAt || t.order || now());
   const wide = detailIsWide(detailWidth());
   el.innerHTML = `
+    <div class="d-grab" aria-hidden="true"></div>
     <div class="d-resize" role="separator" aria-orientation="vertical" tabindex="0" title="Sleep om het paneel breder of smaller te maken (dubbelklik = standaard)" aria-label="Breedte van het paneel aanpassen"></div>
     <div class="d-head">
       <button class="icon-btn" data-act="close" aria-label="Sluiten">${I.close}</button>
@@ -2097,6 +2187,46 @@ addEventListener('resize', () => { if (detailWidth() > detailMax()) setDetailWid
     }
   });
 }
+/* ---- Gsm: detailpaneel als sheet, naar beneden vegen om te sluiten ----
+   1:1 met de vinger, rubberband naar boven, bij loslaten de snelheid
+   projecteren (zoals iOS) om te beslissen: sluiten of terugveren. */
+{
+  const mq = matchMedia('(max-width:860px)');
+  let sd = null;
+  const project = (v, d = 0.998) => (v / 1000) * d / (1 - d);
+  const rubber = (x, dim, c = 0.55) => (x * dim * c) / (dim + c * Math.abs(x));
+  document.addEventListener('pointerdown', e => {
+    if (!mq.matches) return;
+    const zone = e.target.closest('#detail .d-grab, #detail .d-head');
+    if (!zone || e.target.closest('button, input, select, textarea, a')) return;
+    const el = $('#detail');
+    sd = {el, y0:e.clientY, dy:0, hist:[{y:e.clientY, t:e.timeStamp}], moved:false, h:el.getBoundingClientRect().height};
+  });
+  document.addEventListener('pointermove', e => {
+    if (!sd) return;
+    let dy = e.clientY - sd.y0;
+    if (!sd.moved && Math.abs(dy) < 6) return;
+    if (!sd.moved) { sd.moved = true; sd.el.style.transition = 'none'; }
+    if (dy < 0) dy = -rubber(-dy, sd.h);
+    sd.dy = dy;
+    sd.el.style.transform = `translateY(${dy}px)`;
+    sd.hist.push({y:e.clientY, t:e.timeStamp}); if (sd.hist.length > 6) sd.hist.shift();
+  });
+  const end = () => {
+    if (!sd) return;
+    const {el, dy, hist, moved, h} = sd; sd = null;
+    if (!moved) return;
+    const a = hist[0], b = hist[hist.length - 1];
+    const v = b.t > a.t ? (b.y - a.y) / (b.t - a.t) * 1000 : 0;   // px/s
+    const close = dy + project(v) > h * 0.35 && v > -200;
+    el.style.transition = ''; el.style.transform = '';          // CSS-overgang neemt het over vanaf de huidige plek
+    if (close) { justSwiped = true; setTimeout(() => justSwiped = false, 80); closeDetail(); }
+  };
+  document.addEventListener('pointerup', end);
+  document.addEventListener('pointercancel', end);
+  document.addEventListener('touchmove', e => { if (sd?.moved) e.preventDefault(); }, {passive:false});
+}
+let justSwiped = false;
 /* ---- Klik buiten het detailpaneel = sluiten ----
    Alleen als de klik ook buiten het paneel begon (tekst selecteren en erbuiten
    loslaten sluit dus niet). Kaarten openen zichzelf, vensters en slepen tellen niet. */
@@ -2106,7 +2236,7 @@ addEventListener('resize', () => { if (detailWidth() > detailMax()) setDetailWid
     downOutside = !e.target.closest('#detail');
   }, true);
   document.addEventListener('click', e => {
-    if (!selectedId || !downOutside || justDragged || drag || dlg.open) return;
+    if (!selectedId || !downOutside || justDragged || justSwiped || drag || dlg.open) return;
     if (document.body.classList.contains('resizing')) return;
     if (e.target.closest('#detail, #dlg, #toast, .card, .task, [data-act], #lock')) return;
     closeDetail();
@@ -3207,6 +3337,31 @@ $('#openSettings').onclick = () => { $('#app').classList.remove('side-open'); op
 $('#lockNow').onclick = lock;
 $('#syncStatus').onclick = () => data.settings.sync ? syncNow() : openSettings();
 $('#menuBtn').onclick = () => $('#app').classList.add('side-open');
+// iOS 27 tabbalk
+$$('#tabBar [data-tab]').forEach(b => {
+  const icon = {all:I.all, today:I.today, sales:I.sales}[b.dataset.tab];
+  if (icon) b.querySelector('.ti').innerHTML = icon;
+});
+$('#tabBar').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  const t = b.dataset.tab;
+  if (t === 'more') { $('#app').classList.add('side-open'); return; }
+  if (t === 'sales') {
+    const pg = sortedSalesPages()[0];
+    if (pg) setView({type:'sales', id:pg.id}); else { $('#app').classList.add('side-open'); toast('Maak eerst een maandpagina onder Verkopen'); }
+    return;
+  }
+  setView({type:t});
+});
+$('#fab').addEventListener('click', () => {
+  if (view.type === 'sales') { addSalesRow(); return; }
+  const open = document.body.classList.toggle('qa-open');
+  if (open) setTimeout(() => $('#qaInput').focus(), 30); else $('#qaInput').blur();
+});
+// compacte titel verschijnt zodra de grote titel wegscrolt (gsm)
+$('#main').addEventListener('scroll', e => {
+  document.body.classList.toggle('mini-title', e.currentTarget.scrollTop > 44);
+}, {passive:true});
 $('#scrim').onclick = () => $('#app').classList.remove('side-open');
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
