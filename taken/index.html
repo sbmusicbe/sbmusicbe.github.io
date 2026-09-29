@@ -422,7 +422,11 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .pace.pay{border-color:color-mix(in srgb,var(--accent) 28%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--panel))}
 .pace.pay{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 24px;align-items:start}
 .pace.pay>div{flex-direction:column;align-items:flex-start;gap:2px}
-@media (max-width:860px){.pace.pay{grid-template-columns:1fr}}
+.pay-net{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 16px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--accent) 18%,var(--line))}
+.pay-net>div{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}
+.pay-net b{color:var(--ok)}
+.linklike{background:none;border:0;padding:0;font:inherit;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+@media (max-width:860px){.pace.pay{grid-template-columns:1fr}.pay-net{flex-direction:column}}
 @media (max-width:860px){.pace{flex-direction:column;gap:6px;padding:10px 12px}.pace b{font-size:16px}}
 /* ---------- Opmerkingen ---------- */
 .c-count{background:var(--hover);color:var(--muted);border-radius:999px;padding:1px 7px;font-size:12px;margin-left:4px}
@@ -2833,6 +2837,10 @@ function salesPay(pg, total) {
   const bonus = tier ? tier[1] : 0;
   return {days, threshold, commission, bonus, tier, next, sum:round2(commission + bonus)};
 }
+// Netto-schatting: 13,07 % RSZ, daarna bedrijfsvoorheffing (instelbaar, standaard 45 %).
+const RSZ = 0.1307, payTax = () => { const v = data.settings.payTax; return v >= 0 && v < 100 ? v : 45; };
+const pctFmt = n => String(n).replace('.', ',') + ' %';
+const netOf = gross => round2(gross * (1 - RSZ) * (1 - payTax() / 100));
 function payHtml(pg, total) {
   const p = salesPay(pg, total); if (!p) return '';
   const nextTxt = p.next ? `nog ${eur(p.next[0] - total)} tot bonus ${eur(p.next[1])}` : 'hoogste schijf bereikt';
@@ -2841,6 +2849,8 @@ function payHtml(pg, total) {
     <div><b>${eur(p.sum)}</b><span>commissie + bonus (bruto)</span></div>
     <div><b>Commissie ${eur(p.commission)}</b><span>${comTxt} · ${p.days} werkdagen</span></div>
     <div><b>Bonus ${eur(p.bonus)}</b><span>${p.tier ? `schijf vanaf ${eur(p.tier[0])} · ` : ''}${nextTxt}</span></div>
+    <div class="pay-net"><div><b>± ${eur(netOf(p.sum))} netto</b><span>commissie ${eur(netOf(p.commission))} · bonus ${eur(netOf(p.bonus))}</span></div>
+      <span class="muted">na ${pctFmt(RSZ * 100)} RSZ en ${pctFmt(payTax())} bedrijfsvoorheffing · <button type="button" class="linklike" data-paytax>aanpassen</button></span></div>
   </div>`;
 }
 function salesTotals(pid) {
@@ -2962,6 +2972,23 @@ function updateSalesTotals(skipNav) {
   }
   if (!skipNav) renderNav();
 }
+function openPayTaxDialog() {
+  showDialog(`
+    <h3>Netto berekening</h3>
+    <p class="muted small" style="margin:0 0 10px">Netto = bruto − ${pctFmt(RSZ * 100)} RSZ, daarna − bedrijfsvoorheffing. Bij een voltijds loon ligt die op commissie en bonus meestal rond 40 à 50 %. Het juiste percentage vind je op je loonfiche: ingehouden bedrijfsvoorheffing ÷ belastbaar bedrag van een maand met commissie of bonus.</p>
+    <label class="fl">Bedrijfsvoorheffing (%)<input id="ptPct" type="text" inputmode="decimal" value="${esc(pctFmt(payTax()).replace(' %', ''))}"></label>
+    <div class="dlg-actions"><span class="grow"></span>
+      <button type="button" class="btn" id="ptCancel">Annuleren</button>
+      <button type="button" class="btn primary" id="ptSave">Opslaan</button></div>`, d => {
+    $('#ptCancel', d).onclick = () => dlg.close();
+    $('#ptSave', d).onclick = () => {
+      const v = toNum($('#ptPct', d).value.replace('%', ''));
+      if (v === null || v < 0 || v >= 100) { $('#ptPct', d).focus(); return; }
+      data.settings.payTax = v; dlg.close(); save(); renderSales(true);
+    };
+    $('#ptPct', d).onkeydown = e => { if (e.key === 'Enter') $('#ptSave', d).click(); };
+  });
+}
 function addSalesRow() {
   const pg = salesPageById(view.id); if (!pg) return;
   const r = touch({id:uid(), pageId:pg.id, order:now(), values:{}});
@@ -3015,6 +3042,7 @@ sp.addEventListener('click', e => {
   if (flat) { const pg = salesPageById(view.id); pg.flat = flat.dataset.flat === '1'; touch(pg); commit(); return; }
   if (e.target.closest('#spImport')) { openSalesImportDialog(); return; }
   if (e.target.closest('#spAdd')) addSalesRow();
+  if (e.target.closest('[data-paytax]')) openPayTaxDialog();
   else if (e.target.closest('#spCols')) openSalesColsDialog();
   else if (e.target.closest('#spCsv')) exportSalesCsv();
   else if (e.target.closest('[data-delrow]')) {
