@@ -419,11 +419,34 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .pace.behind{border-color:color-mix(in srgb,var(--danger) 30%,var(--line));background:color-mix(in srgb,var(--danger) 6%,var(--panel))}
 .pace.hit{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 9%,var(--panel))}
 .pace.hit b{color:var(--ok)}
+table.sales .cell.t-format{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:130px;min-height:38px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.fchip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12.5px;font-weight:600;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--text);white-space:nowrap}
+.fchip.neg{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.fph{color:var(--muted);font-size:13.5px}
+#fmtPop{position:fixed;z-index:80;width:220px;max-height:min(80vh,520px);overflow:auto;padding:6px;border-radius:16px;background:var(--panel);border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);animation:fpIn .18s ease-out}
+@keyframes fpIn{from{opacity:0;transform:translateY(-4px) scale(.98)}}
+#fmtPop>button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;font:inherit;font-size:15px;color:var(--text);text-align:left;cursor:pointer}
+#fmtPop>button:hover{background:var(--hover)}
+#fmtPop>button i{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line)}
+#fmtPop>button i svg{width:14px;height:14px;opacity:0}
+#fmtPop>button.on i{background:var(--accent);border-color:var(--accent);color:#fff}
+#fmtPop>button.on i svg{opacity:1}
+#fmtPop .fp-foot{display:flex;justify-content:space-between;gap:8px;padding:6px 4px 2px;margin-top:4px;border-top:1px solid var(--line)}
+#fmtPop .fp-foot button{border:0;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--accent);padding:6px 8px;cursor:pointer;border-radius:8px}
+#fmtPop .fp-foot button:first-child{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){#fmtPop{animation:none}}
 .nav-arch{display:flex;align-items:center;gap:6px;width:100%;margin-top:2px;padding:6px 10px;border:0;background:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:8px;text-align:left}
 .nav-arch:hover{background:var(--hover)}
 .nav-arch svg{width:13px;height:13px;transition:transform .2s var(--spring,ease)}
 .nav-arch.open svg{transform:rotate(90deg)}
 .nav-item.is-arch{opacity:.62}
+.nav-year{display:flex;align-items:center;gap:6px;width:100%;padding:7px 10px;border:0;background:none;color:var(--text);font:inherit;font-size:14px;font-weight:650;cursor:pointer;border-radius:10px;text-align:left}
+.nav-year:hover{background:var(--hover)}
+.nav-year svg{width:14px;height:14px;flex:none;color:var(--muted);transition:transform .2s var(--spring,ease)}
+.nav-year.open svg{transform:rotate(90deg)}
+.nav-year .nm{flex:1}
+.nav-year .cnt{color:var(--muted);font-size:12.5px;font-weight:500;font-variant-numeric:tabular-nums}
+.year-list{padding-left:12px}
 #archBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 14px;padding:10px 12px 10px 14px;border-radius:12px;background:color-mix(in srgb,var(--muted) 10%,var(--panel));border:1px solid var(--line);font-size:14px}
 #archBar[hidden]{display:none}
 #archBar>span:first-child{display:flex;align-items:center;gap:8px;color:var(--muted)}
@@ -937,6 +960,16 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
 @media (prefers-reduced-transparency:reduce){
   #tabBar,#miniBar{background:var(--panel)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 }
+
+/* Kop bij scrollen: zwevende afgeronde glasbalk i.p.v. een band die links hard wordt afgesneden */
+@media (min-width:861px){
+  .main-head,.main-head.scrolled{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;isolation:isolate}
+  .main-head::before{content:"";position:absolute;inset:8px 12px 2px;z-index:-1;border-radius:20px;pointer-events:none;
+    background:color-mix(in srgb,var(--bg) 62%,transparent);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);opacity:0;transition:opacity .22s ease}
+  .main-head.scrolled::before{opacity:1}
+}
+@media (min-width:861px) and (prefers-reduced-transparency:reduce){ .main-head::before{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none} }
 </style>
 </head>
 <body>
@@ -1051,7 +1084,40 @@ const DEFAULT_SALES_COLS = [
   {id:'sc_desc', name:'Omschrijving', type:'text', order:2},
   {id:'sc_amount', name:'Bedrag', type:'money', order:3},
 ];
-const SALES_TYPES = {text:'Tekst', number:'Getal', money:'Bedrag (€)', date:'Datum'};
+const SALES_TYPES = {text:'Tekst', number:'Getal', money:'Bedrag (€)', date:'Datum', format:'Formaat (keuze)'};
+// Vaste formaten voor de kolom Formaat; meerdere mogelijk, opgeslagen als "1/16, Vergroting".
+const FORMATS = ['1/1', '1/2', '1/4', '1/8', '1/12', '1/16', '1/32', 'Banner', 'Vergroting', 'Annulatie'];
+const FORMAT_RX = [
+  [/(^|[^\d/])1\s*\/\s*(32|16|12|8|4|2|1)(?![\d/])/gi, m => '1/' + m[2]],
+  [/\b(?:volle|hele|full)\s*(?:pagina|page|p)\b/gi, () => '1/1'],
+  [/\bhalve\s*(?:pagina|page|p)\b/gi, () => '1/2'],
+  [/\bkwart(?:\s*(?:pagina|page|p))?\b/gi, () => '1/4'],
+  [/\w*banner\w*/gi, () => 'Banner'],
+  [/\bvergrot\w*/gi, () => 'Vergroting'],
+  [/\bannul\w*/gi, () => 'Annulatie'],
+];
+// Zet vrij getypte tekst om naar de vaste formaten; wat niet herkend wordt, komt in `rest`.
+function parseFormats(v) {
+  let s = String(v ?? '');
+  const got = new Set();
+  for (const [re, f] of FORMAT_RX) s = s.replace(re, (...m) => { got.add(f(m)); return re === FORMAT_RX[0][0] ? m[1] + ' ' : ' '; });
+  const rest = s.replace(/[+,;&]|\ben\b|\b\d+\s*x\b|\b(?:pagina|page)\b/gi, ' ').replace(/\(\s*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  return {opts:FORMATS.filter(o => got.has(o)), rest:/[a-z0-9]/i.test(rest) ? rest : ''};
+}
+const formatList = v => parseFormats(v).opts;
+// Zet een tekstkolom om naar een keuzekolom; onherkende tekst gaat naar de opmerkingkolom.
+function convertFormatCol(d, c) {
+  const note = (d.salesCols || []).find(x => x.id !== c.id && x.type === 'text' && /opmerking|omschrijving|notitie/i.test(x.name));
+  for (const r of d.sales || []) {
+    const v = r.values?.[c.id]; if (v === undefined || v === '') continue;
+    const {opts, rest} = parseFormats(v), nv = opts.join(', ');
+    if (nv === v && !rest) continue;
+    if (nv) r.values[c.id] = nv; else delete r.values[c.id];
+    if (rest && note) r.values[note.id] = [r.values[note.id], rest].filter(Boolean).join(' · ');
+    else if (rest && !nv) r.values[c.id] = v;
+    r.u = Date.now();
+  }
+}
 const MONTHS_LONG = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 const firstOpen = () => stages().find(s => !s.done);
 const firstDone = () => stages().find(s => s.done);
@@ -1152,6 +1218,8 @@ function normalize(d) {
   d.salesPages ||= []; d.sales ||= []; d.comments ||= [];
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
   for (const r of d.sales) r.values ||= {};
+  // eenmalig: een tekstkolom "Formaat" wordt een keuzekolom
+  for (const c of d.salesCols) if (c.type === 'text' && /^\s*formaat\s*$/i.test(c.name) && !c.fmtMig) { c.type = 'format'; c.fmtMig = true; c.u = Date.now(); convertFormatCol(d, c); }
   const st = sortStages(d.stages);
   const open = st.find(x => !x.done) || st[0], done = st.find(x => x.done) || st[st.length - 1];
   for (const t of d.tasks) {
@@ -1785,6 +1853,15 @@ function renderMain() {
 
 /* ---------------- Sidebar / header / toolbar ---------------- */
 const navArchOpen = {proj:false, sales:false};
+// Jaarmappen onder Verkopen: open/dicht per toestel onthouden; standaard is enkel het huidige jaar open.
+let yearState = {};
+try { yearState = JSON.parse(localStorage.getItem('taken.salesYears') || '{}'); } catch {}
+const salesYearOpen = y => y in yearState ? yearState[y] : (y === today().slice(0, 4) || (view.type === 'sales' && (salesPageById(view.id)?.month || '').startsWith(y)));
+function toggleSalesYear(y) {
+  yearState[y] = !salesYearOpen(y);
+  try { localStorage.setItem('taken.salesYears', JSON.stringify(yearState)); } catch {}
+  renderNav();
+}
 function renderNav() {
   const open = data.tasks.filter(t => !t.done && !t.archived && !projArchived(t.projectId)), td = today(), wk = addDays(td, 6);
   const cnt = {
@@ -1807,7 +1884,14 @@ function renderNav() {
   const projs = sortedProjects().filter(p => p.id !== 'inbox'), pages = sortedSalesPages();
   $('#projNav').innerHTML = (projs.filter(p => !p.archived).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen projecten</div>')
     + archList('proj', projs.filter(p => p.archived), projItem);
-  $('#salesNav').innerHTML = (pages.filter(p => !p.archived).map(salesItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
+  const years = new Map();
+  for (const pg of pages.filter(p => !p.archived)) { const y = (pg.month || '').slice(0, 4) || '—'; if (!years.has(y)) years.set(y, []); years.get(y).push(pg); }
+  const yearHtml = [...years].map(([y, list]) => {
+    const open = salesYearOpen(y), sum = list.reduce((a, pg) => a + salesTotals(pg.id).money, 0);
+    return `<button type="button" class="nav-year ${open ? 'open' : ''}" data-year="${esc(y)}" aria-expanded="${open}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg><span class="nm">${y === '—' ? 'Zonder maand' : esc(y)}</span><span class="cnt">${esc(eurShort(sum))}</span></button>`
+      + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
+  }).join('');
+  $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
     + archList('sales', pages.filter(p => p.archived), salesItem);
   renderSync();
 }
@@ -2894,10 +2978,12 @@ function salesTotals(pid) {
   }
   return {per, money, count:rows.length};
 }
+const fmtChips = v => { const l = formatList(v); return l.length ? l.map(o => `<span class="fchip ${o === 'Annulatie' ? 'neg' : ''}">${esc(o)}</span>`).join('') : `<span class="fph">${v ? esc(v) : 'Kies…'}</span>`; };
 function cellInput(c, r) {
   const v = r.values[c.id] ?? '';
   const a = `class="cell t-${c.type}" data-col="${c.id}" aria-label="${esc(c.name)}"`;
   if (c.type === 'date') return `<input type="date" ${a} value="${esc(v)}">`;
+  if (c.type === 'format') return `<button type="button" ${a} aria-haspopup="true">${fmtChips(v)}</button>`;
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
   return `<input type="text" ${a} value="${esc(v)}">`;
 }
@@ -3021,6 +3107,46 @@ function openPayTaxDialog() {
     $('#ptPct', d).onkeydown = e => { if (e.key === 'Enter') $('#ptSave', d).click(); };
   });
 }
+let fmtPop = null;
+function closeFormatPop() { fmtPop?.remove(); fmtPop = null; }
+function openFormatPop(cell) {
+  const same = fmtPop && fmtPop.dataset.for === cell.closest('tr').dataset.row + cell.dataset.col;
+  closeFormatPop(); if (same) return;
+  const r = data.sales.find(x => x.id === cell.closest('tr').dataset.row), colId = cell.dataset.col; if (!r) return;
+  const pop = fmtPop = document.createElement('div');
+  pop.id = 'fmtPop'; pop.dataset.for = r.id + colId; pop.setAttribute('role', 'listbox'); pop.setAttribute('aria-multiselectable', 'true');
+  const draw = () => {
+    const cur = formatList(r.values[colId]);
+    pop.innerHTML = FORMATS.map(o => `<button type="button" role="option" aria-selected="${cur.includes(o)}" data-fmt="${esc(o)}" class="${cur.includes(o) ? 'on' : ''}"><i>${I.check}</i>${esc(o)}</button>`).join('')
+      + `<div class="fp-foot"><button type="button" data-fclear>Wissen</button><button type="button" data-fdone>Klaar</button></div>`;
+  };
+  draw();
+  document.body.appendChild(pop);
+  pop.place = () => {
+    const live = $(`tr[data-row="${r.id}"] .cell[data-col="${colId}"]`) || cell;
+    const rc = live.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+    if (!live.isConnected || rc.bottom < 0 || rc.top > innerHeight) { closeFormatPop(); return; }
+    const left = Math.max(8, Math.min(rc.left, innerWidth - pw - 8));
+    const top = rc.bottom + ph + 8 < innerHeight ? rc.bottom + 4 : Math.max(8, rc.top - ph - 4);
+    Object.assign(pop.style, {left:left + 'px', top:top + 'px'});
+  };
+  pop.place();
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.hasAttribute('data-fdone')) { closeFormatPop(); cell.focus(); return; }
+    let cur = formatList(r.values[colId]);
+    if (b.hasAttribute('data-fclear')) cur = [];
+    else { const o = b.dataset.fmt; cur = cur.includes(o) ? cur.filter(x => x !== o) : [...cur, o]; }
+    const nv = FORMATS.filter(o => cur.includes(o)).join(', ');
+    if (nv) r.values[colId] = nv; else delete r.values[colId];
+    touch(r); save(true); draw();
+    const live = $(`tr[data-row="${r.id}"] .cell[data-col="${colId}"]`); if (live) live.innerHTML = fmtChips(r.values[colId]);
+  });
+}
+document.addEventListener('pointerdown', e => { if (fmtPop && !fmtPop.contains(e.target) && !e.target.closest('.cell.t-format')) closeFormatPop(); }, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && fmtPop) { e.stopPropagation(); closeFormatPop(); } }, true);
+for (const t of [$('#main'), window]) t.addEventListener('scroll', () => fmtPop?.place(), {passive:true, capture:true});
+addEventListener('resize', () => fmtPop?.place());
 function addSalesRow() {
   const pg = salesPageById(view.id); if (!pg) return;
   const r = touch({id:uid(), pageId:pg.id, order:now(), values:{}});
@@ -3063,13 +3189,14 @@ sp.addEventListener('focusin', e => {
   cell.select();
 });
 sp.addEventListener('keydown', e => {
-  const cell = e.target.closest('.cell'); if (!cell || e.key !== 'Enter') return;
+  const cell = e.target.closest('.cell'); if (!cell || e.key !== 'Enter' || cell.matches('.t-format')) return;
   e.preventDefault();
   const tr = cell.closest('tr'), next = tr.nextElementSibling;
   if (next?.dataset.row) $(`.cell[data-col="${cell.dataset.col}"]`, next).focus();
   else addSalesRow();
 });
 sp.addEventListener('click', e => {
+  const fc = e.target.closest('.cell.t-format'); if (fc) { openFormatPop(fc); return; }
   const flat = e.target.closest('[data-flat]');
   if (flat) { const pg = salesPageById(view.id); pg.flat = flat.dataset.flat === '1'; touch(pg); commit(); return; }
   if (e.target.closest('#spImport')) { openSalesImportDialog(); return; }
@@ -3277,7 +3404,11 @@ function openSalesImportDialog() {
         for (const it of lines) {
           const values = {[cols.date.id]:x.date, [cols.money.id]:round2(it.amount)};
           if (it.qty != null) values[cols.qty.id] = it.qty;
-          if (it.format) values[cols.format.id] = it.format;
+          if (it.format) {
+            const {opts, rest} = parseFormats(it.format);
+            if (opts.length) values[cols.format.id] = opts.join(', ');
+            if (rest) it.note = [rest, it.note].filter(Boolean).join(' · ');
+          }
           if (it.note) values[cols.note.id] = it.note;
           data.sales.push(touch({id:uid(), pageId:pg.id, order:order++, values})); n++;
         }
@@ -3299,7 +3430,9 @@ function ensureImportCols() {
   const date = find('date') || add('Datum', 'date', -1);
   const base = date.order || 0;
   const qty = find('number', /aantal|stuks|#/i) || add('Aantal', 'number', base + 0.1);
-  const format = find('text', /formaat|format|product|type/i) || add('Formaat', 'text', base + 0.2);
+  let format = find('format') || find('text', /formaat|format|product|type/i);
+  if (format && format.type === 'text') { format.type = 'format'; format.fmtMig = true; touch(format); convertFormatCol(data, format); }
+  if (!format) format = add('Formaat', 'format', base + 0.2);
   const money = find('money') || add('Bedrag', 'money', base + 0.3);
   const note = find('text', /opmerking|omschrijving|notitie/i) || add('Opmerking', 'text', 99);
   return {date, qty, format, money, note};
@@ -3336,7 +3469,11 @@ function openSalesColsDialog() {
       draft.forEach((c, i) => {
         const cur = data.salesCols.find(x => x.id === c.id);
         if (!cur) data.salesCols.push(touch({id:c.id, name:c.name, type:c.type, order:i}));
-        else if (cur.name !== c.name || cur.type !== c.type || cur.order !== i) Object.assign(cur, {name:c.name, type:c.type, order:i}, {u:now()});
+        else if (cur.name !== c.name || cur.type !== c.type || cur.order !== i) {
+          const toFmt = cur.type !== 'format' && c.type === 'format';
+          Object.assign(cur, {name:c.name, type:c.type, order:i, fmtMig:true}, {u:now()});
+          if (toFmt) convertFormatCol(data, cur);
+        }
       });
       for (const c of removed) {
         tombstone(c.id);
@@ -3422,6 +3559,7 @@ function toast(msg, undo) {
 /* ---------------- Events ---------------- */
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView({type:b.dataset.view}); });
 for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e => {
+  const yb = e.target.closest('[data-year]'); if (yb) { e.stopPropagation(); toggleSalesYear(yb.dataset.year); return; }
   const a = e.target.closest('[data-navarch]'); if (!a) return;
   e.stopPropagation(); navArchOpen[a.dataset.navarch] = !navArchOpen[a.dataset.navarch]; renderNav();
 });
