@@ -1,2 +1,377 @@
-<a href="https://wa.me/qr/N73XHUGX6TLWC1">Neem contact op met tuinman
-</a>
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuinman bestellen — SB</title>
+<meta name="description" content="Bestel een tuinman. Snoeien, maaien, planten, onkruid wieden en seizoensonderhoud — stuur je aanvraag via WhatsApp.">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="canonical" href="https://sbmusic.be/tuinman.html">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sbmusic.be/tuinman.html">
+<meta property="og:title" content="Tuinman bestellen">
+<meta property="og:description" content="Jij. Ja, jij. Je tuin wacht. Bestel een tuinman via WhatsApp.">
+<meta property="og:image" content="https://sbmusic.be/tuinman.webp">
+<meta property="og:locale" content="nl_BE">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  /* Huisstijl SB — zelfde tokens als de hoofdpagina */
+  :root{
+    --bg:#0A0A0A;
+    --bg-elevated:#262626;
+    --cord:#24312A;
+    --text:#F2EFEA;
+    --text-secondary:rgba(242,239,234,.6);
+    --hairline:rgba(242,239,234,.12);
+    --accent:#6FA283;
+    --accent-text:#0A0A0A;
+    --r-sm:8px;
+    --r-md:16px;
+    --r-lg:26px;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ background:var(--bg); scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{ color:inherit; text-decoration:none; }
+  button, input, select, textarea{ font:inherit; color:inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--accent); outline-offset:3px;
+  }
+  .mono{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+  }
+  .wrap{ max-width:1120px; margin:0 auto; padding:0 24px; }
+  @media (max-width:600px){ .wrap{ padding:0 16px; } }
+
+  /* ---------- NAV ---------- */
+  nav{ padding:22px 0; }
+  nav .wrap{ display:flex; justify-content:space-between; align-items:center; }
+  nav .brand{ font-weight:900; letter-spacing:-.02em; font-size:20px; }
+  nav .brand span{ color:var(--accent); }
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    padding:15px 26px; border-radius:999px; border:1px solid transparent;
+    font-weight:800; font-size:16px; cursor:pointer;
+    transition:transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn-primary{ background:var(--accent); color:var(--accent-text); }
+  .btn-primary:hover{ background:#7fb393; }
+  .btn-ghost{ border-color:var(--hairline); }
+  .btn-ghost:hover{ border-color:var(--text-secondary); }
+  .btn svg{ width:20px; height:20px; flex:none; }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding:24px 0 72px; }
+  .hero .wrap{
+    display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center;
+  }
+  .hero h1{
+    font-weight:900;
+    font-size:clamp(44px, 7vw, 88px);
+    line-height:.95;
+    letter-spacing:-.045em;
+    margin:18px 0 22px;
+  }
+  .hero h1 em{ font-style:normal; color:var(--accent); }
+  .hero p.lead{ font-size:19px; color:var(--text-secondary); max-width:30em; }
+  .hero .cta{ display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
+  .photo{
+    position:relative;
+    border-radius:var(--r-lg);
+    overflow:hidden;
+    background:var(--cord);
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.8), 0 0 0 1px var(--hairline);
+    aspect-ratio:2/3;
+  }
+  .photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo .tag{
+    position:absolute; left:16px; bottom:16px;
+    background:rgba(10,10,10,.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--hairline); border-radius:999px;
+    padding:8px 14px; color:var(--text);
+  }
+  .photo .tag::before{
+    content:""; display:inline-block; width:8px; height:8px; border-radius:50%;
+    background:var(--accent); margin-right:8px; vertical-align:1px;
+  }
+  @media (max-width:860px){
+    .hero .wrap{ grid-template-columns:1fr; gap:36px; }
+    .photo{ order:-1; max-width:440px; width:100%; margin:0 auto; aspect-ratio:4/5; }
+    .photo img{ object-position:50% 20%; }
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section.block{ padding:72px 0; border-top:1px solid var(--hairline); }
+  section.block h2{
+    font-weight:900; font-size:clamp(32px, 4.5vw, 52px);
+    letter-spacing:-.035em; line-height:1; margin:14px 0 36px;
+  }
+
+  .services{ display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+  .service{
+    background:var(--bg-elevated); border-radius:var(--r-md);
+    padding:24px; border:1px solid var(--hairline);
+  }
+  .service .ico{
+    width:44px; height:44px; border-radius:12px; background:var(--cord);
+    display:grid; place-items:center; margin-bottom:18px; color:var(--accent);
+  }
+  .service .ico svg{ width:22px; height:22px; }
+  .service h3{ font-size:19px; font-weight:800; letter-spacing:-.01em; margin-bottom:6px; }
+  .service p{ color:var(--text-secondary); font-size:15px; }
+  @media (max-width:860px){ .services{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:560px){ .services{ grid-template-columns:1fr; } }
+
+  .steps{ display:grid; grid-template-columns:repeat(3, 1fr); gap:32px; counter-reset:step; }
+  .step{ counter-increment:step; }
+  .step::before{
+    content:"0" counter(step);
+    font-family:'Space Mono',monospace; font-size:14px; color:var(--accent);
+    display:block; padding-bottom:14px; margin-bottom:16px; border-bottom:1px solid var(--hairline);
+  }
+  .step h3{ font-size:20px; font-weight:800; margin-bottom:6px; }
+  .step p{ color:var(--text-secondary); }
+  @media (max-width:760px){ .steps{ grid-template-columns:1fr; gap:24px; } }
+
+  /* ---------- ORDER FORM ---------- */
+  .order{
+    background:var(--cord); border-radius:var(--r-lg);
+    padding:clamp(24px, 5vw, 56px);
+    display:grid; grid-template-columns:.8fr 1.2fr; gap:48px;
+  }
+  .order h2{ margin-top:14px; margin-bottom:16px; }
+  .order .intro p{ color:var(--text-secondary); }
+  form{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field{ display:flex; flex-direction:column; gap:8px; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{ font-size:14px; font-weight:500; }
+  input, select, textarea{
+    width:100%; background:rgba(10,10,10,.45); border:1px solid var(--hairline);
+    border-radius:var(--r-sm); padding:13px 14px; font-size:16px;
+  }
+  textarea{ min-height:110px; resize:vertical; }
+  select{ appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23F2EFEA' stroke-width='1.6'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:38px; }
+  select option{ background:var(--bg); }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{ position:relative; }
+  .chip input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .chip span{
+    display:inline-block; padding:9px 14px; border-radius:999px; font-size:14px;
+    border:1px solid var(--hairline); cursor:pointer; user-select:none;
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .chip input:checked + span{ background:var(--accent); border-color:var(--accent); color:var(--accent-text); font-weight:500; }
+  .chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:3px; }
+  form .submit{ grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:6px; }
+  #status{ font-size:14px; color:var(--text-secondary); }
+  @media (max-width:860px){ .order{ grid-template-columns:1fr; gap:28px; } }
+  @media (max-width:560px){ form{ grid-template-columns:1fr; } form .btn{ width:100%; } }
+
+  footer{ padding:48px 0 56px; }
+  footer .wrap{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="/">SB<span>.</span></a>
+    <a class="btn btn-ghost" href="#bestel" style="padding:10px 18px;font-size:14px">Bestellen</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <div class="mono">Tuinman · op bestelling</div>
+      <h1>Jij. Ja, jij.<br>Je tuin <em>wacht.</em></h1>
+      <p class="lead">Gras dat te hoog staat, een haag die ontspoord is, onkruid dat wint? Bestel een tuinman die de handen vuil maakt, zodat jij dat niet hoeft te doen.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#bestel">Tuinman bestellen</a>
+        <a class="btn btn-ghost" href="https://wa.me/32491320394?text=Hallo!%20Ik%20wil%20graag%20een%20tuinman%20bestellen." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.2-.2-.2-.4-.3Z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+    <figure class="photo">
+      <img src="tuinman.webp" width="1000" height="1500" alt="Tuinman met groene muts, vuile handschoenen en schort met troffel, wijst naar de kijker" fetchpriority="high">
+      <figcaption class="tag mono">Beschikbaar</figcaption>
+    </figure>
+  </div>
+</header>
+
+<section class="block">
+  <div class="wrap">
+    <div class="mono">Wat ik doe</div>
+    <h2>Van gazon tot moestuin.</h2>
+    <div class="services">
+      <div class="service">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 20h18M6 20v-6M10 20v-9M14 20v-7M18 20v-10"/></svg></div>
+        <h3>Gras maaien</h3>
+        <p>Maaien, kanten afsteken en het gras netjes afvoeren.</p>
+      </div>
+      <div class="service">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 8.1 20 20M8.1 15.9 20 4"/></svg></div>
+        <h3>Snoeien</h3>
+        <p>Hagen, struiken en fruitbomen terug in vorm.</p>
+      </div>
+      <div class="service">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V11M12 11C12 7 9 4 4 4c0 4 3 7 8 7ZM12 14c0-3 2.5-6 8-6 0 3.5-3 6-8 6Z"/></svg></div>
+        <h3>Planten</h3>
+        <p>Borders aanleggen, bloemen en kruiden in de grond.</p>
+      </div>
+      <div class="service">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20h16M7 20c0-5 2-9 5-12M12 8c2 2 3 6 3 12M12 8V3"/></svg></div>
+        <h3>Onkruid wieden</h3>
+        <p>Perken, terras en opritten weer onkruidvrij.</p>
+      </div>
+      <div class="service">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14l-1.5 9h-11L5 11ZM8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+        <h3>Moestuin</h3>
+        <p>Bedden klaarmaken, zaaien en oogsten.</p>
+      </div>
+      <div class="service">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></div>
+        <h3>Seizoensbeurt</h3>
+        <p>Voorjaarsklaar of winterklaar: bladruimen inbegrepen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="mono">Zo werkt het</div>
+    <h2>In drie stappen.</h2>
+    <div class="steps">
+      <div class="step"><h3>Bestel</h3><p>Vul het formulier in: wat, waar en wanneer het jou past.</p></div>
+      <div class="step"><h3>Afspraak</h3><p>Je krijgt via WhatsApp een voorstel met datum en prijs.</p></div>
+      <div class="step"><h3>Klaar</h3><p>De tuinman komt langs, jij krijgt je tuin terug.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="bestel">
+  <div class="wrap">
+    <div class="order">
+      <div class="intro">
+        <div class="mono">Bestellen</div>
+        <h2>Bestel je tuinman.</h2>
+        <p>Je aanvraag verschijnt als ingevuld bericht in WhatsApp. Jij drukt enkel op verzenden, zonder account en zonder verplichtingen.</p>
+      </div>
+      <form id="orderForm" novalidate>
+        <div class="field full">
+          <label>Wat moet er gebeuren?</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="klus" value="Gras maaien"><span>Gras maaien</span></label>
+            <label class="chip"><input type="checkbox" name="klus" value="Snoeien"><span>Snoeien</span></label>
+            <label class="chip"><input type="checkbox" name="klus" value="Planten"><span>Planten</span></label>
+            <label class="chip"><input type="checkbox" name="klus" value="Onkruid wieden"><span>Onkruid wieden</span></label>
+            <label class="chip"><input type="checkbox" name="klus" value="Moestuin"><span>Moestuin</span></label>
+            <label class="chip"><input type="checkbox" name="klus" value="Seizoensbeurt"><span>Seizoensbeurt</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="naam">Naam</label>
+          <input id="naam" name="naam" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="gemeente">Gemeente</label>
+          <input id="gemeente" name="gemeente" autocomplete="address-level2" required>
+        </div>
+        <div class="field">
+          <label for="grootte">Grootte tuin</label>
+          <select id="grootte" name="grootte">
+            <option>Klein (tot 100 m²)</option>
+            <option selected>Middel (100–500 m²)</option>
+            <option>Groot (500 m² of meer)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="wanneer">Gewenste datum</label>
+          <input id="wanneer" name="wanneer" type="date">
+        </div>
+        <div class="field full">
+          <label for="opmerking">Nog iets?</label>
+          <textarea id="opmerking" name="opmerking" placeholder="Bv. haag van 20 meter, groenafval mag mee."></textarea>
+        </div>
+        <div class="submit">
+          <button class="btn btn-primary" type="submit">Bestelling versturen via WhatsApp</button>
+          <span id="status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="mono" href="/">← sbmusic.be</a>
+    <a class="mono" href="/privacy.html">Privacy</a>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var WA = 'https://wa.me/32491320394';
+    var form = document.getElementById('orderForm');
+    var status = document.getElementById('status');
+    var wanneer = document.getElementById('wanneer');
+    wanneer.min = new Date().toISOString().slice(0, 10);
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var naam = form.naam.value.trim(), gemeente = form.gemeente.value.trim();
+      if (!naam || !gemeente){
+        status.textContent = 'Vul je naam en gemeente in.';
+        (naam ? form.gemeente : form.naam).focus();
+        return;
+      }
+      var klussen = Array.prototype.map.call(form.querySelectorAll('input[name=klus]:checked'), function(i){ return i.value; });
+      var lines = [
+        'Hallo! Ik wil graag een tuinman bestellen.',
+        '',
+        'Naam: ' + naam,
+        'Gemeente: ' + gemeente,
+        'Klus: ' + (klussen.length ? klussen.join(', ') : 'nog te bespreken'),
+        'Grootte tuin: ' + form.grootte.value
+      ];
+      if (form.wanneer.value){
+        var d = new Date(form.wanneer.value + 'T12:00:00');
+        lines.push('Gewenste datum: ' + d.toLocaleDateString('nl-BE', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
+      }
+      if (form.opmerking.value.trim()) lines.push('Opmerking: ' + form.opmerking.value.trim());
+      var msg = lines.join('\n');
+
+      var url = WA + '?text=' + encodeURIComponent(msg);
+      status.textContent = 'WhatsApp wordt geopend met je bestelling.';
+      var win = window.open(url, '_blank');
+      if (win) win.opener = null; else location.href = url;
+    });
+  })();
+</script>
+</body>
+</html>
