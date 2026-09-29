@@ -1064,6 +1064,29 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .kbd-list kbd{display:inline-block;min-width:22px;padding:2px 7px;margin-left:4px;border-radius:6px;border:1px solid var(--line);border-bottom-width:2px;background:var(--bg);font:600 12px/1.4 ui-monospace,Menlo,Consolas,monospace;text-align:center}
 .kbd-list i{font-style:normal;color:var(--muted);margin-left:4px;font-size:12.5px}
 @media (prefers-reduced-motion:reduce){#ctxMenu{animation:none}}
+
+/* plusje bovenaan elke kolom */
+.col>header .col-plus{width:26px;height:26px;margin-left:0;color:var(--muted);border-radius:8px}
+.col>header .col-plus svg{width:17px;height:17px}
+.col>header .col-plus:hover{color:var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 14%,transparent)}
+.col-add-top{margin:0 0 8px}
+.col-add-top input{background:var(--card,var(--panel))!important;color:var(--text)!important;border:1px solid color-mix(in srgb,var(--c,var(--accent)) 45%,var(--line))!important;border-radius:12px;box-shadow:var(--shadow-card);animation:qaIn .3s var(--spring)}
+@media (max-width:860px){ .col>header .col-plus{width:34px;height:34px} .col>header .col-plus svg{width:20px;height:20px} }
+
+.col-tools{display:contents}
+.col-right{display:flex;align-items:center;gap:4px;flex:none}
+/* desktop: extra kolomknoppen verschijnen bij hover óver de titel, zodat de volledige naam zichtbaar blijft en niets verspringt */
+@media (hover:hover) and (pointer:fine){
+  .col>header{position:relative}
+  .col>header .col-right{position:relative}
+  .col>header .col-tools{display:flex;align-items:center;gap:2px;position:absolute;top:0;bottom:0;right:100%;padding-left:22px;
+    background:linear-gradient(to right,transparent,color-mix(in srgb,var(--bg) 92%,var(--text)) 20px);border-radius:10px;opacity:0;pointer-events:none;transition:opacity .15s}
+  .col:hover>header .col-tools,.col>header .col-tools:focus-within{opacity:1;pointer-events:auto}
+  .col>header .col-tools .icon-btn{opacity:1!important;margin:0}
+  .col>header{gap:4px}
+  .col>header .count{margin-left:2px}
+  .col>header .col-plus{margin-left:0}
+}
 </style>
 </head>
 <body>
@@ -1689,16 +1712,18 @@ function setPref(k, v) {
 }
 function setView(v) {
   const same = v.type === view.type && v.id === view.id;
+  // de keuze geldt meteen (ook voor wat je intussen typt); enkel het tekenen gebeurt in de overgang
+  view = v; searchQ = ''; archQ = '';
+  if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
   const apply = () => {
-    view = v; searchQ = ''; archQ = '';
     $('#list').innerHTML = '';
     $('#app').classList.remove('side-open');
-    if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
     renderAll();
     $('#main').scrollTo({top:0, behavior:'instant'});
   };
   // zachte overgang tussen schermen, zoals een native app (Safari 18+, Chrome); anders meteen
-  if (same || !document.startViewTransition || reduceMotion() || document.hidden) { apply(); return; }
+  // enkel op gsm: daar hoort een overgang bij het native gevoel; desktop-apps wisselen meteen
+  if (same || !document.startViewTransition || reduceMotion() || document.hidden || !matchMedia('(max-width:860px)').matches) { apply(); return; }
   document.startViewTransition(apply);
 }
 function viewTitle() {
@@ -1941,7 +1966,8 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span>${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button>${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right"><span class="col-tools"><button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button><button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></span>${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
+      ${topAdd === st.id ? `<form class="col-add col-add-top" data-stage="${st.id}" data-top="1" autocomplete="off"><input type="text" placeholder="Nieuwe kaart in ${esc(st.label)}…" aria-label="Nieuwe kaart bovenaan ${esc(st.label)}" enterkeyhint="done"></form>` : ''}
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
       <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
@@ -2192,7 +2218,7 @@ function renderQaPreview() {
   el.innerHTML = r.tokens.map(([l, c]) => c ? `<span class="chip opt" style="--c:${c}">${esc(l)}</span>` : `<span class="chip">${esc(l)}</span>`).join('');
 }
 $('#qaInput').addEventListener('input', renderQaPreview);
-function createTask(r, stage) {
+function createTask(r, stage, top) {
   stage = stage || r.stage || firstOpen().id;
   const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
   const t = touch({
@@ -2201,6 +2227,7 @@ function createTask(r, stage) {
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), order:now(), custom:r.custom,
   });
+  if (top) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
   // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
   const p = prefs();
   if (p.ff && p.fv && p.fv !== '__empty') {
@@ -3802,6 +3829,7 @@ document.addEventListener('touchstart', () => {}, {passive:true});
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
   if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
+  const plus = e.target.closest('[data-addtop]'); if (plus) { openTopAdd(plus.dataset.addtop); return; }
   const hideCol = e.target.closest('[data-hidecol]');
   if (hideCol) {
     const id = hideCol.dataset.hidecol, st = stageById(id);
@@ -3831,12 +3859,28 @@ $('#list').addEventListener('click', e => {
 $('#list').addEventListener('submit', e => {
   const form = e.target.closest('.col-add'); if (!form) return;
   e.preventDefault();
-  const stage = form.dataset.stage, input = $('input', form);
+  const stage = form.dataset.stage, input = $('input', form), top = !!form.dataset.top;
   const r = parseQuick(input.value);
   if (!r.title) return;
-  createTask(r, stage);
-  $(`.col-add[data-stage="${stage}"] input`)?.focus();
+  createTask(r, stage, top);
+  $(`.col-add${top ? '.col-add-top' : ':not(.col-add-top)'}[data-stage="${stage}"] input`)?.focus();
 });
+// Plusje in de kolomkop: invoerveld bovenaan die kolom
+let topAdd = null;
+function openTopAdd(stage) {
+  topAdd = stage; renderMain();
+  const inp = $(`.col-add-top[data-stage="${stage}"] input`);
+  inp?.focus(); inp?.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+$('#list').addEventListener('focusout', e => {
+  const form = e.target.closest?.('.col-add-top'); if (!form) return;
+  setTimeout(() => {
+    if (topAdd && !form.contains(document.activeElement) && !$('input', form)?.value.trim() && form.isConnected) { topAdd = null; renderMain(); }
+  }, 120);
+});
+$('#list').addEventListener('keydown', e => {
+  if (e.key === 'Escape' && e.target.closest('.col-add-top')) { e.stopPropagation(); topAdd = null; renderMain(); }
+}, true);
 
 /* ---------------- Kanban: slepen (muis + aanraken) ---------------- */
 let drag = null, justDragged = false;
