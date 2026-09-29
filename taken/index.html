@@ -980,6 +980,50 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
   .main-head.scrolled::before{opacity:1}
 }
 @media (min-width:861px) and (prefers-reduced-transparency:reduce){ .main-head::before{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none} }
+
+/* ---------- Native gevoel (gsm & PWA) ---------- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation}
+*{-webkit-tap-highlight-color:transparent}
+button,.nav-item,.nav-year,.nav-arch,#tabBar,#fab,.col>header,.col-tabs,.seg,.chip,.fchip,.sales-stat,.main-head h2,.side-head{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
+#main,#detail,#side,.board,.table-wrap,dialog{overscroll-behavior:contain}
+@media (max-width:860px){
+  html,body{overscroll-behavior:none}
+  .card{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  /* drukfeedback zoals UIKit: meteen bij aanraken, terugveren bij loslaten */
+  .btn,.icon-btn,.nav-item,.nav-year,.col-tabs button,.fin-btn,.seg button,#fab{transition:transform .28s var(--spring),background-color .2s,color .2s,opacity .2s}
+  .btn:active,.icon-btn:active,.col-tabs button:active,.seg button:active,.fin-btn:active{transform:scale(.95);transition-duration:.08s}
+  .nav-item:active,.nav-year:active{transform:scale(.98);background:var(--hover);transition-duration:.08s}
+  #fab:active{transform:scale(.9);transition-duration:.08s}
+  .card{transition:transform .3s var(--spring),box-shadow .2s}
+  .card:active{transform:scale(.975);transition-duration:.1s}
+  /* zijmenu slepen met de vinger */
+  #app.side-drag #side{transition:none!important}
+  #app.side-drag #scrim{display:block;position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.25);opacity:var(--side-p,0);animation:none;transition:none}
+  /* tabbalk: meeschuivende markering met veer */
+  #tabBar button{position:relative;z-index:1}
+  #tabBar button.on{background:transparent!important;box-shadow:none!important}
+  #tabBar .tb-ind{display:block;position:absolute;z-index:0;left:0;top:5px;bottom:5px;border-radius:999px;background:rgba(255,255,255,.72);box-shadow:inset 0 1px 0 #fff,0 1px 4px rgba(0,0,0,.08);opacity:0;transition:transform .5s var(--spring),width .5s var(--spring),opacity .2s}
+  #tabBar .tb-ind.ready{opacity:1}
+}
+@media (hover:none){ .nav-item:hover:not(.on),.icon-btn:hover,.nav-year:hover,.nav-arch:hover{background:transparent} }
+@media (max-width:860px) and (prefers-color-scheme:dark){ :root:not([data-theme="light"]) #tabBar .tb-ind{background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)} }
+@media (max-width:860px){ :root[data-theme="dark"] #tabBar .tb-ind{background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)} }
+.tb-ind{display:none}
+/* schermovergang: oud vervaagt snel, nieuw komt zacht omhoog; zijbalk en tabbalk blijven staan */
+@media (max-width:860px){ #tabBar{view-transition-name:tabbar} #fab{view-transition-name:fab} }
+@media (min-width:861px){ #side{view-transition-name:side} }
+::view-transition-old(root){animation:vt-out .16s ease-in both}
+::view-transition-new(root){animation:vt-in .32s cubic-bezier(.32,.72,0,1) both}
+::view-transition-group(tabbar),::view-transition-group(fab),::view-transition-group(side){animation:none}
+::view-transition-old(tabbar),::view-transition-old(fab),::view-transition-old(side){display:none}
+::view-transition-new(tabbar),::view-transition-new(fab),::view-transition-new(side){animation:none}
+@keyframes vt-out{to{opacity:0}}
+@keyframes vt-in{from{opacity:0;transform:translateY(8px) scale(.995)}}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+  #tabBar .tb-ind,.card,.btn,.icon-btn,.nav-item{transition:none!important}
+}
 </style>
 </head>
 <body>
@@ -1044,7 +1088,7 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
   <aside id="detail" hidden></aside>
   <!-- iOS 27: compacte titelbalk, zwevende tabbalk en +-knop (alleen gsm) -->
   <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
-  <nav id="tabBar" aria-label="Hoofdnavigatie">
+  <nav id="tabBar" aria-label="Hoofdnavigatie"><i class="tb-ind" aria-hidden="true"></i>
     <button type="button" data-tab="all"><span class="ti"></span><span>Taken</span></button>
     <button type="button" data-tab="today"><span class="ti"></span><span>Vandaag</span></button>
     <button type="button" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
@@ -1581,12 +1625,18 @@ function setPref(k, v) {
   commit();
 }
 function setView(v) {
-  view = v; searchQ = ''; archQ = '';
-  $('#list').innerHTML = '';
-  $('#app').classList.remove('side-open');
-  if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
-  renderAll();
-  $('#main').scrollTop = 0;
+  const same = v.type === view.type && v.id === view.id;
+  const apply = () => {
+    view = v; searchQ = ''; archQ = '';
+    $('#list').innerHTML = '';
+    $('#app').classList.remove('side-open');
+    if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
+    renderAll();
+    $('#main').scrollTo({top:0, behavior:'instant'});
+  };
+  // zachte overgang tussen schermen, zoals een native app (Safari 18+, Chrome); anders meteen
+  if (same || !document.startViewTransition || reduceMotion() || document.hidden) { apply(); return; }
+  document.startViewTransition(apply);
 }
 function viewTitle() {
   if (view.type === 'project') return proj(view.id).name;
@@ -1969,9 +2019,18 @@ function renderToolbar() {
     <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgewerkte tonen</label>
     </div>`;
 }
+function placeTabIndicator() {
+  const on = $('#tabBar button.on'), ind = $('#tabBar .tb-ind');
+  if (!on || !ind || !on.offsetWidth) return;
+  ind.style.width = on.offsetWidth + 'px';
+  ind.style.transform = `translateX(${on.offsetLeft}px)`;
+  ind.classList.add('ready');
+}
+addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
   const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : 'all';
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  placeTabIndicator();
   $('#fab').hidden = view.type === 'archive';
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
   if (view.type === 'sales' || view.type === 'archive') document.body.classList.remove('qa-open');
@@ -3628,6 +3687,54 @@ $('#main').addEventListener('scroll', e => {
   document.body.classList.toggle('mini-title', e.currentTarget.scrollTop > 44);
 }, {passive:true});
 $('#scrim').onclick = () => $('#app').classList.remove('side-open');
+// iOS toont :active (drukfeedback) enkel als er een touchstart-listener is
+document.addEventListener('touchstart', () => {}, {passive:true});
+// Zijmenu met de vinger: vanaf de linkerrand openvegen, naar links dichtvegen (gsm).
+// Volgt de vinger 1:1, start vanaf de huidige positie (onderbreekbaar) en beslist met de worpsnelheid.
+(() => {
+  const side = $('#side'), app = $('#app');
+  const phone = () => matchMedia('(max-width:860px)').matches;
+  const project = (v, d = 0.998) => (v / 1000) * d / (1 - d);
+  let g = null;
+  addEventListener('touchstart', e => {
+    g = null;
+    if (!phone() || e.touches.length !== 1 || dlg.open || document.body.classList.contains('sheet-open')) return;
+    const t = e.touches[0], open = app.classList.contains('side-open');
+    if (open ? !(side.contains(e.target) || e.target.id === 'scrim') : t.clientX > 24) return;
+    if (e.target === document.activeElement && e.target.closest('input,textarea,select,[contenteditable]')) return;
+    g = {x0:t.clientX, y0:t.clientY, open, lock:null, base:0, x:0, v:0, lx:t.clientX, lt:performance.now()};
+  }, {passive:true});
+  addEventListener('touchmove', e => {
+    if (!g) return;
+    const t = e.touches[0], dx = t.clientX - g.x0, dy = t.clientY - g.y0;
+    if (!g.lock) {
+      if (Math.hypot(dx, dy) < 8) return;
+      g.lock = Math.abs(dx) > Math.abs(dy) * 1.15 && (g.open ? dx < 0 : dx > 0) ? 'x' : 'y';
+      if (g.lock !== 'x') { g = null; return; }
+      g.w = side.offsetWidth;
+      g.base = new DOMMatrix(getComputedStyle(side).transform).m41;   // vanaf waar hij nu staat
+      g.x0 = t.clientX; app.classList.add('side-drag');
+    }
+    e.preventDefault();
+    const now = performance.now();
+    g.v = (t.clientX - g.lx) / Math.max(1, now - g.lt) * 1000; g.lx = t.clientX; g.lt = now;
+    let x = g.base + (t.clientX - g.x0);
+    if (x > 0) x = (x * 0.55 * g.w) / (g.w + 0.55 * x);   // elastisch voorbij volledig open
+    g.x = Math.max(-g.w, x);
+    side.style.transform = `translateX(${g.x}px)`;
+    app.style.setProperty('--side-p', String(1 + g.x / g.w));
+  }, {passive:false});
+  const end = () => {
+    if (!g || g.lock !== 'x') { g = null; return; }
+    const open = g.x + project(g.v) > -g.w / 2;
+    app.classList.remove('side-drag');
+    side.style.transform = ''; app.style.removeProperty('--side-p');
+    app.classList.toggle('side-open', open);
+    g = null;
+  };
+  addEventListener('touchend', end, {passive:true});
+  addEventListener('touchcancel', end, {passive:true});
+})();
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
   if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
