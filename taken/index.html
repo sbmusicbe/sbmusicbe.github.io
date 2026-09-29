@@ -419,10 +419,23 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .pace.behind{border-color:color-mix(in srgb,var(--danger) 30%,var(--line));background:color-mix(in srgb,var(--danger) 6%,var(--panel))}
 .pace.hit{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 9%,var(--panel))}
 .pace.hit b{color:var(--ok)}
+.nav-arch{display:flex;align-items:center;gap:6px;width:100%;margin-top:2px;padding:6px 10px;border:0;background:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:8px;text-align:left}
+.nav-arch:hover{background:var(--hover)}
+.nav-arch svg{width:13px;height:13px;transition:transform .2s var(--spring,ease)}
+.nav-arch.open svg{transform:rotate(90deg)}
+.nav-item.is-arch{opacity:.62}
+#archBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 14px;padding:10px 12px 10px 14px;border-radius:12px;background:color-mix(in srgb,var(--muted) 10%,var(--panel));border:1px solid var(--line);font-size:14px}
+#archBar[hidden]{display:none}
+#archBar>span:first-child{display:flex;align-items:center;gap:8px;color:var(--muted)}
+#archBar svg{width:17px;height:17px}
 .pace.pay{border-color:color-mix(in srgb,var(--accent) 28%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--panel))}
 .pace.pay{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 24px;align-items:start}
 .pace.pay>div{flex-direction:column;align-items:flex-start;gap:2px}
-@media (max-width:860px){.pace.pay{grid-template-columns:1fr}}
+.pay-net{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 16px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--accent) 18%,var(--line))}
+.pay-net>div{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}
+.pay-net b{color:var(--ok)}
+.linklike{background:none;border:0;padding:0;font:inherit;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+@media (max-width:860px){.pace.pay{grid-template-columns:1fr}.pay-net{flex-direction:column}}
 @media (max-width:860px){.pace{flex-direction:column;gap:6px;padding:10px 12px}.pace b{font-size:16px}}
 /* ---------- Opmerkingen ---------- */
 .c-count{background:var(--hover);color:var(--muted);border-radius:999px;padding:1px 7px;font-size:12px;margin-left:4px}
@@ -971,6 +984,7 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
       <textarea id="projNotes" class="proj-notes" rows="1" placeholder="Klik hier om notities toe te voegen…" aria-label="Notities bij dit project" hidden></textarea>
+      <div id="archBar" hidden></div>
       <div id="banner" hidden></div>
       <div class="toolbar" id="toolbar"></div>
       <form id="quickAdd" autocomplete="off">
@@ -1538,12 +1552,14 @@ function safeUrl(v) {
 }
 
 /* ---------------- Task list ---------------- */
+const projArchived = id => !!data.projects.find(p => p.id === id)?.archived;
 function viewTasks(includeDone) {
   const td = today(), wk = addDays(td, 6);
   return data.tasks.filter(t => {
     // gearchiveerde kaarten zijn alleen zichtbaar in het Archief
     if (t.archived || view.type === 'archive') return !!t.archived && view.type === 'archive';
     if (!includeDone && t.done) return false;
+    if (view.type !== 'project' && projArchived(t.projectId)) return false;
     switch (view.type) {
       case 'inbox': return t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId);
       case 'today': return t.done ? (t.doneAt && ymd(new Date(t.doneAt)) === td) : (t.due && t.due <= td);
@@ -1768,8 +1784,9 @@ function renderMain() {
 }
 
 /* ---------------- Sidebar / header / toolbar ---------------- */
+const navArchOpen = {proj:false, sales:false};
 function renderNav() {
-  const open = data.tasks.filter(t => !t.done && !t.archived), td = today(), wk = addDays(td, 6);
+  const open = data.tasks.filter(t => !t.done && !t.archived && !projArchived(t.projectId)), td = today(), wk = addDays(td, 6);
   const cnt = {
     archive: data.tasks.filter(t => t.archived).length,
     inbox: open.filter(t => t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId)).length,
@@ -1779,13 +1796,19 @@ function renderNav() {
   };
   $('#nav').innerHTML = SMART.map(([k, label]) =>
     `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${I[k]}</span><span class="nm">${label}</span><span class="cnt">${cnt[k] || ''}</span></button>`).join('');
-  $('#projNav').innerHTML = sortedProjects().filter(p => p.id !== 'inbox').map(p => {
-    const n = open.filter(t => t.projectId === p.id).length;
-    return `<button class="nav-item ${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico">${p.emoji ? `<span class="emo">${esc(p.emoji)}</span>` : `<span class="dot" style="background:${p.color}"></span>`}</span><span class="nm">${esc(p.name)}</span><span class="cnt">${n || ''}</span></button>`;
-  }).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen projecten</div>';
-  $('#salesNav').innerHTML = sortedSalesPages().map(pg =>
-    `<button class="nav-item ${view.type === 'sales' && view.id === pg.id ? 'on' : ''}" data-sales="${pg.id}"><span class="ico">${I.sales}</span><span class="nm">${esc(pg.title)}</span><span class="cnt">${esc(eurShort(salesTotals(pg.id).money))}</span></button>`).join('')
-    || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>';
+  const allOpen = data.tasks.filter(t => !t.done && !t.archived);
+  const projItem = p => {
+    const n = allOpen.filter(t => t.projectId === p.id).length;
+    return `<button class="nav-item ${p.archived ? 'is-arch ' : ''}${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico">${p.emoji ? `<span class="emo">${esc(p.emoji)}</span>` : `<span class="dot" style="background:${p.color}"></span>`}</span><span class="nm">${esc(p.name)}</span><span class="cnt">${n || ''}</span></button>`;
+  };
+  const salesItem = pg => `<button class="nav-item ${pg.archived ? 'is-arch ' : ''}${view.type === 'sales' && view.id === pg.id ? 'on' : ''}" data-sales="${pg.id}"><span class="ico">${I.sales}</span><span class="nm">${esc(pg.title)}</span><span class="cnt">${esc(eurShort(salesTotals(pg.id).money))}</span></button>`;
+  const archList = (key, items, fn) => !items.length ? '' :
+    `<button type="button" class="nav-arch ${navArchOpen[key] ? 'open' : ''}" data-navarch="${key}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>Gearchiveerd (${items.length})</button>${navArchOpen[key] ? items.map(fn).join('') : ''}`;
+  const projs = sortedProjects().filter(p => p.id !== 'inbox'), pages = sortedSalesPages();
+  $('#projNav').innerHTML = (projs.filter(p => !p.archived).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen projecten</div>')
+    + archList('proj', projs.filter(p => p.archived), projItem);
+  $('#salesNav').innerHTML = (pages.filter(p => !p.archived).map(salesItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
+    + archList('sales', pages.filter(p => p.archived), salesItem);
   renderSync();
 }
 function renderHead() {
@@ -1797,6 +1820,9 @@ function renderHead() {
   notes.hidden = !pr;
   if (pr && document.activeElement !== notes) { notes.value = pr.notes || ''; notes.dataset.pid = pr.id; autosize(notes); }
   $('#editProject').hidden = !isP;
+  const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
+  const ab = $('#archBar'); ab.hidden = !arch?.archived;
+  if (arch?.archived) ab.innerHTML = `<span>${I.archive}${view.type === 'sales' ? 'Deze pagina' : 'Dit project'} is gearchiveerd.</span><span class="grow"></span><button type="button" class="btn" data-unarch>Terugzetten</button><button type="button" class="btn danger" data-archdel>Verwijderen</button>`;
   $('#editProject').title = view.type === 'sales' ? 'Pagina bewerken' : 'Project bewerken';
   document.title = `${viewTitle()} · Taken`;
   $('#miniTitle').textContent = viewTitle();
@@ -2344,7 +2370,7 @@ function openProjectDialog(p) {
       <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Nieuw veld</button></div>
     </div>
     <div class="dlg-actions">
-      ${p && !isInbox ? '<button type="button" class="btn danger" id="pjDel">Verwijderen</button>' : ''}
+      ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjArch">${p.archived ? 'Terugzetten' : 'Archiveren'}</button>` : ''}
       <span class="grow"></span>
       <button type="button" class="btn" id="pjCancel">Annuleren</button>
       <button type="button" class="btn primary" id="pjSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
@@ -2371,8 +2397,7 @@ function openProjectDialog(p) {
     $('#pjSave', d).onclick = () => {
       const target = doSave(); if (!target) return;
       dlg.close();
-      if (isNew) view = {type:'project', id:target.id};
-      commit();
+      if (isNew) { save(); setView({type:'project', id:target.id}); } else commit();
     };
     $('#pjNewField', d).onclick = () => {
       const target = doSave(); if (!target) return;
@@ -2381,9 +2406,22 @@ function openProjectDialog(p) {
       renderAll();
       openFieldEditor(null, target.id === 'inbox' ? null : target.id, () => openProjectDialog(target));
     };
-    $('#pjDel', d)?.addEventListener('click', () => {
+    $('#pjArch', d)?.addEventListener('click', () => { dlg.close(); archiveProject(p, !p.archived); });
+    $('#pjDel', d)?.addEventListener('click', () => { if (deleteProject(p)) dlg.close(); });
+  });
+}
+$('#archBar').addEventListener('click', e => {
+  const pg = view.type === 'sales' ? salesPageById(view.id) : null, p = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
+  if (e.target.closest('[data-unarch]')) { if (pg) archiveSalesPage(pg, false); else if (p) archiveProject(p, false); }
+  if (e.target.closest('[data-archdel]')) { if (pg) deleteSalesPage(pg); else if (p) deleteProject(p); }
+});
+function archiveProject(p, on) {
+  p.archived = on; touch(p); commit();
+  toast(on ? `“${p.name}” gearchiveerd` : `“${p.name}” teruggezet`);
+}
+function deleteProject(p) {
       const n = data.tasks.filter(t => t.projectId === p.id).length;
-      if (!confirm(`Project “${p.name}”${n ? ` en de ${n} taken erin` : ''} verwijderen?`)) return;
+      if (!confirm(`Project “${p.name}”${n ? ` en de ${n} taken erin` : ''} definitief verwijderen?`)) return false;
       data.projects = data.projects.filter(x => x.id !== p.id); tombstone(p.id);
       for (const t of data.tasks.filter(t => t.projectId === p.id)) tombstone(t.id);
       data.tasks = data.tasks.filter(t => t.projectId !== p.id);
@@ -2391,9 +2429,7 @@ function openProjectDialog(p) {
       delete data.prefs['p:' + p.id];
       if (view.type === 'project' && view.id === p.id) view = {type:'inbox'};
       if (selectedId && !taskById(selectedId)) selectedId = null;
-      dlg.close(); commit();
-    });
-  });
+      commit(); return true;
 }
 
 function openStagesDialog() {
@@ -2833,6 +2869,10 @@ function salesPay(pg, total) {
   const bonus = tier ? tier[1] : 0;
   return {days, threshold, commission, bonus, tier, next, sum:round2(commission + bonus)};
 }
+// Netto-schatting: 13,07 % RSZ, daarna bedrijfsvoorheffing (instelbaar, standaard 45 %).
+const RSZ = 0.1307, payTax = () => { const v = data.settings.payTax; return v >= 0 && v < 100 ? v : 45; };
+const pctFmt = n => String(n).replace('.', ',') + ' %';
+const netOf = gross => round2(gross * (1 - RSZ) * (1 - payTax() / 100));
 function payHtml(pg, total) {
   const p = salesPay(pg, total); if (!p) return '';
   const nextTxt = p.next ? `nog ${eur(p.next[0] - total)} tot bonus ${eur(p.next[1])}` : 'hoogste schijf bereikt';
@@ -2841,6 +2881,8 @@ function payHtml(pg, total) {
     <div><b>${eur(p.sum)}</b><span>commissie + bonus (bruto)</span></div>
     <div><b>Commissie ${eur(p.commission)}</b><span>${comTxt} · ${p.days} werkdagen</span></div>
     <div><b>Bonus ${eur(p.bonus)}</b><span>${p.tier ? `schijf vanaf ${eur(p.tier[0])} · ` : ''}${nextTxt}</span></div>
+    <div class="pay-net"><div><b>± ${eur(netOf(p.sum))} netto</b><span>commissie ${eur(netOf(p.commission))} · bonus ${eur(netOf(p.bonus))}</span></div>
+      <span class="muted">na ${pctFmt(RSZ * 100)} RSZ en ${pctFmt(payTax())} bedrijfsvoorheffing · <button type="button" class="linklike" data-paytax>aanpassen</button></span></div>
   </div>`;
 }
 function salesTotals(pid) {
@@ -2962,6 +3004,23 @@ function updateSalesTotals(skipNav) {
   }
   if (!skipNav) renderNav();
 }
+function openPayTaxDialog() {
+  showDialog(`
+    <h3>Netto berekening</h3>
+    <p class="muted small" style="margin:0 0 10px">Netto = bruto − ${pctFmt(RSZ * 100)} RSZ, daarna − bedrijfsvoorheffing. Bij een voltijds loon ligt die op commissie en bonus meestal rond 40 à 50 %. Het juiste percentage vind je op je loonfiche: ingehouden bedrijfsvoorheffing ÷ belastbaar bedrag van een maand met commissie of bonus.</p>
+    <label class="fl">Bedrijfsvoorheffing (%)<input id="ptPct" type="text" inputmode="decimal" value="${esc(pctFmt(payTax()).replace(' %', ''))}"></label>
+    <div class="dlg-actions"><span class="grow"></span>
+      <button type="button" class="btn" id="ptCancel">Annuleren</button>
+      <button type="button" class="btn primary" id="ptSave">Opslaan</button></div>`, d => {
+    $('#ptCancel', d).onclick = () => dlg.close();
+    $('#ptSave', d).onclick = () => {
+      const v = toNum($('#ptPct', d).value.replace('%', ''));
+      if (v === null || v < 0 || v >= 100) { $('#ptPct', d).focus(); return; }
+      data.settings.payTax = v; dlg.close(); save(); renderSales(true);
+    };
+    $('#ptPct', d).onkeydown = e => { if (e.key === 'Enter') $('#ptSave', d).click(); };
+  });
+}
 function addSalesRow() {
   const pg = salesPageById(view.id); if (!pg) return;
   const r = touch({id:uid(), pageId:pg.id, order:now(), values:{}});
@@ -3015,6 +3074,7 @@ sp.addEventListener('click', e => {
   if (flat) { const pg = salesPageById(view.id); pg.flat = flat.dataset.flat === '1'; touch(pg); commit(); return; }
   if (e.target.closest('#spImport')) { openSalesImportDialog(); return; }
   if (e.target.closest('#spAdd')) addSalesRow();
+  if (e.target.closest('[data-paytax]')) openPayTaxDialog();
   else if (e.target.closest('#spCols')) openSalesColsDialog();
   else if (e.target.closest('#spCsv')) exportSalesCsv();
   else if (e.target.closest('[data-delrow]')) {
@@ -3051,7 +3111,7 @@ function openSalesPageDialog(pg) {
     <label class="fl">Werkdagen <span class="muted" id="pgWorkHint">(leeg = automatisch${month ? ': ' + workdaysOf(month).length : ''})</span><input id="pgWork" type="number" inputmode="numeric" min="1" max="31" value="${esc(pg?.workdays || '')}" placeholder="automatisch"></label>
     <p class="muted small" style="margin:6px 0 0">Automatisch = maandag tot vrijdag, zonder Belgische feestdagen.</p>
     <div class="dlg-actions">
-      ${pg ? '<button type="button" class="btn danger" id="pgDel">Verwijderen</button>' : ''}
+      ${pg ? `<button type="button" class="btn danger" id="pgDel">Verwijderen</button><button type="button" class="btn" id="pgArch">${pg.archived ? 'Terugzetten' : 'Archiveren'}</button>` : ''}
       <span class="grow"></span>
       <button type="button" class="btn" id="pgCancel">Annuleren</button>
       <button type="button" class="btn primary" id="pgSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
@@ -3068,18 +3128,25 @@ function openSalesPageDialog(pg) {
       const workdays = parseInt($('#pgWork', d).value, 10) || null;
       if (isNew) {
         const np = touch({id:uid(), title, month:m, notes:'', target, workdays, order:now()});
-        data.salesPages.push(np); view = {type:'sales', id:np.id};
+        data.salesPages.push(np); dlg.close(); save(); setView({type:'sales', id:np.id}); return;
       } else Object.assign(pg, {title, month:m, target, workdays}, {u:now()});
       dlg.close(); commit();
     };
-    $('#pgDel', d)?.addEventListener('click', () => {
-      if (!confirm(`Pagina “${pg.title}”${n ? ` en de ${n} verkopen erop` : ''} verwijderen?`)) return;
-      for (const r of salesRows(pg.id)) tombstone(r.id);
-      data.sales = data.sales.filter(r => r.pageId !== pg.id);
-      data.salesPages = data.salesPages.filter(x => x.id !== pg.id); tombstone(pg.id);
-      view = {type:'all'}; dlg.close(); commit();
-    });
+    $('#pgArch', d)?.addEventListener('click', () => { dlg.close(); archiveSalesPage(pg, !pg.archived); });
+    $('#pgDel', d)?.addEventListener('click', () => { if (deleteSalesPage(pg)) dlg.close(); });
   });
+}
+function archiveSalesPage(pg, on) {
+  pg.archived = on; touch(pg); commit();
+  toast(on ? `“${pg.title}” gearchiveerd` : `“${pg.title}” teruggezet`);
+}
+function deleteSalesPage(pg) {
+  const n = salesRows(pg.id).length;
+  if (!confirm(`Pagina “${pg.title}”${n ? ` en de ${n} verkopen erop` : ''} definitief verwijderen?`)) return false;
+  for (const r of salesRows(pg.id)) tombstone(r.id);
+  data.sales = data.sales.filter(r => r.pageId !== pg.id);
+  data.salesPages = data.salesPages.filter(x => x.id !== pg.id); tombstone(pg.id);
+  view = {type:'all'}; commit(); return true;
 }
 /* ---- Notities plakken: je eigen notatie omzetten naar verkopen ----
    Week 2 - €4.665
@@ -3354,6 +3421,10 @@ function toast(msg, undo) {
 
 /* ---------------- Events ---------------- */
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView({type:b.dataset.view}); });
+for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e => {
+  const a = e.target.closest('[data-navarch]'); if (!a) return;
+  e.stopPropagation(); navArchOpen[a.dataset.navarch] = !navArchOpen[a.dataset.navarch]; renderNav();
+});
 $('#projNav').addEventListener('click', e => { const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
 $('#banner').addEventListener('click', e => { if (e.target.id === 'bnGo') openSettings(); });
 $('#addProject').onclick = () => openProjectDialog(null);
@@ -3379,7 +3450,7 @@ $('#tabBar').addEventListener('click', e => {
   const t = b.dataset.tab;
   if (t === 'more') { $('#app').classList.add('side-open'); return; }
   if (t === 'sales') {
-    const pg = sortedSalesPages()[0];
+    const pg = sortedSalesPages().find(x => !x.archived) || sortedSalesPages()[0];
     if (pg) setView({type:'sales', id:pg.id}); else { $('#app').classList.add('side-open'); toast('Maak eerst een maandpagina onder Verkopen'); }
     return;
   }
