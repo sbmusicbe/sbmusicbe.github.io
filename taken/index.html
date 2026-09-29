@@ -440,6 +440,16 @@ table.sales .cell.t-format{display:flex;flex-wrap:wrap;gap:4px;align-items:cente
 .nav-arch svg{width:13px;height:13px;transition:transform .2s var(--spring,ease)}
 .nav-arch.open svg{transform:rotate(90deg)}
 .nav-item.is-arch{opacity:.62}
+.nav-item.is-fin .nm{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.nav-item.is-fin .cnt svg{width:13px;height:13px;color:var(--ok)}
+.fin-btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px 0 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .12s}
+.fin-btn[hidden]{display:none}
+.fin-btn svg{width:16px;height:16px;color:var(--ok)}
+.fin-btn:hover{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.fin-btn:active{transform:scale(.96)}
+.fin-btn.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.fin-btn.on svg{color:#fff}
+@media (max-width:860px){.fin-btn{width:34px;height:34px;padding:0;justify-content:center}.fin-btn span{display:none}.fin-btn svg{width:18px;height:18px}}
 .nav-year{display:flex;align-items:center;gap:6px;width:100%;padding:7px 10px;border:0;background:none;color:var(--text);font:inherit;font-size:14px;font-weight:650;cursor:pointer;border-radius:10px;text-align:left}
 .nav-year:hover{background:var(--hover)}
 .nav-year svg{width:14px;height:14px;flex:none;color:var(--muted);transition:transform .2s var(--spring,ease)}
@@ -1014,6 +1024,7 @@ dialog{background:var(--glass-strong);border:1px solid var(--glass-edge);box-sha
         <button id="menuBtn" class="icon-btn only-mobile" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <h2 id="viewTitle"></h2>
         <span class="grow"></span>
+        <button id="finishProject" type="button" class="fin-btn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Afwerken</span></button>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
       <textarea id="projNotes" class="proj-notes" rows="1" placeholder="Klik hier om notities toe te voegen…" aria-label="Notities bij dit project" hidden></textarea>
@@ -1620,7 +1631,7 @@ function safeUrl(v) {
 }
 
 /* ---------------- Task list ---------------- */
-const projArchived = id => !!data.projects.find(p => p.id === id)?.archived;
+const projArchived = id => { const p = data.projects.find(p => p.id === id); return !!(p?.archived || p?.finished); };
 function viewTasks(includeDone) {
   const td = today(), wk = addDays(td, 6);
   return data.tasks.filter(t => {
@@ -1852,7 +1863,7 @@ function renderMain() {
 }
 
 /* ---------------- Sidebar / header / toolbar ---------------- */
-const navArchOpen = {proj:false, sales:false};
+const navArchOpen = {proj:false, sales:false, fin:false};
 // Jaarmappen onder Verkopen: open/dicht per toestel onthouden; standaard is enkel het huidige jaar open.
 let yearState = {};
 try { yearState = JSON.parse(localStorage.getItem('taken.salesYears') || '{}'); } catch {}
@@ -1876,13 +1887,14 @@ function renderNav() {
   const allOpen = data.tasks.filter(t => !t.done && !t.archived);
   const projItem = p => {
     const n = allOpen.filter(t => t.projectId === p.id).length;
-    return `<button class="nav-item ${p.archived ? 'is-arch ' : ''}${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico">${p.emoji ? `<span class="emo">${esc(p.emoji)}</span>` : `<span class="dot" style="background:${p.color}"></span>`}</span><span class="nm">${esc(p.name)}</span><span class="cnt">${n || ''}</span></button>`;
+    return `<button class="nav-item ${p.archived ? 'is-arch ' : ''}${p.finished && !p.archived ? 'is-fin ' : ''}${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico">${p.emoji ? `<span class="emo">${esc(p.emoji)}</span>` : `<span class="dot" style="background:${p.color}"></span>`}</span><span class="nm">${esc(p.name)}</span><span class="cnt">${p.finished ? I.check : n || ''}</span></button>`;
   };
   const salesItem = pg => `<button class="nav-item ${pg.archived ? 'is-arch ' : ''}${view.type === 'sales' && view.id === pg.id ? 'on' : ''}" data-sales="${pg.id}"><span class="ico">${I.sales}</span><span class="nm">${esc(pg.title)}</span><span class="cnt">${esc(eurShort(salesTotals(pg.id).money))}</span></button>`;
-  const archList = (key, items, fn) => !items.length ? '' :
-    `<button type="button" class="nav-arch ${navArchOpen[key] ? 'open' : ''}" data-navarch="${key}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>Gearchiveerd (${items.length})</button>${navArchOpen[key] ? items.map(fn).join('') : ''}`;
+  const archList = (key, items, fn, label = 'Gearchiveerd') => !items.length ? '' :
+    `<button type="button" class="nav-arch ${navArchOpen[key] ? 'open' : ''}" data-navarch="${key}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>${label} (${items.length})</button>${navArchOpen[key] ? items.map(fn).join('') : ''}`;
   const projs = sortedProjects().filter(p => p.id !== 'inbox'), pages = sortedSalesPages();
-  $('#projNav').innerHTML = (projs.filter(p => !p.archived).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen projecten</div>')
+  $('#projNav').innerHTML = (projs.filter(p => !p.archived && !p.finished).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen lopende projecten</div>')
+    + archList('fin', projs.filter(p => p.finished && !p.archived), projItem, 'Afgewerkt')
     + archList('proj', projs.filter(p => p.archived), projItem);
   const years = new Map();
   for (const pg of pages.filter(p => !p.archived)) { const y = (pg.month || '').slice(0, 4) || '—'; if (!years.has(y)) years.set(y, []); years.get(y).push(pg); }
@@ -1904,8 +1916,12 @@ function renderHead() {
   notes.hidden = !pr;
   if (pr && document.activeElement !== notes) { notes.value = pr.notes || ''; notes.dataset.pid = pr.id; autosize(notes); }
   $('#editProject').hidden = !isP;
+  const fp = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
+  const fb = $('#finishProject'); fb.hidden = !fp;
+  if (fp) { fb.classList.toggle('on', !!fp.finished); fb.title = fp.finished ? 'Project heropenen' : 'Project afwerken'; fb.setAttribute('aria-label', fb.title); fb.querySelector('span').textContent = fp.finished ? 'Afgewerkt' : 'Afwerken'; }
   const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
-  const ab = $('#archBar'); ab.hidden = !arch?.archived;
+  const ab = $('#archBar'); ab.hidden = !arch?.archived && !arch?.finished;
+  if (!arch?.archived && arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button><button type="button" class="btn" data-finarch>Archiveren</button>`;
   if (arch?.archived) ab.innerHTML = `<span>${I.archive}${view.type === 'sales' ? 'Deze pagina' : 'Dit project'} is gearchiveerd.</span><span class="grow"></span><button type="button" class="btn" data-unarch>Terugzetten</button><button type="button" class="btn danger" data-archdel>Verwijderen</button>`;
   $('#editProject').title = view.type === 'sales' ? 'Pagina bewerken' : 'Project bewerken';
   document.title = `${viewTitle()} · Taken`;
@@ -2454,7 +2470,7 @@ function openProjectDialog(p) {
       <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Nieuw veld</button></div>
     </div>
     <div class="dlg-actions">
-      ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjArch">${p.archived ? 'Terugzetten' : 'Archiveren'}</button>` : ''}
+      ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjArch">${p.archived ? 'Terugzetten' : 'Archiveren'}</button><button type="button" class="btn" id="pjFin">${p.finished ? 'Heropenen' : 'Afwerken'}</button>` : ''}
       <span class="grow"></span>
       <button type="button" class="btn" id="pjCancel">Annuleren</button>
       <button type="button" class="btn primary" id="pjSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
@@ -2491,14 +2507,21 @@ function openProjectDialog(p) {
       openFieldEditor(null, target.id === 'inbox' ? null : target.id, () => openProjectDialog(target));
     };
     $('#pjArch', d)?.addEventListener('click', () => { dlg.close(); archiveProject(p, !p.archived); });
+    $('#pjFin', d)?.addEventListener('click', () => { dlg.close(); finishProject(p, !p.finished); });
     $('#pjDel', d)?.addEventListener('click', () => { if (deleteProject(p)) dlg.close(); });
   });
 }
 $('#archBar').addEventListener('click', e => {
   const pg = view.type === 'sales' ? salesPageById(view.id) : null, p = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
   if (e.target.closest('[data-unarch]')) { if (pg) archiveSalesPage(pg, false); else if (p) archiveProject(p, false); }
+  if (e.target.closest('[data-reopen]') && p) finishProject(p, false);
+  if (e.target.closest('[data-finarch]') && p) archiveProject(p, true);
   if (e.target.closest('[data-archdel]')) { if (pg) deleteSalesPage(pg); else if (p) deleteProject(p); }
 });
+function finishProject(p, on) {
+  p.finished = on; p.finishedAt = on ? now() : null; touch(p); commit();
+  if (on) { navigator.vibrate?.(12); toast(`🎉 “${p.name}” afgewerkt`); } else toast(`“${p.name}” heropend`);
+}
 function archiveProject(p, on) {
   p.archived = on; touch(p); commit();
   toast(on ? `“${p.name}” gearchiveerd` : `“${p.name}” teruggezet`);
@@ -3566,6 +3589,7 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
 $('#projNav').addEventListener('click', e => { const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
 $('#banner').addEventListener('click', e => { if (e.target.id === 'bnGo') openSettings(); });
 $('#addProject').onclick = () => openProjectDialog(null);
+$('#finishProject').onclick = () => { const p = data.projects.find(x => x.id === view.id); if (p) finishProject(p, !p.finished); };
 $('#editProject').onclick = () => view.type === 'sales' ? openSalesPageDialog(salesPageById(view.id)) : openProjectDialog(proj(view.type === 'inbox' ? 'inbox' : view.id));
 $('#projNotes').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === e.target.dataset.pid); if (!p) return;
