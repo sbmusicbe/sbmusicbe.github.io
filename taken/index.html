@@ -1024,6 +1024,69 @@ img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
   ::view-transition-old(root),::view-transition-new(root){animation:none}
   #tabBar .tb-ind,.card,.btn,.icon-btn,.nav-item{transition:none!important}
 }
+
+/* ---------- Desktop-app gevoel (Windows/macOS) ---------- */
+#titlebar{display:none}
+html.wco body{box-sizing:border-box;padding-top:env(titlebar-area-height,33px)}
+html.wco #titlebar{display:flex;align-items:center;gap:8px;position:fixed;z-index:200;left:env(titlebar-area-x,0);top:env(titlebar-area-y,0);width:env(titlebar-area-width,100%);height:env(titlebar-area-height,33px);padding:0 14px;box-sizing:border-box;font-size:12.5px;color:var(--muted);-webkit-app-region:drag;app-region:drag;-webkit-user-select:none;user-select:none}
+html.wco #titlebar img{width:16px;height:16px;border-radius:4px}
+html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
+@media (pointer:fine){
+  /* dunne scrollbalken zoals in Windows 11 / macOS */
+  *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 22%,transparent) transparent}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text) 20%,transparent);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+  ::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--text) 35%,transparent)}
+  ::-webkit-scrollbar-corner{background:transparent}
+  :focus:not(:focus-visible){outline:none}
+}
+/* in het geïnstalleerde venster: pijlcursor zoals in een app, geen handje */
+@media (display-mode:standalone) and (pointer:fine),(display-mode:window-controls-overlay) and (pointer:fine){
+  button,.nav-item,.nav-year,.nav-arch,.card,.seg button,.col-tabs button,#tabBar button,label.tgl,label.chk,select{cursor:default}
+}
+#ctxMenu{position:fixed;z-index:300;min-width:210px;max-width:280px;padding:5px;border-radius:12px;background:var(--panel);border:1px solid var(--line);box-shadow:0 16px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.08);font-size:14px;animation:ctxIn .12s ease-out}
+#ctxMenu[hidden]{display:none}
+@keyframes ctxIn{from{opacity:0;transform:scale(.97)}}
+#ctxMenu button{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border:0;border-radius:7px;background:none;font:inherit;color:var(--text);text-align:left;cursor:default}
+#ctxMenu button:hover:not([disabled]),#ctxMenu button:focus-visible{background:var(--accent);color:#fff;outline:none}
+#ctxMenu button:hover:not([disabled]) .dot{box-shadow:0 0 0 2px #fff}
+#ctxMenu button[disabled]{opacity:.45}
+#ctxMenu button.danger{color:var(--danger)}
+#ctxMenu button.danger:hover,#ctxMenu button.danger:focus-visible{background:var(--danger);color:#fff}
+#ctxMenu button>span:nth-child(2){flex:1}
+#ctxMenu .ci,#ctxMenu .dot{width:9px;height:9px;border-radius:50%;flex:none}
+#ctxMenu svg{width:14px;height:14px}
+#ctxMenu hr{border:0;border-top:1px solid var(--line);margin:4px 6px}
+.kbd-list{display:grid;gap:2px;margin:4px 0 6px}
+.kbd-list>div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:14px}
+.kbd-list>div:last-child{border-bottom:0}
+.kbd-list kbd{display:inline-block;min-width:22px;padding:2px 7px;margin-left:4px;border-radius:6px;border:1px solid var(--line);border-bottom-width:2px;background:var(--bg);font:600 12px/1.4 ui-monospace,Menlo,Consolas,monospace;text-align:center}
+.kbd-list i{font-style:normal;color:var(--muted);margin-left:4px;font-size:12.5px}
+@media (prefers-reduced-motion:reduce){#ctxMenu{animation:none}}
+
+/* plusje bovenaan elke kolom */
+.col>header .col-plus{width:26px;height:26px;margin-left:0;color:var(--muted);border-radius:8px}
+.col>header .col-plus svg{width:17px;height:17px}
+.col>header .col-plus:hover{color:var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 14%,transparent)}
+.col-add-top{margin:0 0 8px}
+.col-add-top input{background:var(--card,var(--panel))!important;color:var(--text)!important;border:1px solid color-mix(in srgb,var(--c,var(--accent)) 45%,var(--line))!important;border-radius:12px;box-shadow:var(--shadow-card);animation:qaIn .3s var(--spring)}
+@media (max-width:860px){ .col>header .col-plus{width:34px;height:34px} .col>header .col-plus svg{width:20px;height:20px} }
+
+.col-tools{display:contents}
+.col-right{display:flex;align-items:center;gap:4px;flex:none}
+/* desktop: extra kolomknoppen verschijnen bij hover óver de titel, zodat de volledige naam zichtbaar blijft en niets verspringt */
+@media (hover:hover) and (pointer:fine){
+  .col>header{position:relative}
+  .col>header .col-right{position:relative}
+  .col>header .col-tools{display:flex;align-items:center;gap:2px;position:absolute;top:0;bottom:0;right:100%;padding-left:22px;
+    background:linear-gradient(to right,transparent,color-mix(in srgb,var(--bg) 92%,var(--text)) 20px);border-radius:10px;opacity:0;pointer-events:none;transition:opacity .15s}
+  .col:hover>header .col-tools,.col>header .col-tools:focus-within{opacity:1;pointer-events:auto}
+  .col>header .col-tools .icon-btn{opacity:1!important;margin:0}
+  .col>header{gap:4px}
+  .col>header .count{margin-left:2px}
+  .col>header .col-plus{margin-left:0}
+}
 </style>
 </head>
 <body>
@@ -1043,6 +1106,8 @@ img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
 </div>
 
 <!-- ============ App ============ -->
+<div id="titlebar" aria-hidden="true"><img src="icon.svg" alt=""><span id="tbTitle">Taken</span></div>
+<div id="ctxMenu" role="menu" hidden></div>
 <div id="app" hidden>
   <aside id="side">
     <div class="side-head">
@@ -1600,7 +1665,28 @@ function enterApp() {
   renderAll();
   startTimers();
   checkConfig();
+  if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
+// Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
+let pendingLaunch = /[?&](view|new)=/.test(location.search) ? location.href : null;
+function applyLaunch(url) {
+  const q = new URL(url, location.href).searchParams, v = q.get('view');
+  if (location.search) history.replaceState(null, '', location.pathname);
+  if (v === 'sales') { const pg = sortedSalesPages().find(x => !x.archived) || sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); }
+  else if (['today', 'all', 'upcoming', 'inbox'].includes(v)) setView({type:v});
+  if (q.get('new')) {
+    if (view.type === 'sales' || view.type === 'archive') setView({type:'all'});
+    setTimeout(() => { document.body.classList.add('qa-open'); $('#qaInput').focus(); }, 60);
+  }
+}
+if ('launchQueue' in window) launchQueue.setConsumer(p => {
+  if (!p.targetURL || !/[?&](view|new)=/.test(p.targetURL)) return;
+  if (data && !$('#app').hidden) applyLaunch(p.targetURL); else pendingLaunch = p.targetURL;
+});
+// Geïnstalleerd venster met eigen titelbalk (Windows/macOS, Edge/Chrome)
+const wco = navigator.windowControlsOverlay;
+const syncWco = () => document.documentElement.classList.toggle('wco', !!wco?.visible);
+if (wco) { syncWco(); wco.addEventListener('geometrychange', syncWco); }
 async function lock() {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); }
   await persistChain;
@@ -1626,16 +1712,18 @@ function setPref(k, v) {
 }
 function setView(v) {
   const same = v.type === view.type && v.id === view.id;
+  // de keuze geldt meteen (ook voor wat je intussen typt); enkel het tekenen gebeurt in de overgang
+  view = v; searchQ = ''; archQ = '';
+  if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
   const apply = () => {
-    view = v; searchQ = ''; archQ = '';
     $('#list').innerHTML = '';
     $('#app').classList.remove('side-open');
-    if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
     renderAll();
     $('#main').scrollTo({top:0, behavior:'instant'});
   };
   // zachte overgang tussen schermen, zoals een native app (Safari 18+, Chrome); anders meteen
-  if (same || !document.startViewTransition || reduceMotion() || document.hidden) { apply(); return; }
+  // enkel op gsm: daar hoort een overgang bij het native gevoel; desktop-apps wisselen meteen
+  if (same || !document.startViewTransition || reduceMotion() || document.hidden || !matchMedia('(max-width:860px)').matches) { apply(); return; }
   document.startViewTransition(apply);
 }
 function viewTitle() {
@@ -1878,7 +1966,8 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span>${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button>${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right"><span class="col-tools"><button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button><button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></span>${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
+      ${topAdd === st.id ? `<form class="col-add col-add-top" data-stage="${st.id}" data-top="1" autocomplete="off"><input type="text" placeholder="Nieuwe kaart in ${esc(st.label)}…" aria-label="Nieuwe kaart bovenaan ${esc(st.label)}" enterkeyhint="done"></form>` : ''}
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
       <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
@@ -1975,6 +2064,7 @@ function renderHead() {
   if (arch?.archived) ab.innerHTML = `<span>${I.archive}${view.type === 'sales' ? 'Deze pagina' : 'Dit project'} is gearchiveerd.</span><span class="grow"></span><button type="button" class="btn" data-unarch>Terugzetten</button><button type="button" class="btn danger" data-archdel>Verwijderen</button>`;
   $('#editProject').title = view.type === 'sales' ? 'Pagina bewerken' : 'Project bewerken';
   document.title = `${viewTitle()} · Taken`;
+  $('#tbTitle').textContent = `${viewTitle()} — Taken`;
   $('#miniTitle').textContent = viewTitle();
 }
 function toolbarFields() {
@@ -2128,7 +2218,7 @@ function renderQaPreview() {
   el.innerHTML = r.tokens.map(([l, c]) => c ? `<span class="chip opt" style="--c:${c}">${esc(l)}</span>` : `<span class="chip">${esc(l)}</span>`).join('');
 }
 $('#qaInput').addEventListener('input', renderQaPreview);
-function createTask(r, stage) {
+function createTask(r, stage, top) {
   stage = stage || r.stage || firstOpen().id;
   const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
   const t = touch({
@@ -2137,6 +2227,7 @@ function createTask(r, stage) {
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), order:now(), custom:r.custom,
   });
+  if (top) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
   // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
   const p = prefs();
   if (p.ff && p.fv && p.fv !== '__empty') {
@@ -3738,6 +3829,7 @@ document.addEventListener('touchstart', () => {}, {passive:true});
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
   if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
+  const plus = e.target.closest('[data-addtop]'); if (plus) { openTopAdd(plus.dataset.addtop); return; }
   const hideCol = e.target.closest('[data-hidecol]');
   if (hideCol) {
     const id = hideCol.dataset.hidecol, st = stageById(id);
@@ -3767,12 +3859,28 @@ $('#list').addEventListener('click', e => {
 $('#list').addEventListener('submit', e => {
   const form = e.target.closest('.col-add'); if (!form) return;
   e.preventDefault();
-  const stage = form.dataset.stage, input = $('input', form);
+  const stage = form.dataset.stage, input = $('input', form), top = !!form.dataset.top;
   const r = parseQuick(input.value);
   if (!r.title) return;
-  createTask(r, stage);
-  $(`.col-add[data-stage="${stage}"] input`)?.focus();
+  createTask(r, stage, top);
+  $(`.col-add${top ? '.col-add-top' : ':not(.col-add-top)'}[data-stage="${stage}"] input`)?.focus();
 });
+// Plusje in de kolomkop: invoerveld bovenaan die kolom
+let topAdd = null;
+function openTopAdd(stage) {
+  topAdd = stage; renderMain();
+  const inp = $(`.col-add-top[data-stage="${stage}"] input`);
+  inp?.focus(); inp?.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+$('#list').addEventListener('focusout', e => {
+  const form = e.target.closest?.('.col-add-top'); if (!form) return;
+  setTimeout(() => {
+    if (topAdd && !form.contains(document.activeElement) && !$('input', form)?.value.trim() && form.isConnected) { topAdd = null; renderMain(); }
+  }, 120);
+});
+$('#list').addEventListener('keydown', e => {
+  if (e.key === 'Escape' && e.target.closest('.col-add-top')) { e.stopPropagation(); topAdd = null; renderMain(); }
+}, true);
 
 /* ---------------- Kanban: slepen (muis + aanraken) ---------------- */
 let drag = null, justDragged = false;
@@ -3892,10 +4000,83 @@ document.addEventListener('keydown', e => {
     else if (selectedId) closeDetail();
     return;
   }
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && !e.altKey && !e.shiftKey) {
+    const views = {'1':'inbox', '2':'today', '3':'upcoming', '4':'all'};
+    if (views[e.key]) { e.preventDefault(); setView({type:views[e.key]}); return; }
+    if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages().find(x => !x.archived); if (pg) setView({type:'sales', id:pg.id}); return; }
+    if (e.key === ',') { e.preventDefault(); openSettings(); return; }
+    if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); $('#tbSearch').focus(); $('#tbSearch').select(); return; }
+    if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else { document.body.classList.add('qa-open'); $('#qaInput').focus(); } return; }
+  }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === '?') { e.preventDefault(); openShortcutsDialog(); return; }
+  if (e.key === 'Delete' && selectedId && view.type !== 'sales') { e.preventDefault(); deleteTask(selectedId); return; }
   if (view.type === 'sales') { if (e.key === 'n') { e.preventDefault(); addSalesRow(); } return; }
   if (e.key === 'q' || e.key === 'n') { e.preventDefault(); $('#qaInput').focus(); }
   else if (e.key === '/') { e.preventDefault(); $('#tbSearch')?.focus(); }
+});
+
+function openShortcutsDialog() {
+  const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
+  const rows = [['N of Q', 'Nieuwe kaart'], [k + ' K', 'Nieuwe kaart (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
+    [k + ' 1 … 4', 'Inbox · Vandaag · Komende 7 dagen · Alle taken'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
+    ['Delete', 'Open kaart verwijderen'], ['Esc', 'Sluiten'], ['Rechtsklik', 'Snelmenu op kaarten, projecten en pagina’s'], ['?', 'Deze lijst']];
+  showDialog(`<h3>Sneltoetsen</h3><div class="kbd-list">${rows.map(([a, b]) => `<div><span>${esc(b)}</span><span>${a.split(' ').map(x => x === '…' || x === 'of' ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="kbOk">Sluiten</button></div>`, d => { $('#kbOk', d).onclick = () => dlg.close(); });
+}
+/* ---- Snelmenu met rechtsklik (desktop) ---- */
+const ctx = $('#ctxMenu');
+function closeCtx() { ctx.hidden = true; ctx.innerHTML = ''; ctx.onclick = null; }
+function openCtx(x, y, items) {
+  ctx.innerHTML = items.map((it, i) => it === '-' ? '<hr>' : `<button type="button" role="menuitem" data-i="${i}" class="${it.danger ? 'danger' : ''}" ${it.disabled ? 'disabled' : ''}>${it.dot ? `<span class="dot" style="background:${it.dot}"></span>` : '<span class="ci"></span>'}<span>${esc(it.label)}</span>${it.on ? I.check : ''}</button>`).join('');
+  ctx.hidden = false;
+  const w = ctx.offsetWidth, h = ctx.offsetHeight;
+  ctx.style.left = Math.min(x, innerWidth - w - 6) + 'px';
+  ctx.style.top = (y + h > innerHeight - 6 ? Math.max(6, y - h) : y) + 'px';
+  ctx.onclick = e => { const b = e.target.closest('button[data-i]'); if (!b) return; const it = items[+b.dataset.i]; closeCtx(); it.run(); };
+  ctx.querySelector('button:not([disabled])')?.focus({preventScroll:true});
+}
+addEventListener('pointerdown', e => { if (!ctx.hidden && !ctx.contains(e.target)) closeCtx(); }, true);
+addEventListener('keydown', e => {
+  if (ctx.hidden) return;
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCtx(); return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const bs = [...ctx.querySelectorAll('button:not([disabled])')], i = bs.indexOf(document.activeElement);
+    bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length]?.focus();
+  }
+}, true);
+addEventListener('blur', closeCtx);
+addEventListener('resize', closeCtx);
+$('#main').addEventListener('scroll', closeCtx, {passive:true});
+document.addEventListener('contextmenu', e => {
+  if (!data || $('#app').hidden || matchMedia('(pointer:coarse)').matches) return;
+  // tekstvelden en geselecteerde tekst houden het gewone menu (kopiëren/plakken)
+  if (e.target.closest('input,textarea,select,[contenteditable]') || String(getSelection()).trim()) return;
+  const card = e.target.closest('.card[data-id], .task[data-id], [data-id].row');
+  const t = card && taskById(card.dataset.id);
+  const pEl = e.target.closest('#projNav [data-project]'), sEl = e.target.closest('#salesNav [data-sales]');
+  let items = null;
+  if (t) {
+    items = [{label:'Openen', run:() => openTask(t.id)}, '-',
+      ...stages().map(st => ({label:st.label, dot:st.color, on:t.stage === st.id, run:() => { const undo = undoFor(t); setStage(t, st.id); commit(); stageToast(t, null, undo); }})), '-',
+      t.archived ? {label:'Terugzetten uit archief', run:() => setArchived([t.id], false)} : {label:'Archiveren', disabled:!t.done, run:() => setArchived([t.id], true)},
+      {label:'Verwijderen', danger:true, run:() => deleteTask(t.id)}];
+  } else if (pEl) {
+    const p = data.projects.find(x => x.id === pEl.dataset.project); if (!p) return;
+    items = [{label:'Openen', run:() => setView({type:'project', id:p.id})}, {label:'Bewerken…', run:() => openProjectDialog(p)}, '-',
+      {label:p.finished ? 'Heropenen' : 'Afwerken', run:() => finishProject(p, !p.finished)},
+      {label:p.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveProject(p, !p.archived)}, '-',
+      {label:'Verwijderen…', danger:true, run:() => deleteProject(p)}];
+  } else if (sEl) {
+    const pg = salesPageById(sEl.dataset.sales); if (!pg) return;
+    items = [{label:'Openen', run:() => setView({type:'sales', id:pg.id})}, {label:'Bewerken…', run:() => openSalesPageDialog(pg)}, '-',
+      {label:pg.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveSalesPage(pg, !pg.archived)}, '-',
+      {label:'Verwijderen…', danger:true, run:() => deleteSalesPage(pg)}];
+  }
+  e.preventDefault();          // geen browsermenu (Terug, Herladen, …) in de app
+  if (items) openCtx(e.clientX, e.clientY, items); else closeCtx();
 });
 
 /* ---------------- Timers: auto-lock, periodieke sync, datumwissel ---------------- */
