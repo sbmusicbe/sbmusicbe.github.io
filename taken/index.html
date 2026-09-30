@@ -1349,7 +1349,45 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
   .toolbar .btn,.tb-cols{padding:5px 12px;font-size:13px}
   .toolbar .search{min-width:140px}
   .tb-add{display:inline-flex;align-items:center;gap:4px;order:9}
-  .tb-add svg{width:14px;height:14px}
+  .tb-add svg{width:13px;height:13px}
+}
+
+/* ===== Eén stijl voor alle velden, keuzelijsten, knoppen en segmenten =====
+   Zelfde hoogte, lettergrootte en capsulevorm overal (werkbalk, klanten, instellingen, dialogen, taakdetail). */
+:root{--ctl-h:34px;--ctl-fs:13.5px;--ctl-px:14px}
+@media (max-width:860px){:root{--ctl-h:42px;--ctl-fs:16px}}
+input:is([type=text],[type=password],[type=number],[type=date],[type=time],[type=month],[type=url],[type=tel],[type=email],[type=search]),select{
+  height:var(--ctl-h);padding:0 var(--ctl-px);font-size:var(--ctl-fs);line-height:1.2;border-radius:999px;background-color:var(--fill);border:1px solid transparent;box-sizing:border-box}
+select{-webkit-appearance:none;appearance:none;padding-right:34px;cursor:pointer;text-overflow:ellipsis}
+select,select:hover,select:focus,.props .prop select,.props .prop select:hover,.props .prop select:focus{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8a8e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 12px center!important;background-size:13px!important}
+textarea{font-size:var(--ctl-fs);padding:9px var(--ctl-px);border-radius:16px;line-height:1.45}
+input:is([type=text],[type=password],[type=number],[type=date],[type=time],[type=month],[type=url],[type=tel],[type=email],[type=search]):hover,select:hover,textarea:hover{background-color:color-mix(in srgb,var(--fill) 150%,transparent)}
+input:focus,select:focus,textarea:focus{background-color:var(--panel)}
+.toolbar select,.toolbar input:not([type=checkbox]),.pg-bar select,.pg-bar input{padding:0 var(--ctl-px);font-size:var(--ctl-fs)}
+.toolbar select,.pg-bar select{padding-right:34px}
+/* knoppen */
+.btn{padding:calc((var(--ctl-h) - 16px) / 2) 16px;font-size:var(--ctl-fs);font-weight:600;line-height:14px;white-space:nowrap;text-decoration:none;border-radius:999px;box-sizing:border-box}
+.btn.primary,.btn.danger{border:1px solid transparent}
+.btn svg{width:14px;height:14px;flex:none;vertical-align:-2px}
+a.btn:not(.primary):not(.danger){color:var(--text)}
+.toolbar .btn,.tb-cols,#banner .btn,#quickAdd .btn{padding:calc((var(--ctl-h) - 16px) / 2) 16px;font-size:var(--ctl-fs);line-height:14px}
+/* segmenten (Bord/Lijst, perioden, soort) */
+.seg{padding:2px;height:var(--ctl-h);box-sizing:border-box;align-items:stretch}
+.seg button{padding:0 14px;font-size:var(--ctl-fs);font-weight:600;line-height:1}
+.toolbar .seg button{padding:0 14px;font-size:var(--ctl-fs)}
+/* uitzonderingen die bewust anders blijven */
+.props .prop input:not([type=checkbox]),.props .prop select{background-color:transparent}
+.props .prop input:not([type=checkbox]):hover,.props .prop select:hover{background-color:var(--hover)}
+.props .prop input:focus,.props .prop select:focus{background-color:var(--panel)}
+.col-add input{background-color:transparent}
+.pj-emo input{font-size:18px;padding:0;text-align:center}
+#quickAdd input{height:calc(var(--ctl-h) + 4px)}
+@media (max-width:860px){
+  #quickAdd input{background-color:transparent}
+  .seg{height:auto;min-height:var(--ctl-h)}
+  .seg button{min-height:calc(var(--ctl-h) - 6px)}
 }
 </style>
 </head>
