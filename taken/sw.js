@@ -2,7 +2,7 @@
    Bewaart de app zelf (HTML, iconen, logo) op het toestel, zodat Taken meteen
    opent, ook zonder internet. Je gegevens staan al versleuteld in de browser;
    config.json en GitHub worden nooit gecachet en gaan altijd naar het netwerk. */
-const CACHE = 'taken-app-v4';
+const CACHE = 'taken-app-v5';
 const ASSETS = ['./', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
   'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 const PAGE = new URL('./', self.registration.scope).href;
@@ -52,7 +52,21 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Iconen, logo, manifest: uit het toestel, anders van het netwerk (en bewaren).
+  // Manifest en iconen: eerst het netwerk (zodat Windows/Android een nieuw app-icoon opmerken),
+  // zonder verbinding de bewaarde kopie.
+  if (/\.(webmanifest|png|svg|ico)$/.test(url.pathname)) {
+    e.respondWith((async () => {
+      try {
+        const res = await fetch(req, {cache: 'no-cache'});
+        if (res.ok) (await caches.open(CACHE)).put(req, res.clone());
+        return res;
+      } catch {
+        return (await caches.match(req, {ignoreSearch: true})) || Response.error();
+      }
+    })());
+    return;
+  }
+  // Overige bestanden: uit het toestel, anders van het netwerk (en bewaren).
   e.respondWith((async () => {
     const cached = await caches.match(req, {ignoreSearch: true});
     if (cached) return cached;
