@@ -1256,13 +1256,13 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .cl-edrow .fchip:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
 .ci-src{display:flex;align-items:center;gap:10px}
 .ci-src .btn{cursor:pointer}
-.ci-map{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ci-map{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .ci-map .fl{margin:0}
 .ci-sum{margin:12px 0 8px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--accent) 6%,var(--panel));font-size:14px;line-height:1.5}
 .ci-sum .ok{color:var(--ok);font-weight:650}
 .ci-prev{max-height:260px;overflow:auto}
 .ci-prev td{white-space:normal}
-@media (max-width:860px){ .ci-map{grid-template-columns:1fr} }
+@media (max-width:860px){ .ci-map{grid-template-columns:1fr 1fr} }
 
 /* agenda */
 .ag-nav{display:flex;align-items:center;gap:4px}
@@ -1531,6 +1531,50 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
   .col-tabs button.on{background:var(--panel)!important;box-shadow:0 0 0 1.5px var(--c,var(--accent))!important}
   .toolbar.open .tb-more{background:var(--group)!important;border:0!important;box-shadow:none!important;border-radius:12px!important}
   .main-head h2{font-size:30px}
+}
+
+/* ===== Rust: minder tegelijk in beeld (zoals Things: bediening verschijnt pas als je ze nodig hebt) ===== */
+/* werkbalk: enkel Bord/Lijst, Filter en + Taak; zoeken, sorteren, filteren en kolommen klappen open onder Filter */
+@media (min-width:861px){
+  .tb-toggle{display:inline-flex;align-items:center;gap:6px;position:relative;margin-left:auto}
+  .tb-toggle svg{width:14px;height:14px}
+  .tb-toggle.active{color:var(--accent)!important}
+  .tb-dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .tb-add{order:0}
+  .tb-more{display:none}
+  .toolbar.open .tb-more{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex-basis:100%;animation:qaDrop .2s var(--spring,ease-out)}
+  .toolbar.open .tb-more .search{flex:1 1 240px;max-width:340px}
+}
+/* melding bovenaan: gewoon een regel tekst met een link, en weg te klikken */
+#banner{background:transparent!important;padding:0 2px!important;margin:0 0 12px!important;font-size:13px!important;color:var(--muted);gap:12px!important;flex-wrap:wrap!important}
+#banner .btn{padding:0!important;border:0!important;background:none!important;box-shadow:none!important;color:var(--accent)!important;font-weight:600!important;min-height:0}
+#banner .btn.bn-later{color:var(--faint)!important;font-weight:500!important}
+#banner .btn:hover{text-decoration:underline}
+/* bord: geen grijze vakken meer; kolommen zijn gewoon een kop met kaartjes eronder */
+.col{background:transparent!important;padding:2px 2px 6px!important}
+.col.over{background:color-mix(in srgb,var(--c) 7%,transparent)!important}
+.col>header{border-bottom:0!important;margin-bottom:2px!important;padding:2px 4px 8px!important}
+.col>header .count{background:none!important;padding:0!important;color:var(--faint)!important;font-weight:500!important}
+.card{box-shadow:none!important;border:1px solid var(--line)!important}
+.card:hover{box-shadow:0 2px 10px rgba(0,0,0,.06)!important}
+.col-add input{color:var(--faint)!important}
+.col-empty{color:var(--faint);opacity:.7}
+@media (hover:hover) and (pointer:fine){
+  .col>header .badge,.col>header .col-arch,.col>header .col-plus{opacity:0;transition:opacity .15s}
+  .col:hover>header .badge,.col:hover>header .col-arch,.col:hover>header .col-plus,.col>header :focus-visible{opacity:1}
+  .col-add input{opacity:0;transition:opacity .15s}
+  .col:hover .col-add input,.col-add input:focus,.col-add input:not(:placeholder-shown){opacity:1}
+  /* zijbalk: + bij Projecten/Verkopen pas bij hover */
+  .side-section .icon-btn{opacity:0;transition:opacity .15s}
+  .side-section:hover .icon-btn,.side-section .icon-btn:focus-visible{opacity:1}
+}
+@media (max-width:860px){
+  #banner{flex-wrap:wrap!important;row-gap:4px!important;font-size:14px!important}
+  #banner>span{flex:1 1 100%}
+  .col-tabs button{background:transparent!important;box-shadow:none!important;color:var(--muted)}
+  .col-tabs button.on{background:var(--fill)!important;box-shadow:none!important;color:var(--text)}
+  .col>header .col-hide,.col>header .col-edit{color:var(--faint)!important;opacity:.7}
+  .col-add input{background:transparent!important}
 }
 </style>
 </head>
@@ -3657,8 +3701,10 @@ function renderBanner() {
   if (!data.settings.sync) msg = 'Je taken staan nu alleen in deze browser.';
   else if (cfgState === 'none') msg = 'Nog één stap om al je browsers automatisch te synchroniseren.';
   else if (cfgState === 'stale') msg = 'Het sleutelbestand op je site moet bijgewerkt worden.';
+  let snooze = 0; try { snooze = +localStorage.getItem('taken.banner.later') || 0; } catch {}
+  if (snooze > now()) msg = '';
   el.hidden = !msg;
-  if (msg) el.innerHTML = `<span>${msg}</span><button type="button" class="btn" id="bnGo">${data.settings.sync ? 'Afronden' : 'Synchronisatie instellen'}</button>`;
+  if (msg) el.innerHTML = `<span>${msg}</span><button type="button" class="btn" id="bnGo">${data.settings.sync ? 'Afronden' : 'Synchronisatie instellen'}</button><button type="button" class="btn bn-later" id="bnLater">Later</button>`;
 }
 
 function openSettings() {
@@ -4483,7 +4529,10 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
   e.stopPropagation(); navArchOpen[a.dataset.navarch] = !navArchOpen[a.dataset.navarch]; renderNav();
 });
 $('#projNav').addEventListener('click', e => { const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
-$('#banner').addEventListener('click', e => { if (e.target.id === 'bnGo') openSettings(); });
+$('#banner').addEventListener('click', e => {
+  if (e.target.id === 'bnGo') openSettings();
+  if (e.target.id === 'bnLater') { try { localStorage.setItem('taken.banner.later', String(now() + 7 * 864e5)); } catch {} renderBanner(); }
+});
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#finishProject').onclick = () => { const p = data.projects.find(x => x.id === view.id); if (p) finishProject(p, !p.finished); };
 $('#editProject').onclick = () => view.type === 'sales' ? openSalesPageDialog(salesPageById(view.id)) : openProjectDialog(proj(view.type === 'inbox' ? 'inbox' : view.id));
@@ -4761,7 +4810,7 @@ document.addEventListener('keydown', e => {
     if (views[e.key]) { e.preventDefault(); setView({type:views[e.key]}); return; }
     if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages().find(x => !x.archived); if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
-    if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); $('#tbSearch').focus(); $('#tbSearch').select(); return; }
+    if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); openSearch(); return; }
     if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else openQuickAdd(); return; }
   }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -4770,8 +4819,10 @@ document.addEventListener('keydown', e => {
   if (isPageView()) return;
   if (view.type === 'sales') { if (e.key === 'n') { e.preventDefault(); addSalesRow(); } return; }
   if (e.key === 'q' || e.key === 'n') { e.preventDefault(); openQuickAdd(); }
-  else if (e.key === '/') { e.preventDefault(); $('#tbSearch')?.focus(); }
+  else if (e.key === '/') { e.preventDefault(); openSearch(); }
 });
+
+function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbSearch')?.focus(); $('#tbSearch')?.select(); }
 
 function openShortcutsDialog() {
   const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
@@ -5157,13 +5208,13 @@ async function xlsxSource(file) {
   const sm = await resolve(need);
   const toRow = cells => { const a = []; for (const [ci, v] of cells) a[ci] = v.i !== undefined ? (sm.get(v.i) ?? '') : v.s; return Array.from(a, x => (x ?? '').toString().trim()); };
   return {name:file.name, preview:raw.map(toRow), total:total > raw.length ? total : raw.length, more:raw.length >= 200 && total <= raw.length,
-    // alle rijen, enkel de gekozen kolommen → [[klantnr, naam, uitgave], …]
+    // alle rijen, enkel de gekozen kolommen → [[klantnr, naam, uitgave, telefoon, e-mail, gemeente, contact], …]
     async rows(cols, skipFirst, onProgress) {
       const toks = [], needAll = new Set(); let n = 0;
-      const want = [cols.no, cols.name, cols.ed], maxCol = Math.max(...want);
+      const want = CI_KEYS.map(k => cols[k] ?? -1), maxCol = Math.max(...want);
       await scanTags(z.stream(sheet), 'row', (o, inner) => {
         n++; if (skipFirst && n === 1) return;
-        const t = [null, null, null];
+        const t = want.map(() => null);
         pickCells(inner, want, maxCol, t, needAll);
         if (t[0] !== null || t[1] !== null) toks.push(t);
         if (n % 5000 === 0) onProgress?.(n, 'Rijen lezen');
@@ -5171,7 +5222,7 @@ async function xlsxSource(file) {
       onProgress?.(n, 'Teksten ophalen');
       const map = await resolve(needAll);
       const val = x => x === null ? '' : typeof x === 'number' ? (map.get(x) ?? '') : x;
-      return toks.map(t => [val(t[0]), val(t[1]), val(t[2])]);
+      return toks.map(t => t.map(val));
     }};
 }
 function delimOf(lines) {
@@ -5194,40 +5245,56 @@ function textSource(text, name) {
     async rows(cols, skipFirst, onProgress) {
       const out = [];
       for (let i = skipFirst ? 1 : 0; i < lines.length; i++) {
-        const r = parseLine(lines[i], d); out.push([r[cols.no] ?? '', r[cols.name] ?? '', r[cols.ed] ?? '']);
+        const r = parseLine(lines[i], d); out.push(CI_KEYS.map(k => r[cols[k]] ?? ''));
         if (i % 20000 === 0) { onProgress?.(i, 'Rijen lezen'); await new Promise(res => setTimeout(res, 0)); }
       }
       return out;
     }};
 }
 const cleanNo = v => { const s = String(v ?? '').trim(); return /^\d+\.0+$/.test(s) ? s.replace(/\.0+$/, '') : s; };
+const CI_KEYS = ['no', 'name', 'ed', 'phone', 'email', 'city', 'contact', 'gsm'];
 function guessCols(head, rows) {
-  const h = head.map(x => normName(x));
-  const find = re => h.findIndex(x => re.test(x));
+  const h = head.map(x => normName(x)), used = new Set();
+  const find = (re, not) => { const i = h.findIndex((x, j) => !used.has(j) && re.test(x) && !(not && not.test(x))); if (i >= 0) used.add(i); return i; };
+  const sample = i => rows.slice(0, 40).map(r => String(r[i] ?? '').trim()).filter(Boolean);
+  const byContent = test => { const i = head.findIndex((_, j) => { if (used.has(j)) return false; const v = sample(j); return v.length >= Math.min(3, rows.length) && v.filter(test).length >= v.length * 0.6; }); if (i >= 0) used.add(i); return i; };
+  let email = find(/(^| )(e ?mail|email|mail|mailadres)( |$)/);
+  let phone = find(/(^| )(tel|telefoon|telefoonnummer|tel nr|telnr|phone)( |$)/, /fax/);
+  let gsm = find(/(^| )(gsm|gsm nummer|gsmnummer|mobiel|mobile|gsm nr)( |$)/);
+  if (phone < 0 && gsm >= 0) { phone = gsm; gsm = -1; }
   let no = find(/^(klant ?(nr|nummer|no|code)|nr|nummer|debiteur|klantnr|customer ?(no|number|id))/);
+  let contact = find(/(contact|aanspreek|zaakvoerder|verantwoordelijke)/);
+  let city = find(/(gemeente|stad|woonplaats|plaats|city|town|localiteit|deelgemeente)/, /postcode/);
   let name = find(/(bedrijf|firma|naam|klant$|^klant |company|name|adverteerder)/);
   let ed = find(/(uitgave|editie|publicatie|titel|magazine|blad|krant|medium|edition)/);
   const byHeader = [no, name, ed].filter(i => i >= 0).length;
-  if (no < 0) no = head.findIndex((_, i) => rows.slice(0, 30).filter(r => /^\d{3,}$/.test(cleanNo(r[i]))).length >= Math.min(10, rows.length * 0.6));
-  if (name < 0) name = head.findIndex((_, i) => i !== no && i !== ed && rows.slice(0, 30).some(r => /[a-z]{3}/i.test(r[i] || '')));
-  return {no, name, ed, byHeader};
+  if (email < 0) email = byContent(v => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v));
+  if (no < 0) { no = head.findIndex((_, i) => !used.has(i) && rows.slice(0, 30).filter(r => /^\d{3,}$/.test(cleanNo(r[i]))).length >= Math.min(10, rows.length * 0.6)); if (no >= 0) used.add(no); }
+  if (phone < 0) phone = byContent(v => /^\+?[\d\s./()-]{8,}$/.test(v) && v.replace(/\D/g, '').length >= 8);
+  if (name < 0) { name = head.findIndex((_, i) => !used.has(i) && rows.slice(0, 30).some(r => /[a-z]{3}/i.test(r[i] || ''))); if (name >= 0) used.add(name); }
+  return {no, name, ed, phone, email, city, contact, gsm, byHeader};
 }
 // rijen [klantnr, naam, uitgave] → unieke klanten (dubbele samengevoegd per klantnr, anders per naam)
 function groupClientRows(rows) {
   const groups = new Map(); let skipped = 0;
-  for (const [n0, n1, n2] of rows) {
+  for (const [n0, n1, n2, ph0, em, ci, co, gs] of rows) {
+    const ph = String(ph0 ?? '').trim() || String(gs ?? '').trim();   // geen vast nummer → gsm
     const no = cleanNo(n0), name = String(n1 || '').trim(), ed = String(n2 || '').trim();
     if (!no && !name) { skipped++; continue; }
     const key = no ? 'no:' + no : 'nm:' + normName(name);
     let g = groups.get(key);
-    if (!g) groups.set(key, g = {no, name:'', eds:new Set(), rows:0});
+    if (!g) groups.set(key, g = {no, name:'', eds:new Set(), rows:0, phone:'', email:'', city:'', contact:''});
     if (!g.name && name) g.name = name;
+    if (!g.phone && ph) { let t = cleanNo(ph); if (/^[1-9]\d{7,8}$/.test(t)) t = '0' + t; g.phone = t; }   // Excel laat de 0 vooraan vallen
+    if (!g.email && em) g.email = String(em).trim().toLowerCase();
+    if (!g.city && ci) g.city = String(ci).trim();
+    if (!g.contact && co) g.contact = String(co).trim();
     if (ed) for (const e of ed.split(/\s*[;|\n]\s*/)) if (e) g.eds.add(e);
     g.rows++;
   }
   const ix = clientIndex(); let isNew = 0, upd = 0;
   const list = [];
-  for (const g of groups.values()) { const ex = (g.no && ix.byNo.get(g.no)) || (g.name && ix.byName.get(normName(g.name))); if (ex) upd++; else isNew++; list.push({no:g.no, name:g.name, eds:[...g.eds], ex:!!ex, rows:g.rows}); }
+  for (const g of groups.values()) { const ex = (g.no && ix.byNo.get(g.no)) || (g.name && ix.byName.get(normName(g.name))); if (ex) upd++; else isNew++; list.push({no:g.no, name:g.name, eds:[...g.eds], ex:!!ex, rows:g.rows, phone:g.phone, email:g.email, city:g.city, contact:g.contact}); }
   return {list, isNew, upd, skipped, rows:rows.length};
 }
 function runClientImport(plan) {
@@ -5240,12 +5307,14 @@ function runClientImport(plan) {
       let ch = false;
       if (!ex.no && g.no) { ex.no = g.no; ch = true; }
       if (!ex.company && g.name) { ex.company = g.name; ch = true; }
+      for (const k of ['phone', 'email', 'city', 'contact']) if (!ex[k] && g[k]) { ex[k] = g[k]; ch = true; }
       const set = new Set(editionsOf(ex));
       for (const e of g.eds) if (!set.has(e)) { set.add(e); edAdded++; ch = true; }
       if (ch) { ex.editions = [...set]; touch(ex); updated++; }
     } else {
       // compact bewaren: enkel wat ingevuld is (scheelt veel ruimte bij tienduizenden klanten)
-      const nc = {id:shortId(), u:ts, ...(g.no ? {no:g.no} : {}), ...(g.name ? {company:g.name} : {}), ...(g.eds.length ? {editions:g.eds} : {})};
+      const nc = {id:shortId(), u:ts, ...(g.no ? {no:g.no} : {}), ...(g.name ? {company:g.name} : {}), ...(g.eds.length ? {editions:g.eds} : {}),
+        ...(g.phone ? {phone:g.phone} : {}), ...(g.email ? {email:g.email} : {}), ...(g.city ? {city:g.city} : {}), ...(g.contact ? {contact:g.contact} : {})};
       data.clients.push(nc); if (g.no) byNo.set(g.no, nc); if (g.name) byName.set(normName(g.name), nc);
       added++; edAdded += g.eds.length;
     }
@@ -5254,23 +5323,23 @@ function runClientImport(plan) {
   return {added, updated, edAdded};
 }
 function openClientImport() {
-  let src = null, hasHead = true, map = {no:-1, name:-1, ed:-1}, busy = false;
+  let src = null, hasHead = true, map = {no:-1, name:-1, ed:-1, phone:-1, email:-1, city:-1, contact:-1, gsm:-1}, busy = false;
   const fmt = n => n.toLocaleString('nl-BE');
   const render = d => {
     if (!src) { $('#ciBody', d).innerHTML = ''; $('#ciGo', d).disabled = true; return; }
     const rows = src.preview, body = hasHead ? rows.slice(1) : rows;
     const cols = hasHead ? rows[0] || [] : (rows[0] || []).map((_, i) => `Kolom ${String.fromCharCode(65 + i)}`);
     const sel = (k, label) => `<label class="fl"><span>${label}</span><select data-map="${k}"><option value="-1">— geen —</option>${cols.map((c, i) => `<option value="${i}" ${map[k] === i ? 'selected' : ''}>${esc(c || `Kolom ${String.fromCharCode(65 + i)}`)}</option>`).join('')}</select></label>`;
-    const plan = groupClientRows(body.map(r => [r[map.no] ?? '', r[map.name] ?? '', r[map.ed] ?? '']));
+    const plan = groupClientRows(body.map(r => CI_KEYS.map(k => r[map[k]] ?? '')));
     const all = src.total - (hasHead ? 1 : 0), partial = all > body.length || !!src.more;
     $('#ciBody', d).innerHTML = `
       <p class="muted small" style="margin:10px 0 6px">${esc(src.name)} · ${src.more ? 'meer dan ' + fmt(all) : (partial ? '± ' : '') + fmt(all)} rijen${partial ? ' (voorbeeld van de eerste ' + body.length + ')' : ''}</p>
       <label class="chk" style="margin:0 0 8px"><input type="checkbox" id="ciHead" ${hasHead ? 'checked' : ''}> Eerste rij bevat de kolomnamen</label>
-      <div class="ci-map">${sel('no', 'Klantnr')}${sel('name', 'Bedrijfsnaam')}${sel('ed', 'Uitgave')}</div>
+      <div class="ci-map">${sel('no', 'Klantnr')}${sel('name', 'Bedrijfsnaam')}${sel('ed', 'Uitgave')}${sel('phone', 'Telefoon')}${sel('email', 'E-mail')}${sel('city', 'Gemeente')}${sel('contact', 'Contactpersoon')}${sel('gsm', 'Gsm (als telefoon leeg is)')}</div>
       <div class="ci-sum">${partial ? `Alle ${src.more ? '' : fmt(all) + ' '}rijen worden bij het importeren verwerkt; dubbele klanten worden samengevoegd per klantnr.<br><span class="muted">In de eerste ${body.length} rijen: ${plan.list.length} unieke klanten, ${plan.isNew} nieuw, ${plan.upd} bestaand.</span>`
-        : `<b>${plan.list.length}</b> unieke klanten <span class="muted">(${plan.rows} rijen${plan.rows > plan.list.length ? ', dubbele samengevoegd' : ''})</span><br><span class="ok">${plan.isNew} nieuw</span> · ${plan.upd} bestaand (klantnr/uitgaves aangevuld, niets overschreven)${plan.skipped ? ` · ${plan.skipped} lege rijen overgeslagen` : ''}`}</div>
-      <div class="table-wrap ci-prev"><table class="pg-table"><thead><tr><th>Klantnr</th><th>Bedrijfsnaam</th><th>Uitgaves</th><th></th></tr></thead><tbody>
-        ${plan.list.slice(0, 8).map(g => `<tr><td class="mono">${esc(g.no)}</td><td>${esc(g.name)}</td><td>${g.eds.map(e => `<span class="fchip">${esc(e)}</span>`).join(' ')}</td><td class="muted small">${g.ex ? 'bestaat' : 'nieuw'}</td></tr>`).join('')}
+        : `<b>${plan.list.length}</b> unieke klanten <span class="muted">(${plan.rows} rijen${plan.rows > plan.list.length ? ', dubbele samengevoegd' : ''})</span><br><span class="ok">${plan.isNew} nieuw</span> · ${plan.upd} bestaand (ontbrekende gegevens en uitgaves aangevuld, niets overschreven)${plan.skipped ? ` · ${plan.skipped} lege rijen overgeslagen` : ''}`}</div>
+      <div class="table-wrap ci-prev"><table class="pg-table"><thead><tr><th>Klantnr</th><th>Bedrijfsnaam</th><th>Telefoon</th><th>E-mail</th><th>Gemeente</th><th>Uitgaves</th><th></th></tr></thead><tbody>
+        ${plan.list.slice(0, 8).map(g => `<tr><td class="mono">${esc(g.no)}</td><td>${esc(g.name)}</td><td>${esc(g.phone)}</td><td>${esc(g.email)}</td><td>${esc(g.city)}</td><td>${g.eds.map(e => `<span class="fchip">${esc(e)}</span>`).join(' ')}</td><td class="muted small">${g.ex ? 'bestaat' : 'nieuw'}</td></tr>`).join('')}
       </tbody></table></div>
       <div class="ci-prog" id="ciProg" hidden><progress max="100" value="0"></progress><span></span></div>`;
     $('#ciGo', d).disabled = busy || (map.no < 0 && map.name < 0);
