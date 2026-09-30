@@ -52,8 +52,8 @@
       ]
     },
     {
-      "name": "Vandaag",
-      "url": "./?view=today",
+      "name": "Klanten",
+      "url": "./?view=clients",
       "icons": [
         {
           "src": "icon-192.png?v=2",
