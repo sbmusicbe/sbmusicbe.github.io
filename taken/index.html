@@ -63,7 +63,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .lock-logo img,.brand i img{display:none}
 .lock-logo.has-img,.brand i.has-img{background:none;width:auto;height:auto;border-radius:0}
 .lock-logo.has-img{place-items:start}
-.lock-logo.has-img img{display:block;width:56px;height:56px;border-radius:13px;box-shadow:0 6px 18px rgba(229,48,79,.3)}
+.lock-logo.has-img img{display:block;width:56px;height:56px;border-radius:13px;box-shadow:0 6px 18px rgba(200,38,45,.22)}
 .brand i.has-img img{display:block;width:28px;height:28px;border-radius:7px}
 .lock-logo.has-img svg,.brand i.has-img svg{display:none}
 .lock-card h1{margin:0 0 4px;font-size:22px}
@@ -1089,6 +1089,20 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
   .col>header .count{margin-left:2px}
   .col>header .col-plus{margin-left:0}
 }
+
+/* ---------- Kleurenschema van het logo (Adrem-rood #C8262D) ---------- */
+:root{
+  --brand:#c8262d; --accent:#c8262d; --accent-2:#a91e25; --on-accent:#fff;
+  --wallpaper:radial-gradient(1100px 700px at 8% -10%,rgba(200,38,45,.11),transparent 60%),radial-gradient(900px 700px at 105% 10%,rgba(120,120,128,.08),transparent 60%),radial-gradient(900px 700px at 50% 120%,rgba(200,38,45,.08),transparent 60%);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --accent:#e0454b; --accent-2:#ef6a6f;
+    --wallpaper:radial-gradient(1100px 700px at 8% -10%,rgba(224,69,75,.14),transparent 60%),radial-gradient(900px 700px at 105% 10%,rgba(255,255,255,.04),transparent 60%),radial-gradient(900px 700px at 50% 120%,rgba(224,69,75,.09),transparent 60%);
+  }
+}
+.lock{background:radial-gradient(1200px 600px at 15% 0%,rgba(200,38,45,.14),transparent 60%),radial-gradient(900px 600px at 100% 100%,rgba(200,38,45,.10),transparent 60%),var(--bg)}
+::selection{background:color-mix(in srgb,var(--accent) 22%,transparent)}
 </style>
 </head>
 <body>
@@ -1182,7 +1196,7 @@ const GIST_FILE = 'taken.vault.json';
 const CONFIG_URL = 'config.json';
 const CFG_CACHE = 'taken.config.v1';
 const REPO = 'sbmusicbe/sbmusicbe.github.io', BRANCH = 'main', CONFIG_PATH = 'taken/config.json';
-const COLORS = ['#dc4c3e','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
+const COLORS = ['#c8262d','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
 const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',multiselect:'Meerdere keuzes',checkbox:'Vinkje',url:'Link'};
 const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
 const DAYS_SHORT = ['zo','ma','di','wo','do','vr','za'];
