@@ -1103,6 +1103,16 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 }
 .lock{background:radial-gradient(1200px 600px at 15% 0%,rgba(200,38,45,.14),transparent 60%),radial-gradient(900px 600px at 100% 100%,rgba(200,38,45,.10),transparent 60%),var(--bg)}
 ::selection{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+
+/* uurkiezer */
+.time-inp{width:88px;font-variant-numeric:tabular-nums;text-align:left}
+#timePop{position:fixed;z-index:90;width:112px;max-height:260px;overflow-y:auto;overscroll-behavior:contain;padding:5px;border-radius:14px;background:var(--panel);border:1px solid var(--line);box-shadow:0 16px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.08);animation:ctxIn .12s ease-out;scrollbar-width:thin}
+#timePop button{display:block;width:100%;padding:7px 10px;border:0;border-radius:8px;background:none;font:inherit;font-size:15px;font-variant-numeric:tabular-nums;color:var(--text);text-align:left;cursor:default}
+#timePop button:hover{background:var(--hover)}
+#timePop button.hi{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+#timePop button.on{color:var(--accent);font-weight:650}
+@media (max-width:860px){ #timePop button{padding:10px 12px;font-size:16px} #timePop{width:128px} }
+@media (prefers-reduced-motion:reduce){ #timePop{animation:none} }
 </style>
 </head>
 <body>
@@ -2391,8 +2401,8 @@ function renderDetail(force) {
       <div class="props">
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
-        <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}"></label>
-        <label class="prop"><span>Uur</span><span class="inline"><input type="time" id="dTime" value="${esc(t.time || '')}" step="300">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
+        <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}" min="2000-01-01" max="2099-12-31"></label>
+        <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
       </div>
       <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
       <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
@@ -2529,7 +2539,7 @@ let justSwiped = false;
 {
   let downOutside = false;
   document.addEventListener('pointerdown', e => {
-    downOutside = !e.target.closest('#detail');
+    downOutside = !e.target.closest('#detail, #timePop, #ctxMenu');
   }, true);
   document.addEventListener('click', e => {
     if (!selectedId || !downOutside || justDragged || justSwiped || drag || dlg.open) return;
@@ -2554,6 +2564,98 @@ detail.addEventListener('input', e => {
   } else return;
   touch(t); save(true); renderMain(); renderNav();
 });
+let detailDirty = false;
+detail.addEventListener('focusout', e => {
+  if (e.target.id === 'dTime') setTimeout(() => { if (document.activeElement !== e.target && !timePop?.contains(document.activeElement)) commitTime(e.target, true); }, 0);
+  if (!detailDirty) return;
+  setTimeout(() => {
+    if (!detailDirty || (detail.contains(document.activeElement) && document.activeElement !== detail)) return;
+    detailDirty = false; renderDetail(true);
+  }, 0);
+});
+/* ---- Uurkiezer: lijst per kwartier, vrij typen mag ook ("14", "930", "14u30", "14:30") ---- */
+function parseTimeText(v) {
+  v = String(v || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!v) return '';
+  let m = v.match(/^(\d{1,2})(?:[:.hu](\d{1,2})?)?u?$/) || v.match(/^(\d{1,2})(\d{2})$/);
+  if (!m) return null;
+  const h = +m[1], mi = m[2] === undefined ? 0 : +m[2];
+  if (h > 23 || mi > 59) return null;
+  return String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0');
+}
+const QUARTERS = Array.from({length:96}, (_, i) => String(Math.floor(i / 4)).padStart(2, '0') + ':' + String(i % 4 * 15).padStart(2, '0'));
+let timePop = null, timeHi = -1;
+function closeTimePop() { timePop?.remove(); timePop = null; timeHi = -1; $('#dTime')?.setAttribute('aria-expanded', 'false'); }
+function timeTarget(inp) {
+  // welk kwartier hoort bij wat er staat/getypt wordt; anders het eerstvolgende kwartier vanaf nu
+  const v = inp.value.trim();
+  const p = parseTimeText(v.length >= 3 || v.includes(':') ? v : v + ':00');
+  let mins;
+  if (p) { const [h, m] = p.split(':').map(Number); mins = h * 60 + m; }
+  else if (/^\d{1,2}$/.test(v) && +v < 24) mins = +v * 60;
+  else { const d = new Date(); mins = d.getHours() * 60 + d.getMinutes(); if (mins < 7 * 60) mins = 9 * 60; }
+  return Math.min(95, Math.ceil(mins / 15));
+}
+function placeTimePop(inp) {
+  if (!timePop) return;
+  const rc = inp.getBoundingClientRect(), vh = window.visualViewport?.height || innerHeight;
+  const h = Math.min(260, timePop.scrollHeight), below = vh - rc.bottom - 8;
+  timePop.style.left = Math.max(8, Math.min(rc.left, innerWidth - timePop.offsetWidth - 8)) + 'px';
+  timePop.style.top = (below >= Math.min(h, 160) ? rc.bottom + 4 : Math.max(8, rc.top - h - 4)) + 'px';
+  timePop.style.maxHeight = Math.max(140, below >= Math.min(h, 160) ? below : rc.top - 12) + 'px';
+}
+function highlightTime(i, scroll) {
+  if (!timePop) return;
+  timeHi = i;
+  timePop.querySelectorAll('button').forEach((b, j) => { b.classList.toggle('hi', j === i); b.setAttribute('aria-selected', j === i); });
+  const b = timePop.children[i];
+  if (b && scroll) timePop.scrollTop = b.offsetTop - timePop.clientHeight / 2 + b.offsetHeight / 2;
+}
+function openTimePop(inp) {
+  closeTimePop();
+  const pop = timePop = document.createElement('div');
+  pop.id = 'timePop'; pop.setAttribute('role', 'listbox'); pop.setAttribute('aria-label', 'Uur kiezen');
+  const cur = parseTimeText(inp.value);
+  pop.innerHTML = QUARTERS.map(q => `<button type="button" role="option" tabindex="-1" data-time="${q}" class="${q === cur ? 'on' : ''}">${q}</button>`).join('');
+  document.body.appendChild(pop);
+  inp.setAttribute('aria-expanded', 'true');
+  placeTimePop(inp);
+  highlightTime(timeTarget(inp), true);
+  // klikken in de lijst mag het veld niet laten vervagen vóór de keuze telt
+  pop.addEventListener('pointerdown', e => e.preventDefault());
+  pop.addEventListener('click', e => { const b = e.target.closest('[data-time]'); if (!b) return; inp.value = b.dataset.time; commitTime(inp); });
+}
+function commitTime(inp, fromBlur) {
+  const t = taskById(selectedId); if (!t || !inp.isConnected) { closeTimePop(); return; }
+  const v = parseTimeText(inp.value);
+  closeTimePop();
+  if (v === null) { inp.value = t.time || ''; if (!fromBlur) toast('Onbekend uur — typ bv. 14, 930 of 14:30'); return; }
+  const nv = v || null;
+  if (nv === (t.time || null)) { inp.value = t.time || ''; if (!fromBlur) inp.blur(); return; }
+  t.time = nv; if (t.time && !t.due) t.due = today();
+  touch(t); save(); renderNav(); renderMain();
+  if (fromBlur) detailDirty = true; else { inp.blur(); renderDetail(true); }
+}
+// bij het aanklikken het hele uur selecteren, zodat je er meteen overheen typt
+// (select() bij focus alleen wordt door het loslaten van de muisknop weer ongedaan gemaakt)
+let timeFreshFocus = false;
+detail.addEventListener('focusin', e => { if (e.target.id === 'dTime') { timeFreshFocus = true; openTimePop(e.target); e.target.select(); } });
+detail.addEventListener('mouseup', e => { if (e.target.id === 'dTime' && timeFreshFocus) { e.preventDefault(); e.target.select(); } timeFreshFocus = false; });
+detail.addEventListener('input', e => { if (e.target.id === 'dTime') { if (!timePop) openTimePop(e.target); highlightTime(timeTarget(e.target), true); } });
+detail.addEventListener('keydown', e => {
+  if (e.target.id !== 'dTime') return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); if (!timePop) openTimePop(e.target);
+    highlightTime(Math.max(0, Math.min(95, timeHi + (e.key === 'ArrowDown' ? 1 : -1))), true);
+    e.target.value = QUARTERS[timeHi];
+  } else if (e.key === 'Enter') { e.preventDefault(); commitTime(e.target); }
+  else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); const t = taskById(selectedId); e.target.value = t?.time || ''; closeTimePop(); e.target.blur(); }
+  else if (e.key === 'Tab') commitTime(e.target, true);
+}, true);
+addEventListener('pointerdown', e => { if (timePop && !timePop.contains(e.target) && e.target.id !== 'dTime') closeTimePop(); }, true);
+detail.addEventListener('scroll', () => { const i = $('#dTime'); if (timePop && i) placeTimePop(i); }, true);
+addEventListener('resize', () => { const i = $('#dTime'); if (timePop && i) placeTimePop(i); });
+window.visualViewport?.addEventListener('resize', () => { const i = $('#dTime'); if (timePop && i) placeTimePop(i); });
 detail.addEventListener('change', e => {
   const t = taskById(selectedId); if (!t) return;
   const el = e.target;
@@ -2564,8 +2666,12 @@ detail.addEventListener('change', e => {
     return;
   }
   if (el.id === 'dProject') t.projectId = el.value;
-  else if (el.id === 'dDue') { t.due = el.value || null; if (!t.due) t.time = null; }
-  else if (el.id === 'dTime') { t.time = el.value || null; if (t.time && !t.due) t.due = today(); }
+  else if (el.id === 'dDue') {
+    t.due = el.value || null; if (!t.due) t.time = null;
+    // het datumveld meldt al een wijziging per getypt cijfer: niet heropbouwen zolang je erin typt
+    if (document.activeElement === el) { touch(t); save(); renderNav(); renderMain(); detailDirty = true; return; }
+  }
+  else if (el.id === 'dTime') return;   // eigen uurkiezer, zie commitTime
   else if (el.dataset.field) {
     const f = fieldById(el.dataset.field);
     if (f.type === 'checkbox') setCustom(t, f.id, el.checked);
