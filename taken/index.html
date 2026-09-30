@@ -986,7 +986,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulati
 *{-webkit-tap-highlight-color:transparent}
 button,.nav-item,.nav-year,.nav-arch,#tabBar,#fab,.col>header,.col-tabs,.seg,.chip,.fchip,.sales-stat,.main-head h2,.side-head{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
-#main,#detail,#side,.board,.table-wrap,dialog{overscroll-behavior:contain}
+#main,#detail,#side,dialog{overscroll-behavior:contain}
+/* bord en tabel scrollen horizontaal: enkel dat begrenzen, zodat het muiswiel verticaal gewoon de pagina scrolt */
+.board,.table-wrap{overscroll-behavior-x:contain;overscroll-behavior-y:auto}
 @media (max-width:860px){
   html,body{overscroll-behavior:none}
   .card{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
