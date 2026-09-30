@@ -1332,6 +1332,25 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .nt-chk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
 .nt-at{display:flex;align-items:center;gap:6px;font-size:14px}
 .nt-at select{width:auto}
+
+/* desktop: invoerbalk enkel na "+ Taak" / N, compactere werkbalk */
+.tb-add{display:none}
+@media (min-width:861px){
+  #quickAdd,#qaPreview{display:none}
+  body.qa-open #quickAdd{display:flex;animation:qaDrop .22s var(--spring,ease-out)}
+  body.qa-open #qaPreview{display:flex}
+  @keyframes qaDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  #quickAdd input{padding:8px 16px;font-size:14px}
+  #quickAdd .btn{padding:7px 16px}
+  .toolbar{gap:6px;margin-bottom:10px;align-items:center}
+  .toolbar .seg{padding:2px}
+  .toolbar .seg button{padding:4px 12px;font-size:13px}
+  .toolbar select,.toolbar input{padding:5px 10px 5px 12px;font-size:13px}
+  .toolbar .btn,.tb-cols{padding:5px 12px;font-size:13px}
+  .toolbar .search{min-width:140px}
+  .tb-add{display:inline-flex;align-items:center;gap:4px;order:9}
+  .tb-add svg{width:14px;height:14px}
+}
 </style>
 </head>
 <body>
@@ -2398,6 +2417,7 @@ function renderToolbar() {
   $('#toolbar').innerHTML = `
     <div class="seg" role="group" aria-label="Weergave"><button type="button" data-layout="board" class="${board ? 'on' : ''}">Bord</button><button type="button" data-layout="list" class="${board ? '' : 'on'}">Lijst</button></div>
     <button type="button" class="btn tb-toggle ${active ? 'active' : ''}" data-tbmore aria-expanded="${tbOpen}">${I.filter}Filter${active ? '<i class="tb-dot"></i>' : ''}</button>
+    <button type="button" class="btn tb-add" data-qa title="Nieuwe taak (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Taak</button>
     <div class="tb-more">
     ${board ? '<button type="button" class="btn tb-cols" data-cols>Kolommen</button>' : ''}
     <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
@@ -4313,6 +4333,12 @@ $('#tabBar').addEventListener('click', e => {
   }
   setView({type:t});
 });
+// Invoerbalk: op desktop verborgen tot je op "+ Taak" klikt of N drukt; leeg verlaten sluit hem weer.
+function openQuickAdd() { document.body.classList.add('qa-open'); $('#qaInput').focus(); }
+const deskQa = () => !matchMedia('(max-width:860px)').matches;
+$('#toolbar').addEventListener('click', e => { if (e.target.closest('[data-qa]')) openQuickAdd(); });
+$('#qaInput').addEventListener('blur', () => { if (deskQa() && !$('#qaInput').value.trim()) setTimeout(() => { if (document.activeElement !== $('#qaInput')) document.body.classList.remove('qa-open'); }, 150); });
+$('#qaInput').addEventListener('keydown', e => { if (e.key === 'Escape' && deskQa()) { e.preventDefault(); $('#qaInput').value = ''; $('#qaInput').dispatchEvent(new Event('input')); $('#qaInput').blur(); document.body.classList.remove('qa-open'); } });
 $('#fab').addEventListener('click', () => {
   if (view.type === 'sales') { addSalesRow(); return; }
   if (view.type === 'clients') { newClient(); return; }
@@ -4555,14 +4581,14 @@ document.addEventListener('keydown', e => {
     if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages().find(x => !x.archived); if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
     if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); $('#tbSearch').focus(); $('#tbSearch').select(); return; }
-    if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else { document.body.classList.add('qa-open'); $('#qaInput').focus(); } return; }
+    if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else openQuickAdd(); return; }
   }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === '?') { e.preventDefault(); openShortcutsDialog(); return; }
   if (e.key === 'Delete' && selectedId && view.type !== 'sales') { e.preventDefault(); deleteTask(selectedId); return; }
   if (isPageView()) return;
   if (view.type === 'sales') { if (e.key === 'n') { e.preventDefault(); addSalesRow(); } return; }
-  if (e.key === 'q' || e.key === 'n') { e.preventDefault(); $('#qaInput').focus(); }
+  if (e.key === 'q' || e.key === 'n') { e.preventDefault(); openQuickAdd(); }
   else if (e.key === '/') { e.preventDefault(); $('#tbSearch')?.focus(); }
 });
 
