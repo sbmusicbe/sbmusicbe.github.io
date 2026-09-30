@@ -1587,6 +1587,18 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
 .pg-table th.num.cl-sort button{flex-direction:row-reverse}
 .cl-sort-m{display:none}
 @media (max-width:860px){ .cl-sort-m{display:block;flex:1 1 45%;min-width:0} }
+
+/* ⋯-menu's: weinig gebruikte acties zitten achter één knop */
+.col>header .col-menu{width:26px;height:26px;color:var(--muted)}
+.col>header .col-menu svg{width:16px;height:16px}
+@media (hover:hover) and (pointer:fine){
+  .col>header .col-menu{opacity:0;transition:opacity .15s}
+  .col:hover>header .col-menu,.col>header .col-menu[aria-expanded=true]{opacity:1}
+}
+@media (max-width:860px){ .col>header .col-menu{width:34px;height:34px;color:var(--faint)} }
+#clMenu,#clMenu2{width:var(--ctl-h);height:var(--ctl-h);color:var(--muted)}
+#clMenu svg,#clMenu2 svg{width:18px;height:18px}
+@media (pointer:coarse){ #ctxMenu button{padding:11px 12px;font-size:16px} #ctxMenu{min-width:240px} }
 </style>
 </head>
 <body>
@@ -2518,7 +2530,7 @@ function renderBoard() {
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
-      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right"><span class="col-tools"><button type="button" class="icon-btn col-hide" data-hidecol="${st.id}" title="Kolom verbergen in deze weergave" aria-label="${esc(st.label)} verbergen">${I.eyeOff}</button><button type="button" class="icon-btn col-edit" data-cols title="Kolommen beheren" aria-label="Kolommen beheren"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></span>${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}${st.done && total ? `<button type="button" class="icon-btn col-arch" data-archcol="${st.id}" title="Alle kaarten in ${esc(st.label)} archiveren" aria-label="Alle kaarten in ${esc(st.label)} archiveren">${I.archive}</button>` : ''}<button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
+      <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right">${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-menu" data-colmenu="${st.id}" data-total="${total}" title="Meer" aria-label="Meer acties voor ${esc(st.label)}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
       ${topAdd === st.id ? `<form class="col-add col-add-top" data-stage="${st.id}" data-top="1" autocomplete="off"><input type="text" placeholder="Nieuwe kaart in ${esc(st.label)}…" aria-label="Nieuwe kaart bovenaan ${esc(st.label)}" enterkeyhint="done"></form>` : ''}
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
@@ -2610,13 +2622,13 @@ function renderHead() {
   if (pr && document.activeElement !== notes) { notes.value = pr.notes || ''; notes.dataset.pid = pr.id; autosize(notes); }
   $('#editProject').hidden = !isP;
   const fp = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
-  const fb = $('#finishProject'); fb.hidden = !fp;
+  const fb = $('#finishProject'); fb.hidden = true;
   if (fp) { fb.classList.toggle('on', !!fp.finished); fb.title = fp.finished ? 'Project heropenen' : 'Project afwerken'; fb.setAttribute('aria-label', fb.title); fb.querySelector('span').textContent = fp.finished ? 'Afgewerkt' : 'Afwerken'; }
   const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
   const ab = $('#archBar'); ab.hidden = !arch?.archived && !arch?.finished;
   if (!arch?.archived && arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button><button type="button" class="btn" data-finarch>Archiveren</button>`;
   if (arch?.archived) ab.innerHTML = `<span>${I.archive}${view.type === 'sales' ? 'Deze pagina' : 'Dit project'} is gearchiveerd.</span><span class="grow"></span><button type="button" class="btn" data-unarch>Terugzetten</button><button type="button" class="btn danger" data-archdel>Verwijderen</button>`;
-  $('#editProject').title = view.type === 'sales' ? 'Pagina bewerken' : 'Project bewerken';
+  $('#editProject').title = 'Meer';
   document.title = `${viewTitle()} · Taken`;
   $('#tbTitle').textContent = `${viewTitle()} — Taken`;
   $('#miniTitle').textContent = viewTitle();
@@ -2893,6 +2905,12 @@ function deleteTask(id) {
 }
 // de klik die een taak opent, mag het paneel niet meteen weer sluiten ('klik buiten = sluiten')
 let detailJustOpened = false;
+function archiveFromDetail(t) {
+  const on = !t.archived;
+  if (on && view.type !== 'archive') selectedId = null;
+  if (!on && view.type === 'archive') selectedId = null;
+  setArchived([t.id], on);
+}
 function openTask(id) { selectedId = id; detailJustOpened = true; setTimeout(() => detailJustOpened = false, 0); renderMain(); renderDetail(true); }
 function closeDetail() { selectedId = null; renderMain(); renderDetail(true); }
 
@@ -2934,8 +2952,7 @@ function renderDetail(force) {
       <button class="icon-btn" data-act="close" aria-label="Sluiten">${I.close}</button>
       <span class="crumb"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${p.color}"></span>${esc(p.name)}</span>
       <button class="icon-btn d-expand" data-act="expand" title="${wide ? 'Verkleinen' : 'Vergroten'}" aria-label="${wide ? 'Paneel verkleinen' : 'Paneel vergroten'}">${wide ? I.shrink : I.expand}</button>
-      <button class="btn d-arch" data-act="archive">${I.archive}${t.archived ? 'Terugzetten' : 'Archiveren'}</button>
-      <button class="icon-btn" data-act="delete" title="Taak verwijderen" aria-label="Taak verwijderen">${I.trash}</button>
+      <button class="icon-btn" data-act="more" title="Meer" aria-label="Meer acties" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
     </div>
     <div class="d-body">
       <div class="d-title-row">
@@ -3373,13 +3390,8 @@ detail.addEventListener('click', e => {
     case 'copyno': { const c = t.clientId && clientById(t.clientId); if (c?.no) copyText(String(c.no), 'Klantnummer'); break; }
     case 'openclient': if (t.clientId) setView({type:'client', id:t.clientId}); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
-    case 'archive': {
-      const on = !t.archived;
-      if (on && view.type !== 'archive') selectedId = null;
-      if (!on && view.type === 'archive') selectedId = null;
-      setArchived([t.id], on);
-      break;
-    }
+    case 'archive': archiveFromDetail(t); break;
+    case 'more': menuAt(b, taskMenuItems(t)); break;
     case 'toggle': toggleTask(t.id); break;
     case 'fields': openFieldsDialog(); break;
     case 'newfield': openFieldEditor(null, t.projectId === 'inbox' ? null : t.projectId); break;
@@ -4020,9 +4032,6 @@ function renderSales(force) {
       <span class="grow"></span>
       <div class="sales-actions">
       ${dateCol ? `<div class="seg" role="group" aria-label="Weergave"><button type="button" data-flat="0" class="${grouped ? 'on' : ''}">Per week</button><button type="button" data-flat="1" class="${grouped ? '' : 'on'}">Lijst</button></div>` : ''}
-      <button type="button" class="btn" id="spImport">Notities plakken</button>
-      <button type="button" class="btn" id="spCols">Kolommen</button>
-      <button type="button" class="btn" id="spCsv">CSV</button>
       </div>
     </div>
     <div id="spPace">${paceHtml(pg, main)}</div>
@@ -4030,7 +4039,7 @@ function renderSales(force) {
     <button type="button" class="btn primary" id="spAdd" style="margin-bottom:12px">+ Verkoop toevoegen</button>
     <div class="table-wrap"><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
-      <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe of klik op “Notities plakken”.</td></tr>`}</tbody>
+      <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe, of plak je notities via ⋯ bovenaan.</td></tr>`}</tbody>
       <tfoot><tr>${cols.map((c, i) => `<td class="t-${c.type}" data-foot="${c.id}">${c.type === 'money' ? eur(tot.per[c.id]) : c.type === 'number' ? numFmt.format(tot.per[c.id]) : i === 0 ? 'Totaal' : ''}</td>`).join('')}<td></td></tr></tfoot>
     </table></div>
     <label class="fl" style="margin-top:26px">Notities<textarea id="spNotes" rows="3" placeholder="Doelen, opmerkingen…">${esc(pg.notes || '')}</textarea></label>`;
@@ -4545,8 +4554,8 @@ $('#banner').addEventListener('click', e => {
   if (e.target.id === 'bnLater') { try { localStorage.setItem('taken.banner.later', String(now() + 7 * 864e5)); } catch {} renderBanner(); }
 });
 $('#addProject').onclick = () => openProjectDialog(null);
-$('#finishProject').onclick = () => { const p = data.projects.find(x => x.id === view.id); if (p) finishProject(p, !p.finished); };
-$('#editProject').onclick = () => view.type === 'sales' ? openSalesPageDialog(salesPageById(view.id)) : openProjectDialog(proj(view.type === 'inbox' ? 'inbox' : view.id));
+$('#finishProject').onclick = () => { const p = data.projects.find(x => x.id === view.id); if (p) finishProject(p, !p.finished); };   // enkel nog via ⋯ (knop blijft verborgen)
+$('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#projNotes').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === e.target.dataset.pid); if (!p) return;
   p.notes = e.target.value; touch(p); autosize(e.target); save(true);
@@ -4641,15 +4650,24 @@ document.addEventListener('touchstart', () => {}, {passive:true});
   addEventListener('touchend', end, {passive:true});
   addEventListener('touchcancel', end, {passive:true});
 })();
+function hideColumn(id) {
+  const st = stageById(id);
+  const before = setHiddenCols([...new Set([...(prefs().hidden || []), id])]);
+  toast(`“${st.label}” verborgen in deze weergave`, () => setHiddenCols(before));
+}
 $('#list').addEventListener('click', e => {
   if (justDragged || e.target.closest('[data-act=link]')) return;
   if (e.target.closest('[data-cols]')) { openStagesDialog(); return; }
   const plus = e.target.closest('[data-addtop]'); if (plus) { openTopAdd(plus.dataset.addtop); return; }
   const hideCol = e.target.closest('[data-hidecol]');
-  if (hideCol) {
-    const id = hideCol.dataset.hidecol, st = stageById(id);
-    const before = setHiddenCols([...new Set([...(prefs().hidden || []), id])]);
-    toast(`“${st.label}” verborgen in deze weergave`, () => setHiddenCols(before));
+  if (hideCol) { hideColumn(hideCol.dataset.hidecol); return; }
+  const cm = e.target.closest('[data-colmenu]');
+  if (cm) {
+    const id = cm.dataset.colmenu, st = stageById(id), n = +cm.dataset.total || 0;
+    menuAt(cm, [{label:'Nieuwe kaart', run:() => openTopAdd(id)},
+      st?.done && n ? {label:n === 1 ? 'De kaart archiveren' : `Alle ${n} kaarten archiveren`, attrs:`data-archcol="${id}"`, run:() => archiveColumn(id)} : null, '-',
+      {label:'Verbergen in deze weergave', attrs:`data-hidecol="${id}"`, run:() => hideColumn(id)},
+      {label:'Kolommen beheren…', attrs:'data-cols', run:() => openStagesDialog()}]);
     return;
   }
   const showCol = e.target.closest('[data-showcol]');
@@ -4845,9 +4863,18 @@ function openShortcutsDialog() {
 }
 /* ---- Snelmenu met rechtsklik (desktop) ---- */
 const ctx = $('#ctxMenu');
-function closeCtx() { ctx.hidden = true; ctx.innerHTML = ''; ctx.onclick = null; }
+function closeCtx() { ctx.hidden = true; ctx.innerHTML = ''; ctx.onclick = null; menuAnchor = null; }
+// ⋯-knop: menu onder de knop (nog eens klikken sluit het)
+let menuAnchor = null;
+function menuAt(el, items) {
+  if (!ctx.hidden && menuAnchor === el) { closeCtx(); return; }
+  const r = el.getBoundingClientRect();
+  openCtx(r.right - 220, r.bottom + 4, items);
+  menuAnchor = el;
+}
 function openCtx(x, y, items) {
-  ctx.innerHTML = items.map((it, i) => it === '-' ? '<hr>' : `<button type="button" role="menuitem" data-i="${i}" class="${it.danger ? 'danger' : ''}" ${it.disabled ? 'disabled' : ''}>${it.dot ? `<span class="dot" style="background:${it.dot}"></span>` : '<span class="ci"></span>'}<span>${esc(it.label)}</span>${it.on ? I.check : ''}</button>`).join('');
+  items = items.filter(Boolean).filter((it, i, a) => it !== '-' || (i > 0 && i < a.length - 1 && a[i - 1] !== '-'));
+  ctx.innerHTML = items.map((it, i) => it === '-' ? '<hr>' : `<button type="button" role="menuitem" data-i="${i}" class="${it.danger ? 'danger' : ''}" ${it.disabled ? 'disabled' : ''} ${it.attrs || ''}>${it.dot ? `<span class="dot" style="background:${it.dot}"></span>` : '<span class="ci"></span>'}<span>${esc(it.label)}</span>${it.on ? I.check : ''}</button>`).join('');
   ctx.hidden = false;
   const w = ctx.offsetWidth, h = ctx.offsetHeight;
   ctx.style.left = Math.min(x, innerWidth - w - 6) + 'px';
@@ -4855,7 +4882,7 @@ function openCtx(x, y, items) {
   ctx.onclick = e => { const b = e.target.closest('button[data-i]'); if (!b) return; const it = items[+b.dataset.i]; closeCtx(); it.run(); };
   ctx.querySelector('button:not([disabled])')?.focus({preventScroll:true});
 }
-addEventListener('pointerdown', e => { if (!ctx.hidden && !ctx.contains(e.target)) closeCtx(); }, true);
+addEventListener('pointerdown', e => { if (!ctx.hidden && !ctx.contains(e.target) && !(menuAnchor && menuAnchor.contains(e.target))) closeCtx(); }, true);
 addEventListener('keydown', e => {
   if (ctx.hidden) return;
   if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCtx(); return; }
@@ -4868,6 +4895,24 @@ addEventListener('keydown', e => {
 addEventListener('blur', closeCtx);
 addEventListener('resize', closeCtx);
 $('#main').addEventListener('scroll', closeCtx, {passive:true});
+function taskMenuItems(t) {
+  return [t.archived ? {label:'Terugzetten uit archief', attrs:'data-act="archive"', run:() => archiveFromDetail(t)} : {label:'Archiveren', attrs:'data-act="archive"', run:() => archiveFromDetail(t)},
+    {label:'Verwijderen', danger:true, attrs:'data-act="delete"', run:() => deleteTask(t.id)}];
+}
+function projectMenuItems(p) {
+  return [{label:'Bewerken…', attrs:'data-act="editproj"', run:() => openProjectDialog(p)},
+    p.id === 'inbox' ? null : '-',
+    p.id === 'inbox' ? null : {label:p.finished ? 'Heropenen' : 'Afwerken', attrs:'data-act="finish"', run:() => finishProject(p, !p.finished)},
+    p.id === 'inbox' ? null : {label:p.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveProject(p, !p.archived)},
+    p.id === 'inbox' ? null : '-',
+    p.id === 'inbox' ? null : {label:'Verwijderen…', danger:true, run:() => deleteProject(p)}];
+}
+function salesPageMenuItems(pg, withTools) {
+  return [...(withTools ? [{label:'Notities plakken…', attrs:'id="spImport"', run:() => openSalesImportDialog()}, {label:'Kolommen…', attrs:'id="spCols"', run:() => openSalesColsDialog()}, {label:'Exporteren als CSV', attrs:'id="spCsv"', run:() => exportSalesCsv()}, '-'] : []),
+    {label:'Bewerken…', attrs:'data-act="editproj"', run:() => openSalesPageDialog(pg)},
+    {label:pg.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveSalesPage(pg, !pg.archived)}, '-',
+    {label:'Verwijderen…', danger:true, run:() => deleteSalesPage(pg)}];
+}
 document.addEventListener('contextmenu', e => {
   if (!data || $('#app').hidden || matchMedia('(pointer:coarse)').matches) return;
   // tekstvelden en geselecteerde tekst houden het gewone menu (kopiëren/plakken)
@@ -4883,15 +4928,10 @@ document.addEventListener('contextmenu', e => {
       {label:'Verwijderen', danger:true, run:() => deleteTask(t.id)}];
   } else if (pEl) {
     const p = data.projects.find(x => x.id === pEl.dataset.project); if (!p) return;
-    items = [{label:'Openen', run:() => setView({type:'project', id:p.id})}, {label:'Bewerken…', run:() => openProjectDialog(p)}, '-',
-      {label:p.finished ? 'Heropenen' : 'Afwerken', run:() => finishProject(p, !p.finished)},
-      {label:p.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveProject(p, !p.archived)}, '-',
-      {label:'Verwijderen…', danger:true, run:() => deleteProject(p)}];
+    items = [{label:'Openen', run:() => setView({type:'project', id:p.id})}, ...projectMenuItems(p)];
   } else if (sEl) {
     const pg = salesPageById(sEl.dataset.sales); if (!pg) return;
-    items = [{label:'Openen', run:() => setView({type:'sales', id:pg.id})}, {label:'Bewerken…', run:() => openSalesPageDialog(pg)}, '-',
-      {label:pg.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveSalesPage(pg, !pg.archived)}, '-',
-      {label:'Verwijderen…', danger:true, run:() => deleteSalesPage(pg)}];
+    items = [{label:'Openen', run:() => setView({type:'sales', id:pg.id})}, ...salesPageMenuItems(pg, false)];
   }
   e.preventDefault();          // geen browsermenu (Terug, Herladen, …) in de app
   if (items) openCtx(e.clientX, e.clientY, items); else closeCtx();
@@ -5091,6 +5131,11 @@ function renderPage(force) {
   if (view.type === 'clients') applyClientFilter();
 }
 
+function clientsFromSales() {
+    const seen = new Set(); let n = 0;
+    for (const x of allSales()) { if (!x.clientName || x.clientId) continue; const k = normName(x.clientName); if (seen.has(k) || clientByName(x.clientName)) continue; seen.add(k); data.clients.push(newClientObj({company:x.clientName})); n++; }
+    commit(); toast(`${n} ${n === 1 ? 'klant' : 'klanten'} aangemaakt`);
+  }
 /* ---- Klantenlijst ---- */
 function clientsHtml() {
   const sales = allSales();
@@ -5106,8 +5151,7 @@ function clientsHtml() {
       <select id="clSort" class="cl-sort-m" aria-label="Sorteren">${CL_SORTS.flatMap(([k, l, d]) => [d, -d].map(dir => { const so = clSortPref(), lbl = k === 'name' || k === 'city' || k === 'eds' ? (dir === 1 ? 'A→Z' : 'Z→A') : k === 'last' ? (dir === 1 ? 'oudste eerst' : 'recentste eerst') : (dir === 1 ? 'laag→hoog' : 'hoog→laag'); return `<option value="${k}:${dir}" ${so.k === k && so.dir === dir ? 'selected' : ''}>${l}: ${lbl}</option>`; })).join('')}</select>
       <span class="muted small" id="clCount"></span>
       <span class="grow"></span>
-      ${unmatched.length ? `<button type="button" class="btn" id="clFromSales" title="${esc(unmatched.slice(0, 12).join(', '))}${unmatched.length > 12 ? '…' : ''}">Klanten uit verkopen halen (${unmatched.length})</button>` : ''}
-      <button type="button" class="btn" id="clImportFile">Importeren (Excel/CSV)</button>
+      <button type="button" class="icon-btn" id="clMenu" data-unmatched="${unmatched.length}" title="Meer" aria-label="Meer acties" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       <button type="button" class="btn primary" id="clNew">+ Nieuwe klant</button>
     </div>`;
   const so = clSortPref();
@@ -5459,7 +5503,7 @@ function clientHtml() {
       ${c.email ? `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Mailen</a>` : ''}
       <button type="button" class="btn primary" id="clTask">+ Taak</button>
       <span class="grow"></span>
-      <button type="button" class="btn danger" id="clDel">Verwijderen</button>
+      <button type="button" class="icon-btn" id="clMenu2" title="Meer" aria-label="Meer acties" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
     </div>
     <div class="sales-head">
       <div class="sales-stat"><span>Omzet totaal</span><b>${eur(g.total)}</b></div>
@@ -5794,13 +5838,12 @@ pv.addEventListener('click', e => {
   if (t.closest('#clTask')) { addTaskForClient(view.id); return; }
   if (t.closest('#clDel')) { const c = clientById(view.id); if (c) deleteClient(c); return; }
   if (t.closest('#clImportFile')) { openClientImport(); return; }
+  { const m = t.closest('#clMenu'); if (m) { const n = +m.dataset.unmatched || 0; menuAt(m, [{label:'Importeren (Excel/CSV)…', attrs:'id="clImportFile"', run:() => openClientImport()}, n ? {label:`Klanten uit verkopen halen (${n})`, attrs:'id="clFromSales"', run:() => clientsFromSales()} : null]); return; } }
+  { const m = t.closest('#clMenu2'); if (m) { const c = clientById(view.id); if (c) menuAt(m, [c.no ? {label:'Klantnummer kopiëren', run:() => copyText(String(c.no), 'Klantnummer')} : null, c.no ? '-' : null, {label:'Klant verwijderen…', danger:true, attrs:'id="clDel"', run:() => deleteClient(c)}]); return; } }
   if (t.closest('#clMore')) { clLimit += 200; applyClientFilter(); return; }
   const edf = t.closest('[data-edfilter]'); if (edf) { clEdition = edf.dataset.edfilter; clQuery = ''; setView({type:'clients'}); return; }
-  if (t.closest('#clFromSales')) {
-    const seen = new Set(); let n = 0;
-    for (const x of allSales()) { if (!x.clientName || x.clientId) continue; const k = normName(x.clientName); if (seen.has(k) || clientByName(x.clientName)) continue; seen.add(k); data.clients.push(newClientObj({company:x.clientName})); n++; }
-    commit(); toast(`${n} ${n === 1 ? 'klant' : 'klanten'} aangemaakt`); return;
-  }
+  if (t.closest('#clFromSales')) { clientsFromSales(); return; }
+
   const cp = t.closest('[data-copy]'); if (cp) { copyText(cp.dataset.copy, 'Klantnummer'); return; }
   const cf = t.closest('[data-copy-field]'); if (cf) { const c = clientById(view.id); if (c?.[cf.dataset.copyField]) copyText(String(c[cf.dataset.copyField]), 'Klantnummer'); else toast('Nog geen klantnummer ingevuld'); return; }
   if (t.closest('a[href^="tel:"], a[href^="mailto:"]')) return;
