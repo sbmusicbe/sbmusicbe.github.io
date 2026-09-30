@@ -39,7 +39,7 @@ button{cursor:pointer}
 [hidden]{display:none!important}
 .muted{color:var(--muted)} .small{font-size:12.5px} .grow{flex:1}
 .err{color:var(--danger);font-size:13.5px;min-height:1.2em;margin:6px 0 0}
-input[type=text],input[type=password],input[type=number],input[type=date],input[type=url],select,textarea{
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=url],input[type=tel],input[type=email],select,textarea{
   background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;outline:none;
 }
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
@@ -561,7 +561,7 @@ h1,h2,h3,.main-head h2,#dTitle{font-family:-apple-system,BlinkMacSystemFont,"SF 
 .btn,.icon-btn,.nav-item,.seg button,.col-tabs button,.hidden-cols button,.check,.multi button,.sw,.chip[data-act]{transition:transform .12s ease-out,background-color .15s,color .15s,box-shadow .2s}
 .btn:active,.nav-item:active,.seg button:active,.col-tabs button:active,.hidden-cols button:active,.multi button:active{transform:scale(var(--press))}
 .icon-btn:active,.check:active{transform:scale(.9)}
-input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=search],select,textarea{
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=tel],input[type=email],input[type=search],select,textarea{
   background:var(--fill);border:1px solid transparent;border-radius:10px;padding:9px 12px;transition:background-color .15s,box-shadow .15s,border-color .15s}
 input:hover,select:hover,textarea:hover{background:color-mix(in srgb,var(--fill) 140%,transparent)}
 input:focus,select:focus,textarea:focus{background:var(--panel);border-color:color-mix(in srgb,var(--accent) 60%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
@@ -837,7 +837,7 @@ body{background:var(--wallpaper),var(--bg);background-attachment:fixed}
 .btn.primary{border-radius:999px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 88%,#fff),var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
 .btn.danger{border-radius:999px}
 .icon-btn{border-radius:999px}
-input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=search],select{border-radius:14px}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=tel],input[type=email],input[type=search],select{border-radius:14px}
 .seg{border-radius:999px;padding:3px;background:var(--glass);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
 .seg button{border-radius:999px;padding:6px 16px}
 .seg button.on{background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,0,0,.14)}
@@ -1113,6 +1113,132 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 #timePop button.on{color:var(--accent);font-weight:650}
 @media (max-width:860px){ #timePop button{padding:10px 12px;font-size:16px} #timePop{width:128px} }
 @media (prefers-reduced-motion:reduce){ #timePop{animation:none} }
+
+/* ---------- Klanten, statistieken, jaaroverzicht ---------- */
+#pageView[hidden]{display:none}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.pg-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}
+.pg-bar .btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.pg-bar .btn svg{width:16px;height:16px}
+.pg-bar input[type=search]{flex:1 1 280px;max-width:460px}
+.pg-h{margin:22px 0 10px;font-size:13px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.pg-empty{display:grid;gap:6px;padding:28px 22px;border-radius:16px;background:var(--card,var(--panel));box-shadow:var(--shadow-card);color:var(--muted);max-width:640px}
+.pg-empty b{color:var(--text);font-size:16px}
+.pg-note{margin:10px 2px 0}
+.pg-card{background:var(--card,var(--panel));border-radius:16px;box-shadow:var(--shadow-card);padding:14px 16px 16px;margin:0 0 14px;min-width:0}
+.pg-card h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:15px;font-weight:650}
+.pg-card h3 .grow{flex:1}
+.cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.cl-grid .pg-card{margin:0}
+.cl-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.cl-form .fl{margin:0}
+.cl-form .fl>span:first-child{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.cl-form .inline{display:flex;gap:6px;align-items:center}
+.cl-form .inline input{flex:1;min-width:0}
+.cl-form .cl-notes{grid-column:1/-1}
+.cl-no b{font-size:15px}
+.cl-no svg{width:15px;height:15px;opacity:.7}
+.cl-no-mini{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;font-size:13px;white-space:nowrap}
+.cl-no-mini svg{width:14px;height:14px;opacity:.7}
+.pg-list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.pg-list button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 8px;border:0;border-radius:10px;background:none;font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.pg-list button:hover{background:var(--hover)}
+.pg-list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.pg-list .meta{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.pg-list .amt{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pg-list .done .nm{color:var(--muted)}
+.pg-list .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.pg-table{width:100%;border-collapse:collapse;font-size:14px}
+.pg-table th{text-align:left;font-size:12px;font-weight:650;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.pg-table td{padding:10px 12px;border-bottom:1px solid var(--hairline,var(--line));white-space:nowrap}
+.pg-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.pg-table tbody tr[data-client],.pg-table tbody tr[data-salespage]{cursor:pointer}
+.pg-table tbody tr[data-client]:hover,.pg-table tbody tr[data-salespage]:hover{background:var(--hover)}
+.pg-table tbody tr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pg-table tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:0}
+.pg-table .tel{color:var(--accent);text-decoration:none;font-variant-numeric:tabular-nums}
+.yr-table tr.none td{color:var(--faint)}
+.yr-table tr.cur td:first-child{font-weight:650}
+.yr-table td.ok{color:var(--ok);font-weight:650}
+.sales-stat small{font-size:12px;font-weight:500}
+.sales-stat .late{color:var(--danger);font-size:12px;font-weight:650}
+/* staafgrafiek: één reeks, dunne afgeronde staven, 2px tussenruimte, rustige hulplijnen */
+.bchart{position:relative;padding:6px 0 0 44px}
+.bc-grid{position:absolute;inset:6px 0 22px 44px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.bc-grid span{position:relative;border-top:1px dashed color-mix(in srgb,var(--text) 10%,transparent)}
+.bc-grid span:last-child{border-top:1px solid color-mix(in srgb,var(--text) 22%,transparent)}
+.bc-grid span::before{content:attr(data-v);position:absolute;right:calc(100% + 6px);top:-8px;font-size:11px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bc-bars{position:relative;display:flex;align-items:stretch;gap:2px;height:calc(var(--h) + 22px)}
+.bc-col{flex:1;min-width:0;display:flex;flex-direction:column;outline:none}
+.bc-slot{position:relative;height:var(--h);display:flex;align-items:flex-end;justify-content:center}
+.bc-bar{display:block;width:min(70%,34px);min-height:0;background:var(--accent);border-radius:4px 4px 0 0;transition:filter .15s}
+.bc-bar[style*="height:0%"]{min-height:0}
+.bc-col:hover .bc-bar,.bc-col:focus-visible .bc-bar{filter:brightness(.88)}
+.bc-col:focus-visible .bc-slot{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent);border-radius:6px}
+.bc-target{position:absolute;left:8%;right:8%;height:0;border-top:2px solid var(--text);opacity:.55;z-index:1}
+.bc-lab{height:22px;line-height:22px;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.legend{display:inline-flex;gap:14px;margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg-bar{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--accent)}
+.lg-tgt{display:inline-block;width:14px;border-top:2px solid var(--text);opacity:.55}
+/* horizontale staven met label en waarde */
+.hbars{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.hbars li{display:grid;grid-template-columns:minmax(90px,38%) 1fr auto;align-items:center;gap:10px;font-size:14px}
+.hb-l{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-l a{color:inherit;text-decoration:none}
+.hb-l a:hover{color:var(--accent);text-decoration:underline}
+.hb-l .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.hb-t{height:10px;border-radius:999px;background:color-mix(in srgb,var(--text) 7%,transparent);overflow:hidden}
+.hb-t i{display:block;height:100%;border-radius:999px;background:var(--accent)}
+.hb-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hb-v small{margin-left:6px;color:var(--muted);font-size:12px}
+#chartTip{position:fixed;z-index:120;max-width:280px;padding:6px 10px;border-radius:9px;background:var(--text);color:var(--bg);font-size:12.5px;font-weight:550;line-height:1.35;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+#chartTip[hidden]{display:none}
+@media (max-width:860px){
+  .cl-form{grid-template-columns:1fr}
+  .pg-table .hide-m{display:none}
+  .pg-table td,.pg-table th{padding:10px 8px}
+  .bchart{padding-left:38px}.bc-grid{left:38px}
+  .hbars li{grid-template-columns:minmax(80px,34%) 1fr auto}
+  .pg-bar .seg{overflow-x:auto;max-width:100%;scrollbar-width:none}
+  .pg-bar .seg::-webkit-scrollbar{display:none}
+  .legend{display:none}
+}
+@media (prefers-reduced-motion:reduce){.bc-bar{transition:none}}
+@media (forced-colors:active){.bc-bar,.hb-t i,.lg-bar{background:CanvasText}}
+
+.cl-form{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.cl-form input,.cl-form textarea{width:100%;min-width:0;box-sizing:border-box}
+.cl-form .fl>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prop .cl-inline{flex-wrap:wrap;min-width:0}
+.prop #dClient{flex:1 1 100%;min-width:0}
+.pg-list li{min-width:0}
+.pg-list .meta{flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.prop .inline .cl-no-mini{flex:none}
+
+/* kalender */
+.date-inp{font-variant-numeric:tabular-nums}
+#datePop{position:fixed;z-index:90;width:296px;padding:10px 10px 8px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);animation:ctxIn .14s ease-out;-webkit-user-select:none;user-select:none}
+.dp-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}
+.dp-head b{font-size:15px;font-weight:650}
+.dp-head .icon-btn{width:32px;height:32px;border-radius:10px}
+.dp-head .icon-btn svg{width:18px;height:18px}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-wd{text-align:center;font-size:11.5px;font-weight:600;color:var(--muted);padding:4px 0 6px;text-transform:uppercase;letter-spacing:.02em}
+.dp-grid button{height:36px;border:0;border-radius:999px;background:none;font:inherit;font-size:14.5px;font-variant-numeric:tabular-nums;color:var(--text);cursor:default;transition:background-color .12s}
+.dp-grid button:hover{background:var(--hover)}
+.dp-grid button.we{color:var(--muted)}
+.dp-grid button.out{color:var(--faint)}
+.dp-grid button.today{color:var(--accent);font-weight:700;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
+.dp-grid button.hi{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.dp-grid button.sel{background:var(--accent);color:#fff;font-weight:650;box-shadow:none}
+.dp-foot{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.dp-foot button{border:0;background:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--accent);padding:6px 8px;border-radius:8px;cursor:default}
+.dp-foot button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.dp-foot .dp-clear{color:var(--muted)}
+.dp-foot .grow{flex:1}
+@media (max-width:860px){ #datePop{width:min(320px,calc(100vw - 16px))} .dp-grid button{height:40px;font-size:16px} }
+@media (prefers-reduced-motion:reduce){ #datePop{animation:none} }
 </style>
 </head>
 <body>
@@ -1134,12 +1260,16 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 <!-- ============ App ============ -->
 <div id="titlebar" aria-hidden="true"><img src="icon.svg" alt=""><span id="tbTitle">Taken</span></div>
 <div id="ctxMenu" role="menu" hidden></div>
+<div id="chartTip" role="tooltip" hidden></div>
+<datalist id="clientNames"></datalist>
 <div id="app" hidden>
   <aside id="side">
     <div class="side-head">
       <span class="brand"><i class="has-img"><img src="icon.svg" alt="" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Taken</span>
     </div>
     <nav id="nav"></nav>
+    <div class="side-section"><span>Overzicht</span></div>
+    <nav id="toolNav"></nav>
     <div class="side-section"><span>Projecten</span><button id="addProject" class="icon-btn" title="Nieuw project" aria-label="Nieuw project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
     <nav id="projNav"></nav>
     <div class="side-section"><span>Verkopen</span><button id="addSales" class="icon-btn" title="Nieuwe maandpagina" aria-label="Nieuwe maandpagina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
@@ -1173,6 +1303,7 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
       <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
       <div id="list"></div>
       <div id="salesPage" hidden></div>
+      <div id="pageView" hidden></div>
     </div>
   </main>
 
@@ -1280,6 +1411,12 @@ const I = {
   expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
+  clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.1 4 1.6 4.5 4.3"/></svg>',
+  stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="9" width="3" height="8" rx="1"/></svg>',
+  year:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M16 14h.01M8 17h2M12 17h2"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>',
   archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
   sales:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg>',
@@ -1361,7 +1498,7 @@ function normalize(d) {
   if (d.settings.autolock === undefined) d.settings.autolock = 30;
   if (d.settings.sync === undefined) d.settings.sync = null;
   if (!d.stages?.length) d.stages = DEFAULT_STAGES.map(x => ({...x, u:0}));
-  d.salesPages ||= []; d.sales ||= []; d.comments ||= [];
+  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.clients ||= [];
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
   for (const r of d.sales) r.values ||= {};
   // eenmalig: een tekstkolom "Formaat" wordt een keuzekolom
@@ -1383,7 +1520,7 @@ function merge(a, b) {
   const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
   const del = {...a.deleted};
   for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
-  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments']) {
+  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients']) {
     const m = new Map();
     for (const it of [...a[col], ...b[col]]) {
       const cur = m.get(it.id);
@@ -1402,7 +1539,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + JSON.stringify(Object.keys(d.deleted).sort());
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + JSON.stringify(Object.keys(d.deleted).sort());
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -1754,6 +1891,10 @@ function setView(v) {
 }
 function viewTitle() {
   if (view.type === 'project') return proj(view.id).name;
+  if (view.type === 'clients') return 'Klanten';
+  if (view.type === 'client') { const c = clientById(view.id); return c ? clientLabel(c) : 'Klant'; }
+  if (view.type === 'stats') return 'Statistieken';
+  if (view.type === 'year') return 'Jaaroverzicht';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
 }
@@ -2019,7 +2160,7 @@ function setHiddenCols(ids) {
 }
 function renderMain() {
   if (view.type === 'archive') { renderArchive(); return; }
-  if (view.type === 'sales') return;
+  if (view.type === 'sales' || isPageView()) return;
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
   $('#app').classList.toggle('board-mode', board);
@@ -2070,6 +2211,10 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
     + archList('sales', pages.filter(p => p.archived), salesItem);
+  $('#toolNav').innerHTML = [['clients', 'Klanten', I.clients, data.clients.length || ''], ['stats', 'Statistieken', I.stats, ''], ['year', 'Jaaroverzicht', I.year, '']]
+    .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
+  const dl = sortedClients().map(c => `<option value="${esc(clientLabel(c))}">${c.company && c.contact ? esc(c.contact) : ''}</option>`).join('');
+  if ($('#clientNames').innerHTML !== dl) $('#clientNames').innerHTML = dl;
   renderSync();
 }
 function renderHead() {
@@ -2147,9 +2292,9 @@ function renderTabBar() {
   const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : 'all';
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
-  $('#fab').hidden = view.type === 'archive';
+  $('#fab').hidden = view.type === 'archive' || view.type === 'stats' || view.type === 'year';
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
-  if (view.type === 'sales' || view.type === 'archive') document.body.classList.remove('qa-open');
+  if (view.type === 'sales' || view.type === 'archive' || isPageView()) document.body.classList.remove('qa-open');
 }
 function renderAll() {
   if (!data) return;
@@ -2160,6 +2305,17 @@ function renderAll() {
   renderNav(); renderHead(); renderBanner();
   for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = sales;
   $('#salesPage').hidden = !sales;
+  if (view.type === 'client' && !clientById(view.id)) view = {type:'clients'};
+  const page = isPageView();
+  $('#pageView').hidden = !page;
+  if (page) {
+    for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = true;
+    $('.main-inner').classList.add('wide');
+    $('#app').classList.remove('board-mode');
+    renderPage();
+    renderDetail();
+    return;
+  }
   if (sales) {
     $('.main-inner').classList.add('wide');
     $('#app').classList.remove('board-mode');
@@ -2253,6 +2409,9 @@ function createTask(r, stage, top) {
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), order:now(), custom:r.custom,
   });
+  // klant koppelen: expliciet, of een bekende firma/naam in de titel ("Bel Garage Smet")
+  const cl = r.clientId ? clientById(r.clientId) : clientInTitle(t.title);
+  if (cl) t.clientId = cl.id;
   if (top) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
   // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
   const p = prefs();
@@ -2266,7 +2425,7 @@ function createTask(r, stage, top) {
   }
   data.tasks.push(t);
   commit();
-  if (!viewTasks(true).some(x => x.id === t.id)) toast(`Toegevoegd aan ${proj(projectId).name}`);
+  if (!r.silent && !viewTasks(true).some(x => x.id === t.id)) toast(`Toegevoegd aan ${proj(projectId).name}`);
   return t;
 }
 $('#quickAdd').addEventListener('submit', e => {
@@ -2348,7 +2507,9 @@ function deleteTask(id) {
   commit();
   toast('Taak verwijderd', () => { delete data.deleted[id]; data.tasks.push(touch(copy)); commit(); });
 }
-function openTask(id) { selectedId = id; renderMain(); renderDetail(true); }
+// de klik die een taak opent, mag het paneel niet meteen weer sluiten ('klik buiten = sluiten')
+let detailJustOpened = false;
+function openTask(id) { selectedId = id; detailJustOpened = true; setTimeout(() => detailJustOpened = false, 0); renderMain(); renderDetail(true); }
 function closeDetail() { selectedId = null; renderMain(); renderDetail(true); }
 
 /* ---------------- Detail panel ---------------- */
@@ -2359,7 +2520,7 @@ function fieldInput(f, t) {
   switch (f.type) {
     case 'text': return `<label class="prop">${lab}<input type="text" ${attrs} value="${esc(v ?? '')}"></label>`;
     case 'number': return `<label class="prop">${lab}<input type="number" step="any" ${attrs} value="${esc(v ?? '')}"></label>`;
-    case 'date': return `<label class="prop">${lab}<input type="date" ${attrs} value="${esc(v ?? '')}"></label>`;
+    case 'date': return `<label class="prop">${lab}<input type="text" class="date-inp" ${attrs} value="${esc(fmtDateInp(v))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>`;
     case 'url': {
       const href = v ? safeUrl(v) : '';
       return `<label class="prop">${lab}<span class="inline"><input type="url" ${attrs} value="${esc(v ?? '')}" placeholder="https://…">${href ? `<a class="icon-btn" href="${esc(href)}" target="_blank" rel="noopener" title="Openen">${I.link}</a>` : ''}</span></label>`;
@@ -2401,8 +2562,9 @@ function renderDetail(force) {
       <div class="props">
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
-        <label class="prop"><span>Deadline</span><input type="date" id="dDue" value="${esc(t.due || '')}" min="2000-01-01" max="2099-12-31"></label>
+        <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
+        ${(() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${cl?.phone ? `<a class="icon-btn" href="tel:${esc(telHref(cl.phone))}" title="${esc(cl.phone)} bellen" aria-label="Bellen">${I.phone}</a>` : ''}</span></label>`; })()}
       </div>
       <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
       <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
@@ -2539,10 +2701,10 @@ let justSwiped = false;
 {
   let downOutside = false;
   document.addEventListener('pointerdown', e => {
-    downOutside = !e.target.closest('#detail, #timePop, #ctxMenu');
+    downOutside = !e.target.closest('#detail, #timePop, #datePop, #ctxMenu');
   }, true);
   document.addEventListener('click', e => {
-    if (!selectedId || !downOutside || justDragged || justSwiped || drag || dlg.open) return;
+    if (!selectedId || !downOutside || justDragged || justSwiped || detailJustOpened || drag || dlg.open) return;
     if (document.body.classList.contains('resizing')) return;
     if (e.target.closest('#detail, #dlg, #toast, .card, .task, [data-act], #lock')) return;
     closeDetail();
@@ -2573,6 +2735,118 @@ detail.addEventListener('focusout', e => {
     detailDirty = false; renderDetail(true);
   }, 0);
 });
+
+/* ---- Kalender voor datumvelden: typen mag ook ("30/9", "30-09-2026", "morgen", "vrijdag") ---- */
+const fmtDateInp = v => /^\d{4}-\d\d-\d\d$/.test(v || '') ? v.split('-').reverse().join('/') : '';
+const MONTH_IDX = {jan:0, feb:1, maa:2, mrt:2, apr:3, mei:4, jun:5, jul:6, aug:7, sep:8, okt:9, oct:9, nov:10, dec:11};
+function validYmd(y, m, d) { const dt = new Date(y, m - 1, d); return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d && y >= 2000 && y <= 2099 ? ymd(dt) : null; }
+function parseDateText(v) {
+  v = String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!v) return '';
+  const td = today(), y0 = +td.slice(0, 4);
+  if (v === 'vandaag' || v === 'vd') return td;
+  if (v === 'morgen') return addDays(td, 1);
+  if (v === 'overmorgen') return addDays(td, 2);
+  if (v === 'volgende week') return addDays(td, 7);
+  const wi = DAYS.findIndex(d => d === v || d.slice(0, 2) === v || d.slice(0, 3) === v);
+  if (wi >= 0) { const cur = parseYmd(td).getDay(); return addDays(td, ((wi - cur + 7) % 7) || 7); }
+  let m;
+  if ((m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) return validYmd(+m[1], +m[2], +m[3]);
+  if ((m = v.match(/^(\d{1,2})[\/\-. ](\d{1,2})(?:[\/\-. ](\d{2}|\d{4}))?$/))) return validYmd(m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : y0, +m[2], +m[1]);
+  if ((m = v.match(/^(\d{1,2}) ?([a-z]{3})[a-z]*\.?(?: (\d{4}))?$/)) && m[2] in MONTH_IDX) return validYmd(m[3] ? +m[3] : y0, MONTH_IDX[m[2]] + 1, +m[1]);
+  if ((m = v.match(/^(\d{2})(\d{2})(\d{2}|\d{4})?$/))) return validYmd(m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : y0, +m[2], +m[1]);
+  return null;
+}
+let datePop = null, dateInp = null, dateState = null;
+function closeDatePop() { datePop?.remove(); datePop = null; dateInp?.setAttribute('aria-expanded', 'false'); dateInp = null; }
+function dateValueOf(inp) {
+  const t = taskById(selectedId); if (!t) return '';
+  if (inp.id === 'dDue') return t.due || '';
+  const v = inp.dataset.field ? t.custom[inp.dataset.field] : ''; return typeof v === 'string' ? v : '';
+}
+function drawDatePop() {
+  if (!datePop) return;
+  const {month, hi, sel} = dateState, [y, mo] = month.split('-').map(Number);
+  const first = new Date(y, mo - 1, 1), start = new Date(first); start.setDate(1 - (first.getDay() + 6) % 7);
+  const td = today(), days = [];
+  for (let i = 0; i < 42; i++) { const d = new Date(start); d.setDate(start.getDate() + i); days.push(ymd(d)); }
+  datePop.innerHTML = `
+    <div class="dp-head"><button type="button" class="icon-btn" data-dnav="-1" aria-label="Vorige maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <b>${cap(MONTHS_LONG[mo - 1])} ${y}</b>
+      <button type="button" class="icon-btn" data-dnav="1" aria-label="Volgende maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
+    <div class="dp-grid" role="grid">${['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map(d => `<span class="dp-wd">${d}</span>`).join('')}
+      ${days.map(d => { const dt = parseYmd(d); return `<button type="button" role="gridcell" tabindex="-1" data-date="${d}" class="${d.slice(0, 7) !== month ? 'out ' : ''}${d === td ? 'today ' : ''}${d === sel ? 'sel ' : ''}${d === hi ? 'hi ' : ''}${dt.getDay() % 6 === 0 ? 'we' : ''}" aria-label="${dayLabel(d)}" aria-selected="${d === sel}">${dt.getDate()}</button>`; }).join('')}</div>
+    <div class="dp-foot"><button type="button" data-dquick="${td}">Vandaag</button><button type="button" data-dquick="${addDays(td, 1)}">Morgen</button><button type="button" data-dquick="${addDays(td, 7)}">Volgende week</button><span class="grow"></span><button type="button" class="dp-clear" data-dquick="">Wissen</button></div>`;
+  placeDatePop();
+}
+function placeDatePop() {
+  if (!datePop || !dateInp) return;
+  const rc = dateInp.getBoundingClientRect(), vh = window.visualViewport?.height || innerHeight;
+  const w = datePop.offsetWidth, h = datePop.offsetHeight, below = vh - rc.bottom - 8;
+  datePop.style.left = Math.max(8, Math.min(rc.right - w, innerWidth - w - 8)) + 'px';
+  datePop.style.top = (below >= h || rc.top < h + 12 ? Math.min(rc.bottom + 4, Math.max(8, vh - h - 8)) : rc.top - h - 4) + 'px';
+}
+function openDatePop(inp) {
+  closeDatePop(); closeTimePop?.();
+  dateInp = inp;
+  const sel = dateValueOf(inp), hi = sel || today();
+  dateState = {sel, hi, month:hi.slice(0, 7)};
+  datePop = document.createElement('div');
+  datePop.id = 'datePop'; datePop.setAttribute('role', 'dialog'); datePop.setAttribute('aria-label', 'Datum kiezen');
+  document.body.appendChild(datePop);
+  inp.setAttribute('aria-expanded', 'true');
+  datePop.addEventListener('pointerdown', e => e.preventDefault());   // focus blijft in het veld
+  datePop.addEventListener('click', e => {
+    const nav = e.target.closest('[data-dnav]');
+    if (nav) { const [y, m] = dateState.month.split('-').map(Number), d = new Date(y, m - 1 + +nav.dataset.dnav, 1); dateState.month = ymd(d).slice(0, 7); drawDatePop(); return; }
+    const b = e.target.closest('[data-date],[data-dquick]'); if (!b) return;
+    const v = b.dataset.date ?? b.dataset.dquick;
+    inp.value = fmtDateInp(v); commitDate(inp);
+  });
+  drawDatePop();
+}
+function commitDate(inp, fromBlur) {
+  const t = taskById(selectedId);
+  const same = inp === dateInp;
+  if (!t || !inp.isConnected) { if (same) closeDatePop(); return; }
+  const v = parseDateText(inp.value);
+  if (same) closeDatePop();
+  const cur = dateValueOf(inp);
+  if (v === null) { inp.value = fmtDateInp(cur); if (!fromBlur) toast('Onbekende datum — typ bv. 30/9, 30-09-2026, morgen of vrijdag'); return; }
+  if (v === cur) { inp.value = fmtDateInp(cur); if (!fromBlur) inp.blur(); return; }
+  if (inp.id === 'dDue') { t.due = v || null; if (!t.due) t.time = null; }
+  else if (inp.dataset.field) setCustom(t, inp.dataset.field, v);
+  touch(t); save(); renderNav(); renderMain();
+  if (fromBlur) detailDirty = true; else { inp.blur(); renderDetail(true); }
+}
+let dateFreshFocus = false;
+detail.addEventListener('focusin', e => { if (e.target.classList?.contains('date-inp')) { dateFreshFocus = true; openDatePop(e.target); e.target.select(); } });
+detail.addEventListener('mouseup', e => { if (e.target.classList?.contains('date-inp') && dateFreshFocus) { e.preventDefault(); e.target.select(); } dateFreshFocus = false; });
+detail.addEventListener('input', e => {
+  if (!e.target.classList?.contains('date-inp')) return;
+  if (!datePop) openDatePop(e.target);
+  const v = parseDateText(e.target.value);
+  if (v) { dateState.hi = v; dateState.month = v.slice(0, 7); drawDatePop(); }
+});
+detail.addEventListener('focusout', e => {
+  if (!e.target.classList?.contains('date-inp')) return;
+  const inp = e.target;
+  setTimeout(() => { if (document.activeElement !== inp) commitDate(inp, true); }, 0);
+});
+detail.addEventListener('keydown', e => {
+  const inp = e.target; if (!inp.classList?.contains('date-inp')) return;
+  const move = n => { if (!datePop) openDatePop(inp); dateState.hi = addDays(dateState.hi, n); dateState.month = dateState.hi.slice(0, 7); inp.value = fmtDateInp(dateState.hi); drawDatePop(); };
+  if (e.key === 'ArrowDown') { e.preventDefault(); move(e.altKey ? 7 : 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); move(e.altKey ? -7 : -1); }
+  else if (e.key === 'PageDown' || e.key === 'PageUp') { e.preventDefault(); const d = parseYmd(dateState.hi); d.setMonth(d.getMonth() + (e.key === 'PageDown' ? 1 : -1)); move(Math.round((d - parseYmd(dateState.hi)) / 86400000)); }
+  else if (e.key === 'Enter') { e.preventDefault(); commitDate(inp); }
+  else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); inp.value = fmtDateInp(dateValueOf(inp)); closeDatePop(); inp.blur(); }
+  else if (e.key === 'Tab') commitDate(inp, true);
+}, true);
+addEventListener('pointerdown', e => { if (datePop && !datePop.contains(e.target) && e.target !== dateInp) closeDatePop(); }, true);
+detail.addEventListener('scroll', () => placeDatePop(), true);
+addEventListener('resize', () => placeDatePop());
+window.visualViewport?.addEventListener('resize', () => placeDatePop());
 /* ---- Uurkiezer: lijst per kwartier, vrij typen mag ook ("14", "930", "14u30", "14:30") ---- */
 function parseTimeText(v) {
   v = String(v || '').trim().toLowerCase().replace(/\s+/g, '');
@@ -2659,10 +2933,22 @@ window.visualViewport?.addEventListener('resize', () => { const i = $('#dTime');
 detail.addEventListener('change', e => {
   const t = taskById(selectedId); if (!t) return;
   const el = e.target;
+  if (el.classList.contains('date-inp')) return;   // eigen kalender, zie commitDate
   if (el.id === 'dStage') {
     const undo = undoFor(t), res = setStage(t, el.value);
     save(); renderNav(); renderMain(); renderDetail(true);
     stageToast(t, res, undo);
+    return;
+  }
+  if (el.id === 'dClient') {
+    const v = el.value.trim();
+    if (!v) delete t.clientId;
+    else {
+      let c = clientByName(v);
+      if (!c) { c = newClientObj({company:v}); data.clients.push(c); toast(`Nieuwe klant “${v}” aangemaakt`); }
+      t.clientId = c.id;
+    }
+    touch(t); save(); renderNav(); renderMain(); renderDetail(true);
     return;
   }
   if (el.id === 'dProject') t.projectId = el.value;
@@ -2700,6 +2986,8 @@ detail.addEventListener('click', e => {
     case 'expand': setDetailWidth(detailIsWide(detailWidth()) ? DETAIL_DEFAULT : Math.max(DETAIL_WIDE, Math.round(innerWidth * 0.55)), true); break;
     case 'addcomment': addComment(t); break;
     case 'delcomment': deleteComment(b.closest('[data-cid]').dataset.cid); break;
+    case 'copyno': { const c = t.clientId && clientById(t.clientId); if (c?.no) copyText(String(c.no), 'Klantnummer'); break; }
+    case 'openclient': if (t.clientId) setView({type:'client', id:t.clientId}); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'archive': {
       const on = !t.archived;
@@ -2720,7 +3008,8 @@ function showDialog(html, bind) {
   dlg.innerHTML = `<div class="dlg-inner">${html}</div>`;
   bind?.(dlg);
   if (!dlg.open) dlg.showModal();
-  setTimeout(() => dlg.querySelector('input:not([type=checkbox]):not([disabled]),select')?.focus(), 20);
+  // eerst het veld met autofocus (bv. de naam), anders het eerste invoerveld
+  setTimeout(() => (dlg.querySelector('[autofocus]:not([disabled])') || dlg.querySelector('input:not([type=checkbox]):not([disabled]),select'))?.focus(), 20);
 }
 dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
@@ -2733,7 +3022,7 @@ function openProjectDialog(p) {
     <h3>${isNew ? 'Nieuw project' : 'Project bewerken'}</h3>
     <div class="pj-row">
       <label class="fl pj-emo">Icoon<input id="pjEmoji" type="text" value="${esc(p?.emoji || '')}" maxlength="8" placeholder="🙂" aria-label="Emoji (optioneel)"></label>
-      <label class="fl grow">Naam<input id="pjName" type="text" value="${esc(p?.name || '')}" ${isInbox ? 'disabled' : ''} placeholder="bv. Werk, Gigs, Thuis"></label>
+      <label class="fl grow">Naam<input id="pjName" type="text" value="${esc(p?.name || '')}" ${isInbox ? 'disabled' : 'autofocus'} placeholder="bv. Werk, Gigs, Thuis"></label>
     </div>
     <p class="muted small" style="margin:6px 0 0">Icoon is optioneel: plak of kies een emoji (Windows: <b>Win + .</b>, Mac: <b>Ctrl + Cmd + Spatie</b>).</p>
     <div class="fl">Kleur<div class="swatches">${COLORS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="--c:${c}" data-c="${c}" aria-label="Kleur ${c}"></button>`).join('')}</div></div>
@@ -3280,7 +3569,7 @@ function cellInput(c, r) {
   if (c.type === 'date') return `<input type="date" ${a} value="${esc(v)}">`;
   if (c.type === 'format') return `<button type="button" ${a} aria-haspopup="true">${fmtChips(v)}</button>`;
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
-  return `<input type="text" ${a} value="${esc(v)}">`;
+  return `<input type="text" ${a} value="${esc(v)}"${isClientCol(c) ? ' list="clientNames" autocomplete="off"' : ''}>`;
 }
 // Weeknummer binnen de maand zoals je het zelf noteert: week 1 = de (eventueel onvolledige) eerste week.
 function weekOfMonth(dateStr) {
@@ -3853,6 +4142,7 @@ function toast(msg, undo) {
 
 /* ---------------- Events ---------------- */
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView({type:b.dataset.view}); });
+$('#toolNav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView({type:b.dataset.view}); });
 for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e => {
   const yb = e.target.closest('[data-year]'); if (yb) { e.stopPropagation(); toggleSalesYear(yb.dataset.year); return; }
   const a = e.target.closest('[data-navarch]'); if (!a) return;
@@ -3892,6 +4182,8 @@ $('#tabBar').addEventListener('click', e => {
 });
 $('#fab').addEventListener('click', () => {
   if (view.type === 'sales') { addSalesRow(); return; }
+  if (view.type === 'clients') { newClient(); return; }
+  if (view.type === 'client') { addTaskForClient(view.id); return; }
   const open = document.body.classList.toggle('qa-open');
   if (open) setTimeout(() => $('#qaInput').focus(), 30); else $('#qaInput').blur();
 });
@@ -4134,6 +4426,7 @@ document.addEventListener('keydown', e => {
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === '?') { e.preventDefault(); openShortcutsDialog(); return; }
   if (e.key === 'Delete' && selectedId && view.type !== 'sales') { e.preventDefault(); deleteTask(selectedId); return; }
+  if (isPageView()) return;
   if (view.type === 'sales') { if (e.key === 'n') { e.preventDefault(); addSalesRow(); } return; }
   if (e.key === 'q' || e.key === 'n') { e.preventDefault(); $('#qaInput').focus(); }
   else if (e.key === '/') { e.preventDefault(); $('#tbSearch')?.focus(); }
@@ -4200,6 +4493,378 @@ document.addEventListener('contextmenu', e => {
   e.preventDefault();          // geen browsermenu (Terug, Herladen, …) in de app
   if (items) openCtx(e.clientX, e.clientY, items); else closeCtx();
 });
+
+/* ================= Klanten, statistieken, jaaroverzicht ================= */
+const PAGE_VIEWS = ['clients', 'client', 'stats', 'year'];
+const isPageView = () => PAGE_VIEWS.includes(view.type);
+const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+const clientById = id => data.clients.find(c => c.id === id);
+const clientLabel = c => c.company || c.contact || (c.no ? 'Klant ' + c.no : 'Naamloze klant');
+const sortedClients = () => [...data.clients].sort((a, b) => clientLabel(a).localeCompare(clientLabel(b), 'nl'));
+const telHref = s => String(s || '').replace(/[^\d+]/g, '');
+const isClientCol = c => c.type === 'text' && /klant|client|adverteerder|firma/i.test(c.name);
+const newClientObj = o => touch({id:uid(), no:'', company:'', contact:'', phone:'', email:'', city:'', notes:'', createdAt:now(), ...o});
+// Zoekt een klant op naam, contactpersoon of klantnummer (ook "261523 Carremans" of "Carremans (261523)").
+function clientByName(name) {
+  const n = normName(name); if (!n) return null;
+  const exact = data.clients.find(c => normName(c.company) === n || normName(c.contact) === n || (c.no && normName(c.no) === n));
+  if (exact) return exact;
+  const num = String(name).match(/\b\d{4,}\b/)?.[0];
+  return (num && data.clients.find(c => c.no && String(c.no).trim() === num)) || null;
+}
+function clientInTitle(title) {
+  const t = ' ' + normName(title) + ' ';
+  let best = null;
+  for (const c of data.clients) for (const nm of [c.company, c.contact, c.no]) {
+    const n = normName(nm);
+    if (n.length >= 3 && t.includes(' ' + n + ' ') && (!best || n.length > best.n.length)) best = {c, n};
+  }
+  return best?.c || null;
+}
+function newClient() {
+  const c = newClientObj({}); data.clients.push(c); save();
+  setView({type:'client', id:c.id});
+  setTimeout(() => $('#pageView [data-cf="company"]')?.focus(), 60);
+}
+function addTaskForClient(id) {
+  const c = clientById(id); if (!c) return;
+  const t = createTask({title:`Bel ${clientLabel(c)}`, custom:{}, clientId:id, projectId:'inbox', silent:true}, firstOpen().id);
+  openTask(t.id);
+  setTimeout(() => { const el = $('#dTitle'); if (el) { el.focus(); el.select(); } }, 60);
+}
+function deleteClient(c) {
+  const n = data.tasks.filter(t => t.clientId === c.id).length;
+  if (!confirm(`Klant “${clientLabel(c)}” verwijderen?${n ? ` De ${n} taken blijven bestaan, maar zonder klant.` : ''}`)) return;
+  for (const t of data.tasks) if (t.clientId === c.id) { delete t.clientId; touch(t); }
+  data.clients = data.clients.filter(x => x.id !== c.id); tombstone(c.id);
+  view = {type:'clients'}; commit(); toast('Klant verwijderd');
+}
+async function copyText(txt, label) {
+  try { await navigator.clipboard.writeText(txt); toast(`${label} gekopieerd`); }
+  catch { toast('Kopiëren lukt niet in deze browser'); }
+}
+
+// Alle verkoopregels, plat: datum, bedrag, formaten, klant.
+function allSales() {
+  const cols = salesCols(), dateCol = cols.find(c => c.type === 'date'), money = cols.find(c => c.type === 'money');
+  const fmt = cols.find(c => c.type === 'format'), klant = cols.find(isClientCol);
+  const pages = new Map(data.salesPages.map(x => [x.id, x]));
+  return data.sales.filter(r => pages.has(r.pageId)).map(r => {
+    const pg = pages.get(r.pageId), d = dateCol && r.values[dateCol.id];
+    const name = klant ? String(r.values[klant.id] || '').trim() : '';
+    const c = name ? clientByName(name) : null;
+    return {row:r, page:pg, date:/^\d{4}-\d\d-\d\d$/.test(d || '') ? d : (pg.month ? pg.month + '-01' : ''),
+      amount:money ? (toNum(r.values[money.id]) || 0) : 0, formats:fmt ? formatList(r.values[fmt.id]) : [], clientName:name, clientId:c?.id || null};
+  });
+}
+const tsYmd = ms => ms ? ymd(new Date(ms)) : '';
+function relDay(s) {
+  if (!s) return '—';
+  const diff = Math.round((parseYmd(today()) - parseYmd(s)) / 86400000);
+  if (diff === 0) return 'vandaag'; if (diff === 1) return 'gisteren';
+  if (diff > 1 && diff < 7) return `${diff} dagen geleden`;
+  const d = parseYmd(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`;
+}
+const dayLabel = s => { const d = parseYmd(s); return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`; };
+function clientAgg(c, sales) {
+  const tasks = data.tasks.filter(t => t.clientId === c.id);
+  const own = sales.filter(x => x.clientId === c.id);
+  const y = today().slice(0, 4);
+  const touches = [...tasks.flatMap(t => [tsYmd(t.createdAt), tsYmd(t.doneAt)]), ...tasks.flatMap(t => commentsOf(t.id).map(m => tsYmd(m.at))), ...own.map(x => x.date)].filter(Boolean).sort();
+  return {tasks, sales:own, open:tasks.filter(t => !t.done && !t.archived).length,
+    total:own.reduce((a, x) => a + x.amount, 0), year:own.filter(x => x.date.startsWith(y)).reduce((a, x) => a + x.amount, 0),
+    count:own.filter(x => x.amount > 0).length, last:touches.at(-1) || ''};
+}
+
+function renderPage(force) {
+  const el = $('#pageView');
+  const a = document.activeElement;
+  if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'stats' ? statsHtml() : yearHtml();
+  if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
+}
+
+/* ---- Klantenlijst ---- */
+function clientsHtml() {
+  const sales = allSales(), rows = sortedClients().map(c => [c, clientAgg(c, sales)]);
+  const known = new Set(), unmatched = [];
+  for (const x of sales) if (x.clientName && !x.clientId) { const k = normName(x.clientName); if (!known.has(k)) { known.add(k); unmatched.push(x.clientName); } }
+  const bar = `<div class="pg-bar">
+      <input type="search" id="clSearch" placeholder="Zoek op firma, klantnr, contact, gemeente of nummer…" aria-label="Klanten zoeken">
+      <span class="grow"></span>
+      ${unmatched.length ? `<button type="button" class="btn" id="clImport" title="${esc(unmatched.slice(0, 12).join(', '))}${unmatched.length > 12 ? '…' : ''}">Klanten uit verkopen halen (${unmatched.length})</button>` : ''}
+      <button type="button" class="btn primary" id="clNew">+ Nieuwe klant</button>
+    </div>`;
+  if (!rows.length) return bar + `<div class="pg-empty"><b>Nog geen klanten.</b><span>Maak een klant aan, of haal ze in één keer uit de kolom “Klant” van je verkooppagina’s. Een klant kan je ook kiezen of intypen in het takenblad.</span></div>`;
+  return bar + `<div class="table-wrap"><table class="pg-table cl-table">
+    <thead><tr><th>Klant</th><th>Klantnr</th><th class="hide-m">Contact</th><th>Telefoon</th><th class="hide-m">Gemeente</th><th class="num hide-m">Open</th><th class="num">Omzet</th><th class="hide-m">Laatste contact</th></tr></thead>
+    <tbody>${rows.map(([c, g]) => `<tr data-client="${c.id}" data-search="${esc(normName([c.company, c.contact, c.no, c.city, c.phone, c.email].join(' ')) + ' ' + telHref(c.phone))}" tabindex="0">
+      <td><b>${esc(clientLabel(c))}</b></td>
+      <td class="mono">${esc(c.no || '')}</td>
+      <td class="hide-m">${esc(c.company ? c.contact : '')}</td>
+      <td>${c.phone ? `<a href="tel:${esc(telHref(c.phone))}" class="tel">${esc(c.phone)}</a>` : ''}</td>
+      <td class="hide-m">${esc(c.city || '')}</td>
+      <td class="num hide-m">${g.open || ''}</td>
+      <td class="num">${g.total ? eur(g.total) : ''}</td>
+      <td class="hide-m muted">${relDay(g.last)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="muted small pg-note">Omzet komt uit de kolom “Klant” van je verkooppagina’s (naam of klantnummer).</p>`;
+}
+
+/* ---- Klantenfiche ---- */
+function clientHtml() {
+  const c = clientById(view.id); if (!c) return '';
+  const sales = allSales(), g = clientAgg(c, sales), y = today().slice(0, 4);
+  const fin = st => g.tasks.filter(t => t.done && t.stage === st).length;
+  const posSt = stageById('positive'), negSt = stageById('negative');
+  const field = (k, label, type = 'text', extra = '') => `<label class="fl"><span>${label}</span><input type="${type}" data-cf="${k}" value="${esc(c[k] || '')}" ${extra}></label>`;
+  const tasks = [...g.tasks].sort((a, b) => (a.done - b.done) || ((b.doneAt || b.createdAt || 0) - (a.doneAt || a.createdAt || 0)));
+  const ss = [...g.sales].sort((a, b) => b.date.localeCompare(a.date) || (b.row.order || 0) - (a.row.order || 0));
+  return `
+    <div class="pg-bar">
+      ${c.no ? `<button type="button" class="btn cl-no" data-copy="${esc(c.no)}" title="Klantnummer kopiëren (voor Navision)"><span class="muted">Klantnr</span> <b class="mono">${esc(c.no)}</b> ${I.copy || ''}</button>` : ''}
+      ${c.phone ? `<a class="btn" href="tel:${esc(telHref(c.phone))}">${I.phone}Bellen</a>` : ''}
+      ${c.email ? `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Mailen</a>` : ''}
+      <button type="button" class="btn primary" id="clTask">+ Taak</button>
+      <span class="grow"></span>
+      <button type="button" class="btn danger" id="clDel">Verwijderen</button>
+    </div>
+    <div class="sales-head">
+      <div class="sales-stat"><span>Omzet totaal</span><b>${eur(g.total)}</b></div>
+      <div class="sales-stat"><span>Omzet ${y}</span><b>${eur(g.year)}</b></div>
+      <div class="sales-stat"><span>Verkopen</span><b>${g.count}</b></div>
+      <div class="sales-stat"><span>Open taken</span><b>${g.open}</b></div>
+      ${posSt && negSt ? `<div class="sales-stat"><span>${esc(posSt.label)} / ${esc(negSt.label)}</span><b>${fin('positive')} / ${fin('negative')}</b></div>` : ''}
+      <div class="sales-stat"><span>Laatste contact</span><b>${relDay(g.last)}</b></div>
+    </div>
+    <div class="cl-grid">
+      <section class="pg-card">
+        <h3>Gegevens</h3>
+        <div class="cl-form">
+          ${field('company', 'Firma', 'text', 'placeholder="bv. Carremans Interieur BV" autocomplete="organization"')}
+          <label class="fl"><span>Klantnr <small class="muted">(Navision)</small></span><span class="inline"><input type="text" data-cf="no" value="${esc(c.no || '')}" inputmode="numeric" placeholder="bv. 261523" class="mono"><button type="button" class="icon-btn" data-copy-field="no" title="Klantnummer kopiëren" aria-label="Klantnummer kopiëren">${I.copy}</button></span></label>
+          ${field('contact', 'Contactpersoon', 'text', 'autocomplete="name"')}
+          ${field('phone', 'Telefoon', 'tel', 'autocomplete="tel"')}
+          ${field('email', 'E-mail', 'email', 'autocomplete="email"')}
+          ${field('city', 'Gemeente', 'text', 'autocomplete="address-level2"')}
+          <label class="fl cl-notes"><span>Notities</span><textarea data-cf="notes" rows="3" placeholder="Afspraken, voorkeuren, budget, beslisser…">${esc(c.notes || '')}</textarea></label>
+        </div>
+      </section>
+      <section class="pg-card">
+        <h3>Taken <span class="muted">${tasks.length}</span></h3>
+        ${tasks.length ? `<ul class="pg-list">${tasks.map(t => { const st = stageById(t.stage);
+          return `<li><button type="button" data-task="${t.id}" class="${t.done ? 'done' : ''}"><span class="dot" style="background:${st?.color || 'var(--muted)'}"></span><span class="nm">${esc(t.title)}</span><span class="meta">${esc(st?.label || '')}${t.done && t.doneAt ? ' · ' + relDay(tsYmd(t.doneAt)) : t.due ? ' · ' + esc(dueLabel(t.due)) + (t.time ? ' ' + esc(t.time) : '') : ''}</span></button></li>`; }).join('')}</ul>` : '<p class="muted small">Nog geen taken voor deze klant.</p>'}
+      </section>
+      <section class="pg-card">
+        <h3>Verkopen <span class="muted">${ss.length}</span>${ss.length ? `<span class="grow"></span><b>${eur(g.total)}</b>` : ''}</h3>
+        ${ss.length ? `<ul class="pg-list">${ss.map(x => `<li><button type="button" data-salespage="${x.page.id}"><span class="nm">${x.date ? dayLabel(x.date) : '—'} ${x.formats.map(f => `<span class="fchip ${f === 'Annulatie' ? 'neg' : ''}">${esc(f)}</span>`).join('')}</span><span class="meta">${esc(x.page.title)}</span><b class="amt">${eur(x.amount)}</b></button></li>`).join('')}</ul>`
+          : `<p class="muted small">Nog geen verkopen gekoppeld. Vul op een verkooppagina in de kolom “Klant” de naam${c.no ? ' of het klantnummer' : ''} in.</p>`}
+      </section>
+    </div>`;
+}
+
+/* ---- Grafiekjes (één reeks, één kleur; waarde via hover/tik en in de tabel) ---- */
+function barChart(items, {height = 150, money = true, labelEvery = 1, target} = {}) {
+  const max = Math.max(1, ...items.map(i => Math.max(i.v, target ? (i.t || 0) : 0)));
+  const fmtV = v => money ? eur(v) : String(v);
+  return `<div class="bchart" style="--h:${height}px">
+    <div class="bc-grid"><span data-v="${esc(money ? eurShort(max) || '€ 0' : max)}"></span><span data-v="${esc(money ? eurShort(max / 2) || '' : Math.round(max / 2))}"></span><span data-v="0"></span></div>
+    <div class="bc-bars">${items.map((i, k) => `<div class="bc-col" data-tip="${esc(i.tip || `${i.label}: ${fmtV(i.v)}`)}" tabindex="0">
+      <div class="bc-slot">${target && i.t ? `<i class="bc-target" style="bottom:${(i.t / max) * 100}%"></i>` : ''}<i class="bc-bar ${i.v < 0 ? 'neg' : ''}" style="height:${Math.max(0, i.v) / max * 100}%"></i></div>
+      <span class="bc-lab">${k % labelEvery === 0 ? esc(i.short ?? i.label) : ''}</span></div>`).join('')}</div></div>`;
+}
+function hbarList(items, {money = true, extra} = {}) {
+  const max = Math.max(1, ...items.map(i => Math.abs(i.v)));
+  return `<ul class="hbars">${items.map(i => `<li data-tip="${esc(i.tip || '')}"><span class="hb-l">${i.dot ? `<span class="dot" style="background:${i.dot}"></span>` : ''}${i.html || esc(i.label)}</span><span class="hb-t"><i style="width:${Math.max(0, i.v) / max * 100}%"></i></span><span class="hb-v">${money ? eur(i.v) : i.v}${i.sub ? `<small>${esc(i.sub)}</small>` : ''}</span></li>`).join('')}</ul>`;
+}
+
+/* ---- Statistieken ---- */
+const STATS_PERIODS = [['week', 'Deze week'], ['lastweek', 'Vorige week'], ['month', 'Deze maand'], ['lastmonth', 'Vorige maand'], ['year', 'Dit jaar'], ['all', 'Alles']];
+let statsPeriod = 'month';
+try { statsPeriod = localStorage.getItem('taken.statsPeriod') || 'month'; } catch {}
+function statsRange(k, sales) {
+  const td = parseYmd(today()), dow = (td.getDay() + 6) % 7;
+  const mon = new Date(td); mon.setDate(td.getDate() - dow);
+  const m0 = new Date(td.getFullYear(), td.getMonth(), 1);
+  if (k === 'week') return {from:ymd(mon), to:addDays(ymd(mon), 6), unit:'day'};
+  if (k === 'lastweek') return {from:addDays(ymd(mon), -7), to:addDays(ymd(mon), -1), unit:'day'};
+  if (k === 'month') return {from:ymd(m0), to:ymd(new Date(td.getFullYear(), td.getMonth() + 1, 0)), unit:'day'};
+  if (k === 'lastmonth') return {from:ymd(new Date(td.getFullYear(), td.getMonth() - 1, 1)), to:ymd(new Date(td.getFullYear(), td.getMonth(), 0)), unit:'day'};
+  if (k === 'year') return {from:`${td.getFullYear()}-01-01`, to:`${td.getFullYear()}-12-31`, unit:'month'};
+  const first = [...sales.map(x => x.date), ...data.tasks.map(t => tsYmd(t.createdAt))].filter(Boolean).sort()[0] || today();
+  return {from:first.slice(0, 7) + '-01', to:today(), unit:'month'};
+}
+function statsHtml() {
+  const sales = allSales(), R = statsRange(statsPeriod, sales), inR = d => d && d >= R.from && d <= R.to;
+  const created = data.tasks.filter(t => inR(tsYmd(t.createdAt)));
+  const finished = data.tasks.filter(t => t.done && inR(tsYmd(t.doneAt)));
+  const doneStages = stages().filter(st => st.done);
+  const pos = finished.filter(t => t.stage === 'positive').length, neg = finished.filter(t => t.stage === 'negative').length;
+  const hasPN = !!(stageById('positive') && stageById('negative'));
+  const lead = finished.filter(t => t.createdAt && t.doneAt).map(t => (t.doneAt - t.createdAt) / 86400000);
+  const avgLead = lead.length ? lead.reduce((a, b) => a + b, 0) / lead.length : null;
+  const open = data.tasks.filter(t => !t.done && !t.archived && !projArchived(t.projectId));
+  const late = open.filter(t => t.due && t.due < today()).length;
+  const S = sales.filter(x => inR(x.date));
+  const omzet = S.reduce((a, x) => a + x.amount, 0);
+  const sold = S.filter(x => x.amount > 0 && !x.formats.includes('Annulatie'));
+  const canc = S.filter(x => x.amount < 0 || x.formats.includes('Annulatie'));
+  // omzet per dag of per maand
+  const buckets = [];
+  if (R.unit === 'day') for (let d = R.from; d <= R.to; d = addDays(d, 1)) { const dt = parseYmd(d); buckets.push({key:d, label:dayLabel(d), short:String(dt.getDate()), weekend:dt.getDay() % 6 === 0}); }
+  else { const [y0, m0] = R.from.split('-').map(Number), [y1, m1] = R.to.split('-').map(Number); for (let y = y0, m = m0; y < y1 || (y === y1 && m <= m1); m === 12 ? (y++, m = 1) : m++) { const k = `${y}-${String(m).padStart(2, '0')}`; buckets.push({key:k, label:`${cap(MONTHS_LONG[m - 1])} ${y}`, short:MONTHS[m - 1]}); } }
+  const perB = new Map(buckets.map(b => [b.key, 0])), cntB = new Map(buckets.map(b => [b.key, 0]));
+  for (const x of S) { const k = R.unit === 'day' ? x.date : x.date.slice(0, 7); if (perB.has(k)) { perB.set(k, perB.get(k) + x.amount); if (x.amount > 0) cntB.set(k, cntB.get(k) + 1); } }
+  const series = buckets.filter(b => !(b.weekend && !perB.get(b.key))).map(b => ({label:b.label, short:b.short, v:perB.get(b.key), tip:`${b.label}: ${eur(perB.get(b.key))} · ${cntB.get(b.key)} ${cntB.get(b.key) === 1 ? 'verkoop' : 'verkopen'}`}));
+  // per formaat (bij meerdere formaten op één regel wordt het bedrag gelijk verdeeld)
+  const perF = new Map();
+  for (const x of S) { const fs = x.formats.length ? x.formats : ['Geen formaat']; for (const f of fs) { const o = perF.get(f) || {v:0, n:0}; o.v += x.amount / fs.length; o.n += 1; perF.set(f, o); } }
+  const fItems = [...perF].sort((a, b) => b[1].v - a[1].v).map(([f, o]) => ({label:f, v:Math.round(o.v * 100) / 100, sub:`${o.n}×`, tip:`${f}: ${eur(o.v)} · ${o.n} keer`}));
+  // per weekdag
+  const wd = [1, 2, 3, 4, 5, 6, 0].map(d => ({d, v:0, n:0}));
+  for (const x of S) { const o = wd.find(w => w.d === parseYmd(x.date).getDay()); o.v += x.amount; if (x.amount > 0) o.n++; }
+  const wItems = wd.filter(w => w.d % 6 !== 0 || w.n).map(w => ({label:cap(DAYS[w.d]), v:w.v, sub:`${w.n}×`, tip:`${cap(DAYS[w.d])}: ${eur(w.v)} · ${w.n} verkopen`}));
+  // topklanten
+  const perC = new Map();
+  for (const x of S) { if (!x.clientName) continue; const k = x.clientId || 'n:' + normName(x.clientName); const o = perC.get(k) || {v:0, n:0, name:x.clientId ? clientLabel(clientById(x.clientId)) : x.clientName, id:x.clientId}; o.v += x.amount; o.n++; perC.set(k, o); }
+  const cItems = [...perC.values()].sort((a, b) => b.v - a.v).slice(0, 8).map(o => ({html:o.id ? `<a href="#" data-openclient="${o.id}">${esc(o.name)}</a>` : esc(o.name), v:o.v, sub:`${o.n}×`, tip:`${o.name}: ${eur(o.v)}`}));
+  const rangeTxt = `${dayLabel(R.from)} – ${dayLabel(R.to > today() && statsPeriod !== 'lastweek' && statsPeriod !== 'lastmonth' ? R.to : R.to)}`;
+  return `
+    <div class="pg-bar">
+      <div class="seg" role="group" aria-label="Periode">${STATS_PERIODS.map(([k, l]) => `<button type="button" data-period="${k}" class="${statsPeriod === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <span class="grow"></span><span class="muted small">${rangeTxt}</span>
+    </div>
+    <h3 class="pg-h">Verkoop</h3>
+    <div class="sales-head">
+      <div class="sales-stat"><span>Omzet</span><b>${eur(omzet)}</b></div>
+      <div class="sales-stat"><span>Verkopen</span><b>${sold.length}</b></div>
+      <div class="sales-stat"><span>Gemiddeld per verkoop</span><b>${sold.length ? eur(sold.reduce((a, x) => a + x.amount, 0) / sold.length) : '—'}</b></div>
+      <div class="sales-stat"><span>Annulaties</span><b>${canc.length}${canc.length ? ` <small class="muted">${eur(canc.reduce((a, x) => a + Math.min(0, x.amount), 0))}</small>` : ''}</b></div>
+    </div>
+    <section class="pg-card"><h3>Omzet per ${R.unit === 'day' ? 'dag' : 'maand'}</h3>${S.length ? barChart(series, {labelEvery:series.length > 16 ? 2 : 1}) : '<p class="muted small">Geen verkopen in deze periode.</p>'}</section>
+    <div class="cl-grid">
+      <section class="pg-card"><h3>Per formaat</h3>${fItems.length ? hbarList(fItems) : '<p class="muted small">—</p>'}${S.some(x => x.formats.length > 1) ? '<p class="muted small">Regels met meerdere formaten tellen voor elk formaat; het bedrag wordt gelijk verdeeld.</p>' : ''}</section>
+      <section class="pg-card"><h3>Per weekdag</h3>${S.length ? hbarList(wItems) : '<p class="muted small">—</p>'}</section>
+      <section class="pg-card"><h3>Topklanten</h3>${cItems.length ? hbarList(cItems) : '<p class="muted small">Vul de kolom “Klant” in op je verkooppagina’s om je topklanten te zien.</p>'}</section>
+    </div>
+    <h3 class="pg-h">Opvolging</h3>
+    <div class="sales-head">
+      <div class="sales-stat"><span>Nieuwe kaarten</span><b>${created.length}</b></div>
+      <div class="sales-stat"><span>Afgewerkt</span><b>${finished.length}</b></div>
+      ${hasPN ? `<div class="sales-stat"><span>Slaagkans <small class="muted">(${esc(stageById('positive').label)} ÷ afgewerkt)</small></span><b>${pos + neg ? Math.round(pos / (pos + neg) * 100) + '%' : '—'}</b></div>` : ''}
+      <div class="sales-stat"><span>Gem. doorlooptijd</span><b>${avgLead === null ? '—' : avgLead < 1 ? '< 1 dag' : Math.round(avgLead) + (Math.round(avgLead) === 1 ? ' dag' : ' dagen')}</b></div>
+      <div class="sales-stat"><span>Nu open</span><b>${open.length}${late ? ` <small class="late">${late} te laat</small>` : ''}</b></div>
+    </div>
+    ${finished.length ? `<section class="pg-card"><h3>Afgewerkt per uitkomst</h3>${hbarList(doneStages.map(st => ({label:st.label, dot:st.color, v:finished.filter(t => t.stage === st.id).length, tip:`${st.label}: ${finished.filter(t => t.stage === st.id).length}`})), {money:false})}</section>` : ''}`;
+}
+
+/* ---- Jaaroverzicht ---- */
+let yearSel = new Date().getFullYear();
+function yearRows(y) {
+  const money = salesCols().find(c => c.type === 'money');
+  return Array.from({length:12}, (_, i) => {
+    const m = `${y}-${String(i + 1).padStart(2, '0')}`;
+    const pages = data.salesPages.filter(pg => pg.month === m);
+    if (!pages.length) return {m, i, none:true};
+    const total = pages.reduce((a, pg) => a + (money ? salesTotals(pg.id).per[money.id] || 0 : 0), 0);
+    const target = pages.reduce((a, pg) => a + (toNum(pg.target) || 0), 0) || null;
+    const pay = salesPay(pages[0], total);
+    return {m, i, pages, total, target, pct:target ? total / target * 100 : null, days:pay?.days, com:pay?.commission || 0, bonus:pay?.bonus || 0, gross:pay?.sum || 0, net:pay ? netOf(pay.sum) : 0};
+  });
+}
+function yearHtml() {
+  const years = [...new Set([new Date().getFullYear(), ...data.salesPages.map(pg => +String(pg.month || '').slice(0, 4)).filter(Boolean)])].sort((a, b) => b - a);
+  if (!years.includes(yearSel)) yearSel = years[0];
+  const rows = yearRows(yearSel), has = rows.filter(r => !r.none);
+  const sum = k => has.reduce((a, r) => a + (r[k] || 0), 0);
+  const tgt = has.filter(r => r.target), tPct = tgt.length ? tgt.reduce((a, r) => a + r.total, 0) / tgt.reduce((a, r) => a + r.target, 0) * 100 : null;
+  const best = has.length ? has.reduce((a, r) => r.total > a.total ? r : a) : null;
+  const curM = today().slice(0, 7);
+  const items = rows.map(r => ({label:cap(MONTHS_LONG[r.i]), short:MONTHS[r.i], v:r.none ? 0 : r.total, t:r.target || 0,
+    tip:r.none ? `${cap(MONTHS_LONG[r.i])}: geen verkooppagina` : `${cap(MONTHS_LONG[r.i])}: ${eur(r.total)}${r.target ? ` · doel ${eur(r.target)} (${Math.round(r.pct)}%)` : ''} · commissie + bonus ${eur(r.gross)} bruto`}));
+  return `
+    <div class="pg-bar">
+      <div class="seg" role="group" aria-label="Jaar">${years.map(y => `<button type="button" data-year-sel="${y}" class="${y === yearSel ? 'on' : ''}">${y}</button>`).join('')}</div>
+    </div>
+    <div class="sales-head">
+      <div class="sales-stat"><span>Omzet ${yearSel}</span><b>${eur(sum('total'))}</b></div>
+      ${tPct !== null ? `<div class="sales-stat ${tPct >= 100 ? 'target hit' : 'target'}"><span>Doelstelling behaald</span><b>${Math.round(tPct)}%</b><i class="bar"><i style="width:${Math.min(100, tPct)}%"></i></i></div>` : ''}
+      <div class="sales-stat"><span>Gemiddeld per maand</span><b>${has.length ? eur(sum('total') / has.length) : '—'}</b></div>
+      <div class="sales-stat"><span>Beste maand</span><b>${best ? cap(MONTHS_LONG[best.i]) : '—'}</b></div>
+      <div class="sales-stat"><span>Commissie + bonus</span><b>${eur(sum('gross'))}<small class="muted"> bruto</small></b></div>
+      <div class="sales-stat"><span>± netto</span><b>${eur(sum('net'))}</b></div>
+    </div>
+    <section class="pg-card"><h3>Omzet per maand <span class="legend"><span><i class="lg-bar"></i>Omzet</span><span><i class="lg-tgt"></i>Doelstelling</span></span></h3>${barChart(items, {height:170, target:true})}</section>
+    <div class="table-wrap"><table class="pg-table yr-table">
+      <thead><tr><th>Maand</th><th class="num">Omzet</th><th class="num">Doel</th><th class="num">Behaald</th><th class="num hide-m">Werkdagen</th><th class="num">Commissie</th><th class="num">Bonus</th><th class="num">Bruto</th><th class="num">± Netto</th></tr></thead>
+      <tbody>${rows.map(r => r.none ? `<tr class="none"><td>${cap(MONTHS_LONG[r.i])}</td><td class="num" colspan="8">${r.m > curM ? '' : '<span class="muted">geen verkooppagina</span>'}</td></tr>`
+        : `<tr data-salespage="${r.pages[0].id}" tabindex="0" class="${r.m === curM ? 'cur' : ''}"><td>${cap(MONTHS_LONG[r.i])}${r.m === curM ? ' <small class="muted">lopend</small>' : ''}</td><td class="num"><b>${eur(r.total)}</b></td><td class="num">${r.target ? eur(r.target) : '—'}</td>
+          <td class="num ${r.pct >= 100 ? 'ok' : ''}">${r.pct === null ? '—' : Math.round(r.pct) + '%'}</td><td class="num hide-m">${r.days ?? '—'}</td>
+          <td class="num">${eur(r.com)}</td><td class="num">${eur(r.bonus)}</td><td class="num">${eur(r.gross)}</td><td class="num">${eur(r.net)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>Totaal</td><td class="num">${eur(sum('total'))}</td><td class="num">${tgt.length ? eur(sum('target')) : '—'}</td><td class="num">${tPct === null ? '—' : Math.round(tPct) + '%'}</td><td class="num hide-m">${sum('days') || '—'}</td>
+        <td class="num">${eur(sum('com'))}</td><td class="num">${eur(sum('bonus'))}</td><td class="num">${eur(sum('gross'))}</td><td class="num">${eur(sum('net'))}</td></tr></tfoot>
+    </table></div>
+    <p class="muted small pg-note">Commissie en bonus volgens de regeling op elke maandpagina; netto is een schatting (${pctFmt(RSZ * 100)} RSZ en ${pctFmt(payTax())} bedrijfsvoorheffing). Klik op een maand om de verkooppagina te openen.</p>`;
+}
+
+/* ---- Events op de pagina's ---- */
+const pv = $('#pageView');
+pv.addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('#clNew')) { newClient(); return; }
+  if (t.closest('#clTask')) { addTaskForClient(view.id); return; }
+  if (t.closest('#clDel')) { const c = clientById(view.id); if (c) deleteClient(c); return; }
+  if (t.closest('#clImport')) {
+    const seen = new Set(); let n = 0;
+    for (const x of allSales()) { if (!x.clientName || x.clientId) continue; const k = normName(x.clientName); if (seen.has(k) || clientByName(x.clientName)) continue; seen.add(k); data.clients.push(newClientObj({company:x.clientName})); n++; }
+    commit(); toast(`${n} ${n === 1 ? 'klant' : 'klanten'} aangemaakt`); return;
+  }
+  const cp = t.closest('[data-copy]'); if (cp) { copyText(cp.dataset.copy, 'Klantnummer'); return; }
+  const cf = t.closest('[data-copy-field]'); if (cf) { const c = clientById(view.id); if (c?.[cf.dataset.copyField]) copyText(String(c[cf.dataset.copyField]), 'Klantnummer'); else toast('Nog geen klantnummer ingevuld'); return; }
+  if (t.closest('a[href^="tel:"], a[href^="mailto:"]')) return;
+  const oc = t.closest('[data-openclient]'); if (oc) { e.preventDefault(); setView({type:'client', id:oc.dataset.openclient}); return; }
+  const row = t.closest('tr[data-client]'); if (row) { setView({type:'client', id:row.dataset.client}); return; }
+  const tk = t.closest('[data-task]'); if (tk) { openTask(tk.dataset.task); return; }
+  const sp = t.closest('[data-salespage]'); if (sp) { setView({type:'sales', id:sp.dataset.salespage}); return; }
+  const per = t.closest('[data-period]'); if (per) { statsPeriod = per.dataset.period; try { localStorage.setItem('taken.statsPeriod', statsPeriod); } catch {} renderPage(true); return; }
+  const ys = t.closest('[data-year-sel]'); if (ys) { yearSel = +ys.dataset.yearSel; renderPage(true); return; }
+});
+pv.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const row = e.target.closest?.('tr[data-client], tr[data-salespage]');
+  if (row && e.target === row) { e.preventDefault(); row.click(); }
+});
+pv.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'clSearch') {
+    const q = normName(t.value), qd = t.value.replace(/[^\d]/g, '');
+    pv.querySelectorAll('tr[data-client]').forEach(tr => { const s = tr.dataset.search; tr.hidden = !!q && !s.includes(q) && !(qd.length >= 3 && s.includes(qd)); });
+    return;
+  }
+  const k = t.dataset.cf; if (!k) return;
+  const c = clientById(view.id); if (!c) return;
+  c[k] = t.value; touch(c); save(true);
+  if (t.tagName === 'TEXTAREA') autosize(t);
+  if (k === 'company' || k === 'contact' || k === 'no') { renderHead(); renderNav(); }
+});
+pv.addEventListener('focusout', e => {
+  // na het bewerken van de fiche: knoppen (bellen/mailen/klantnr) bijwerken zodra je het formulier verlaat
+  if (!e.target.dataset?.cf) return;
+  setTimeout(() => { if (view.type === 'client' && !pv.contains(document.activeElement)) renderPage(true); }, 0);
+});
+// hover-/tiklabel voor de grafieken
+const chartTip = $('#chartTip');
+function showTip(el) {
+  const txt = el?.dataset.tip; if (!txt) { chartTip.hidden = true; return; }
+  chartTip.textContent = txt; chartTip.hidden = false;
+  const rc = el.getBoundingClientRect(), w = chartTip.offsetWidth, h = chartTip.offsetHeight;
+  chartTip.style.left = Math.max(8, Math.min(rc.left + rc.width / 2 - w / 2, innerWidth - w - 8)) + 'px';
+  chartTip.style.top = Math.max(8, rc.top - h - 8) + 'px';
+}
+pv.addEventListener('pointerover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
+pv.addEventListener('pointerout', e => { if (!e.relatedTarget?.closest?.('[data-tip]')) chartTip.hidden = true; });
+pv.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
+pv.addEventListener('focusout', () => { chartTip.hidden = true; });
+$('#main').addEventListener('scroll', () => { chartTip.hidden = true; }, {passive:true});
 
 /* ---------------- Timers: auto-lock, periodieke sync, datumwissel ---------------- */
 let lastAct = now(), timersStarted = false, lastDay = today(), lastMin = -1;
