@@ -1246,6 +1246,23 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .foot-btn svg{width:20px;height:20px}
 .foot-btn:hover{color:var(--text);background:var(--hover)}
 @media (max-width:860px){ .foot-btn{width:44px;height:44px} }
+
+/* klanten importeren + uitgaves */
+.pg-bar select#clEd{max-width:240px}
+.cl-eds{white-space:normal;max-width:260px}
+.cl-eds .fchip{margin:1px 3px 1px 0}
+.cl-edrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}
+.cl-edrow .fchip{border:0;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600}
+.cl-edrow .fchip:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.ci-src{display:flex;align-items:center;gap:10px}
+.ci-src .btn{cursor:pointer}
+.ci-map{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ci-map .fl{margin:0}
+.ci-sum{margin:12px 0 8px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--accent) 6%,var(--panel));font-size:14px;line-height:1.5}
+.ci-sum .ok{color:var(--ok);font-weight:650}
+.ci-prev{max-height:260px;overflow:auto}
+.ci-prev td{white-space:normal}
+@media (max-width:860px){ .ci-map{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -4506,17 +4523,38 @@ const isPageView = () => PAGE_VIEWS.includes(view.type);
 const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const clientById = id => data.clients.find(c => c.id === id);
 const clientLabel = c => c.company || c.contact || (c.no ? 'Klant ' + c.no : 'Naamloze klant');
-const sortedClients = () => [...data.clients].sort((a, b) => clientLabel(a).localeCompare(clientLabel(b), 'nl'));
+let sortedMemo = null;
+const nlCollator = new Intl.Collator('nl', {sensitivity:'base', numeric:true});
+function sortedClients() {
+  if (sortedMemo && sortedMemo.arr === data.clients && sortedMemo.len === data.clients.length && sortedMemo.ver === clientsVer) return sortedMemo.list;
+  const list = [...data.clients].sort((a, b) => nlCollator.compare(clientLabel(a), clientLabel(b)));
+  sortedMemo = {arr:data.clients, len:data.clients.length, ver:clientsVer, list};
+  return list;
+}
 const telHref = s => String(s || '').replace(/[^\d+]/g, '');
 const isClientCol = c => c.type === 'text' && /klant|client|adverteerder|firma/i.test(c.name);
-const newClientObj = o => touch({id:uid(), no:'', company:'', contact:'', phone:'', email:'', city:'', notes:'', createdAt:now(), ...o});
+const newClientObj = o => { clientsChanged(); return touch({id:uid(), no:'', company:'', contact:'', phone:'', email:'', city:'', notes:'', editions:[], createdAt:now(), ...o}); };
+const editionsOf = c => Array.isArray(c.editions) ? c.editions : [];
 // Zoekt een klant op naam, contactpersoon of klantnummer (ook "261523 Carremans" of "Carremans (261523)").
+// Index op naam en klantnr, zodat opzoeken ook met duizenden klanten meteen gaat.
+let clientsVer = 0, cIndex = null;
+const clientsChanged = () => { clientsVer++; };
+function clientIndex() {
+  if (cIndex && cIndex.arr === data.clients && cIndex.len === data.clients.length && cIndex.ver === clientsVer) return cIndex;
+  const byName = new Map(), byNo = new Map();
+  for (const c of data.clients) {
+    for (const nm of [c.company, c.contact]) { const n = normName(nm); if (n && !byName.has(n)) byName.set(n, c); }
+    const no = String(c.no || '').trim(); if (no && !byNo.has(no)) byNo.set(no, c);
+  }
+  return cIndex = {arr:data.clients, len:data.clients.length, ver:clientsVer, byName, byNo};
+}
 function clientByName(name) {
   const n = normName(name); if (!n) return null;
-  const exact = data.clients.find(c => normName(c.company) === n || normName(c.contact) === n || (c.no && normName(c.no) === n));
-  if (exact) return exact;
-  const num = String(name).match(/\b\d{4,}\b/)?.[0];
-  return (num && data.clients.find(c => c.no && String(c.no).trim() === num)) || null;
+  const ix = clientIndex(), raw = String(name).trim();
+  const hit = ix.byNo.get(raw) || ix.byName.get(n) || ix.byNo.get(n);
+  if (hit) return hit;
+  const num = raw.match(/\b\d{4,}\b/)?.[0];
+  return (num && ix.byNo.get(num)) || null;
 }
 function clientInTitle(title) {
   const t = ' ' + normName(title) + ' ';
@@ -4542,7 +4580,7 @@ function deleteClient(c) {
   const n = data.tasks.filter(t => t.clientId === c.id).length;
   if (!confirm(`Klant “${clientLabel(c)}” verwijderen?${n ? ` De ${n} taken blijven bestaan, maar zonder klant.` : ''}`)) return;
   for (const t of data.tasks) if (t.clientId === c.id) { delete t.clientId; touch(t); }
-  data.clients = data.clients.filter(x => x.id !== c.id); tombstone(c.id);
+  data.clients = data.clients.filter(x => x.id !== c.id); tombstone(c.id); clientsChanged();
   view = {type:'clients'}; commit(); toast('Klant verwijderd');
 }
 async function copyText(txt, label) {
@@ -4572,48 +4610,251 @@ function relDay(s) {
   const d = parseYmd(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`;
 }
 const dayLabel = s => { const d = parseYmd(s); return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`; };
-function clientAgg(c, sales) {
-  const tasks = data.tasks.filter(t => t.clientId === c.id);
-  const own = sales.filter(x => x.clientId === c.id);
+function clientAgg(c, sales, maps) {
+  const tasks = maps ? (maps.tasks.get(c.id) || []) : data.tasks.filter(t => t.clientId === c.id);
+  const own = maps ? (maps.sales.get(c.id) || []) : sales.filter(x => x.clientId === c.id);
   const y = today().slice(0, 4);
-  const touches = [...tasks.flatMap(t => [tsYmd(t.createdAt), tsYmd(t.doneAt)]), ...tasks.flatMap(t => commentsOf(t.id).map(m => tsYmd(m.at))), ...own.map(x => x.date)].filter(Boolean).sort();
+  let last = '';
+  const seen = d => { if (d && d > last) last = d; };
+  for (const t of tasks) { seen(tsYmd(t.createdAt)); seen(tsYmd(t.doneAt)); if (!maps) for (const m of commentsOf(t.id)) seen(tsYmd(m.at)); }
+  if (maps) for (const t of tasks) seen(maps.lastComment.get(t.id));
+  for (const x of own) seen(x.date);
   return {tasks, sales:own, open:tasks.filter(t => !t.done && !t.archived).length,
     total:own.reduce((a, x) => a + x.amount, 0), year:own.filter(x => x.date.startsWith(y)).reduce((a, x) => a + x.amount, 0),
-    count:own.filter(x => x.amount > 0).length, last:touches.at(-1) || ''};
+    count:own.filter(x => x.amount > 0).length, last};
 }
-
+function clientMaps(sales) {
+  const tasks = new Map(), bySales = new Map(), lastComment = new Map();
+  for (const t of data.tasks) if (t.clientId) { if (!tasks.has(t.clientId)) tasks.set(t.clientId, []); tasks.get(t.clientId).push(t); }
+  for (const x of sales) if (x.clientId) { if (!bySales.has(x.clientId)) bySales.set(x.clientId, []); bySales.get(x.clientId).push(x); }
+  for (const m of data.comments) { const d = tsYmd(m.at); if (d > (lastComment.get(m.taskId) || '')) lastComment.set(m.taskId, d); }
+  return {tasks, sales:bySales, lastComment};
+}
+let clQuery = '', clEdition = '';
+function applyClientFilter() {
+  const q = normName(clQuery), qd = clQuery.replace(/[^\d]/g, ''), ed = clEdition ? '|' + normName(clEdition) + '|' : '';
+  let shown = 0;
+  pv.querySelectorAll('tr[data-client]').forEach(tr => {
+    const s = tr.dataset.search, eds = tr.dataset.eds || '';
+    const ok = (!q || s.includes(q) || (qd.length >= 3 && s.includes(qd))) && (!ed || eds.includes(ed));
+    tr.hidden = !ok; if (ok) shown++;
+  });
+  const cnt = $('#clCount'); if (cnt) cnt.textContent = shown === data.clients.length ? `${shown} klanten` : `${shown} van ${data.clients.length}`;
+}
 function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
   el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'stats' ? statsHtml() : yearHtml();
   if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
+  if (view.type === 'clients') applyClientFilter();
 }
 
 /* ---- Klantenlijst ---- */
 function clientsHtml() {
-  const sales = allSales(), rows = sortedClients().map(c => [c, clientAgg(c, sales)]);
+  const sales = allSales(), maps = clientMaps(sales), rows = sortedClients().map(c => [c, clientAgg(c, sales, maps)]);
   const known = new Set(), unmatched = [];
   for (const x of sales) if (x.clientName && !x.clientId) { const k = normName(x.clientName); if (!known.has(k)) { known.add(k); unmatched.push(x.clientName); } }
+  const edCount = new Map();
+  for (const c of data.clients) for (const e of editionsOf(c)) edCount.set(e, (edCount.get(e) || 0) + 1);
+  const eds = [...edCount].sort((a, b) => nlCollator.compare(a[0], b[0]));
+  if (clEdition && !edCount.has(clEdition)) clEdition = '';
   const bar = `<div class="pg-bar">
-      <input type="search" id="clSearch" placeholder="Zoek op firma, klantnr, contact, gemeente of nummer…" aria-label="Klanten zoeken">
+      <input type="search" id="clSearch" value="${esc(clQuery)}" placeholder="Zoek op firma, klantnr, contact, gemeente, uitgave of nummer…" aria-label="Klanten zoeken">
+      ${eds.length ? `<select id="clEd" aria-label="Filter op uitgave"><option value="">Alle uitgaves</option>${eds.map(([e, n]) => `<option value="${esc(e)}" ${e === clEdition ? 'selected' : ''}>${esc(e)} (${n})</option>`).join('')}</select>` : ''}
+      <span class="muted small" id="clCount"></span>
       <span class="grow"></span>
-      ${unmatched.length ? `<button type="button" class="btn" id="clImport" title="${esc(unmatched.slice(0, 12).join(', '))}${unmatched.length > 12 ? '…' : ''}">Klanten uit verkopen halen (${unmatched.length})</button>` : ''}
+      ${unmatched.length ? `<button type="button" class="btn" id="clFromSales" title="${esc(unmatched.slice(0, 12).join(', '))}${unmatched.length > 12 ? '…' : ''}">Klanten uit verkopen halen (${unmatched.length})</button>` : ''}
+      <button type="button" class="btn" id="clImportFile">Importeren (Excel/CSV)</button>
       <button type="button" class="btn primary" id="clNew">+ Nieuwe klant</button>
     </div>`;
-  if (!rows.length) return bar + `<div class="pg-empty"><b>Nog geen klanten.</b><span>Maak een klant aan, of haal ze in één keer uit de kolom “Klant” van je verkooppagina’s. Een klant kan je ook kiezen of intypen in het takenblad.</span></div>`;
+  if (!rows.length) return bar + `<div class="pg-empty"><b>Nog geen klanten.</b><span>Importeer je klantenlijst uit Excel (klantnr, bedrijfsnaam, uitgave), maak een klant aan, of haal ze uit de kolom “Klant” van je verkooppagina’s.</span></div>`;
+  const chips = list => list.length ? list.slice(0, 3).map(e => `<span class="fchip">${esc(e)}</span>`).join('') + (list.length > 3 ? `<span class="muted small"> +${list.length - 3}</span>` : '') : '';
   return bar + `<div class="table-wrap"><table class="pg-table cl-table">
-    <thead><tr><th>Klant</th><th>Klantnr</th><th class="hide-m">Contact</th><th>Telefoon</th><th class="hide-m">Gemeente</th><th class="num hide-m">Open</th><th class="num">Omzet</th><th class="hide-m">Laatste contact</th></tr></thead>
-    <tbody>${rows.map(([c, g]) => `<tr data-client="${c.id}" data-search="${esc(normName([c.company, c.contact, c.no, c.city, c.phone, c.email].join(' ')) + ' ' + telHref(c.phone))}" tabindex="0">
-      <td><b>${esc(clientLabel(c))}</b></td>
+    <thead><tr><th>Klant</th><th>Klantnr</th><th class="hide-m">Uitgaves</th><th>Telefoon</th><th class="hide-m">Gemeente</th><th class="num hide-m">Open</th><th class="num">Omzet</th><th class="hide-m">Laatste contact</th></tr></thead>
+    <tbody>${rows.map(([c, g]) => { const ed = editionsOf(c); return `<tr data-client="${c.id}" data-search="${esc(normName([c.company, c.contact, c.no, c.city, c.phone, c.email, ...ed].join(' ')) + ' ' + telHref(c.phone))}" data-eds="${esc('|' + ed.map(normName).join('|') + '|')}" tabindex="0">
+      <td><b>${esc(clientLabel(c))}</b>${c.company && c.contact ? `<div class="muted small">${esc(c.contact)}</div>` : ''}</td>
       <td class="mono">${esc(c.no || '')}</td>
-      <td class="hide-m">${esc(c.company ? c.contact : '')}</td>
+      <td class="hide-m cl-eds">${chips(ed)}</td>
       <td>${c.phone ? `<a href="tel:${esc(telHref(c.phone))}" class="tel">${esc(c.phone)}</a>` : ''}</td>
       <td class="hide-m">${esc(c.city || '')}</td>
       <td class="num hide-m">${g.open || ''}</td>
       <td class="num">${g.total ? eur(g.total) : ''}</td>
-      <td class="hide-m muted">${relDay(g.last)}</td></tr>`).join('')}</tbody></table></div>
+      <td class="hide-m muted">${relDay(g.last)}</td></tr>`; }).join('')}</tbody></table></div>
     <p class="muted small pg-note">Omzet komt uit de kolom “Klant” van je verkooppagina’s (naam of klantnummer).</p>`;
+}
+
+/* ---- Klanten importeren uit Excel (.xlsx), CSV of geplakt uit Excel ---- */
+// Minimale .xlsx-lezer: een .xlsx is een zip met XML; de browser pakt 'deflate' zelf uit.
+async function unzipEntries(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  let e = buf.byteLength - 22; while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('Dit is geen geldig .xlsx-bestand.');
+  const n = dv.getUint16(e + 10, true); let q = dv.getUint32(e + 16, true);
+  const files = {}, td = new TextDecoder();
+  for (let i = 0; i < n; i++) {
+    if (dv.getUint32(q, true) !== 0x02014b50) break;
+    const method = dv.getUint16(q + 10, true), csize = dv.getUint32(q + 20, true), nl = dv.getUint16(q + 28, true), el = dv.getUint16(q + 30, true), cl = dv.getUint16(q + 32, true), lho = dv.getUint32(q + 42, true);
+    files[td.decode(u8.subarray(q + 46, q + 46 + nl))] = {method, csize, lho};
+    q += 46 + nl + el + cl;
+  }
+  const read = async name => {
+    const f = files[name]; if (!f) return null;
+    const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true);
+    const bytes = u8.subarray(start, start + f.csize);
+    if (f.method === 0) return td.decode(bytes);
+    if (!('DecompressionStream' in window)) throw new Error('Deze browser kan .xlsx niet lezen; bewaar als CSV of plak de kolommen.');
+    return td.decode(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  };
+  return {files, read};
+}
+const colIndex = ref => { let n = 0; for (const ch of ref.replace(/\d+/g, '')) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+async function readXlsx(buf) {
+  const z = await unzipEntries(buf), dp = new DOMParser();
+  const ss = [], sst = await z.read('xl/sharedStrings.xml');
+  if (sst) for (const si of dp.parseFromString(sst, 'application/xml').getElementsByTagName('si')) ss.push([...si.getElementsByTagName('t')].map(t => t.textContent).join(''));
+  // eerste werkblad volgens workbook.xml, anders sheet1
+  let sheet = 'xl/worksheets/sheet1.xml';
+  try {
+    const wb = dp.parseFromString(await z.read('xl/workbook.xml'), 'application/xml'), rels = dp.parseFromString(await z.read('xl/_rels/workbook.xml.rels'), 'application/xml');
+    const first = wb.getElementsByTagName('sheet')[0], rid = first?.getAttribute('r:id') || first?.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    const rel = [...rels.getElementsByTagName('Relationship')].find(x => x.getAttribute('Id') === rid);
+    if (rel) { const t = rel.getAttribute('Target').replace(/^\//, ''); sheet = t.startsWith('xl/') ? t : 'xl/' + t; }
+  } catch {}
+  const xml = await z.read(sheet) || await z.read(Object.keys(z.files).find(k => /^xl\/worksheets\/.*\.xml$/.test(k)));
+  if (!xml) throw new Error('Geen werkblad gevonden in dit bestand.');
+  const rows = [];
+  for (const row of dp.parseFromString(xml, 'application/xml').getElementsByTagName('row')) {
+    const arr = [];
+    for (const c of row.getElementsByTagName('c')) {
+      const t = c.getAttribute('t'), v = c.getElementsByTagName('v')[0]?.textContent ?? '';
+      arr[colIndex(c.getAttribute('r') || 'A1')] = t === 's' ? (ss[+v] ?? '') : t === 'inlineStr' ? [...c.getElementsByTagName('t')].map(x => x.textContent).join('') : v;
+    }
+    rows.push(Array.from(arr, x => (x ?? '').toString().trim()));
+  }
+  return rows;
+}
+function readDelimited(text) {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter(l => l.trim());
+  if (!lines.length) return [];
+  const cand = ['\t', ';', ','], d = cand.map(c => [c, lines.slice(0, 20).reduce((a, l) => a + (l.split(c).length - 1), 0)]).sort((a, b) => b[1] - a[1])[0][0];
+  return lines.map(line => {
+    const out = []; let cur = '', qt = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (qt) { if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') qt = false; else cur += ch; }
+      else if (ch === '"' && !cur) qt = true; else if (ch === d) { out.push(cur.trim()); cur = ''; } else cur += ch;
+    }
+    out.push(cur.trim()); return out;
+  });
+}
+const cleanNo = v => { const s = String(v ?? '').trim(); return /^\d+\.0+$/.test(s) ? s.replace(/\.0+$/, '') : s; };
+function guessCols(head, rows) {
+  const h = head.map(x => normName(x));
+  const find = re => h.findIndex(x => re.test(x));
+  let no = find(/^(klant ?(nr|nummer|no|code)|nr|nummer|debiteur|klantnr|customer ?(no|number|id))/);
+  let name = find(/(bedrijf|firma|naam|klant$|^klant |company|name|adverteerder)/);
+  let ed = find(/(uitgave|editie|publicatie|titel|magazine|blad|krant|medium|edition)/);
+  const byHeader = [no, name, ed].filter(i => i >= 0).length;
+  if (no < 0) no = head.findIndex((_, i) => rows.slice(0, 30).filter(r => /^\d{3,}$/.test(cleanNo(r[i]))).length >= Math.min(10, rows.length * 0.6));
+  if (name < 0) name = head.findIndex((_, i) => i !== no && i !== ed && rows.slice(0, 30).some(r => /[a-z]{3}/i.test(r[i] || '')));
+  return {no, name, ed, byHeader};
+}
+function planClientImport(rows, map) {
+  const groups = new Map(); let skipped = 0;
+  for (const r of rows) {
+    const no = map.no >= 0 ? cleanNo(r[map.no]) : '', name = map.name >= 0 ? String(r[map.name] || '').trim() : '', ed = map.ed >= 0 ? String(r[map.ed] || '').trim() : '';
+    if (!no && !name) { skipped++; continue; }
+    const key = no ? 'no:' + no : 'nm:' + normName(name);
+    const g = groups.get(key) || {no, name:'', eds:new Set(), rows:0};
+    if (!g.name && name) g.name = name; if (!g.no && no) g.no = no;
+    for (const e of ed.split(/\s*[;|\n]\s*/)) if (e) g.eds.add(e);
+    g.rows++; groups.set(key, g);
+  }
+  let isNew = 0, upd = 0;
+  const list = [...groups.values()].map(g => { const ex = (g.no && clientIndex().byNo.get(g.no)) || (g.name && clientByName(g.name)); if (ex) upd++; else isNew++; return {...g, eds:[...g.eds], ex}; });
+  return {list, isNew, upd, skipped, rows:rows.length};
+}
+function runClientImport(plan) {
+  let added = 0, updated = 0, edAdded = 0;
+  // één index voor de hele import (niet na elke klant opnieuw opbouwen)
+  const ix = clientIndex(), byNo = new Map(ix.byNo), byName = new Map(ix.byName);
+  for (const g of plan.list) {
+    const ex = (g.no && byNo.get(g.no)) || (g.name && byName.get(normName(g.name)));
+    if (ex) {
+      let ch = false;
+      if (!ex.no && g.no) { ex.no = g.no; ch = true; }
+      if (!ex.company && g.name) { ex.company = g.name; ch = true; }
+      const cur = editionsOf(ex), set = new Set(cur);
+      for (const e of g.eds) if (!set.has(e)) { set.add(e); edAdded++; ch = true; }
+      if (ch) { ex.editions = [...set]; touch(ex); updated++; clientsChanged(); }
+    } else {
+      const nc = newClientObj({no:g.no, company:g.name, editions:g.eds});
+      data.clients.push(nc); if (g.no) byNo.set(g.no, nc); if (g.name) byName.set(normName(g.name), nc);
+      added++; edAdded += g.eds.length;
+    }
+  }
+  clientsChanged(); commit();
+  return {added, updated, edAdded};
+}
+function openClientImport() {
+  let rows = [], head = [], hasHead = true, map = {no:-1, name:-1, ed:-1}, source = '';
+  const render = d => {
+    const body = hasHead ? rows.slice(1) : rows;
+    const cols = (hasHead ? head : (rows[0] || []).map((_, i) => `Kolom ${String.fromCharCode(65 + i)}`));
+    const sel = (k, label) => `<label class="fl"><span>${label}</span><select data-map="${k}"><option value="-1">— geen —</option>${cols.map((c, i) => `<option value="${i}" ${map[k] === i ? 'selected' : ''}>${esc(c || `Kolom ${String.fromCharCode(65 + i)}`)}</option>`).join('')}</select></label>`;
+    const plan = rows.length ? planClientImport(body, map) : null;
+    $('#ciBody', d).innerHTML = !rows.length ? '' : `
+      <p class="muted small" style="margin:10px 0 6px">${esc(source)} · ${body.length} rijen</p>
+      <label class="chk" style="margin:0 0 8px"><input type="checkbox" id="ciHead" ${hasHead ? 'checked' : ''}> Eerste rij bevat de kolomnamen</label>
+      <div class="ci-map">${sel('no', 'Klantnr')}${sel('name', 'Bedrijfsnaam')}${sel('ed', 'Uitgave')}</div>
+      ${plan ? `<div class="ci-sum"><b>${plan.list.length}</b> unieke klanten <span class="muted">(${plan.rows} rijen${plan.rows > plan.list.length ? ', dubbele samengevoegd' : ''})</span><br>
+        <span class="ok">${plan.isNew} nieuw</span> · ${plan.upd} bestaand (klantnr/uitgaves aangevuld, niets overschreven)${plan.skipped ? ` · ${plan.skipped} lege rijen overgeslagen` : ''}</div>
+      <div class="table-wrap ci-prev"><table class="pg-table"><thead><tr><th>Klantnr</th><th>Bedrijfsnaam</th><th>Uitgaves</th><th></th></tr></thead><tbody>
+        ${plan.list.slice(0, 8).map(g => `<tr><td class="mono">${esc(g.no)}</td><td>${esc(g.name)}</td><td>${g.eds.map(e => `<span class="fchip">${esc(e)}</span>`).join(' ')}</td><td class="muted small">${g.ex ? 'bestaat' : 'nieuw'}</td></tr>`).join('')}
+      </tbody></table></div>${plan.list.length > 8 ? `<p class="muted small">… en nog ${plan.list.length - 8} klanten</p>` : ''}` : ''}`;
+    $('#ciGo', d).disabled = !plan || !plan.list.length || (map.no < 0 && map.name < 0);
+    $('#ciGo', d).textContent = plan && plan.list.length ? `${plan.list.length} klanten importeren` : 'Importeren';
+  };
+  const load = (r, src, d) => {
+    rows = r.filter(x => x.some(v => String(v).trim())); source = src;
+    const w = Math.max(0, ...rows.map(x => x.length)); rows = rows.map(x => Array.from({length:w}, (_, i) => x[i] ?? ''));
+    head = rows[0] || [];
+    const g0 = guessCols(head, rows.slice(1));
+    hasHead = g0.byHeader > 0;   // alleen als er echte kolomnamen herkend worden
+    map = hasHead ? g0 : guessCols(head.map(() => ''), rows);
+    if (!hasHead && map.ed < 0) { const cand = head.findIndex((_, i) => i !== map.no && i !== map.name && rows.some(r => /[a-z]/i.test(r[i] || ''))); if (cand >= 0) map.ed = cand; }
+    render(d);
+  };
+  showDialog(`
+    <h3>Klanten importeren</h3>
+    <p class="muted small" style="margin:0 0 10px">Kies je Excel-bestand (.xlsx) of CSV, of selecteer de kolommen in Excel, kopieer (Ctrl+C) en plak hieronder. Dubbele klanten worden samengevoegd per klantnr, met al hun uitgaves.</p>
+    <div class="ci-src"><label class="btn"><input type="file" id="ciFile" accept=".xlsx,.csv,.txt,.tsv" hidden>Bestand kiezen…</label><span class="muted small">of plak:</span></div>
+    <textarea id="ciPaste" rows="3" placeholder="Klantnr&#9;Bedrijfsnaam&#9;Uitgave&#10;261523&#9;Carremans Interieur BV&#9;Turnhout Deze Week" style="margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px"></textarea>
+    <p id="ciErr" class="err"></p>
+    <div id="ciBody"></div>
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="ciCancel">Annuleren</button><button type="button" class="btn primary" id="ciGo" disabled>Importeren</button></div>`, d => {
+    $('#ciCancel', d).onclick = () => dlg.close();
+    $('#ciFile', d).onchange = async e => {
+      const f = e.target.files[0]; if (!f) return; $('#ciErr', d).textContent = '';
+      try {
+        const r = /\.xlsx$/i.test(f.name) ? await readXlsx(await f.arrayBuffer()) : /\.xls$/i.test(f.name) ? (() => { throw new Error('Oud .xls-formaat: bewaar het in Excel als .xlsx of CSV.'); })() : readDelimited(await f.text());
+        if (!r.length) throw new Error('Het bestand is leeg.');
+        load(r, f.name, d);
+      } catch (ex) { $('#ciErr', d).textContent = ex.message; }
+    };
+    $('#ciPaste', d).oninput = e => { const r = readDelimited(e.target.value); if (r.length) load(r, 'Geplakte gegevens', d); };
+    $('#ciBody', d).addEventListener('change', e => {
+      if (e.target.id === 'ciHead') { hasHead = e.target.checked; map = hasHead ? guessCols(head, rows.slice(1)) : guessCols(head.map(() => ''), rows); render(d); }
+      else if (e.target.dataset.map) { map[e.target.dataset.map] = +e.target.value; render(d); }
+    });
+    $('#ciGo', d).onclick = () => {
+      const plan = planClientImport(hasHead ? rows.slice(1) : rows, map);
+      const res = runClientImport(plan); dlg.close();
+      toast(`${res.added} klanten toegevoegd, ${res.updated} aangevuld · ${res.edAdded} uitgaves`);
+      if (view.type !== 'clients') setView({type:'clients'}); else renderPage(true);
+    };
+  });
 }
 
 /* ---- Klantenfiche ---- */
@@ -4642,6 +4883,7 @@ function clientHtml() {
       ${posSt && negSt ? `<div class="sales-stat"><span>${esc(posSt.label)} / ${esc(negSt.label)}</span><b>${fin('positive')} / ${fin('negative')}</b></div>` : ''}
       <div class="sales-stat"><span>Laatste contact</span><b>${relDay(g.last)}</b></div>
     </div>
+    ${editionsOf(c).length ? `<div class="cl-edrow"><span class="muted small">Meegewerkt aan</span>${editionsOf(c).map(e => `<button type="button" class="fchip" data-edfilter="${esc(e)}" title="Alle klanten van ${esc(e)}">${esc(e)}</button>`).join('')}</div>` : ''}
     <div class="cl-grid">
       <section class="pg-card">
         <h3>Gegevens</h3>
@@ -4652,6 +4894,7 @@ function clientHtml() {
           ${field('phone', 'Telefoon', 'tel', 'autocomplete="tel"')}
           ${field('email', 'E-mail', 'email', 'autocomplete="email"')}
           ${field('city', 'Gemeente', 'text', 'autocomplete="address-level2"')}
+          <label class="fl cl-notes"><span>Meegewerkt aan <small class="muted">(uitgaves, één per regel)</small></span><textarea data-cf="editions" rows="2" placeholder="bv. Turnhout Deze Week">${esc(editionsOf(c).join('\n'))}</textarea></label>
           <label class="fl cl-notes"><span>Notities</span><textarea data-cf="notes" rows="3" placeholder="Afspraken, voorkeuren, budget, beslisser…">${esc(c.notes || '')}</textarea></label>
         </div>
       </section>
@@ -4819,7 +5062,9 @@ pv.addEventListener('click', e => {
   if (t.closest('#clNew')) { newClient(); return; }
   if (t.closest('#clTask')) { addTaskForClient(view.id); return; }
   if (t.closest('#clDel')) { const c = clientById(view.id); if (c) deleteClient(c); return; }
-  if (t.closest('#clImport')) {
+  if (t.closest('#clImportFile')) { openClientImport(); return; }
+  const edf = t.closest('[data-edfilter]'); if (edf) { clEdition = edf.dataset.edfilter; clQuery = ''; setView({type:'clients'}); return; }
+  if (t.closest('#clFromSales')) {
     const seen = new Set(); let n = 0;
     for (const x of allSales()) { if (!x.clientName || x.clientId) continue; const k = normName(x.clientName); if (seen.has(k) || clientByName(x.clientName)) continue; seen.add(k); data.clients.push(newClientObj({company:x.clientName})); n++; }
     commit(); toast(`${n} ${n === 1 ? 'klant' : 'klanten'} aangemaakt`); return;
@@ -4834,6 +5079,7 @@ pv.addEventListener('click', e => {
   const per = t.closest('[data-period]'); if (per) { statsPeriod = per.dataset.period; try { localStorage.setItem('taken.statsPeriod', statsPeriod); } catch {} renderPage(true); return; }
   const ys = t.closest('[data-year-sel]'); if (ys) { yearSel = +ys.dataset.yearSel; renderPage(true); return; }
 });
+pv.addEventListener('change', e => { if (e.target.id === 'clEd') { clEdition = e.target.value; applyClientFilter(); } });
 pv.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const row = e.target.closest?.('tr[data-client], tr[data-salespage]');
@@ -4841,14 +5087,12 @@ pv.addEventListener('keydown', e => {
 });
 pv.addEventListener('input', e => {
   const t = e.target;
-  if (t.id === 'clSearch') {
-    const q = normName(t.value), qd = t.value.replace(/[^\d]/g, '');
-    pv.querySelectorAll('tr[data-client]').forEach(tr => { const s = tr.dataset.search; tr.hidden = !!q && !s.includes(q) && !(qd.length >= 3 && s.includes(qd)); });
-    return;
-  }
+  if (t.id === 'clSearch') { clQuery = t.value; applyClientFilter(); return; }
   const k = t.dataset.cf; if (!k) return;
   const c = clientById(view.id); if (!c) return;
-  c[k] = t.value; touch(c); save(true);
+  if (k === 'editions') c.editions = [...new Set(t.value.split(/\n|;/).map(x => x.trim()).filter(Boolean))];
+  else c[k] = t.value;
+  touch(c); save(true); clientsChanged();
   if (t.tagName === 'TEXTAREA') autosize(t);
   if (k === 'company' || k === 'contact' || k === 'no') { renderHead(); renderNav(); }
 });
