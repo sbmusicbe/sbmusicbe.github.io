@@ -186,6 +186,12 @@
   .chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:3px; }
   form .submit{ grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:6px; }
   #status{ font-size:14px; color:var(--text-secondary); }
+  .joke{
+    margin-top:24px; padding:14px 16px; border-radius:var(--r-sm);
+    background:rgba(10,10,10,.45); border:1px dashed var(--accent);
+    font-size:14px; line-height:1.5; color:var(--text);
+  }
+  .joke strong{ color:var(--accent); }
   @media (max-width:860px){ .order{ grid-template-columns:1fr; gap:28px; } }
   @media (max-width:560px){ form{ grid-template-columns:1fr; } form .btn{ width:100%; } }
 
@@ -281,6 +287,7 @@
         <div class="mono">Bestellen</div>
         <h2>Bestel je tuinman.</h2>
         <p>Je aanvraag verschijnt als ingevuld bericht in WhatsApp. Jij drukt enkel op verzenden, zonder account en zonder verplichtingen.</p>
+        <p class="joke" role="note"><strong>Let op:</strong> deze pagina is een grap. Er komt echt geen tuinman langs, je tuin blijft dus jouw werk. 🌱</p>
       </div>
       <form id="orderForm" novalidate>
         <div class="field full">
