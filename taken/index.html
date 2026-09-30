@@ -1324,6 +1324,68 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .ci-prog{margin:14px 0 4px}
 .ci-prog progress{width:100%;height:8px;accent-color:var(--accent)}
 .ci-prog span{display:block;margin-top:6px;font-size:13px;color:var(--muted)}
+
+/* berichten (Beeper) */
+.bp-setup{max-width:720px}
+.bp-setup h3{font-size:18px}
+.bp-steps{margin:10px 0 14px;padding-left:20px;display:grid;gap:6px}
+.bp-form{display:grid;gap:10px}
+.bp-wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;height:calc(100vh - 170px);min-height:460px}
+.bp-side,.bp-conv{margin:0;display:flex;flex-direction:column;min-height:0;padding:0;overflow:hidden}
+.bp-side-head{display:grid;gap:8px;padding:12px 12px 8px}
+.bp-filter{display:flex}
+.bp-filter button{flex:1}
+.bp-status .bp-err{margin:0 12px 8px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--danger) 9%,var(--panel));font-size:13px;line-height:1.5}
+.bp-chats{list-style:none;margin:0;padding:4px 6px 8px;overflow-y:auto;flex:1;min-height:0}
+.bp-chats button{display:flex;gap:10px;width:100%;padding:9px 8px;border:0;border-radius:12px;background:none;font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.bp-chats button:hover{background:var(--hover)}
+.bp-chats button.on{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.bp-chats button.unread b{font-weight:750}
+.bp-av{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-weight:700;font-size:15px;color:#fff;background:var(--muted)}
+.bp-av.net-whatsapp{background:#25a366}.bp-av.net-sms{background:#1a73e8}.bp-av.net-signal{background:#3a76f0}.bp-av.net-telegram{background:#2aa1da}.bp-av.net-meta{background:#a044ff}
+.bp-ct{flex:1;min-width:0;display:grid;gap:1px}
+.bp-row{display:flex;align-items:baseline;gap:8px;min-width:0}
+.bp-row b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.bp-row small{flex:none;color:var(--muted);font-size:11.5px}
+.bp-prev{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:13px}
+.bp-badge{flex:none;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-style:normal;font-size:11px;font-weight:700;display:grid;place-items:center}
+.bp-tags{display:flex;gap:6px;margin-top:2px}
+.bp-net{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--muted) 14%,transparent);color:var(--muted)}
+.bp-net.net-whatsapp{background:color-mix(in srgb,#25a366 16%,transparent);color:#1b8a53}.bp-net.net-sms{background:color-mix(in srgb,#1a73e8 14%,transparent);color:#1a63c8}
+.bp-cl{font-size:10.5px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--text)}
+.bp-side-foot{padding:8px 14px 12px;border-top:1px solid var(--line)}
+.bp-empty{padding:14px}
+.bp-none{margin:auto;text-align:center;color:var(--muted);display:grid;justify-items:center;gap:8px}
+.bp-none svg{width:40px;height:40px;opacity:.5}
+.bp-conv-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.bp-conv-t{display:grid;min-width:0}
+.bp-conv-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bp-conv-t small{color:var(--muted);font-size:12px}
+.bp-conv-t a{color:var(--accent);text-decoration:none;font-weight:600}
+.bp-back{display:none}
+.bp-msgs{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--text) 2%,transparent)}
+.bp-day{align-self:center;margin:8px 0 2px;font-size:11.5px;font-weight:650;color:var(--muted);background:var(--panel);padding:3px 10px;border-radius:999px}
+.bp-msg{max-width:min(78%,560px);align-self:flex-start;display:grid;gap:2px}
+.bp-msg.me{align-self:flex-end;justify-items:end}
+.bp-bubble{padding:8px 12px;border-radius:16px 16px 16px 5px;background:var(--panel);box-shadow:var(--shadow-card);font-size:14.5px;line-height:1.4;overflow-wrap:anywhere;-webkit-user-select:text;user-select:text}
+.bp-msg.me .bp-bubble{border-radius:16px 16px 5px 16px;background:var(--accent);color:#fff}
+.bp-from{font-size:11.5px;font-weight:650;color:var(--muted);padding-left:6px}
+.bp-meta{font-size:11px;color:var(--muted);padding:0 6px}
+.bp-meta .link{font-size:11px;padding:0}
+.bp-compose{display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line)}
+.bp-compose textarea{flex:1;resize:none;max-height:160px;min-height:40px;border-radius:14px}
+.bp-send{display:inline-flex;align-items:center;gap:6px}
+.bp-send svg{width:16px;height:16px}
+.bp-conv-head .btn{white-space:nowrap;flex:none}
+.bp-conv-t small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:860px){
+  .bp-wrap{grid-template-columns:1fr;height:calc(100vh - 200px - env(safe-area-inset-bottom))}
+  .bp-wrap.has-chat .bp-side{display:none}
+  .bp-wrap:not(.has-chat) .bp-conv{display:none}
+  .bp-back{display:inline-grid}
+  .bp-send span{display:none}
+  .bp-msg{max-width:86%}
+}
 </style>
 </head>
 <body>
@@ -1496,6 +1558,8 @@ const I = {
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
   clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.1 4 1.6 4.5 4.3"/></svg>',
   stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="9" width="3" height="8" rx="1"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg>',
+ send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg>',
  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12.5 13.5h3.5v3.5h-3.5z" fill="currentColor" stroke="none"/></svg>',
   year:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M16 14h.01M8 17h2M12 17h2"/></svg>',
   phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></svg>',
@@ -2014,6 +2078,7 @@ function viewTitle() {
   if (view.type === 'stats') return 'Statistieken';
   if (view.type === 'year') return 'Jaaroverzicht';
   if (view.type === 'agenda') return 'Agenda';
+  if (view.type === 'messages') return 'Berichten';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
 }
@@ -2330,7 +2395,7 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
     + archList('sales', pages.filter(p => p.archived), salesItem);
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['stats', 'Statistieken', I.stats, ''], ['year', 'Jaaroverzicht', I.year, '']]
+  $('#toolNav').innerHTML = [['messages', 'Berichten', I.chat, bpState.unread || ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['stats', 'Statistieken', I.stats, ''], ['year', 'Jaaroverzicht', I.year, '']]
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   renderSync();
 }
@@ -4302,6 +4367,7 @@ $('#fab').addEventListener('click', () => {
   if (view.type === 'clients') { newClient(); return; }
   if (view.type === 'client') { addTaskForClient(view.id); return; }
   if (view.type === 'agenda') { openEventDialog(null, agendaSel || today()); return; }
+  if (view.type === 'messages') { $('#bpText')?.focus(); return; }
   const open = document.body.classList.toggle('qa-open');
   if (open) setTimeout(() => $('#qaInput').focus(), 30); else $('#qaInput').blur();
 });
@@ -4613,7 +4679,7 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['clients', 'client', 'stats', 'year', 'agenda'];
+const PAGE_VIEWS = ['clients', 'client', 'stats', 'year', 'agenda', 'messages'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
 const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const clientById = id => data.clients.find(c => c.id === id);
@@ -4778,9 +4844,10 @@ function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'stats' ? statsHtml() : view.type === 'agenda' ? agendaHtml() : yearHtml();
+  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'stats' ? statsHtml() : view.type === 'agenda' ? agendaHtml() : view.type === 'messages' ? messagesHtml() : yearHtml();
   if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
   if (view.type === 'clients') applyClientFilter();
+  if (view.type === 'messages') bpAfterRender();
 }
 
 /* ---- Klantenlijst ---- */
@@ -5447,6 +5514,238 @@ function openEventDialog(ev, date) {
       dlg.close(); commit(); toast(ids.length > 1 ? `${ids.length} data verwijderd` : 'Verwijderd');
     });
     d.querySelectorAll('#evTitle, #evEd').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#evSave', d).click(); } }));
+  });
+}
+
+/* ================= Berichten via Beeper Desktop (WhatsApp, SMS, …) =================
+   Beeper Desktop draait een lokale API op je computer (standaard http://localhost:23373).
+   De app praat daar rechtstreeks mee vanuit de browser; het token staat versleuteld in je kluis. */
+const BP_DEFAULT = 'http://localhost:23373';
+const bpCfg = () => data.settings.beeper || {};
+const bpState = {chats:[], chatId:null, msgs:[], err:null, loading:false, unread:0, filter:'all', q:'', timer:null, sending:false, lastOk:0};
+try { bpState.filter = localStorage.getItem('taken.bpFilter') || 'all'; } catch {}
+async function bp(path, opts = {}) {
+  const c = bpCfg();
+  if (!c.token) throw Object.assign(new Error('Nog geen Beeper-token ingesteld.'), {code:'notoken'});
+  let res;
+  try {
+    res = await fetch((c.url || BP_DEFAULT).replace(/\/+$/, '') + path, {method:opts.method || 'GET', cache:'no-store',
+      headers:{'Authorization':'Bearer ' + c.token, 'Accept':'application/json', ...(opts.body ? {'Content-Type':'application/json'} : {})},
+      body:opts.body ? JSON.stringify(opts.body) : undefined});
+  } catch { throw Object.assign(new Error('Beeper Desktop is niet bereikbaar.'), {code:'net'}); }
+  if (res.status === 401 || res.status === 403) throw Object.assign(new Error('Beeper weigert het token.'), {code:'auth'});
+  if (!res.ok) { const j = await res.json().catch(() => ({})); throw Object.assign(new Error(`Beeper gaf fout ${res.status}${j.message ? ': ' + j.message : ''}`), {code:'http'}); }
+  return res.status === 204 ? null : res.json().catch(() => null);
+}
+const bpItems = j => Array.isArray(j) ? j : (j && (j.items || j.data || j.chats || j.messages || j.results)) || [];
+function bpNet(ch) {
+  const s = String(ch.network || ch.accountID || ch.platform || ch.service || '').toLowerCase();
+  if (s.includes('whatsapp')) return 'whatsapp';
+  if (/sms|gmessages|googlemessages|google-messages|imessage|rcs|androidsms/.test(s)) return 'sms';
+  if (s.includes('signal')) return 'signal';
+  if (s.includes('telegram')) return 'telegram';
+  if (/instagram|facebook|messenger/.test(s)) return 'meta';
+  return 'chat';
+}
+const BP_NET_LABEL = {whatsapp:'WhatsApp', sms:'SMS', signal:'Signal', telegram:'Telegram', meta:'Messenger', chat:'Chat'};
+const bpTitle = ch => ch.title || ch.name || (ch.participants?.items || ch.participants || []).map?.(p => p.fullName || p.name).filter(Boolean).join(', ') || 'Gesprek';
+const bpTime = x => { const v = x.timestamp || x.lastActivity || x.lastMessage?.timestamp || x.updatedAt; const t = typeof v === 'number' ? (v < 1e12 ? v * 1000 : v) : Date.parse(v || ''); return isNaN(t) ? 0 : t; };
+const bpPreview = ch => ch.preview?.text || ch.lastMessage?.text || ch.snippet || '';
+const bpMine = m => !!(m.isSender || m.fromMe || m.isFromMe || m.sender?.isSelf);
+function bpWhen(t) {
+  if (!t) return '';
+  const d = new Date(t), k = ymd(d), tm = d.toLocaleTimeString('nl-BE', {hour:'2-digit', minute:'2-digit'});
+  return k === today() ? tm : k === addDays(today(), -1) ? 'gisteren ' + tm : `${d.getDate()} ${MONTHS[d.getMonth()]} ${tm}`;
+}
+// klant bij een gesprek: op naam, of op telefoonnummer (laatste 9 cijfers)
+function bpClient(ch) {
+  const byName = clientByName(bpTitle(ch)); if (byName) return byName;
+  const digits = (String(bpTitle(ch)) + ' ' + (ch.participants?.items || ch.participants || []).map?.(p => p.phoneNumber || p.id || '').join(' ')).replace(/[^\d]/g, ' ').split(' ').filter(x => x.length >= 8);
+  if (!digits.length) return null;
+  const want = new Set(digits.map(x => x.slice(-9)));
+  return data.clients.find(c => c.phone && want.has(String(c.phone).replace(/[^\d]/g, '').slice(-9))) || null;
+}
+async function bpLoadChats() {
+  const j = await bp('/v1/chats?limit=100');
+  bpState.chats = bpItems(j).sort((a, b) => bpTime(b) - bpTime(a));
+  bpState.unread = bpState.chats.reduce((a, ch) => a + (ch.unreadCount || 0), 0);
+}
+async function bpLoadMsgs(id) {
+  const j = await bp(`/v1/chats/${encodeURIComponent(id)}/messages?limit=60`);
+  bpState.msgs = bpItems(j).sort((a, b) => bpTime(a) - bpTime(b) || String(a.sortKey || '').localeCompare(String(b.sortKey || '')));
+}
+async function bpRefresh(full) {
+  if (view.type !== 'messages' || !bpCfg().token) return;
+  try {
+    await bpLoadChats();
+    if (bpState.chatId) await bpLoadMsgs(bpState.chatId);
+    bpState.err = null; bpState.lastOk = now();
+  } catch (e) { bpState.err = e; }
+  if (view.type === 'messages') { bpDrawList(); bpDrawConv(full); bpDrawStatus(); renderNav(); }
+}
+function bpAfterRender() {
+  clearInterval(bpState.timer);
+  if (!bpCfg().token) return;
+  bpDrawList(); bpDrawConv(true); bpDrawStatus();
+  bpRefresh(true);
+  bpState.timer = setInterval(() => { if (view.type === 'messages' && document.visibilityState === 'visible') bpRefresh(false); else if (view.type !== 'messages') clearInterval(bpState.timer); }, 8000);
+}
+function messagesHtml() {
+  const c = bpCfg();
+  if (!c.token) return bpSetupHtml();
+  return `
+    <div class="bp-wrap ${bpState.chatId ? 'has-chat' : ''}">
+      <aside class="bp-side pg-card">
+        <div class="bp-side-head">
+          <input type="search" id="bpSearch" value="${esc(bpState.q)}" placeholder="Zoek gesprek…" aria-label="Gesprekken zoeken">
+          <div class="seg bp-filter" role="group" aria-label="Filter">${[['all', 'Alles'], ['whatsapp', 'WhatsApp'], ['sms', 'SMS']].map(([k, l]) => `<button type="button" data-bpf="${k}" class="${bpState.filter === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        </div>
+        <div id="bpStatus" class="bp-status"></div>
+        <ul class="bp-chats" id="bpChats"></ul>
+        <div class="bp-side-foot"><button type="button" class="link" id="bpSettings">Beeper-instellingen</button></div>
+      </aside>
+      <section class="bp-conv pg-card" id="bpConv"></section>
+    </div>`;
+}
+function bpSetupHtml(err) {
+  const c = bpCfg();
+  return `<section class="pg-card bp-setup">
+    <h3>WhatsApp en SMS via Beeper</h3>
+    <p class="muted">Beantwoord je WhatsApp- en SMS-berichten hier in Taken. Dat gaat via <b>Beeper Desktop</b> op je computer, dat je chats al samenbrengt. De verbinding loopt rechtstreeks tussen deze pagina en Beeper op je eigen computer.</p>
+    <ol class="bp-steps">
+      <li>Installeer en open <b>Beeper Desktop</b> op deze computer en koppel WhatsApp en je SMS (Google Messages).</li>
+      <li>In Beeper: <b>Instellingen → Developers / Integrations</b> → zet de <b>Desktop API</b> aan en maak een <b>toegangstoken</b> aan.</li>
+      <li>Plak het token hieronder en klik op <b>Verbinden</b>.</li>
+    </ol>
+    <div class="bp-form">
+      <label class="fl">Toegangstoken<input type="password" id="bpTok" value="${esc(c.token || '')}" placeholder="plak je Beeper-token" autocomplete="off"></label>
+      <label class="fl">Adres van Beeper Desktop <span class="muted">(meestal niet wijzigen)</span><input type="text" id="bpUrl" value="${esc(c.url || BP_DEFAULT)}" autocomplete="off"></label>
+    </div>
+    <p class="err" id="bpErr">${err ? esc(err) : ''}</p>
+    <div class="dlg-actions"><span class="grow"></span>${c.token ? '<button type="button" class="btn danger" id="bpForget">Token wissen</button>' : ''}<button type="button" class="btn primary" id="bpConnect">Verbinden</button></div>
+    <p class="muted small">Het token wordt versleuteld bewaard in je kluis. Berichten worden niet opgeslagen in Taken: ze worden telkens rechtstreeks uit Beeper gelezen.</p>
+  </section>`;
+}
+function bpHelp(e) {
+  if (!e) return '';
+  if (e.code === 'auth') return 'Beeper weigert het token. Maak in Beeper een nieuw token aan en vul het in via “Beeper-instellingen”.';
+  if (e.code === 'net') return `Kan Beeper Desktop niet bereiken op ${esc(bpCfg().url || BP_DEFAULT)}. Controleer: <b>1.</b> Beeper Desktop is open op deze computer. <b>2.</b> De Desktop API staat aan. <b>3.</b> Vraagt je browser toestemming voor “apparaten in je lokale netwerk”, klik dan op Toestaan. <b>4.</b> Werkt het nog niet, dan laat Beeper deze website mogelijk niet toe (CORS); zet in Beeper onder Instellingen → Developers de optie <b>Remote Access</b> aan en probeer opnieuw.`;
+  return esc(e.message);
+}
+function bpDrawStatus() {
+  const el = $('#bpStatus'); if (!el) return;
+  el.innerHTML = bpState.err ? `<div class="bp-err">${bpHelp(bpState.err)}</div>` : '';
+}
+function bpVisibleChats() {
+  const q = normName(bpState.q);
+  return bpState.chats.filter(ch => (bpState.filter === 'all' || bpNet(ch) === bpState.filter) && (!q || normName(bpTitle(ch) + ' ' + bpPreview(ch)).includes(q)));
+}
+function bpDrawList() {
+  const el = $('#bpChats'); if (!el) return;
+  const list = bpVisibleChats();
+  el.innerHTML = list.length ? list.map(ch => { const n = bpNet(ch), cl = bpClient(ch);
+    return `<li><button type="button" data-bpchat="${esc(ch.id)}" class="${ch.id === bpState.chatId ? 'on' : ''} ${ch.unreadCount ? 'unread' : ''}">
+      <span class="bp-av net-${n}">${esc((bpTitle(ch).match(/[a-z0-9]/i) || ['?'])[0].toUpperCase())}</span>
+      <span class="bp-ct"><span class="bp-row"><b>${esc(bpTitle(ch))}</b><small>${bpWhen(bpTime(ch))}</small></span>
+        <span class="bp-row"><span class="bp-prev">${esc(bpPreview(ch))}</span>${ch.unreadCount ? `<i class="bp-badge">${ch.unreadCount}</i>` : ''}</span>
+        <span class="bp-tags"><span class="bp-net net-${n}">${BP_NET_LABEL[n]}</span>${cl ? `<span class="bp-cl">${esc(clientLabel(cl))}</span>` : ''}</span></span></button></li>`; }).join('')
+    : `<li class="muted small bp-empty">${bpState.chats.length ? 'Geen gesprekken voor deze filter.' : bpState.err ? '' : 'Gesprekken laden…'}</li>`;
+}
+function bpDrawConv(scrollDown) {
+  const el = $('#bpConv'); if (!el) return;
+  const ch = bpState.chats.find(x => x.id === bpState.chatId);
+  if (!ch) { el.innerHTML = `<div class="bp-none">${I.chat}<p>Kies een gesprek om te lezen en te antwoorden.</p></div>`; return; }
+  const n = bpNet(ch), cl = bpClient(ch);
+  const box = el.querySelector('.bp-msgs'), atBottom = !box || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  const draft = el.querySelector('#bpText')?.value ?? bpState.drafts?.[ch.id] ?? '';
+  const hadFocus = document.activeElement?.id === 'bpText';
+  let lastDay = '';
+  const msgs = bpState.msgs.map(m => {
+    const t = bpTime(m), day = t ? ymd(new Date(t)) : '';
+    const sep = day && day !== lastDay ? `<div class="bp-day">${day === today() ? 'Vandaag' : dayLabel(day)}</div>` : ''; lastDay = day || lastDay;
+    const att = (m.attachments || []).length;
+    return sep + `<div class="bp-msg ${bpMine(m) ? 'me' : ''}" data-mid="${esc(m.id)}">
+      ${!bpMine(m) && ch.type === 'group' && m.senderName ? `<small class="bp-from">${esc(m.senderName)}</small>` : ''}
+      <div class="bp-bubble">${m.text ? esc(m.text).replace(/\n/g, '<br>') : att ? `<i class="muted">📎 ${att === 1 ? 'bijlage' : att + ' bijlagen'}</i>` : '<i class="muted">(geen tekst)</i>'}</div>
+      <span class="bp-meta">${bpWhen(t)}${!bpMine(m) && m.text ? ` · <button type="button" class="link" data-bptask="${esc(m.id)}">taak maken</button>` : ''}</span></div>`;
+  }).join('');
+  el.innerHTML = `
+    <header class="bp-conv-head">
+      <button type="button" class="icon-btn bp-back" data-bpback aria-label="Terug naar gesprekken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <span class="bp-av net-${n}">${esc((bpTitle(ch).match(/[a-z0-9]/i) || ['?'])[0].toUpperCase())}</span>
+      <div class="bp-conv-t"><b>${esc(bpTitle(ch))}</b><small><span class="bp-net net-${n}">${BP_NET_LABEL[n]}</span>${cl ? ` · <a href="#" data-openclient="${cl.id}">${esc(clientLabel(cl))}${cl.no ? ' · ' + esc(cl.no) : ''}</a>` : ''}</small></div>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-bptask="">+ Taak</button>
+    </header>
+    <div class="bp-msgs">${msgs || '<p class="muted small bp-empty">Nog geen berichten geladen…</p>'}</div>
+    <form class="bp-compose" id="bpCompose" autocomplete="off">
+      <textarea id="bpText" rows="1" placeholder="Bericht aan ${esc(bpTitle(ch))}…" aria-label="Bericht">${esc(draft)}</textarea>
+      <button type="submit" class="btn primary bp-send" ${bpState.sending ? 'disabled' : ''} aria-label="Versturen">${I.send}<span>Versturen</span></button>
+    </form>`;
+  const nb = el.querySelector('.bp-msgs');
+  if (scrollDown || atBottom) nb.scrollTop = nb.scrollHeight;
+  const ta = el.querySelector('#bpText'); autosize(ta);
+  if (hadFocus) { ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; }
+}
+async function bpSend() {
+  const ta = $('#bpText'), ch = bpState.chats.find(x => x.id === bpState.chatId);
+  const text = ta?.value.trim(); if (!text || !ch || bpState.sending) return;
+  bpState.sending = true; ta.disabled = true;
+  try {
+    await bp(`/v1/chats/${encodeURIComponent(ch.id)}/messages`, {method:'POST', body:{text}});
+    ta.value = ''; if (bpState.drafts) delete bpState.drafts[ch.id];
+    bpState.msgs.push({id:'local-' + now(), text, isSender:true, timestamp:new Date().toISOString()});
+    bpState.sending = false; bpDrawConv(true);
+    setTimeout(() => bpRefresh(false), 1200);
+  } catch (e) {
+    bpState.sending = false; ta.disabled = false;
+    toast('Versturen mislukt: ' + (e.code === 'net' ? 'Beeper Desktop is niet bereikbaar' : e.message));
+  }
+  $('#bpText')?.focus();
+}
+function bpTaskFrom(msgId) {
+  const ch = bpState.chats.find(x => x.id === bpState.chatId); if (!ch) return;
+  const m = msgId ? bpState.msgs.find(x => String(x.id) === msgId) : null, cl = bpClient(ch);
+  const t = createTask({title:`Antwoord ${bpTitle(ch)}`, custom:{}, clientId:cl?.id, projectId:'inbox', silent:true}, firstOpen().id);
+  t.notes = [`${BP_NET_LABEL[bpNet(ch)]}-gesprek met ${bpTitle(ch)}`, m ? `${bpWhen(bpTime(m))}: “${m.text}”` : ''].filter(Boolean).join('\n');
+  touch(t); save(); openTask(t.id);
+  toast('Taak aangemaakt');
+}
+{
+  const pvEl = $('#pageView');
+  pvEl.addEventListener('click', async e => {
+    if (view.type !== 'messages') return;
+    const t = e.target;
+    const f = t.closest('[data-bpf]'); if (f) { bpState.filter = f.dataset.bpf; try { localStorage.setItem('taken.bpFilter', bpState.filter); } catch {} pvEl.querySelectorAll('[data-bpf]').forEach(b => b.classList.toggle('on', b === f)); bpDrawList(); return; }
+    const c = t.closest('[data-bpchat]');
+    if (c) {
+      const cur = $('#bpText'); if (cur && bpState.chatId) (bpState.drafts ||= {})[bpState.chatId] = cur.value;
+      bpState.chatId = c.dataset.bpchat; bpState.msgs = [];
+      pvEl.querySelector('.bp-wrap')?.classList.add('has-chat');
+      bpDrawList(); bpDrawConv(true);
+      try { await bpLoadMsgs(bpState.chatId); bpState.err = null; } catch (ex) { bpState.err = ex; }
+      bpDrawConv(true); bpDrawStatus(); setTimeout(() => $('#bpText')?.focus(), 30);
+      return;
+    }
+    if (t.closest('[data-bpback]')) { bpState.chatId = null; pvEl.querySelector('.bp-wrap')?.classList.remove('has-chat'); bpDrawList(); bpDrawConv(); return; }
+    const tk = t.closest('[data-bptask]'); if (tk) { bpTaskFrom(tk.dataset.bptask); return; }
+    if (t.closest('#bpSettings')) { clearInterval(bpState.timer); pvEl.innerHTML = bpSetupHtml(); return; }
+    if (t.closest('#bpForget')) { delete data.settings.beeper; bpState.chats = []; bpState.chatId = null; bpState.unread = 0; save(); renderPage(true); renderNav(); return; }
+    if (t.closest('#bpConnect')) {
+      const tok = $('#bpTok').value.trim(), url = ($('#bpUrl').value.trim() || BP_DEFAULT).replace(/\/+$/, '');
+      if (!tok) { $('#bpErr').textContent = 'Plak eerst je toegangstoken uit Beeper.'; return; }
+      const prev = data.settings.beeper; data.settings.beeper = {token:tok, url};
+      $('#bpErr').textContent = 'Verbinden…';
+      try { await bpLoadChats(); bpState.err = null; save(); renderPage(true); renderNav(); toast(`Verbonden met Beeper · ${bpState.chats.length} gesprekken`); }
+      catch (ex) { data.settings.beeper = prev; if (!prev) delete data.settings.beeper; $('#bpErr').innerHTML = bpHelp(ex); }
+      return;
+    }
+  });
+  pvEl.addEventListener('submit', e => { if (e.target.id === 'bpCompose') { e.preventDefault(); bpSend(); } });
+  pvEl.addEventListener('keydown', e => { if (e.target.id === 'bpText' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); bpSend(); } });
+  pvEl.addEventListener('input', e => {
+    if (e.target.id === 'bpText') { autosize(e.target); return; }
+    if (e.target.id === 'bpSearch') { bpState.q = e.target.value; bpDrawList(); }
   });
 }
 
