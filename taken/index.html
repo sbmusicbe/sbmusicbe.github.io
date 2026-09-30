@@ -1576,6 +1576,17 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
   .col>header .col-hide,.col>header .col-edit{color:var(--faint)!important;opacity:.7}
   .col-add input{background:transparent!important}
 }
+
+/* klantenlijst sorteren */
+.cl-sort button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font:inherit;color:inherit;border-radius:4px}
+.cl-sort button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cl-sort .sort-ar{font-size:11px;color:var(--faint);opacity:0;transition:opacity .15s}
+.cl-sort:hover .sort-ar,.cl-sort.on .sort-ar{opacity:1}
+.cl-sort.on{color:var(--text)}
+.cl-sort.on .sort-ar{color:var(--accent)}
+.pg-table th.num.cl-sort button{flex-direction:row-reverse}
+.cl-sort-m{display:none}
+@media (max-width:860px){ .cl-sort-m{display:block;flex:1 1 45%;min-width:0} }
 </style>
 </head>
 <body>
@@ -5030,9 +5041,32 @@ function fillClientSuggestions(inp) {
 }
 document.addEventListener('focusin', e => { if (e.target.getAttribute?.('list') === 'clientNames') fillClientSuggestions(e.target); });
 document.addEventListener('input', e => { if (e.target.getAttribute?.('list') === 'clientNames') fillClientSuggestions(e.target); }, true);
+// sorteren van de klantenlijst: klik op een kolomkop (nog eens = omgekeerd); lege waarden altijd onderaan
+const CL_SORTS = [['name', 'Klant', 1], ['no', 'Klantnr', 1], ['eds', 'Uitgaves', 1], ['phone', 'Telefoon', 1], ['city', 'Gemeente', 1], ['open', 'Open taken', -1], ['total', 'Omzet', -1], ['last', 'Laatste contact', -1]];
+const clSortPref = () => { const p = data.prefs.clientsSort; return p && CL_SORTS.some(x => x[0] === p.k) ? p : {k:'name', dir:1}; };
+function setClientSort(k, dir) {
+  const cur = clSortPref(), def = (CL_SORTS.find(x => x[0] === k) || [])[2] || 1;
+  data.prefs.clientsSort = {k, dir:dir ?? (cur.k === k ? -cur.dir : def)};
+  save(true); clLimit = 200; renderPage(true);
+}
+function sortClientList(list, sales, maps) {
+  const {k, dir} = clSortPref();
+  if (k === 'name') return dir === 1 ? list : [...list].reverse();   // de lijst staat al op naam
+  let val;
+  if (k === 'open' || k === 'total' || k === 'last') { const agg = new Map(list.map(c => [c.id, clientAgg(c, sales, maps)])); val = c => agg.get(c.id)[k]; }
+  else if (k === 'eds') val = c => [...editionsOf(c)].sort(nlCollator.compare)[0];
+  else if (k === 'phone') val = c => telHref(c.phone);
+  else val = c => c[k];
+  const empty = v => v === undefined || v === null || v === '' || v === 0;
+  return list.map(c => [c, val(c)]).sort((x, y) => {
+    const ex = empty(x[1]), ey = empty(y[1]);
+    if (ex || ey) return ex - ey;
+    return (typeof x[1] === 'number' ? x[1] - y[1] : nlCollator.compare(String(x[1]), String(y[1]))) * dir;
+  }).map(x => x[0]);
+}
 function applyClientFilter() {
   const tb = pv.querySelector('.cl-table tbody'); if (!tb) return;
-  const f = filteredClients(), shown = f.slice(0, clLimit), sales = allSales(), maps = clientMaps(sales);
+  const sales = allSales(), maps = clientMaps(sales), f = sortClientList(filteredClients(), sales, maps), shown = f.slice(0, clLimit);
   const chips = list => list.length ? list.slice(0, 3).map(e => `<span class="fchip">${esc(e)}</span>`).join('') + (list.length > 3 ? `<span class="muted small"> +${list.length - 3}</span>` : '') : '';
   tb.innerHTML = shown.map(c => { const g = clientAgg(c, sales, maps), ed = editionsOf(c); return `<tr data-client="${c.id}" tabindex="0">
       <td><b>${esc(clientLabel(c))}</b>${c.company && c.contact ? `<div class="muted small">${esc(c.contact)}</div>` : ''}</td>
@@ -5069,15 +5103,18 @@ function clientsHtml() {
   const bar = `<div class="pg-bar">
       <input type="search" id="clSearch" value="${esc(clQuery)}" placeholder="Zoek op firma, klantnr, contact, gemeente, uitgave of nummer…" aria-label="Klanten zoeken">
       ${eds.length ? `<select id="clEd" aria-label="Filter op uitgave"><option value="">Alle uitgaves</option>${eds.map(([e, n]) => `<option value="${esc(e)}" ${e === clEdition ? 'selected' : ''}>${esc(e)} (${n})</option>`).join('')}</select>` : ''}
+      <select id="clSort" class="cl-sort-m" aria-label="Sorteren">${CL_SORTS.flatMap(([k, l, d]) => [d, -d].map(dir => { const so = clSortPref(), lbl = k === 'name' || k === 'city' || k === 'eds' ? (dir === 1 ? 'A→Z' : 'Z→A') : k === 'last' ? (dir === 1 ? 'oudste eerst' : 'recentste eerst') : (dir === 1 ? 'laag→hoog' : 'hoog→laag'); return `<option value="${k}:${dir}" ${so.k === k && so.dir === dir ? 'selected' : ''}>${l}: ${lbl}</option>`; })).join('')}</select>
       <span class="muted small" id="clCount"></span>
       <span class="grow"></span>
       ${unmatched.length ? `<button type="button" class="btn" id="clFromSales" title="${esc(unmatched.slice(0, 12).join(', '))}${unmatched.length > 12 ? '…' : ''}">Klanten uit verkopen halen (${unmatched.length})</button>` : ''}
       <button type="button" class="btn" id="clImportFile">Importeren (Excel/CSV)</button>
       <button type="button" class="btn primary" id="clNew">+ Nieuwe klant</button>
     </div>`;
+  const so = clSortPref();
   if (!data.clients.length) return bar + `<div class="pg-empty"><b>Nog geen klanten.</b><span>Importeer je klantenlijst uit Excel (klantnr, bedrijfsnaam, uitgave), maak een klant aan, of haal ze uit de kolom “Klant” van je verkooppagina’s.</span></div>`;
   return bar + `<div class="table-wrap"><table class="pg-table cl-table">
-    <thead><tr><th>Klant</th><th>Klantnr</th><th class="hide-m">Uitgaves</th><th>Telefoon</th><th class="hide-m">Gemeente</th><th class="num hide-m">Open</th><th class="num">Omzet</th><th class="hide-m">Laatste contact</th></tr></thead>
+    <thead><tr>${[['name', 'Klant', ''], ['no', 'Klantnr', ''], ['eds', 'Uitgaves', 'hide-m'], ['phone', 'Telefoon', ''], ['city', 'Gemeente', 'hide-m'], ['open', 'Open', 'num hide-m'], ['total', 'Omzet', 'num'], ['last', 'Laatste contact', 'hide-m']]
+      .map(([k, l, cls]) => { const on = so.k === k; return `<th class="${cls} cl-sort${on ? ' on' : ''}" aria-sort="${on ? (so.dir === 1 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-clsort="${k}" title="Sorteren op ${l.toLowerCase()}">${l}<span class="sort-ar" aria-hidden="true">${on ? (so.dir === 1 ? '↑' : '↓') : '↕'}</span></button></th>`; }).join('')}</tr></thead>
     <tbody></tbody></table></div>
     <p class="muted small pg-note">Omzet komt uit de kolom “Klant” van je verkooppagina’s (naam of klantnummer).</p>`;
 }
@@ -5745,6 +5782,7 @@ function openEventDialog(ev, date) {
 /* ---- Events op de pagina's ---- */
 const pv = $('#pageView');
 pv.addEventListener('click', e => {
+  { const b = e.target.closest('[data-clsort]'); if (b) { setClientSort(b.dataset.clsort); return; } }
   const t = e.target;
   if (t.closest('#evNew')) { openEventDialog(null, agendaSel || (agendaMonth === today().slice(0, 7) ? today() : agendaMonth + '-01')); return; }
   const evb = t.closest('[data-ev]'); if (evb) { const ev = data.events.find(x => x.id === evb.dataset.ev); if (ev) openEventDialog(ev); return; }
@@ -5773,7 +5811,7 @@ pv.addEventListener('click', e => {
   const per = t.closest('[data-period]'); if (per) { statsPeriod = per.dataset.period; try { localStorage.setItem('taken.statsPeriod', statsPeriod); } catch {} renderPage(true); return; }
   const ys = t.closest('[data-year-sel]'); if (ys) { yearSel = +ys.dataset.yearSel; renderPage(true); return; }
 });
-pv.addEventListener('change', e => { if (e.target.id === 'clEd') { clEdition = e.target.value; clLimit = 200; applyClientFilter(); } });
+pv.addEventListener('change', e => { if (e.target.id === 'clSort') { const [k, d] = e.target.value.split(':'); setClientSort(k, +d); return; } if (e.target.id === 'clEd') { clEdition = e.target.value; clLimit = 200; applyClientFilter(); } });
 pv.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const day = e.target.closest?.('[data-day]'); if (day && e.target === day) { e.preventDefault(); openEventDialog(null, day.dataset.day); return; }
