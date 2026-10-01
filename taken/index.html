@@ -104,7 +104,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .toolbar select,.toolbar input{width:auto;padding:6px 8px;font-size:13.5px}
 .toolbar .search{flex:1;min-width:160px}
 .toolbar .tgl{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--muted);padding:0 4px}
-.tb-label{font-size:12px;color:var(--faint);align-self:center;margin-left:4px}
 
 #quickAdd{display:flex;gap:8px;margin-bottom:4px}
 #quickAdd input{flex:1;padding:10px 12px}
@@ -121,12 +120,9 @@ ul.tasks{list-style:none;margin:0;padding:0}
 .task.done .t-title{text-decoration:line-through;color:var(--muted)}
 .check{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--p4);background:none;display:grid;place-items:center;padding:0;margin-top:1px;color:transparent;transition:.15s}
 .check svg{width:12px;height:12px}
-.check.p1{border-color:var(--p1);background:color-mix(in srgb,var(--p1) 12%,transparent)}
-.check.p2{border-color:var(--p2);background:color-mix(in srgb,var(--p2) 12%,transparent)}
-.check.p3{border-color:var(--p3);background:color-mix(in srgb,var(--p3) 12%,transparent)}
+
 .check:hover{color:var(--muted)}
 .check.on{background:var(--p4);border-color:var(--p4);color:#fff}
-.check.on.p1{background:var(--p1)} .check.on.p2{background:var(--p2)} .check.on.p3{background:var(--p3)}
 .t-body{min-width:0;flex:1}
 .t-title{word-wrap:break-word}
 .t-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
@@ -223,11 +219,7 @@ code{background:var(--hover);padding:1px 5px;border-radius:5px;font-size:12.5px;
 .col>header{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:2px 4px 10px}
 .col>header .dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
 .col>header .count{color:var(--faint);font-weight:500}
-.col>header .col-edit{width:26px;height:26px;margin-left:auto;opacity:0;transition:opacity .12s}
-.col>header .badge+.col-edit{margin-left:0}
-.col:hover>header .col-edit,.col-edit:focus-visible{opacity:1}
-@media (hover:none){.col>header .col-edit{opacity:.7}}
-.col>header .col-edit svg{width:16px;height:16px}
+
 .tb-cols{padding:6px 12px;font-size:13.5px}
 .st-row{display:flex;align-items:center;gap:6px;margin-top:8px}
 .st-row input[type=text]{flex:1;min-width:0;padding:6px 8px}
@@ -320,23 +312,15 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
 .im-ok{color:var(--ok);font-size:13.5px;margin:10px 0 0}
 .sales-head .seg{align-self:center}
 /* ---------- Archief ---------- */
-.col>header .col-arch{width:26px;height:26px;margin-left:auto;color:var(--muted)}
-.col>header .col-arch+.col-edit{margin-left:0}
-.col>header .col-arch svg{width:16px;height:16px}
-.col>header .badge~.col-arch{margin-left:0}
-.d-arch{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;font-size:13px}
-.d-arch svg{width:15px;height:15px}
+
 .arch-bar{display:flex;gap:8px;margin:0 0 6px}
 .arch-bar .search{flex:1}
 .task.arch{align-items:center}
 .task.arch .restore{padding:5px 10px;font-size:13px;flex:none}
 .empty .small{color:var(--faint)}
 /* ---------- Kolommen verbergen / kolomtabs ---------- */
-.col>header .badge,.col>header .col-arch,.col>header .col-edit,.col>header .col-hide{margin-left:0}
-.col>header .col-hide{width:26px;height:26px;opacity:0;transition:opacity .12s}
-.col>header .col-hide svg{width:16px;height:16px}
-.col:hover>header .col-hide,.col-hide:focus-visible{opacity:1}
-@media (hover:none){.col>header .col-hide{opacity:.7}}
+.col>header .badge{margin-left:0}
+
 .board-bar{display:flex;flex-direction:column;gap:8px}
 .board-bar:empty{display:none}
 .col-tabs{display:none}
@@ -399,7 +383,7 @@ table.im-weeks td:nth-child(2){color:var(--muted)}
   #toast{width:calc(100vw - 24px);justify-content:space-between}
   .sales-actions::-webkit-scrollbar{display:none}
   .sales-actions>*{flex:none}
-  table.sales.grouped th.t-date,table.sales.grouped td.c-date,table.sales.grouped tfoot td.t-date{display:none}
+  table.sales.grouped th.t-date,table.sales.grouped tfoot td.t-date{display:none}
   table.sales .cell{min-width:104px;padding:10px 8px}
   table.sales .cell.t-money,table.sales .cell.t-number{min-width:92px}
   dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 24px)}
@@ -442,14 +426,6 @@ table.sales .cell.t-format{display:flex;flex-wrap:wrap;gap:4px;align-items:cente
 .nav-item.is-arch{opacity:.62}
 .nav-item.is-fin .nm{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
 .nav-item.is-fin .cnt svg{width:13px;height:13px;color:var(--ok)}
-.fin-btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px 0 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .12s}
-.fin-btn[hidden]{display:none}
-.fin-btn svg{width:16px;height:16px;color:var(--ok)}
-.fin-btn:hover{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
-.fin-btn:active{transform:scale(.96)}
-.fin-btn.on{background:var(--ok);border-color:var(--ok);color:#fff}
-.fin-btn.on svg{color:#fff}
-@media (max-width:860px){.fin-btn{width:34px;height:34px;padding:0;justify-content:center}.fin-btn span{display:none}.fin-btn svg{width:18px;height:18px}}
 .nav-year{display:flex;align-items:center;gap:6px;width:100%;padding:7px 10px;border:0;background:none;color:var(--text);font:inherit;font-size:14px;font-weight:650;cursor:pointer;border-radius:10px;text-align:left}
 .nav-year:hover{background:var(--hover)}
 .nav-year svg{width:14px;height:14px;flex:none;color:var(--muted);transition:transform .2s var(--spring,ease)}
@@ -746,11 +722,6 @@ table.sales tfoot td{background:var(--group)}
 }
 
 /* verbergen/beheren verschijnen pas bij hover (computer); archiveren blijft altijd zichtbaar; op touch alles zichtbaar */
-@media (hover:hover){
-  .col>header .col-hide,.col>header .col-edit{display:none}
-  .col:hover>header .col-hide,.col:hover>header .col-edit,
-  .col>header:focus-within .col-hide,.col>header:focus-within .col-edit{display:inline-grid;opacity:1}
-}
 
 /* afwerking */
 .nav-item .cnt{white-space:nowrap;flex:none}
@@ -811,7 +782,7 @@ body{background:var(--wallpaper),var(--bg);background-attachment:fixed}
 #app{background:transparent}
 
 /* gedeeld glasmateriaal */
-#side,.toolbar-glass,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn:not(.primary):not(.danger),.g-pill{
+#side,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn:not(.primary):not(.danger){
   -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
 
 /* ---- Zijbalk: zwevend glazen paneel ---- */
@@ -993,8 +964,8 @@ img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
   html,body{overscroll-behavior:none}
   .card{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   /* drukfeedback zoals UIKit: meteen bij aanraken, terugveren bij loslaten */
-  .btn,.icon-btn,.nav-item,.nav-year,.col-tabs button,.fin-btn,.seg button,#fab{transition:transform .28s var(--spring),background-color .2s,color .2s,opacity .2s}
-  .btn:active,.icon-btn:active,.col-tabs button:active,.seg button:active,.fin-btn:active{transform:scale(.95);transition-duration:.08s}
+  .btn,.icon-btn,.nav-item,.nav-year,.col-tabs button,.seg button,#fab{transition:transform .28s var(--spring),background-color .2s,color .2s,opacity .2s}
+  .btn:active,.icon-btn:active,.col-tabs button:active,.seg button:active{transform:scale(.95);transition-duration:.08s}
   .nav-item:active,.nav-year:active{transform:scale(.98);background:var(--hover);transition-duration:.08s}
   #fab:active{transform:scale(.9);transition-duration:.08s}
   .card{transition:transform .3s var(--spring),box-shadow .2s}
@@ -1075,16 +1046,12 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .col-add-top input{background:var(--card,var(--panel))!important;color:var(--text)!important;border:1px solid color-mix(in srgb,var(--c,var(--accent)) 45%,var(--line))!important;border-radius:12px;box-shadow:var(--shadow-card);animation:qaIn .3s var(--spring)}
 @media (max-width:860px){ .col>header .col-plus{width:34px;height:34px} .col>header .col-plus svg{width:20px;height:20px} }
 
-.col-tools{display:contents}
 .col-right{display:flex;align-items:center;gap:4px;flex:none}
 /* desktop: extra kolomknoppen verschijnen bij hover óver de titel, zodat de volledige naam zichtbaar blijft en niets verspringt */
 @media (hover:hover) and (pointer:fine){
   .col>header{position:relative}
   .col>header .col-right{position:relative}
-  .col>header .col-tools{display:flex;align-items:center;gap:2px;position:absolute;top:0;bottom:0;right:100%;padding-left:22px;
-    background:linear-gradient(to right,transparent,color-mix(in srgb,var(--bg) 92%,var(--text)) 20px);border-radius:10px;opacity:0;pointer-events:none;transition:opacity .15s}
-  .col:hover>header .col-tools,.col>header .col-tools:focus-within{opacity:1;pointer-events:auto}
-  .col>header .col-tools .icon-btn{opacity:1!important;margin:0}
+
   .col>header{gap:4px}
   .col>header .count{margin-left:2px}
   .col>header .col-plus{margin-left:0}
@@ -1121,7 +1088,7 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .pg-bar .btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
 .pg-bar .btn svg{width:16px;height:16px}
 .pg-bar input[type=search]{flex:1 1 280px;max-width:460px}
-.pg-h{margin:22px 0 10px;font-size:13px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+
 .pg-empty{display:grid;gap:6px;padding:28px 22px;border-radius:16px;background:var(--card,var(--panel));box-shadow:var(--shadow-card);color:var(--muted);max-width:640px}
 .pg-empty b{color:var(--text);font-size:16px}
 .pg-note{margin:10px 2px 0}
@@ -1157,55 +1124,25 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .pg-table tbody tr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .pg-table tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:0}
 .pg-table .tel{color:var(--accent);text-decoration:none;font-variant-numeric:tabular-nums}
-.yr-table tr.none td{color:var(--faint)}
-.yr-table tr.cur td:first-child{font-weight:650}
-.yr-table td.ok{color:var(--ok);font-weight:650}
+
 .sales-stat small{font-size:12px;font-weight:500}
 .sales-stat .late{color:var(--danger);font-size:12px;font-weight:650}
 /* staafgrafiek: één reeks, dunne afgeronde staven, 2px tussenruimte, rustige hulplijnen */
-.bchart{position:relative;padding:6px 0 0 44px}
-.bc-grid{position:absolute;inset:6px 0 22px 44px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
-.bc-grid span{position:relative;border-top:1px dashed color-mix(in srgb,var(--text) 10%,transparent)}
-.bc-grid span:last-child{border-top:1px solid color-mix(in srgb,var(--text) 22%,transparent)}
-.bc-grid span::before{content:attr(data-v);position:absolute;right:calc(100% + 6px);top:-8px;font-size:11px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-.bc-bars{position:relative;display:flex;align-items:stretch;gap:2px;height:calc(var(--h) + 22px)}
-.bc-col{flex:1;min-width:0;display:flex;flex-direction:column;outline:none}
-.bc-slot{position:relative;height:var(--h);display:flex;align-items:flex-end;justify-content:center}
-.bc-bar{display:block;width:min(70%,34px);min-height:0;background:var(--accent);border-radius:4px 4px 0 0;transition:filter .15s}
-.bc-bar[style*="height:0%"]{min-height:0}
-.bc-col:hover .bc-bar,.bc-col:focus-visible .bc-bar{filter:brightness(.88)}
-.bc-col:focus-visible .bc-slot{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent);border-radius:6px}
-.bc-target{position:absolute;left:8%;right:8%;height:0;border-top:2px solid var(--text);opacity:.55;z-index:1}
-.bc-lab{height:22px;line-height:22px;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden}
+
 .legend{display:inline-flex;gap:14px;margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.lg-bar{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--accent)}
-.lg-tgt{display:inline-block;width:14px;border-top:2px solid var(--text);opacity:.55}
+
 /* horizontale staven met label en waarde */
-.hbars{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.hbars li{display:grid;grid-template-columns:minmax(90px,38%) 1fr auto;align-items:center;gap:10px;font-size:14px}
-.hb-l{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hb-l a{color:inherit;text-decoration:none}
-.hb-l a:hover{color:var(--accent);text-decoration:underline}
-.hb-l .dot{width:9px;height:9px;border-radius:50%;flex:none}
-.hb-t{height:10px;border-radius:999px;background:color-mix(in srgb,var(--text) 7%,transparent);overflow:hidden}
-.hb-t i{display:block;height:100%;border-radius:999px;background:var(--accent)}
-.hb-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.hb-v small{margin-left:6px;color:var(--muted);font-size:12px}
-#chartTip{position:fixed;z-index:120;max-width:280px;padding:6px 10px;border-radius:9px;background:var(--text);color:var(--bg);font-size:12.5px;font-weight:550;line-height:1.35;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.18)}
-#chartTip[hidden]{display:none}
+
 @media (max-width:860px){
   .cl-form{grid-template-columns:1fr}
   .pg-table .hide-m{display:none}
   .pg-table td,.pg-table th{padding:10px 8px}
-  .bchart{padding-left:38px}.bc-grid{left:38px}
-  .hbars li{grid-template-columns:minmax(80px,34%) 1fr auto}
+
   .pg-bar .seg{overflow-x:auto;max-width:100%;scrollbar-width:none}
   .pg-bar .seg::-webkit-scrollbar{display:none}
   .legend{display:none}
 }
-@media (prefers-reduced-motion:reduce){.bc-bar{transition:none}}
-@media (forced-colors:active){.bc-bar,.hb-t i,.lg-bar{background:CanvasText}}
 
 .cl-form{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 .cl-form input,.cl-form textarea{width:100%;min-width:0;box-sizing:border-box}
@@ -1423,7 +1360,7 @@ a.btn:not(.primary):not(.danger){color:var(--text)}
   }
 }
 body,.lock{background:var(--bg)!important}
-#side,.toolbar-glass,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn,.g-pill,#banner,.main-head,.main-head.scrolled,#tabBar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#side,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn,#banner,.main-head,.main-head.scrolled,#tabBar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 
 /* ---- zijbalk: vlak grijs, tegen de rand ---- */
 #side{background:var(--side)!important;border:0!important;border-right:1px solid var(--hairline)!important;box-shadow:none!important;padding:18px 10px 12px}
@@ -1559,8 +1496,8 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
 .col-add input{color:var(--faint)!important}
 .col-empty{color:var(--faint);opacity:.7}
 @media (hover:hover) and (pointer:fine){
-  .col>header .badge,.col>header .col-arch,.col>header .col-plus{opacity:0;transition:opacity .15s}
-  .col:hover>header .badge,.col:hover>header .col-arch,.col:hover>header .col-plus,.col>header :focus-visible{opacity:1}
+  .col>header .badge,.col>header .col-plus{opacity:0;transition:opacity .15s}
+  .col:hover>header .badge,.col:hover>header .col-plus,.col>header :focus-visible{opacity:1}
   .col-add input{opacity:0;transition:opacity .15s}
   .col:hover .col-add input,.col-add input:focus,.col-add input:not(:placeholder-shown){opacity:1}
   /* zijbalk: + bij Projecten/Verkopen pas bij hover */
@@ -1572,7 +1509,6 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
   #banner>span{flex:1 1 100%}
   .col-tabs button{background:transparent!important;box-shadow:none!important;color:var(--muted)}
   .col-tabs button.on{background:var(--fill)!important;box-shadow:none!important;color:var(--text)}
-  .col>header .col-hide,.col>header .col-edit{color:var(--faint)!important;opacity:.7}
   .col-add input{background:transparent!important}
 }
 
@@ -1670,7 +1606,6 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 <!-- ============ App ============ -->
 <div id="titlebar" aria-hidden="true"><img src="icon.svg" alt=""><span id="tbTitle">Taken</span></div>
 <div id="ctxMenu" role="menu" hidden></div>
-<div id="chartTip" role="tooltip" hidden></div>
 <datalist id="clientNames"></datalist>
 <div id="app" hidden>
   <aside id="side">
@@ -1697,7 +1632,6 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
         <button id="menuBtn" class="icon-btn only-mobile" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <h2 id="viewTitle"></h2>
         <span class="grow"></span>
-        <button id="finishProject" type="button" class="fin-btn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Afwerken</span></button>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
       <textarea id="projNotes" class="proj-notes" rows="1" placeholder="Klik hier om notities toe te voegen…" aria-label="Notities bij dit project" hidden></textarea>
@@ -1814,7 +1748,6 @@ const I = {
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>',
   upcoming:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/></svg>',
   eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
-  eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10.8 10.8 0 0112 5c6.5 0 10 7 10 7a17.6 17.6 0 01-2.6 3.6M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 004.2 4.2M3 3l18 18"/></svg>',
   filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
   expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
@@ -1866,8 +1799,6 @@ function dateLong(s) {
   const d = parseYmd(s);
   return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
-function daysInMonth(y, m) { return new Date(y, m+1, 0).getDate(); }
-
 /* ---------------- Crypto ---------------- */
 const te = new TextEncoder(), td = new TextDecoder();
 function b64(buf) {
@@ -2699,9 +2630,6 @@ function renderHead() {
   notes.hidden = !pr;
   if (pr && document.activeElement !== notes) { notes.value = pr.notes || ''; notes.dataset.pid = pr.id; autosize(notes); }
   $('#editProject').hidden = !isP;
-  const fp = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
-  const fb = $('#finishProject'); fb.hidden = true;
-  if (fp) { fb.classList.toggle('on', !!fp.finished); fb.title = fp.finished ? 'Project heropenen' : 'Project afwerken'; fb.setAttribute('aria-label', fb.title); fb.querySelector('span').textContent = fp.finished ? 'Afgewerkt' : 'Afwerken'; }
   const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
   const ab = $('#archBar'); ab.hidden = !arch?.archived && !arch?.finished;
   if (!arch?.archived && arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button><button type="button" class="btn" data-finarch>Archiveren</button>`;
@@ -4632,7 +4560,6 @@ $('#banner').addEventListener('click', e => {
   if (e.target.id === 'bnLater') { try { localStorage.setItem('taken.banner.later', String(now() + 7 * 864e5)); } catch {} renderBanner(); }
 });
 $('#addProject').onclick = () => openProjectDialog(null);
-$('#finishProject').onclick = () => { const p = data.projects.find(x => x.id === view.id); if (p) finishProject(p, !p.finished); };   // enkel nog via ⋯ (knop blijft verborgen)
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#projNotes').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === e.target.dataset.pid); if (!p) return;
@@ -5639,19 +5566,6 @@ function clientHtml() {
 }
 
 /* ---- Grafiekjes (één reeks, één kleur; waarde via hover/tik en in de tabel) ---- */
-function barChart(items, {height = 150, money = true, labelEvery = 1, target} = {}) {
-  const max = Math.max(1, ...items.map(i => Math.max(i.v, target ? (i.t || 0) : 0)));
-  const fmtV = v => money ? eur(v) : String(v);
-  return `<div class="bchart" style="--h:${height}px">
-    <div class="bc-grid"><span data-v="${esc(money ? eurShort(max) || '€ 0' : max)}"></span><span data-v="${esc(money ? eurShort(max / 2) || '' : Math.round(max / 2))}"></span><span data-v="0"></span></div>
-    <div class="bc-bars">${items.map((i, k) => `<div class="bc-col" data-tip="${esc(i.tip || `${i.label}: ${fmtV(i.v)}`)}" tabindex="0">
-      <div class="bc-slot">${target && i.t ? `<i class="bc-target" style="bottom:${(i.t / max) * 100}%"></i>` : ''}<i class="bc-bar ${i.v < 0 ? 'neg' : ''}" style="height:${Math.max(0, i.v) / max * 100}%"></i></div>
-      <span class="bc-lab">${k % labelEvery === 0 ? esc(i.short ?? i.label) : ''}</span></div>`).join('')}</div></div>`;
-}
-function hbarList(items, {money = true, extra} = {}) {
-  const max = Math.max(1, ...items.map(i => Math.abs(i.v)));
-  return `<ul class="hbars">${items.map(i => `<li data-tip="${esc(i.tip || '')}"><span class="hb-l">${i.dot ? `<span class="dot" style="background:${i.dot}"></span>` : ''}${i.html || esc(i.label)}</span><span class="hb-t"><i style="width:${Math.max(0, i.v) / max * 100}%"></i></span><span class="hb-v">${money ? eur(i.v) : i.v}${i.sub ? `<small>${esc(i.sub)}</small>` : ''}</span></li>`).join('')}</ul>`;
-}
 
 /* ================= Agenda: drukdata en deadlines ================= */
 const EV_TYPES = [['druk', 'Drukdatum'], ['deadline', 'Deadline'], ['verschijning', 'Verschijning'], ['anders', 'Anders']];
@@ -5843,19 +5757,6 @@ pv.addEventListener('focusout', e => {
   setTimeout(() => { if (view.type === 'client' && !pv.contains(document.activeElement)) renderPage(true); }, 0);
 });
 // hover-/tiklabel voor de grafieken
-const chartTip = $('#chartTip');
-function showTip(el) {
-  const txt = el?.dataset.tip; if (!txt) { chartTip.hidden = true; return; }
-  chartTip.textContent = txt; chartTip.hidden = false;
-  const rc = el.getBoundingClientRect(), w = chartTip.offsetWidth, h = chartTip.offsetHeight;
-  chartTip.style.left = Math.max(8, Math.min(rc.left + rc.width / 2 - w / 2, innerWidth - w - 8)) + 'px';
-  chartTip.style.top = Math.max(8, rc.top - h - 8) + 'px';
-}
-pv.addEventListener('pointerover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
-pv.addEventListener('pointerout', e => { if (!e.relatedTarget?.closest?.('[data-tip]')) chartTip.hidden = true; });
-pv.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
-pv.addEventListener('focusout', () => { chartTip.hidden = true; });
-$('#main').addEventListener('scroll', () => { chartTip.hidden = true; }, {passive:true});
 
 /* ---------------- Timers: auto-lock, periodieke sync, datumwissel ---------------- */
 let lastAct = now(), timersStarted = false, lastDay = today(), lastMin = -1;
