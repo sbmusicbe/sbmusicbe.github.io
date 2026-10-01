@@ -1441,7 +1441,6 @@ body,.lock{background:var(--bg)!important}
 .nav-item .cnt{color:var(--faint);font-size:12.5px;font-weight:500}
 .nav-item[data-view=all] .ico{color:#3b82f6} .nav-item[data-view=archive] .ico{color:#34a853}
 .nav-item[data-view=agenda] .ico{color:#e5484d} .nav-item[data-view=clients] .ico{color:#12a594}
-.nav-item[data-view=stats] .ico{color:#f5a524} .nav-item[data-view=year] .ico{color:#8e4ec6}
 .nav-item .ico svg{stroke-width:2}
 .nav-item .dot{width:9px;height:9px}
 .side-section{font-size:12px;font-weight:700;color:var(--muted);padding:20px 9px 5px;letter-spacing:0;text-transform:none}
@@ -1821,9 +1820,7 @@ const I = {
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
   clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.1 4 1.6 4.5 4.3"/></svg>',
-  stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="9" width="3" height="8" rx="1"/></svg>',
  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12.5 13.5h3.5v3.5h-3.5z" fill="currentColor" stroke="none"/></svg>',
-  year:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M16 14h.01M8 17h2M12 17h2"/></svg>',
   phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></svg>',
   copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg>',
   mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>',
@@ -2282,7 +2279,7 @@ function applyLaunch(url) {
   const q = new URL(url, location.href).searchParams, v = q.get('view');
   if (location.search) history.replaceState(null, '', location.pathname);
   if (v === 'sales') { const pg = sortedSalesPages().find(x => !x.archived) || sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); }
-  else if (['today', 'all', 'upcoming', 'inbox', 'clients', 'stats', 'year'].includes(v)) setView({type:v});
+  else if (['today', 'all', 'upcoming', 'inbox', 'clients'].includes(v)) setView({type:v});
   if (q.get('new')) {
     if (view.type === 'sales' || view.type === 'archive') setView({type:'all'});
     setTimeout(() => { document.body.classList.add('qa-open'); $('#qaInput').focus(); }, 60);
@@ -2340,8 +2337,6 @@ function viewTitle() {
   if (view.type === 'project') return proj(view.id).name;
   if (view.type === 'clients') return 'Klanten';
   if (view.type === 'client') { const c = clientById(view.id); return c ? clientLabel(c) : 'Klant'; }
-  if (view.type === 'stats') return 'Statistieken';
-  if (view.type === 'year') return 'Jaaroverzicht';
   if (view.type === 'agenda') return 'Agenda';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
@@ -2659,7 +2654,7 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
     + archList('sales', pages.filter(p => p.archived), salesItem);
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['stats', 'Statistieken', I.stats, ''], ['year', 'Jaaroverzicht', I.year, '']]
+  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || '']]
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   renderSync();
 }
@@ -2739,7 +2734,7 @@ function renderTabBar() {
   const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : 'all';
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
-  $('#fab').hidden = view.type === 'archive' || view.type === 'stats' || view.type === 'year';
+  $('#fab').hidden = view.type === 'archive';
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
   if (view.type === 'sales' || view.type === 'archive' || isPageView()) document.body.classList.remove('qa-open');
 }
@@ -4886,7 +4881,7 @@ document.addEventListener('keydown', e => {
   }
   const mod = e.ctrlKey || e.metaKey;
   if (mod && !e.altKey && !e.shiftKey) {
-    const views = {'1':'all', '2':'clients', '3':'stats', '4':'year'};
+    const views = {'1':'all', '2':'clients'};
     if (views[e.key]) { e.preventDefault(); setView({type:views[e.key]}); return; }
     if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages().find(x => !x.archived); if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
@@ -4907,7 +4902,7 @@ function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbS
 function openShortcutsDialog() {
   const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
   const rows = [['N of Q', 'Nieuwe kaart'], [k + ' K', 'Nieuwe kaart (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
-    [k + ' 1 … 4', 'Alle taken · Klanten · Statistieken · Jaaroverzicht'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
+    [k + ' 1 … 2', 'Alle taken · Klanten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
     ['Delete', 'Open kaart verwijderen'], ['Esc', 'Sluiten'], ['Rechtsklik', 'Snelmenu op kaarten, projecten en pagina’s'], ['?', 'Deze lijst']];
   showDialog(`<h3>Sneltoetsen</h3><div class="kbd-list">${rows.map(([a, b]) => `<div><span>${esc(b)}</span><span>${a.split(' ').map(x => x === '…' || x === 'of' ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="kbOk">Sluiten</button></div>`, d => { $('#kbOk', d).onclick = () => dlg.close(); });
@@ -4989,7 +4984,7 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['clients', 'client', 'stats', 'year', 'agenda'];
+const PAGE_VIEWS = ['clients', 'client', 'agenda'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
 const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const clientById = id => data.clients.find(c => c.id === id);
@@ -5178,7 +5173,7 @@ function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'stats' ? statsHtml() : view.type === 'agenda' ? agendaHtml() : yearHtml();
+  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : agendaHtml();
   if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
   if (view.type === 'clients') applyClientFilter();
 }
@@ -5619,136 +5614,6 @@ function hbarList(items, {money = true, extra} = {}) {
   return `<ul class="hbars">${items.map(i => `<li data-tip="${esc(i.tip || '')}"><span class="hb-l">${i.dot ? `<span class="dot" style="background:${i.dot}"></span>` : ''}${i.html || esc(i.label)}</span><span class="hb-t"><i style="width:${Math.max(0, i.v) / max * 100}%"></i></span><span class="hb-v">${money ? eur(i.v) : i.v}${i.sub ? `<small>${esc(i.sub)}</small>` : ''}</span></li>`).join('')}</ul>`;
 }
 
-/* ---- Statistieken ---- */
-const STATS_PERIODS = [['week', 'Deze week'], ['lastweek', 'Vorige week'], ['month', 'Deze maand'], ['lastmonth', 'Vorige maand'], ['year', 'Dit jaar'], ['all', 'Alles']];
-let statsPeriod = 'month';
-try { statsPeriod = localStorage.getItem('taken.statsPeriod') || 'month'; } catch {}
-function statsRange(k, sales) {
-  const td = parseYmd(today()), dow = (td.getDay() + 6) % 7;
-  const mon = new Date(td); mon.setDate(td.getDate() - dow);
-  const m0 = new Date(td.getFullYear(), td.getMonth(), 1);
-  if (k === 'week') return {from:ymd(mon), to:addDays(ymd(mon), 6), unit:'day'};
-  if (k === 'lastweek') return {from:addDays(ymd(mon), -7), to:addDays(ymd(mon), -1), unit:'day'};
-  if (k === 'month') return {from:ymd(m0), to:ymd(new Date(td.getFullYear(), td.getMonth() + 1, 0)), unit:'day'};
-  if (k === 'lastmonth') return {from:ymd(new Date(td.getFullYear(), td.getMonth() - 1, 1)), to:ymd(new Date(td.getFullYear(), td.getMonth(), 0)), unit:'day'};
-  if (k === 'year') return {from:`${td.getFullYear()}-01-01`, to:`${td.getFullYear()}-12-31`, unit:'month'};
-  const first = [...sales.map(x => x.date), ...data.tasks.map(t => tsYmd(t.createdAt))].filter(Boolean).sort()[0] || today();
-  return {from:first.slice(0, 7) + '-01', to:today(), unit:'month'};
-}
-function statsHtml() {
-  const sales = allSales(), R = statsRange(statsPeriod, sales), inR = d => d && d >= R.from && d <= R.to;
-  const created = data.tasks.filter(t => inR(tsYmd(t.createdAt)));
-  const finished = data.tasks.filter(t => t.done && inR(tsYmd(t.doneAt)));
-  const doneStages = stages().filter(st => st.done);
-  const pos = finished.filter(t => t.stage === 'positive').length, neg = finished.filter(t => t.stage === 'negative').length;
-  const hasPN = !!(stageById('positive') && stageById('negative'));
-  const lead = finished.filter(t => t.createdAt && t.doneAt).map(t => (t.doneAt - t.createdAt) / 86400000);
-  const avgLead = lead.length ? lead.reduce((a, b) => a + b, 0) / lead.length : null;
-  const open = data.tasks.filter(t => !t.done && !t.archived && !projArchived(t.projectId));
-  const late = open.filter(t => t.due && t.due < today()).length;
-  const S = sales.filter(x => inR(x.date));
-  const omzet = S.reduce((a, x) => a + x.amount, 0);
-  const sold = S.filter(x => x.amount > 0 && !x.formats.includes('Annulatie'));
-  const canc = S.filter(x => x.amount < 0 || x.formats.includes('Annulatie'));
-  // omzet per dag of per maand
-  const buckets = [];
-  if (R.unit === 'day') for (let d = R.from; d <= R.to; d = addDays(d, 1)) { const dt = parseYmd(d); buckets.push({key:d, label:dayLabel(d), short:String(dt.getDate()), weekend:dt.getDay() % 6 === 0}); }
-  else { const [y0, m0] = R.from.split('-').map(Number), [y1, m1] = R.to.split('-').map(Number); for (let y = y0, m = m0; y < y1 || (y === y1 && m <= m1); m === 12 ? (y++, m = 1) : m++) { const k = `${y}-${String(m).padStart(2, '0')}`; buckets.push({key:k, label:`${cap(MONTHS_LONG[m - 1])} ${y}`, short:MONTHS[m - 1]}); } }
-  const perB = new Map(buckets.map(b => [b.key, 0])), cntB = new Map(buckets.map(b => [b.key, 0]));
-  for (const x of S) { const k = R.unit === 'day' ? x.date : x.date.slice(0, 7); if (perB.has(k)) { perB.set(k, perB.get(k) + x.amount); if (x.amount > 0) cntB.set(k, cntB.get(k) + 1); } }
-  const series = buckets.filter(b => !(b.weekend && !perB.get(b.key))).map(b => ({label:b.label, short:b.short, v:perB.get(b.key), tip:`${b.label}: ${eur(perB.get(b.key))} · ${cntB.get(b.key)} ${cntB.get(b.key) === 1 ? 'verkoop' : 'verkopen'}`}));
-  // per formaat (bij meerdere formaten op één regel wordt het bedrag gelijk verdeeld)
-  const perF = new Map();
-  for (const x of S) { const fs = x.formats.length ? x.formats : ['Geen formaat']; for (const f of fs) { const o = perF.get(f) || {v:0, n:0}; o.v += x.amount / fs.length; o.n += 1; perF.set(f, o); } }
-  const fItems = [...perF].sort((a, b) => b[1].v - a[1].v).map(([f, o]) => ({label:f, v:Math.round(o.v * 100) / 100, sub:`${o.n}×`, tip:`${f}: ${eur(o.v)} · ${o.n} keer`}));
-  // per weekdag
-  const wd = [1, 2, 3, 4, 5, 6, 0].map(d => ({d, v:0, n:0}));
-  for (const x of S) { const o = wd.find(w => w.d === parseYmd(x.date).getDay()); o.v += x.amount; if (x.amount > 0) o.n++; }
-  const wItems = wd.filter(w => w.d % 6 !== 0 || w.n).map(w => ({label:cap(DAYS[w.d]), v:w.v, sub:`${w.n}×`, tip:`${cap(DAYS[w.d])}: ${eur(w.v)} · ${w.n} verkopen`}));
-  // topklanten
-  const perC = new Map();
-  for (const x of S) { if (!x.clientName) continue; const k = x.clientId || 'n:' + normName(x.clientName); const o = perC.get(k) || {v:0, n:0, name:x.clientId ? clientLabel(clientById(x.clientId)) : x.clientName, id:x.clientId}; o.v += x.amount; o.n++; perC.set(k, o); }
-  const cItems = [...perC.values()].sort((a, b) => b.v - a.v).slice(0, 8).map(o => ({html:o.id ? `<a href="#" data-openclient="${o.id}">${esc(o.name)}</a>` : esc(o.name), v:o.v, sub:`${o.n}×`, tip:`${o.name}: ${eur(o.v)}`}));
-  const rangeTxt = `${dayLabel(R.from)} – ${dayLabel(R.to > today() && statsPeriod !== 'lastweek' && statsPeriod !== 'lastmonth' ? R.to : R.to)}`;
-  return `
-    <div class="pg-bar">
-      <div class="seg" role="group" aria-label="Periode">${STATS_PERIODS.map(([k, l]) => `<button type="button" data-period="${k}" class="${statsPeriod === k ? 'on' : ''}">${l}</button>`).join('')}</div>
-      <span class="grow"></span><span class="muted small">${rangeTxt}</span>
-    </div>
-    <h3 class="pg-h">Verkoop</h3>
-    <div class="sales-head">
-      <div class="sales-stat"><span>Omzet</span><b>${eur(omzet)}</b></div>
-      <div class="sales-stat"><span>Verkopen</span><b>${sold.length}</b></div>
-      <div class="sales-stat"><span>Gemiddeld per verkoop</span><b>${sold.length ? eur(sold.reduce((a, x) => a + x.amount, 0) / sold.length) : '—'}</b></div>
-      <div class="sales-stat"><span>Annulaties</span><b>${canc.length}${canc.length ? ` <small class="muted">${eur(canc.reduce((a, x) => a + Math.min(0, x.amount), 0))}</small>` : ''}</b></div>
-    </div>
-    <section class="pg-card"><h3>Omzet per ${R.unit === 'day' ? 'dag' : 'maand'}</h3>${S.length ? barChart(series, {labelEvery:series.length > 16 ? 2 : 1}) : '<p class="muted small">Geen verkopen in deze periode.</p>'}</section>
-    <div class="cl-grid">
-      <section class="pg-card"><h3>Per formaat</h3>${fItems.length ? hbarList(fItems) : '<p class="muted small">—</p>'}${S.some(x => x.formats.length > 1) ? '<p class="muted small">Regels met meerdere formaten tellen voor elk formaat; het bedrag wordt gelijk verdeeld.</p>' : ''}</section>
-      <section class="pg-card"><h3>Per weekdag</h3>${S.length ? hbarList(wItems) : '<p class="muted small">—</p>'}</section>
-      <section class="pg-card"><h3>Topklanten</h3>${cItems.length ? hbarList(cItems) : '<p class="muted small">Vul de kolom “Klant” in op je verkooppagina’s om je topklanten te zien.</p>'}</section>
-    </div>
-    <h3 class="pg-h">Opvolging</h3>
-    <div class="sales-head">
-      <div class="sales-stat"><span>Nieuwe kaarten</span><b>${created.length}</b></div>
-      <div class="sales-stat"><span>Afgewerkt</span><b>${finished.length}</b></div>
-      ${hasPN ? `<div class="sales-stat"><span>Slaagkans <small class="muted">(${esc(stageById('positive').label)} ÷ afgewerkt)</small></span><b>${pos + neg ? Math.round(pos / (pos + neg) * 100) + '%' : '—'}</b></div>` : ''}
-      <div class="sales-stat"><span>Gem. doorlooptijd</span><b>${avgLead === null ? '—' : avgLead < 1 ? '< 1 dag' : Math.round(avgLead) + (Math.round(avgLead) === 1 ? ' dag' : ' dagen')}</b></div>
-      <div class="sales-stat"><span>Nu open</span><b>${open.length}${late ? ` <small class="late">${late} te laat</small>` : ''}</b></div>
-    </div>
-    ${finished.length ? `<section class="pg-card"><h3>Afgewerkt per uitkomst</h3>${hbarList(doneStages.map(st => ({label:st.label, dot:st.color, v:finished.filter(t => t.stage === st.id).length, tip:`${st.label}: ${finished.filter(t => t.stage === st.id).length}`})), {money:false})}</section>` : ''}`;
-}
-
-/* ---- Jaaroverzicht ---- */
-let yearSel = new Date().getFullYear();
-function yearRows(y) {
-  const money = salesCols().find(c => c.type === 'money');
-  return Array.from({length:12}, (_, i) => {
-    const m = `${y}-${String(i + 1).padStart(2, '0')}`;
-    const pages = data.salesPages.filter(pg => pg.month === m);
-    if (!pages.length) return {m, i, none:true};
-    const total = pages.reduce((a, pg) => a + (money ? salesTotals(pg.id).per[money.id] || 0 : 0), 0);
-    const target = pages.reduce((a, pg) => a + (toNum(pg.target) || 0), 0) || null;
-    const pay = salesPay(pages[0], total);
-    return {m, i, pages, total, target, pct:target ? total / target * 100 : null, days:pay?.days, com:pay?.commission || 0, bonus:pay?.bonus || 0, gross:pay?.sum || 0, net:pay ? netOf(pay.sum) : 0};
-  });
-}
-function yearHtml() {
-  const years = [...new Set([new Date().getFullYear(), ...data.salesPages.map(pg => +String(pg.month || '').slice(0, 4)).filter(Boolean)])].sort((a, b) => b - a);
-  if (!years.includes(yearSel)) yearSel = years[0];
-  const rows = yearRows(yearSel), has = rows.filter(r => !r.none);
-  const sum = k => has.reduce((a, r) => a + (r[k] || 0), 0);
-  const tgt = has.filter(r => r.target), tPct = tgt.length ? tgt.reduce((a, r) => a + r.total, 0) / tgt.reduce((a, r) => a + r.target, 0) * 100 : null;
-  const best = has.length ? has.reduce((a, r) => r.total > a.total ? r : a) : null;
-  const curM = today().slice(0, 7);
-  const items = rows.map(r => ({label:cap(MONTHS_LONG[r.i]), short:MONTHS[r.i], v:r.none ? 0 : r.total, t:r.target || 0,
-    tip:r.none ? `${cap(MONTHS_LONG[r.i])}: geen verkooppagina` : `${cap(MONTHS_LONG[r.i])}: ${eur(r.total)}${r.target ? ` · doel ${eur(r.target)} (${Math.round(r.pct)}%)` : ''} · commissie + bonus ${eur(r.gross)} bruto`}));
-  return `
-    <div class="pg-bar">
-      <div class="seg" role="group" aria-label="Jaar">${years.map(y => `<button type="button" data-year-sel="${y}" class="${y === yearSel ? 'on' : ''}">${y}</button>`).join('')}</div>
-    </div>
-    <div class="sales-head">
-      <div class="sales-stat"><span>Omzet ${yearSel}</span><b>${eur(sum('total'))}</b></div>
-      ${tPct !== null ? `<div class="sales-stat ${tPct >= 100 ? 'target hit' : 'target'}"><span>Doelstelling behaald</span><b>${Math.round(tPct)}%</b><i class="bar"><i style="width:${Math.min(100, tPct)}%"></i></i></div>` : ''}
-      <div class="sales-stat"><span>Gemiddeld per maand</span><b>${has.length ? eur(sum('total') / has.length) : '—'}</b></div>
-      <div class="sales-stat"><span>Beste maand</span><b>${best ? cap(MONTHS_LONG[best.i]) : '—'}</b></div>
-      <div class="sales-stat"><span>Commissie + bonus</span><b>${eur(sum('gross'))}<small class="muted"> bruto</small></b></div>
-      <div class="sales-stat"><span>± netto</span><b>${eur(sum('net'))}</b></div>
-    </div>
-    <section class="pg-card"><h3>Omzet per maand <span class="legend"><span><i class="lg-bar"></i>Omzet</span><span><i class="lg-tgt"></i>Doelstelling</span></span></h3>${barChart(items, {height:170, target:true})}</section>
-    <div class="table-wrap"><table class="pg-table yr-table">
-      <thead><tr><th>Maand</th><th class="num">Omzet</th><th class="num">Doel</th><th class="num">Behaald</th><th class="num hide-m">Werkdagen</th><th class="num">Commissie</th><th class="num">Bonus</th><th class="num">Bruto</th><th class="num">± Netto</th></tr></thead>
-      <tbody>${rows.map(r => r.none ? `<tr class="none"><td>${cap(MONTHS_LONG[r.i])}</td><td class="num" colspan="8">${r.m > curM ? '' : '<span class="muted">geen verkooppagina</span>'}</td></tr>`
-        : `<tr data-salespage="${r.pages[0].id}" tabindex="0" class="${r.m === curM ? 'cur' : ''}"><td>${cap(MONTHS_LONG[r.i])}${r.m === curM ? ' <small class="muted">lopend</small>' : ''}</td><td class="num"><b>${eur(r.total)}</b></td><td class="num">${r.target ? eur(r.target) : '—'}</td>
-          <td class="num ${r.pct >= 100 ? 'ok' : ''}">${r.pct === null ? '—' : Math.round(r.pct) + '%'}</td><td class="num hide-m">${r.days ?? '—'}</td>
-          <td class="num">${eur(r.com)}</td><td class="num">${eur(r.bonus)}</td><td class="num">${eur(r.gross)}</td><td class="num">${eur(r.net)}</td></tr>`).join('')}</tbody>
-      <tfoot><tr><td>Totaal</td><td class="num">${eur(sum('total'))}</td><td class="num">${tgt.length ? eur(sum('target')) : '—'}</td><td class="num">${tPct === null ? '—' : Math.round(tPct) + '%'}</td><td class="num hide-m">${sum('days') || '—'}</td>
-        <td class="num">${eur(sum('com'))}</td><td class="num">${eur(sum('bonus'))}</td><td class="num">${eur(sum('gross'))}</td><td class="num">${eur(sum('net'))}</td></tr></tfoot>
-    </table></div>
-    <p class="muted small pg-note">Commissie en bonus volgens de regeling op elke maandpagina; netto is een schatting (${pctFmt(RSZ * 100)} RSZ en ${pctFmt(payTax())} bedrijfsvoorheffing). Klik op een maand om de verkooppagina te openen.</p>`;
-}
-
-
 /* ================= Agenda: drukdata en deadlines ================= */
 const EV_TYPES = [['druk', 'Drukdatum'], ['deadline', 'Deadline'], ['verschijning', 'Verschijning'], ['anders', 'Anders']];
 const evTypeLabel = k => (EV_TYPES.find(x => x[0] === k) || EV_TYPES[0])[1];
@@ -5914,8 +5779,6 @@ pv.addEventListener('click', e => {
   const row = t.closest('tr[data-client]'); if (row) { setView({type:'client', id:row.dataset.client}); return; }
   const tk = t.closest('[data-task]'); if (tk) { openTask(tk.dataset.task); return; }
   const sp = t.closest('[data-salespage]'); if (sp) { setView({type:'sales', id:sp.dataset.salespage}); return; }
-  const per = t.closest('[data-period]'); if (per) { statsPeriod = per.dataset.period; try { localStorage.setItem('taken.statsPeriod', statsPeriod); } catch {} renderPage(true); return; }
-  const ys = t.closest('[data-year-sel]'); if (ys) { yearSel = +ys.dataset.yearSel; renderPage(true); return; }
 });
 pv.addEventListener('change', e => { if (e.target.id === 'clSort') { const [k, d] = e.target.value.split(':'); setClientSort(k, +d); return; } if (e.target.id === 'clEd') { clEdition = e.target.value; clLimit = 200; applyClientFilter(); } });
 pv.addEventListener('keydown', e => {
