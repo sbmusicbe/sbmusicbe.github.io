@@ -168,6 +168,7 @@
     border-top:1px solid var(--hairline);
   }
   .foot .copy{ font-size:12px; color:var(--text-secondary); }
+  .foot-links{ display:flex; flex-wrap:wrap; gap:12px 16px; }
   .foot-privacy{ font-size:12px; color:var(--text-secondary); text-decoration:underline; text-underline-offset:2px; }
   .foot-privacy:hover{ color:var(--text); }
 
@@ -261,6 +262,18 @@
   .modal-form select:focus,
   .modal-form textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(111,162,131,.25); }
   .modal-form textarea{ resize:vertical; min-height:90px; }
+  .modal-consent{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:13px;
+    line-height:1.5;
+    color:var(--text-secondary);
+    cursor:pointer;
+  }
+  .modal-consent input{ margin-top:3px; flex-shrink:0; width:16px; height:16px; accent-color:var(--accent); }
+  .modal-consent a{ color:var(--text); text-decoration:underline; text-underline-offset:2px; }
+  .modal-consent a:hover{ color:var(--accent); }
   .modal-submit{
     align-self:flex-start;
     margin-top:4px;
@@ -361,11 +374,14 @@
 
   <footer class="foot">
     <div class="copy mono">© 2026 SB — Allround DJ</div>
-    <a class="foot-privacy mono" href="privacy.html">Privacyverklaring</a>
+    <div class="foot-links">
+      <a class="foot-privacy mono" href="privacy.html">Privacyverklaring</a>
+      <a class="foot-privacy mono" href="terms.html">Algemene voorwaarden</a>
+    </div>
   </footer>
 
 <div class="modal-overlay" id="booking-modal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title" tabindex="-1">
     <a href="#" class="modal-close" aria-label="Sluiten">&times;</a>
     <div class="modal-title display" id="booking-modal-title">Boek SB</div>
     <p class="modal-sub">Vertel me over je feest — ik lees elke aanvraag zelf en reageer snel.</p>
@@ -400,6 +416,10 @@
         <label for="bf-bericht">Bericht</label>
         <textarea id="bf-bericht" name="bericht" rows="4" placeholder="Locatie, uur, stijl …"></textarea>
       </div>
+      <label class="modal-consent" for="bf-consent">
+        <input id="bf-consent" name="consent" type="checkbox" required>
+        <span>Ik ga akkoord met de <a href="privacy.html" target="_blank" rel="noopener">privacyverklaring</a> en <a href="terms.html" target="_blank" rel="noopener">algemene voorwaarden</a>.</span>
+      </label>
       <button type="submit" class="tag krijt modal-submit">Stuur aanvraag →</button>
       <p class="modal-note" id="booking-form-note">Komt rechtstreeks bij mij binnen, geen mailprogramma nodig.</p>
     </form>
@@ -483,7 +503,7 @@
             var link = document.createElement('a');
             link.href = mailto;
             link.textContent = 'Stuur via e-mail →';
-            link.style.color = 'var(--signaal)';
+            link.style.color = 'var(--accent)';
             link.style.textDecoration = 'underline';
             note.appendChild(link);
           }
@@ -491,14 +511,62 @@
     });
 
     var overlay = document.getElementById('booking-modal');
+    var panel = overlay.querySelector('.modal');
+    var mainEl = document.querySelector('main.bio-page');
+    var footEl = document.querySelector('footer.foot');
+    var cookieEl = document.getElementById('cookie-banner');
+    var lastFocused = null;
+
     function closeModal(){
       // a real hash change (not history.replaceState) so CSS :target re-evaluates
       window.location.hash = 'closed';
       history.replaceState(null, '', window.location.pathname + window.location.search);
     }
+    function isOpen(){ return window.location.hash === '#booking-modal'; }
+    function getFocusable(){
+      return Array.prototype.slice.call(
+        panel.querySelectorAll('a[href], button:not(:disabled), input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      ).filter(function(el){ return el.offsetParent !== null; });
+    }
+    function syncA11y(){
+      if(isOpen()){
+        lastFocused = document.activeElement;
+        if(mainEl) mainEl.setAttribute('inert', '');
+        if(footEl) footEl.setAttribute('inert', '');
+        if(cookieEl) cookieEl.setAttribute('inert', '');
+        var focusable = getFocusable();
+        (focusable[0] || panel).focus();
+      } else {
+        if(mainEl) mainEl.removeAttribute('inert');
+        if(footEl) footEl.removeAttribute('inert');
+        if(cookieEl) cookieEl.removeAttribute('inert');
+        if(lastFocused && typeof lastFocused.focus === 'function'){
+          lastFocused.focus();
+          lastFocused = null;
+        }
+      }
+    }
+    window.addEventListener('hashchange', syncA11y);
+    if(isOpen()) syncA11y();
+
     document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape' && window.location.hash === '#booking-modal'){
+      if(!isOpen()) return;
+      if(e.key === 'Escape'){
         closeModal();
+        return;
+      }
+      if(e.key === 'Tab'){
+        var focusable = getFocusable();
+        if(!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if(e.shiftKey && document.activeElement === first){
+          e.preventDefault();
+          last.focus();
+        } else if(!e.shiftKey && document.activeElement === last){
+          e.preventDefault();
+          first.focus();
+        }
       }
     });
     overlay.addEventListener('click', function(e){
