@@ -2841,7 +2841,8 @@ function createTask(r, stage, top) {
   // klant koppelen: expliciet, of een bekende firma/naam in de titel ("Bel Garage Smet")
   const cl = r.clientId ? clientById(r.clientId) : clientInTitle(t.title);
   if (cl) t.clientId = cl.id;
-  if (top) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
+  // een taak zonder deadline komt helemaal bovenaan de kolom (nieuw werk dat nog opgepakt moet worden); met deadline onderaan zoals voorheen
+  if (top || !t.due) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
   // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
   const p = prefs();
   if (p.ff && p.fv && p.fv !== '__empty') {
