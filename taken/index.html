@@ -1588,6 +1588,11 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 
 .nc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 @media (max-width:860px){ .nc-grid{grid-template-columns:1fr} }
+
+/* tekenen van wat buiten beeld staat overslaan (grote borden en lijsten) */
+.card,.task{content-visibility:auto;contain-intrinsic-size:auto 64px}
+.card.sel,.is-dragging,.card-ph{content-visibility:visible}
+.list-more,.col-more{display:block;margin:6px 4px 10px;font-size:13px}
 </style>
 </head>
 <body>
@@ -1657,7 +1662,6 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
   <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
   <nav id="tabBar" aria-label="Hoofdnavigatie"><i class="tb-ind" aria-hidden="true"></i>
     <button type="button" data-tab="all"><span class="ti"></span><span>Taken</span></button>
-    <button type="button" data-tab="today"><span class="ti"></span><span>Vandaag</span></button>
     <button type="button" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
     <button type="button" data-tab="more"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Meer</span></button>
   </nav>
@@ -2506,8 +2510,9 @@ function renderList() {
   const done = all.filter(t => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
   let html = '';
   for (const g of groupTasks(open, p.group)) {
+    const gk = viewKey() + '|' + (g.label || ''), cut = g.tasks.length > LIST_LIMIT && !listExpanded[gk];
     html += `<section class="group">${g.label ? `<h3>${g.color ? `<span class="dot" style="width:9px;height:9px;border-radius:50%;background:${g.color};align-self:center"></span>` : ''}${esc(g.label)} <span class="count">${g.tasks.length}</span></h3>` : ''}
-      <ul class="tasks">${g.tasks.map(taskRow).join('')}</ul></section>`;
+      <ul class="tasks">${(cut ? g.tasks.slice(0, LIST_LIMIT) : g.tasks).map(taskRow).join('')}</ul>${cut ? `<button type="button" class="link list-more" data-lmore="${esc(gk)}">Toon alle ${g.tasks.length}</button>` : ''}</section>`;
   }
   if (!open.length) {
     const msg = searchQ || p.fv ? 'Geen taken gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag. Geniet ervan!' : 'Nog geen taken hier.';
@@ -2517,9 +2522,9 @@ function renderList() {
   $('#list').innerHTML = html;
 }
 
-let boardExpanded = {};
+let boardExpanded = {}, listExpanded = {};
 let tbOpen = false;
-const DONE_LIMIT = 30;
+const DONE_LIMIT = 30, COL_LIMIT = 60, LIST_LIMIT = 100;
 function renderBoard() {
   const p = prefs();
   const all = viewTasks(true).filter(t => matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv));
@@ -2537,8 +2542,9 @@ function renderBoard() {
     let ts = all.filter(t => t.stage === st.id).sort(st.done && p.sort === 'manual' ? byDoneAt : sorter);
     const total = ts.length;
     let more = '';
-    if (st.done && total > DONE_LIMIT && !boardExpanded[st.id]) {
-      ts = ts.slice(0, DONE_LIMIT);
+    const lim = st.done ? DONE_LIMIT : COL_LIMIT;
+    if (total > lim && !boardExpanded[st.id]) {
+      ts = ts.slice(0, lim);
       more = `<button type="button" class="link col-more" data-more="${st.id}">Toon alle ${total}</button>`;
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
@@ -4736,6 +4742,8 @@ $('#list').addEventListener('click', e => {
   }
   const more = e.target.closest('[data-more]');
   if (more) { boardExpanded[more.dataset.more] = true; renderMain(); return; }
+  const lmore = e.target.closest('[data-lmore]');
+  if (lmore) { listExpanded[lmore.dataset.lmore] = true; renderMain(); return; }
   const row = e.target.closest('.task,.card'); if (!row) return;
   if (e.target.closest('[data-act=toggle]')) toggleTask(row.dataset.id);
   else openTask(row.dataset.id);
@@ -5805,7 +5813,7 @@ pv.addEventListener('focusout', e => {
 // hover-/tiklabel voor de grafieken
 
 /* ---------------- Timers: auto-lock, periodieke sync, datumwissel ---------------- */
-let lastAct = now(), timersStarted = false, lastDay = today(), lastMin = -1;
+let lastAct = now(), timersStarted = false, lastDay = today(), lastMin = -1, lastDueSig = null;
 function startTimers() {
   if (timersStarted) return; timersStarted = true;
   ['pointerdown','keydown','touchstart','wheel'].forEach(ev => addEventListener(ev, () => lastAct = now(), {passive:true}));
@@ -5817,8 +5825,12 @@ function startTimers() {
     const min = new Date().getMinutes();
     if (data && min !== lastMin) {
       lastMin = min;
+      // alleen hertekenen als de kleur van een kaart met uur (bijna te laat / te laat) echt verandert
+      const dsig = data.tasks.filter(t => t.time && !t.done && !t.archived && t.due && t.due <= today()).map(t => t.id + dueState(t)).join('|');
+      if (dsig === lastDueSig) return;
       const busy = drag || document.activeElement?.closest?.('#list,#detail,#quickAdd,#toolbar');
-      if (!busy && view.type !== 'sales' && $('#lock').hidden) renderMain();
+      if (busy) lastMin = -1;   // bezig met typen of slepen: volgende ronde opnieuw proberen
+      else if (view.type !== 'sales' && $('#lock').hidden) { lastDueSig = dsig; renderMain(); }
     }
   };
   setInterval(check, 15000);
