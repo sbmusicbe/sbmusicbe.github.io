@@ -1881,9 +1881,25 @@ async function deriveKey(pw, salt, iter) {
   return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
 }
 const gzipBytes = async (bytes, back) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(back ? new DecompressionStream('gzip') : new CompressionStream('gzip'))).arrayBuffer());
-async function seal(k, obj) {
+// Bij tienduizenden klanten kostte elke wijziging (zelfs een vinkje) een volledige serialisatie van alle klanten.
+// De klanten worden daarom één keer omgezet naar bytes en hergebruikt zolang ze niet veranderen; elke 25e keer
+// en bij vergrendelen/sluiten wordt het volledig opnieuw gedaan als extra zekerheid.
+const CL_MARK = '"@@clients@@"';
+let clCache = null, persistCount = 0, forceFull = false;
+const clientsSig = arr => { let sum = 0, mx = 0; for (const c of arr) { const u = c.u || 0; sum += u; if (u > mx) mx = u; } return arr.length + ':' + mx + ':' + sum + ':' + clientsVer; };
+function encodeData(obj, full) {
+  if (obj !== data || !obj.clients || obj.clients.length < 500) return te.encode(JSON.stringify(obj));
+  const sg = clientsSig(obj.clients);
+  if (full || !clCache || clCache.arr !== obj.clients || clCache.sig !== sg) clCache = {arr:obj.clients, sig:sg, bytes:te.encode(JSON.stringify(obj.clients))};
+  const head = JSON.stringify({...obj, clients:'@@clients@@'}), i = head.indexOf(CL_MARK);
+  const a = te.encode(head.slice(0, i)), b = te.encode(head.slice(i + CL_MARK.length)), cb = clCache.bytes;
+  const out = new Uint8Array(a.length + cb.length + b.length);
+  out.set(a); out.set(cb, a.length); out.set(b, a.length + cb.length);
+  return out;
+}
+async function seal(k, obj, full) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  let pt = te.encode(JSON.stringify(obj)), z;
+  let pt = encodeData(obj, full), z;
   // grote kluis (bv. duizenden klanten) eerst comprimeren: kleiner op het toestel en in de gist
   if (pt.length > 200000 && 'CompressionStream' in window) { pt = await gzipBytes(pt); z = 'gzip'; }
   const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, k.key, pt);
@@ -1996,7 +2012,8 @@ function tombstone(id) { data.deleted[id] = now(); }
 let persistChain = Promise.resolve();
 function persist() {
   persistChain = persistChain.then(async () => {
-    const blob = await seal(K, data);
+    const full = forceFull || ++persistCount % 25 === 0; forceFull = false;
+    const blob = await seal(K, data, full);
     await storeVault(blob);
     return blob;
   }).catch(e => { console.error(e); toast('Opslaan mislukt: ' + e.message); });
@@ -2006,37 +2023,43 @@ let saveTimer = null;
 function save(soon) {
   data.updatedAt = now();
   clearTimeout(saveTimer);
-  if (soon) saveTimer = setTimeout(() => { saveTimer = null; persist(); scheduleSync(); }, 400);
-  else { saveTimer = null; persist(); scheduleSync(); }
+  syncDirty = true;
+  // meerdere wijzigingen kort na elkaar (bv. vinkjes, voorkeuren) worden in één keer bewaard
+  saveTimer = setTimeout(() => { saveTimer = null; persist(); scheduleSync(); }, soon ? 600 : 120);
 }
+let syncDirty = true;
 function commit() { save(); renderAll(); }
 
 /* ---------------- GitHub Gist sync ---------------- */
-async function gh(token, method, path, body) {
+async function gh(token, method, path, body, meta) {
   const r = await fetch('https://api.github.com' + path, {
     method, cache:'no-store',
     headers:{'Authorization':'Bearer ' + token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28',
-      ...(body ? {'Content-Type':'application/json'} : {})},
+      ...(body ? {'Content-Type':'application/json'} : {}), ...(meta?.ifNoneMatch ? {'If-None-Match':meta.ifNoneMatch} : {})},
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (meta) meta.etag = r.headers.get('etag') || null;
+  if (r.status === 304) return null;
   if (!r.ok) {
     const j = await r.json().catch(() => ({}));
     throw new Error(`GitHub ${r.status}: ${j.message || r.statusText}`);
   }
   return r.json();
 }
-async function gistGet(s) {
-  const g = await gh(s.token, 'GET', '/gists/' + encodeURIComponent(s.gistId));
+const NOT_MODIFIED = {};
+async function gistGet(s, meta) {
+  const g = await gh(s.token, 'GET', '/gists/' + encodeURIComponent(s.gistId), undefined, meta);
+  if (g === null) return NOT_MODIFIED;
   const f = g.files && g.files[GIST_FILE];
   if (!f) return null;
   let c = f.content;
   if (f.truncated) c = await (await fetch(f.raw_url, {cache:'no-store'})).text();
   return JSON.parse(c);
 }
-const gistPut = (s, blob) => gh(s.token, 'PATCH', '/gists/' + encodeURIComponent(s.gistId), {files:{[GIST_FILE]:{content:JSON.stringify(blob)}}});
+const gistPut = (s, blob, meta) => gh(s.token, 'PATCH', '/gists/' + encodeURIComponent(s.gistId), {files:{[GIST_FILE]:{content:JSON.stringify(blob)}}}, meta);
 const gistCreate = (token, blob) => gh(token, 'POST', '/gists', {description:'Taken — versleutelde kluis', public:false, files:{[GIST_FILE]:{content:JSON.stringify(blob)}}});
 
-let syncTimer = null, syncing = false, syncAgain = false, syncState = {state:'idle'};
+let syncTimer = null, syncing = false, syncAgain = false, syncState = {state:'idle'}, syncEtag = null;
 function scheduleSync(delay = 1500) {
   if (!data?.settings.sync) return;
   clearTimeout(syncTimer);
@@ -2050,8 +2073,13 @@ async function syncNow(pw) {
   syncing = true; setSync('busy');
   try {
     await persistChain;
-    const remoteBlob = await gistGet(s);
-    if (remoteBlob) {
+    const dirtyAtStart = syncDirty; syncDirty = false;
+    const gmeta = {ifNoneMatch:syncEtag};
+    const remoteBlob = await gistGet(s, gmeta);
+    if (remoteBlob === NOT_MODIFIED) {
+      // online is niets veranderd sinds de vorige keer: enkel eigen wijzigingen doorsturen, niets downloaden of samenvoegen
+      if (dirtyAtStart || syncDirty) { const pm = {}; await gistPut(s, await persist(), pm); syncEtag = pm.etag; }
+    } else if (remoteBlob) {
       let rkey = K.key;
       const differentSalt = remoteBlob.salt !== b64(K.salt);
       if (differentSalt) {
@@ -2069,12 +2097,14 @@ async function syncNow(pw) {
         await persist();
         renderAll();
       }
-      if (sig(merged) !== sig(remote) || differentSalt) await gistPut(s, await persist());
+      if (sig(merged) !== sig(remote) || differentSalt) { const pm = {}; await gistPut(s, await persist(), pm); syncEtag = pm.etag; }
+      else syncEtag = gmeta.etag;
     } else {
-      await gistPut(s, await persist());
+      const pm = {}; await gistPut(s, await persist(), pm); syncEtag = pm.etag;
     }
     setSync('ok');
   } catch (e) {
+    syncDirty = true; syncEtag = null;
     console.error(e);
     setSync('err', e.message);
   } finally {
@@ -2268,6 +2298,7 @@ function enterApp() {
   document.title = 'Taken';
   renderAll();
   startTimers();
+  warmClients();
   checkConfig();
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
   if (ntPending) { const o = ntPending; ntPending = null; ntOpen(o); }
@@ -2294,6 +2325,7 @@ const wco = navigator.windowControlsOverlay;
 const syncWco = () => document.documentElement.classList.toggle('wco', !!wco?.visible);
 if (wco) { syncWco(); wco.addEventListener('geometrychange', syncWco); }
 async function lock() {
+  forceFull = true;
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); }
   await persistChain;
   location.reload();
@@ -5005,7 +5037,14 @@ const editionsOf = c => Array.isArray(c.editions) ? c.editions : [];
 // Zoekt een klant op naam, contactpersoon of klantnummer (ook "261523 Carremans" of "Carremans (261523)").
 // Index op naam en klantnr, zodat opzoeken ook met duizenden klanten meteen gaat.
 let clientsVer = 0, cIndex = null;
-const clientsChanged = () => { clientsVer++; };
+// grote klantenlijsten (tienduizenden): index, sortering en zoeksleutels staan klaar vóór je ze nodig hebt, op een rustig moment
+let warmT = null;
+function warmClients() {
+  clearTimeout(warmT);
+  if (!data || data.clients.length < 2000) return;
+  warmT = setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 50)))(() => { try { if (data) { sortedClients(); clientIndex(); clientSearchKeys(); } } catch {} }, {timeout:4000}), 900);
+}
+const clientsChanged = () => { clientsVer++; warmClients(); };
 function clientIndex() {
   if (cIndex && cIndex.arr === data.clients && cIndex.len === data.clients.length && cIndex.ver === clientsVer) return cIndex;
   const byName = new Map(), byNo = new Map();
@@ -5102,7 +5141,7 @@ function clientMaps(sales) {
   for (const m of data.comments) { const d = tsYmd(m.at); if (d > (lastComment.get(m.taskId) || '')) lastComment.set(m.taskId, d); }
   return {tasks, sales:bySales, lastComment};
 }
-let clQuery = '', clEdition = '', clLimit = 200, searchMemo = null;
+let clQuery = '', clEdition = '', clLimit = 100, searchMemo = null;
 // zoektekst per klant (één keer per wijziging berekend, ook voor tienduizenden klanten)
 function clientSearchKeys() {
   if (searchMemo && searchMemo.arr === data.clients && searchMemo.len === data.clients.length && searchMemo.ver === clientsVer) return searchMemo.map;
@@ -5134,7 +5173,7 @@ const clSortPref = () => { const p = data.prefs.clientsSort; return p && CL_SORT
 function setClientSort(k, dir) {
   const cur = clSortPref(), def = (CL_SORTS.find(x => x[0] === k) || [])[2] || 1;
   data.prefs.clientsSort = {k, dir:dir ?? (cur.k === k ? -cur.dir : def)};
-  save(true); clLimit = 200; renderPage(true);
+  save(true); clLimit = 100; renderPage(true);
 }
 function sortClientList(list, sales, maps) {
   const {k, dir} = clSortPref();
@@ -5164,7 +5203,7 @@ function applyClientFilter() {
       <td class="num hide-m">${g.open || ''}</td>
       <td class="num">${g.total ? eur(g.total) : ''}</td>
       <td class="hide-m muted">${relDay(g.last)}</td></tr>`; }).join('')
-    + (f.length > shown.length ? `<tr class="cl-more"><td colspan="8"><button type="button" class="btn" id="clMore">Toon ${Math.min(200, f.length - shown.length)} meer</button> <span class="muted small">nog ${(f.length - shown.length).toLocaleString('nl-BE')} klanten — of verfijn je zoekopdracht</span></td></tr>` : '')
+    + (f.length > shown.length ? `<tr class="cl-more"><td colspan="8"><button type="button" class="btn" id="clMore">Toon ${Math.min(100, f.length - shown.length)} meer</button> <span class="muted small">nog ${(f.length - shown.length).toLocaleString('nl-BE')} klanten — of verfijn je zoekopdracht</span></td></tr>` : '')
     + (!f.length ? `<tr><td colspan="8" class="muted">Geen klanten gevonden.</td></tr>` : '');
   const cnt = $('#clCount'), n = data.clients.length.toLocaleString('nl-BE');
   if (cnt) cnt.textContent = f.length === data.clients.length ? `${n} klanten` : `${f.length.toLocaleString('nl-BE')} van ${n}`;
@@ -5532,7 +5571,7 @@ function openClientImport() {
         const res = runClientImport(plan);
         bar.value = 100; dlg.close();
         toast(`${fmt(res.added)} klanten toegevoegd, ${fmt(res.updated)} aangevuld · ${fmt(res.edAdded)} uitgaves`);
-        clLimit = 200; if (view.type !== 'clients') setView({type:'clients'}); else renderPage(true);
+        clLimit = 100; if (view.type !== 'clients') setView({type:'clients'}); else renderPage(true);
       } catch (ex) {
         busy = false; $('#ciCancel', d).disabled = false; $('#ciGo', d).disabled = false; prog.hidden = true;
         $('#ciErr', d).textContent = 'Importeren mislukt: ' + ex.message;
@@ -5768,7 +5807,7 @@ pv.addEventListener('click', e => {
   if (t.closest('#clImportFile')) { openClientImport(); return; }
   { const m = t.closest('#clMenu'); if (m) { const n = +m.dataset.unmatched || 0; menuAt(m, [{label:'Importeren (Excel/CSV)…', attrs:'id="clImportFile"', run:() => openClientImport()}, n ? {label:`Klanten uit verkopen halen (${n})`, attrs:'id="clFromSales"', run:() => clientsFromSales()} : null]); return; } }
   { const m = t.closest('#clMenu2'); if (m) { const c = clientById(view.id); if (c) menuAt(m, [c.no ? {label:'Klantnummer kopiëren', run:() => copyText(String(c.no), 'Klantnummer')} : null, c.no ? '-' : null, {label:'Klant verwijderen…', danger:true, attrs:'id="clDel"', run:() => deleteClient(c)}]); return; } }
-  if (t.closest('#clMore')) { clLimit += 200; applyClientFilter(); return; }
+  if (t.closest('#clMore')) { clLimit += 100; applyClientFilter(); return; }
   const edf = t.closest('[data-edfilter]'); if (edf) { clEdition = edf.dataset.edfilter; clQuery = ''; setView({type:'clients'}); return; }
   if (t.closest('#clFromSales')) { clientsFromSales(); return; }
 
@@ -5780,7 +5819,7 @@ pv.addEventListener('click', e => {
   const tk = t.closest('[data-task]'); if (tk) { openTask(tk.dataset.task); return; }
   const sp = t.closest('[data-salespage]'); if (sp) { setView({type:'sales', id:sp.dataset.salespage}); return; }
 });
-pv.addEventListener('change', e => { if (e.target.id === 'clSort') { const [k, d] = e.target.value.split(':'); setClientSort(k, +d); return; } if (e.target.id === 'clEd') { clEdition = e.target.value; clLimit = 200; applyClientFilter(); } });
+pv.addEventListener('change', e => { if (e.target.id === 'clSort') { const [k, d] = e.target.value.split(':'); setClientSort(k, +d); return; } if (e.target.id === 'clEd') { clEdition = e.target.value; clLimit = 100; applyClientFilter(); } });
 pv.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const day = e.target.closest?.('[data-day]'); if (day && e.target === day) { e.preventDefault(); openEventDialog(null, day.dataset.day); return; }
@@ -5789,7 +5828,7 @@ pv.addEventListener('keydown', e => {
 });
 pv.addEventListener('input', e => {
   const t = e.target;
-  if (t.id === 'clSearch') { clQuery = t.value; clLimit = 200; clearTimeout(applyClientFilter.t); applyClientFilter.t = setTimeout(applyClientFilter, data.clients.length > 3000 ? 140 : 0); return; }
+  if (t.id === 'clSearch') { clQuery = t.value; clLimit = 100; clearTimeout(applyClientFilter.t); applyClientFilter.t = setTimeout(applyClientFilter, data.clients.length > 3000 ? 140 : 0); return; }
   const k = t.dataset.cf; if (!k) return;
   const c = clientById(view.id); if (!c) return;
   if (k === 'editions') c.editions = [...new Set(t.value.split(/\n|;/).map(x => x.trim()).filter(Boolean))];
@@ -5839,9 +5878,10 @@ function startTimers() {
   document.addEventListener('visibilitychange', () => {
     check();
     if (document.visibilityState === 'visible') syncNow();
-    else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); scheduleSync(0); }
+    else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; forceFull = true; persist(); scheduleSync(0); }
   });
   setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30000);
+  addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; forceFull = true; persist(); } });
   addEventListener('online', () => syncNow());
   addEventListener('offline', () => { if (data?.settings.sync) setSync('offline'); });
 }
