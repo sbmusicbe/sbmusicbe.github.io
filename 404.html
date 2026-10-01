@@ -10,24 +10,23 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..600;1,100..125,900&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --studio:#0A0A0A;
-    --krijt:#F2EFEA;
-    --krijt-soft:rgba(242,239,234,.68);
-    --signaal:#6FA283;
+    --bg:#0A0A0A;          /* Studio Black */
+    --text:#F2EFEA;        /* Bone */
+    --text-secondary:rgba(242,239,234,.6);
+    --accent:#6FA283;      /* Moss */
+    --accent-deep:#356047; /* Moss-deep */
     --white:#FFFFFF;
-    --skew:-23deg;
+    --r-md:16px;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
-  html{ background:var(--studio); }
+  html{ background:var(--bg); }
   body{
-    background:
-      radial-gradient(120% 60% at 15% 0%, rgba(36,49,42,.35), transparent 60%),
-      var(--studio);
-    color:var(--krijt);
+    background:var(--bg);
+    color:var(--text);
     font-family:'Inter',sans-serif;
     line-height:1.5;
     min-height:100svh;
@@ -40,7 +39,7 @@
     -webkit-font-smoothing:antialiased;
   }
   a{ color:inherit; text-decoration:none; }
-  a:focus-visible{ outline:2px solid var(--signaal); outline-offset:4px; }
+  a:focus-visible{ outline:2px solid var(--accent); outline-offset:4px; }
 
   .logo{
     display:block;
@@ -54,53 +53,41 @@
   .code{
     font-family:'Space Mono',monospace;
     font-size:13px;
-    letter-spacing:.14em;
+    letter-spacing:.09em;
     text-transform:uppercase;
-    color:var(--signaal);
+    color:var(--accent);
     margin-bottom:16px;
   }
   h1{
-    font-family:'Archivo',sans-serif;
-    font-stretch:125%;
-    font-style:italic;
-    font-weight:900;
-    text-transform:uppercase;
-    line-height:.95;
-    letter-spacing:-.01em;
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    letter-spacing:-.028em;
+    line-height:1.0;
     font-size:clamp(32px, 8vw, 56px);
     max-width:14ch;
   }
   p{
     margin-top:18px;
     font-size:17px;
-    color:var(--krijt-soft);
+    color:var(--text-secondary);
     max-width:38ch;
   }
   .tag{
-    position:relative;
-    isolation:isolate;
     display:inline-flex;
     align-items:center;
     gap:8px;
     padding:14px 26px;
     margin-top:32px;
-    font-family:'Space Mono',monospace;
-    font-weight:700;
-    font-size:13px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--studio);
+    border-radius:var(--r-md);
+    background:var(--text);
+    font-weight:500;
+    font-size:15px;
+    letter-spacing:-.011em;
+    color:var(--bg);
     white-space:nowrap;
-  }
-  .tag::before{
-    content:"";
-    position:absolute; inset:0;
-    z-index:-1;
-    background:var(--signaal);
-    transform:skewX(var(--skew));
     transition:background .2s ease;
   }
-  .tag:hover::before{ background:var(--krijt); }
+  .tag:hover{ background:var(--white); }
 </style>
 </head>
 <body>
