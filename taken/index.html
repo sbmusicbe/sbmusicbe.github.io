@@ -1585,6 +1585,9 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 .fchip .pj-no{font-size:11px;font-weight:600;opacity:.65;margin-right:5px}
 .cl-block{display:inline-flex;align-items:center;height:var(--ctl-h);padding:0 12px;border-radius:var(--ctl-r,8px);font-size:13px;font-weight:600;color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,transparent)}
 .ci-prev{overflow-x:auto}
+
+.nc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:860px){ .nc-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -2971,7 +2974,7 @@ function renderDetail(force) {
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
-        ${(() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}</span></label>`; })()}
+        ${(() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}${cl?.email ? `<a class="icon-btn" href="mailto:${esc(cl.email)}" title="${esc(cl.email)} mailen" aria-label="Mailen">${I.mail}</a>` : ''}</span></label>`; })()}
       </div>
       <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
       <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
@@ -3351,8 +3354,8 @@ detail.addEventListener('change', e => {
     const v = el.value.trim();
     if (!v) delete t.clientId;
     else {
-      let c = clientByName(v);
-      if (!c) { c = newClientObj({company:v}); data.clients.push(c); toast(`Nieuwe klant “${v}” aangemaakt`); }
+      const c = clientByName(v);
+      if (!c) { openNewClientDialog(v, t); return; }   // nieuwe klant: eerst de gegevens (telefoon, e-mail, …) laten invullen
       t.clientId = c.id;
     }
     touch(t); save(); renderNav(); renderMain(); renderDetail(true);
@@ -3415,6 +3418,49 @@ function showDialog(html, bind) {
 }
 dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
+
+// Nieuwe klant vanuit een taak: telefoon en e-mail die in de titel of notities staan worden meteen ingevuld
+function contactsFromText(txt) {
+  txt = String(txt || '');
+  const email = (txt.match(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/i) || [''])[0];
+  let phone = '';
+  for (const m of txt.matchAll(/(?:\+|00)?\d[\d\s./()-]{7,}\d/g)) { const d = m[0].replace(/\D/g, ''); if (d.length >= 9 && d.length <= 14) { phone = m[0].trim(); break; } }
+  return {email, phone};
+}
+function openNewClientDialog(name, t) {
+  const guess = contactsFromText([t.title, t.notes].join(' '));
+  let created = false;
+  showDialog(`
+    <h3>Nieuwe klant</h3>
+    <p class="muted small">Deze klant bestaat nog niet. Vul de gegevens aan; alles is optioneel en later aan te passen in de klantenfiche.</p>
+    <form id="ncForm" autocomplete="off">
+      <div class="nc-grid">
+        <label class="fl">Firma<input id="ncCompany" type="text" value="${esc(name)}" autocomplete="organization"></label>
+        <label class="fl">Klantnr <small class="muted">(Navision)</small><input id="ncNo" type="text" inputmode="numeric" autofocus></label>
+        <label class="fl">Telefoon<input id="ncPhone" type="tel" value="${esc(guess.phone)}" autocomplete="tel"></label>
+        <label class="fl">E-mail<input id="ncEmail" type="email" value="${esc(guess.email)}" autocomplete="email"></label>
+        <label class="fl">Contactpersoon<input id="ncContact" type="text" autocomplete="name"></label>
+        <label class="fl">Gemeente<input id="ncCity" type="text" autocomplete="address-level2"></label>
+      </div>
+      <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="ncCancel">Annuleren</button><button type="submit" class="btn primary" id="ncOk">Klant aanmaken</button></div>
+    </form>`, d => {
+    $('#ncCancel', d).onclick = () => dlg.close();
+    $('#ncForm', d).onsubmit = e => {
+      e.preventDefault();
+      const v = id => $('#' + id, d).value.trim();
+      const company = v('ncCompany') || name;
+      const ex = clientByName(company);
+      const c = ex || newClientObj({company, no:v('ncNo'), phone:v('ncPhone'), email:v('ncEmail').toLowerCase(), contact:v('ncContact'), city:v('ncCity')});
+      if (!ex) data.clients.push(c); else for (const [k, id] of [['no', 'ncNo'], ['phone', 'ncPhone'], ['email', 'ncEmail'], ['contact', 'ncContact'], ['city', 'ncCity']]) if (!c[k] && v(id)) { c[k] = v(id); touch(c); }
+      clientsChanged();
+      created = true;
+      t.clientId = c.id; touch(t); save(); dlg.close();
+      renderNav(); renderMain(); renderDetail(true);
+      toast(ex ? `Taak gekoppeld aan “${clientLabel(c)}”` : `Nieuwe klant “${clientLabel(c)}” aangemaakt`);
+    };
+    dlg.addEventListener('close', () => { if (!created) renderDetail(true); }, {once:true});
+  });
+}
 
 function openProjectDialog(p) {
   const isNew = !p, isInbox = p?.id === 'inbox';
