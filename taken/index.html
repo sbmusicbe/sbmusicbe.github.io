@@ -1593,6 +1593,9 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 .card,.task{content-visibility:auto;contain-intrinsic-size:auto 64px}
 .card.sel,.is-dragging,.card-ph{content-visibility:visible}
 .list-more,.col-more{display:block;margin:6px 4px 10px;font-size:13px}
+
+.lock-card #lockBio{width:100%;margin-top:8px;padding-top:10px;padding-bottom:10px}
+#lockBio[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -1607,6 +1610,7 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
     <div id="lockFields"></div>
     <p id="lockErr" class="err"></p>
     <button class="btn primary" id="lockBtn" type="submit">Ontgrendelen</button>
+    <button class="btn" id="lockBio" type="button" hidden>Ontgrendelen met Face ID</button>
     <button type="button" class="link" id="lockAlt"></button>
   </form>
 </div>
@@ -2106,7 +2110,7 @@ let lockMode = 'loading';
 function renderLock() {
   const f = $('#lockFields'), sub = $('#lockSub'), btn = $('#lockBtn'), alt = $('#lockAlt');
   $('#lockErr').textContent = '';
-  btn.hidden = false; alt.hidden = false;
+  btn.hidden = false; alt.hidden = false; $('#lockBio').hidden = true;
   if (!window.crypto?.subtle) {
     sub.textContent = 'Deze pagina moet via https geopend worden (versleuteling is anders niet beschikbaar).';
     f.innerHTML = ''; btn.hidden = true; alt.hidden = true; return;
@@ -2125,6 +2129,7 @@ function renderLock() {
     sub.textContent = CFG ? 'Voer je wachtwoord in. Je taken worden automatisch opgehaald en gesynchroniseerd.' : 'Voer je wachtwoord in om te ontgrendelen.';
     f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required autofocus>`;
     btn.textContent = 'Ontgrendelen'; alt.textContent = 'Herstellen vanaf GitHub Gist';
+    if (bioGet() && bioSupported()) { $('#lockBio').hidden = false; $('#lockBio').textContent = 'Ontgrendelen met ' + bioName(); }
   } else {
     $('#lockTitle').textContent = 'Herstellen vanaf Gist';
     sub.textContent = 'Haal je versleutelde kluis op van GitHub. Gebruik dit op een nieuw toestel of na een wachtwoordwijziging.';
@@ -2149,10 +2154,23 @@ async function unlockWith(pw) {
     if (!keys.has(blob.salt + blob.iter)) keys.set(blob.salt + blob.iter, await deriveKey(pw, unb64(blob.salt), blob.iter));
     return {key:keys.get(blob.salt + blob.iter), salt:unb64(blob.salt), iter:blob.iter};
   };
-  CFG = await fetchConfig();
   const local = vaultBlob();
+  // Snel inloggen: staat de kluis al op dit toestel, dan wachten we niet op het netwerk. Het sleutelbestand wordt
+  // op de achtergrond ververst en de online kluis wordt na het openen samengevoegd (syncNow).
+  let cached = null; try { cached = JSON.parse(localStorage.getItem(CFG_CACHE)); } catch {}
+  if (local && cached) { CFG = cached; fetchConfig().then(c => { CFG = c; if (data) checkConfig(); }).catch(() => {}); }
+  else CFG = await fetchConfig();
   let localData = null, creds = null;
   if (local) try { localData = normalize(await unseal((await keyObj(local)).key, local)); } catch {}
+  if (localData) {
+    if (!localData.settings.sync && CFG) try { creds = await unseal((await keyObj(CFG)).key, CFG); } catch {}
+    K = await keyObj(local);
+    data = localData;
+    if (creds) data.settings.sync = creds;
+    enterApp();
+    syncNow(pw);
+    return;
+  }
   if (CFG) try { creds = await unseal((await keyObj(CFG)).key, CFG); } catch {}
   if (!localData && !creds) throw new Error('Onjuist wachtwoord.');
 
@@ -3817,6 +3835,7 @@ function openSettings() {
     <h4>Beveiliging</h4>
     <label class="fl">Automatisch vergrendelen na inactiviteit
       <select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <div style="margin-top:12px">${bioBox()}</div>
     <details style="margin-top:12px"><summary style="cursor:pointer;font-size:14px;font-weight:600">Wachtwoord wijzigen</summary>
       <label class="fl">Huidig wachtwoord<input id="stOld" type="password" autocomplete="current-password"></label>
       <label class="fl">Nieuw wachtwoord<input id="stNew1" type="password" autocomplete="new-password"></label>
@@ -3840,7 +3859,7 @@ function openSettings() {
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="stClose">Klaar</button></div>`, d => {
     $('#stClose', d).onclick = () => dlg.close();
     $('#stAuto', d).onchange = e => { data.settings.autolock = +e.target.value; save(); };
-    bindNotifyBox(d);
+    bindNotifyBox(d); bindBioBox(d);
     $('#stSync', d)?.addEventListener('click', () => syncNow());
     $('#stUnlink', d)?.addEventListener('click', () => {
       if (!confirm('Synchronisatie in deze browser ontkoppelen? De gist en het sleutelbestand op je site blijven bestaan.')) return;
@@ -3883,6 +3902,7 @@ function openSettings() {
       const salt = crypto.getRandomValues(new Uint8Array(16));
       K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER};
       const blob = await persist();
+      if (bioGet()) { localStorage.removeItem(BIO_KEY); toast('Wachtwoord gewijzigd; zet ' + bioName() + ' opnieuw aan'); }
       if (data.settings.sync) {
         try { await gistPut(data.settings.sync, blob); setSync('ok'); }
         catch (ex) { setSync('err', ex.message); }
@@ -3923,7 +3943,7 @@ function openSettings() {
     $('#stWipe', d).onclick = () => {
       if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden (een gesynchroniseerde gist blijft bestaan).')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
-      localStorage.removeItem(VAULT); lsSet(NT_ON, null); lsSet(NT_SENT, null); try { sessionStorage.removeItem(NT_PLAN); } catch {}
+      localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); lsSet(NT_ON, null); lsSet(NT_SENT, null); try { sessionStorage.removeItem(NT_PLAN); } catch {}
       idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
     };
   });
@@ -5984,6 +6004,75 @@ function bindNotifyBox(d) {
     if (p === 'default') try { p = await Notification.requestPermission(); } catch { p = Notification.permission; }
     if (p === 'granted') { lsSet(NT_ON, '1'); ntSkipDue(); toast('Meldingen staan aan'); }
     redraw();
+  });
+}
+
+/* ---------------- Face ID / Touch ID ----------------
+   Het wachtwoord wordt versleuteld met een sleutel die enkel met Face ID/Touch ID (WebAuthn PRF) opgevraagd kan worden.
+   Op dit toestel staat dus enkel een versleutelde kopie; zonder biometrie is ze onbruikbaar. */
+const BIO_KEY = 'taken.bio.v1';
+const bioGet = () => { try { return JSON.parse(localStorage.getItem(BIO_KEY)); } catch { return null; } };
+const bioSupported = () => !!(window.PublicKeyCredential && navigator.credentials?.create && window.crypto?.subtle);
+const bioName = () => /iP(hone|ad)/.test(navigator.userAgent) ? 'Face ID' : 'biometrie';
+const rndBytes = n => crypto.getRandomValues(new Uint8Array(n));
+async function bioKey(secret) {
+  const base = await crypto.subtle.importKey('raw', secret, 'HKDF', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'HKDF', hash:'SHA-256', salt:new Uint8Array(0), info:te.encode('taken-bio-v1')}, base, {name:'AES-GCM', length:256}, false, ['encrypt', 'decrypt']);
+}
+const bioAssert = (credId, salt) => navigator.credentials.get({publicKey:{challenge:rndBytes(32), rpId:location.hostname, allowCredentials:[{type:'public-key', id:credId}], userVerification:'required', timeout:60000, extensions:{prf:{eval:{first:salt}}}}});
+async function bioEnable(pw) {
+  const salt = rndBytes(32);
+  const cred = await navigator.credentials.create({publicKey:{challenge:rndBytes(32), rp:{name:'Taken', id:location.hostname}, user:{id:rndBytes(16), name:'taken', displayName:'Taken'},
+    pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}], timeout:60000,
+    authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'}, extensions:{prf:{eval:{first:salt}}}}});
+  const ext = cred.getClientExtensionResults().prf;
+  let secret = ext?.results?.first;
+  if (!secret && ext?.enabled !== false) secret = (await bioAssert(cred.rawId, salt)).getClientExtensionResults().prf?.results?.first;
+  if (!secret) throw new Error('Dit toestel of deze browser ondersteunt dit niet (iOS 18 of nieuwer is nodig).');
+  const iv = rndBytes(12), ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, await bioKey(new Uint8Array(secret)), te.encode(pw));
+  localStorage.setItem(BIO_KEY, JSON.stringify({cred:b64(cred.rawId), salt:b64(salt), iv:b64(iv), ct:b64(ct)}));
+}
+async function bioReadPassword() {
+  const b = bioGet(); if (!b) throw new Error('Face ID is niet ingesteld.');
+  const secret = (await bioAssert(unb64(b.cred), unb64(b.salt))).getClientExtensionResults().prf?.results?.first;
+  if (!secret) throw new Error('Geen sleutel ontvangen.');
+  return td.decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(b.iv)}, await bioKey(new Uint8Array(secret)), unb64(b.ct)));
+}
+$('#lockBio').addEventListener('click', async () => {
+  const err = $('#lockErr'); err.textContent = '';
+  try {
+    $('#pw1').value = await bioReadPassword();
+    $('#lockForm').requestSubmit();
+    for (let i = 0; i < 120 && $('#app').hidden; i++) {
+      await new Promise(r => setTimeout(r, 150));
+      if (/onjuist/i.test(err.textContent)) { localStorage.removeItem(BIO_KEY); renderLock(); err.textContent = 'Je wachtwoord is gewijzigd. Log in met je wachtwoord en zet ' + bioName() + ' opnieuw aan.'; break; }
+    }
+  } catch (e) { if (e?.name !== 'NotAllowedError' && e?.name !== 'AbortError') err.textContent = bioName() + ' mislukt: ' + (e.message || e); }
+  finally { const f = $('#pw1'); if (f) f.value = ''; }
+});
+function bioBox() {
+  const name = bioName();
+  if (!bioSupported()) return `<div class="box"><b>${name}</b><p class="muted small">Niet beschikbaar in deze browser.</p></div>`;
+  if (bioGet()) return `<div class="box bio-box"><div class="nt-head"><div><b>Ontgrendelen met ${name}</b><br><span class="muted small">Aan op dit toestel</span></div><button type="button" class="btn" id="bioOff">Uitzetten</button></div></div>`;
+  return `<div class="box bio-box"><b>Ontgrendelen met ${name}</b>
+    <p class="muted small">Ontgrendel Taken op dit toestel met ${name} in plaats van je wachtwoord te typen. Je wachtwoord wordt enkel bewaard in een versleutelde vorm die alleen ${name} kan openen. Vereist iOS 18 of nieuwer.</p>
+    <label class="fl">Je wachtwoord<input id="bioPw" type="password" autocomplete="current-password"></label>
+    <p class="err" id="bioErr"></p>
+    <button type="button" class="btn" id="bioOn">${name} aanzetten</button></div>`;
+}
+function bindBioBox(d) {
+  const redraw = () => { const el = $('#bioOn', d)?.closest('.box') || $('#bioOff', d)?.closest('.box'); if (el) el.outerHTML = bioBox(); bindBioBox(d); };
+  $('#bioOff', d)?.addEventListener('click', () => { localStorage.removeItem(BIO_KEY); toast(bioName() + ' staat uit'); redraw(); });
+  $('#bioOn', d)?.addEventListener('click', async e => {
+    const err = $('#bioErr', d), pw = $('#bioPw', d).value; err.textContent = '';
+    if (!pw) { err.textContent = 'Vul je wachtwoord in.'; return; }
+    e.target.disabled = true;
+    try {
+      try { await unseal(await deriveKey(pw, K.salt, K.iter), vaultBlob()); } catch { throw new Error('Wachtwoord klopt niet.'); }
+      await bioEnable(pw);
+      toast(bioName() + ' staat aan');
+      redraw();
+    } catch (ex) { err.textContent = ex.name === 'NotAllowedError' ? 'Geannuleerd.' : ex.message; e.target.disabled = false; }
   });
 }
 
