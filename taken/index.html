@@ -1328,144 +1328,178 @@ a.btn:not(.primary):not(.danger){color:var(--text)}
 }
 
 /* =====================================================================
-   Things 3-stijl (enkel uiterlijk): wit en rustig, vlakke grijze zijbalk,
-   geen glas of kleurvlekken, kleine afgeronde vakjes, veel witruimte.
-   Logo-rood blijft de accentkleur, spaarzaam gebruikt.
+   Dashboard-look: lichtgrijze pagina, witte kaarten met een fijne rand, lichte titels,
+   kleine pill-badges, actieve kaart/menu-item met zachte tint van de accentkleur (logo-rood).
    ===================================================================== */
 :root{
-  --bg:#ffffff; --panel:#ffffff; --card:#ffffff; --side:#f5f5f7;
-  --text:#1f2023; --muted:#86868b; --faint:#b0b0b5;
-  --line:rgba(0,0,0,.085); --hairline:rgba(0,0,0,.06);
-  --hover:rgba(0,0,0,.04); --sel:rgba(0,0,0,.065); --fill:rgba(118,118,128,.09);
-  --group:rgba(118,118,128,.06); --col:#f7f7f8; --seg-on:#ffffff;
+  --bg:#f3f5f5; --panel:#ffffff; --card:#ffffff; --side:#ffffff;
+  --text:#1c2321; --muted:#66716d; --faint:#97a19d;
+  --line:#e2e7e5; --hairline:#ebeeed;
+  --hover:rgba(24,42,36,.045); --sel:rgba(24,42,36,.07); --fill:#f1f4f3;
+  --group:#f6f8f7; --col:#ffffff; --seg-on:#ffffff;
   --material:#ffffff; --material-strong:#ffffff;
   --glass:var(--panel); --glass-strong:var(--panel); --glass-edge:var(--line);
-  --glass-shadow:0 1px 1px rgba(0,0,0,.04); --glass-blur:none; --wallpaper:none;
-  --shadow-card:0 0 0 1px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shadow-lift:0 0 0 1px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.10);
-  --shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.16),0 4px 12px rgba(0,0,0,.06);
-  --ctl-r:7px; --sel-task:color-mix(in srgb,var(--accent) 9%,transparent);
+  --glass-shadow:none; --glass-blur:none; --wallpaper:none;
+  --shadow-card:none;
+  --shadow-lift:0 6px 20px rgba(24,42,36,.08);
+  --shadow:0 0 0 1px rgba(24,42,36,.06),0 24px 60px rgba(24,42,36,.16),0 4px 12px rgba(24,42,36,.06);
+  --ctl-r:10px; --r-card:14px;
+  --accent-soft:color-mix(in srgb,var(--accent) 8%,#fff);
+  --accent-line:color-mix(in srgb,var(--accent) 32%,#fff);
+  --sel-task:var(--accent-soft);
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#1e1f22; --panel:#1e1f22; --card:#28292d; --side:#26272b;
-    --text:#ececee; --muted:#9a9aa0; --faint:#6a6a70;
+    --bg:#0f1312; --panel:#171c1b; --card:#1b2120; --side:#171c1b;
+    --text:#e8eeec; --muted:#9aa6a2; --faint:#68736f;
     --line:rgba(255,255,255,.09); --hairline:rgba(255,255,255,.06);
-    --hover:rgba(255,255,255,.05); --sel:rgba(255,255,255,.09); --fill:rgba(255,255,255,.07);
-    --group:rgba(255,255,255,.04); --col:#242528; --seg-on:#48494e;
-    --material:#1e1f22; --material-strong:#1e1f22; --glass-shadow:none;
-    --shadow-card:0 0 0 1px rgba(255,255,255,.06),0 1px 2px rgba(0,0,0,.3);
-    --shadow-lift:0 0 0 1px rgba(255,255,255,.08),0 10px 28px rgba(0,0,0,.5);
+    --hover:rgba(255,255,255,.05); --sel:rgba(255,255,255,.09); --fill:rgba(255,255,255,.06);
+    --group:rgba(255,255,255,.04); --col:#171c1b; --seg-on:#2b3331;
+    --material:#171c1b; --material-strong:#171c1b;
+    --shadow-lift:0 8px 24px rgba(0,0,0,.45);
     --shadow:0 0 0 1px rgba(255,255,255,.08),0 24px 60px rgba(0,0,0,.6);
+    --accent-soft:color-mix(in srgb,var(--accent) 16%,#171c1b);
+    --accent-line:color-mix(in srgb,var(--accent) 45%,#171c1b);
   }
 }
 body,.lock{background:var(--bg)!important}
-#side,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn,#banner,.main-head,.main-head.scrolled,#tabBar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#side,#quickAdd,#detail,.d-head,dialog,#toast,.lock-card,.seg,.col-tabs button.on,.tb-toggle,.btn,#banner,.main-head,.main-head.scrolled,#tabBar,.topbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 
-/* ---- zijbalk: vlak grijs, tegen de rand ---- */
-#side{background:var(--side)!important;border:0!important;border-right:1px solid var(--hairline)!important;box-shadow:none!important;padding:18px 10px 12px}
+/* ---- zijbalk ---- */
+#side{background:var(--side)!important;border:0!important;border-right:1px solid var(--line)!important;box-shadow:none!important;padding:18px 12px 14px}
 @media (min-width:861px){
   #side{margin:0!important;height:100%!important;border-radius:0!important}
-  #app{grid-template-columns:250px 1fr}
-  #app.with-detail{grid-template-columns:250px minmax(0,1fr) var(--detail-w,400px)}
-  #app.board-mode.with-detail{grid-template-columns:250px 1fr}
+  #app{grid-template-columns:252px 1fr}
+  #app.with-detail{grid-template-columns:252px minmax(0,1fr) var(--detail-w,400px)}
+  #app.board-mode.with-detail{grid-template-columns:252px 1fr}
 }
-.side-head{padding:0 8px 16px}
-.nav-item{border-radius:6px!important;padding:5px 9px;font-size:14px;font-weight:500;gap:9px;color:var(--text)}
+.side-head{padding:2px 6px 18px}
+.side-head .brand{font-size:15px;font-weight:650;letter-spacing:-.01em}
+.nav-item{border-radius:10px!important;padding:8px 12px;font-size:13.5px;font-weight:500;gap:11px;color:var(--text)}
 .nav-item:hover{background:var(--hover)}
-.nav-item.on{background:var(--sel)!important;box-shadow:none!important;font-weight:600}
-.nav-item .ico,.nav-item .ico svg{width:17px;height:17px}
-.nav-item .cnt{color:var(--faint);font-size:12.5px;font-weight:500}
-.nav-item[data-view=all] .ico{color:#3b82f6} .nav-item[data-view=archive] .ico{color:#34a853}
-.nav-item[data-view=agenda] .ico{color:#e5484d} .nav-item[data-view=clients] .ico{color:#12a594}
-.nav-item .ico svg{stroke-width:2}
+.nav-item .ico,.nav-item .ico svg{width:17px;height:17px;color:var(--muted)}
+.nav-item .ico svg{stroke-width:1.8}
+.nav-item .cnt{color:var(--faint);font-size:12px;font-weight:500}
+.nav-item.on{background:var(--accent-soft)!important;color:var(--accent-2)!important;box-shadow:none!important;font-weight:600}
+.nav-item.on .ico,.nav-item.on .ico svg{color:var(--accent)}
+.nav-item.on .cnt{color:var(--accent);opacity:.8}
+.nav-item.on::after{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:2px}
+@media (prefers-color-scheme:dark){ .nav-item.on{color:var(--text)!important} }
 .nav-item .dot{width:9px;height:9px}
-.side-section{font-size:12px;font-weight:700;color:var(--muted);padding:20px 9px 5px;letter-spacing:0;text-transform:none}
-.side-foot{border-top:1px solid var(--hairline)!important}
+.side-section{font-size:10.5px;font-weight:650;color:var(--faint);padding:20px 12px 6px;letter-spacing:.09em;text-transform:uppercase}
+.side-foot{margin:10px 2px 0;padding:10px 12px;border:1px solid var(--hairline)!important;background:var(--group);border-radius:12px}
 
-/* ---- titel: groot, vet, zonder balk ---- */
-.main-head{background:var(--bg)!important;box-shadow:none!important}
-.main-head.scrolled{box-shadow:0 1px 0 var(--hairline)!important}
-.main-head h2{font-size:28px;font-weight:700;letter-spacing:-.022em}
+/* ---- bovenbalk: datum, zoeken ---- */
+.topbar{display:none}
+@media (min-width:861px){
+  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:14;height:52px;padding:0 28px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .tb-date{display:inline-flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);font-weight:500}
+  .tb-date svg{width:16px;height:16px}
+  .top-search{display:inline-flex;align-items:center;gap:9px;width:min(280px,34vw);height:34px;padding:0 12px;border:1px solid var(--line);background:var(--panel);color:var(--faint);border-radius:10px;font:inherit;font-size:13px;text-align:left;cursor:pointer}
+  .top-search:hover{border-color:color-mix(in srgb,var(--text) 25%,transparent);color:var(--muted)}
+  .top-search svg{width:15px;height:15px;flex:none}
+  .top-search kbd{margin-left:auto;font:inherit;font-size:11px;padding:1px 6px;border:1px solid var(--line);border-radius:5px;color:var(--faint)}
+  .top-btn{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:10px;cursor:pointer}
+  .top-btn:hover{color:var(--text);border-color:color-mix(in srgb,var(--text) 25%,transparent)}
+  .top-btn svg{width:16px;height:16px}
+  .main-inner{padding-top:26px}
+  .main-head{position:static!important;margin:0 0 4px!important;padding:0!important;background:transparent!important}
+}
+
+/* ---- titel ---- */
+.main-head{background:transparent!important;box-shadow:none!important}
+.main-head.scrolled{box-shadow:none!important}
+.main-head h2{font-size:30px;font-weight:500;letter-spacing:-.025em}
+.view-sub{margin:2px 0 18px;font-size:13.5px;color:var(--muted)}
+.view-sub:empty{display:none}
 .proj-notes{color:var(--muted)}
 
-/* ---- bediening: kleine afgeronde vakjes zoals op macOS ---- */
-:root{--ctl-h:30px;--ctl-fs:13px;--ctl-px:11px}
-@media (max-width:860px){:root{--ctl-h:40px;--ctl-fs:16px}}
-input:is([type=text],[type=password],[type=number],[type=date],[type=time],[type=month],[type=url],[type=tel],[type=email],[type=search]),select{border-radius:var(--ctl-r)!important;background-color:var(--fill)}
-select{padding-right:30px}
-textarea{border-radius:9px}
-input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)!important;border-color:color-mix(in srgb,var(--accent) 55%,transparent)!important}
-.btn{border-radius:var(--ctl-r)!important;font-weight:500;padding-left:12px;padding-right:12px}
-.btn:not(.primary):not(.danger){background:var(--panel)!important;border:1px solid rgba(0,0,0,.12)!important;box-shadow:0 1px 1px rgba(0,0,0,.04)!important;color:var(--text)}
-.btn:not(.primary):not(.danger):hover{background:color-mix(in srgb,var(--text) 4%,var(--panel))!important}
-.btn.primary{background:var(--accent)!important;border:1px solid var(--accent)!important;box-shadow:0 1px 1px rgba(0,0,0,.08)!important;font-weight:600}
-.btn.primary:hover{background:var(--accent-2)!important}
+/* ---- bediening ---- */
+:root{--ctl-h:34px;--ctl-fs:13px;--ctl-px:13px}
+@media (max-width:860px){:root{--ctl-h:42px;--ctl-fs:16px}}
+input:is([type=text],[type=password],[type=number],[type=date],[type=time],[type=month],[type=url],[type=tel],[type=email],[type=search]),select{border-radius:var(--ctl-r)!important;background-color:var(--panel)!important;border:1px solid var(--line)!important}
+input:is([type=text],[type=password],[type=number],[type=date],[type=time],[type=month],[type=url],[type=tel],[type=email],[type=search]):hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--text) 22%,transparent)!important}
+select{padding-right:32px}
+textarea{border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)!important;border-color:var(--accent)!important;background:var(--panel)!important}
+.btn{border-radius:var(--ctl-r)!important;font-weight:600;padding-left:14px;padding-right:14px}
+.btn:not(.primary):not(.danger){background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important;color:var(--text)}
+.btn:not(.primary):not(.danger):hover{background:var(--group)!important}
+.btn.primary{background:var(--accent)!important;border:1px solid var(--accent)!important;box-shadow:none!important;font-weight:600}
+.btn.primary:hover{background:var(--accent-2)!important;border-color:var(--accent-2)!important}
 .btn.danger{background:transparent!important;border:1px solid color-mix(in srgb,var(--danger) 35%,transparent)!important;box-shadow:none!important}
 .btn.danger:hover{background:color-mix(in srgb,var(--danger) 8%,transparent)!important}
-.toolbar .btn,.tb-cols,#banner .btn,#quickAdd .btn{padding-left:12px;padding-right:12px}
-.icon-btn{border-radius:6px!important}
-.seg{border-radius:8px!important;background:var(--fill)!important;border:0!important;box-shadow:none!important;padding:2px}
-.seg button{border-radius:6px!important;font-weight:500}
-.seg button.on{background:var(--seg-on)!important;box-shadow:0 1px 2px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)!important;font-weight:600}
-@media (prefers-color-scheme:dark){
-  .btn:not(.primary):not(.danger){border-color:rgba(255,255,255,.12)!important;background:rgba(255,255,255,.06)!important}
-  .btn:not(.primary):not(.danger):hover{background:rgba(255,255,255,.1)!important}
-}
-.chip{border-radius:5px}
-#banner{border-radius:10px!important;background:var(--group)!important;border:0!important;box-shadow:none!important}
+.toolbar .btn,.tb-cols,#banner .btn,#quickAdd .btn{padding-left:14px;padding-right:14px}
+.btn.tb-add:not(.primary):not(.danger){background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important}
+.btn.tb-add:not(.primary):not(.danger):hover{background:var(--accent-2)!important;border-color:var(--accent-2)!important}
+.icon-btn{border-radius:8px!important}
+.seg{border-radius:10px!important;background:var(--fill)!important;border:1px solid var(--hairline)!important;box-shadow:none!important;padding:3px}
+.seg button{border-radius:8px!important;font-weight:500}
+.seg button.on{background:var(--seg-on)!important;box-shadow:0 0 0 1px var(--line)!important;font-weight:600}
+.chip,.fchip{border-radius:999px;font-weight:600}
+#banner{border-radius:12px!important;background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important}
 
-/* ---- taken: vierkante vinkjes, dunne scheidingslijnen ---- */
-.check{width:18px;height:18px;border-radius:5px!important;border:1.5px solid var(--faint)}
-.check svg{width:11px;height:11px}
+/* ---- taken ---- */
+.check{width:20px;height:20px;border-radius:50%!important;border:1.5px solid var(--faint)}
+.check svg{width:12px;height:12px}
 .check.on{background:var(--accent);border-color:var(--accent)}
-.task{border-radius:7px;padding:8px 10px}
-.task.sel{background:var(--sel-task)}
-.task + .task::before{left:38px}
+.task{border-radius:10px;padding:10px 12px}
+.task.sel{background:var(--accent-soft)}
+.task + .task::before{left:46px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card);padding:10px 12px 8px;margin:0 0 14px}
+.group h3{font-size:12px;font-weight:650;color:var(--muted);letter-spacing:.02em;margin:4px 4px 6px}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--r-card)}
 
-/* ---- bord: rustige kolommen, witte kaartjes ---- */
-.card .t-title{font-weight:500;font-size:14.5px}
+/* ---- bord: elke kolom een witte kaart ---- */
+.card .t-title{font-weight:500;font-size:14px}
 .t-title{font-weight:450}
-.col{background:var(--col)!important;border-radius:12px!important;padding:10px 8px 6px}
-.col>header{font-size:13.5px;font-weight:700;color:var(--text);padding:2px 6px 9px;border-bottom:1px solid var(--hairline);margin-bottom:8px}
-.col>header .dot{width:8px;height:8px}
-.card{border-radius:8px!important;padding:10px 11px;box-shadow:var(--shadow-card)!important}
-.card:hover{box-shadow:var(--shadow-lift)!important}
-.card-ph,.ghost{border-radius:8px!important}
-.col-add input,.col-add-top input{border-radius:7px!important}
+.col{background:var(--panel)!important;border:1px solid var(--line)!important;border-top:1px solid var(--line)!important;border-radius:var(--r-card)!important;padding:14px 12px 10px!important}
+.col.over{background:color-mix(in srgb,var(--c) 5%,var(--panel))!important;border-color:color-mix(in srgb,var(--c) 40%,var(--line))!important}
+.col>header{font-size:14px;font-weight:650;color:var(--text);padding:0 4px 12px!important;border-bottom:0!important;margin:0!important}
+.col>header .dot{width:9px;height:9px}
+.col>header .count{background:var(--fill)!important;color:var(--muted)!important;font-weight:600!important;font-size:11.5px;padding:1px 8px!important;border-radius:999px}
+.col>header .badge{border-radius:999px}
+.card{background:var(--panel)!important;border:1px solid var(--hairline)!important;border-radius:12px!important;padding:11px 12px;box-shadow:none!important}
+.card:hover{border-color:color-mix(in srgb,var(--text) 22%,transparent)!important;box-shadow:var(--shadow-lift)!important}
+.card.sel{background:var(--accent-soft)!important;border-color:var(--accent-line)!important}
+.card-ph,.ghost{border-radius:12px!important}
+.col-add input,.col-add-top input{border-radius:10px!important}
+.col-add input{border:1px dashed var(--line)!important;background:transparent!important}
 
 /* ---- panelen, tabellen, kaarten met cijfers ---- */
-.table-wrap,.sales-stat,.pace{border-radius:10px!important}
-.props{border-radius:10px!important;background:transparent!important;box-shadow:0 0 0 1px var(--line)!important}
-#dNotes,ul.comments li{background:var(--fill)!important;box-shadow:none!important;border-radius:9px}
-#detail{background:var(--panel)!important;border:0!important;border-left:1px solid var(--hairline)!important;box-shadow:none!important}
+.table-wrap,.sales-stat,.pace,.pg-card,.box{border-radius:var(--r-card)!important;background:var(--panel);border:1px solid var(--line);box-shadow:none!important}
+.box{background:var(--group)}
+.pg-table th{font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+.sales-stat b{font-weight:600}
+.props{border-radius:12px!important;background:var(--panel)!important;box-shadow:none!important;border:1px solid var(--line)!important}
+#dNotes,ul.comments li{background:var(--group)!important;box-shadow:none!important;border-radius:12px;border:1px solid var(--hairline)}
+#detail{background:var(--panel)!important;border:0!important;border-left:1px solid var(--line)!important;box-shadow:none!important}
 @media (min-width:861px){
   #detail{margin:0!important;height:100%!important;border-radius:0!important}
-  #app.board-mode #detail{margin:0!important;height:auto!important;border-radius:12px!important;border:0!important;box-shadow:var(--shadow)!important}
+  #app.board-mode #detail{margin:0!important;height:auto!important;border-radius:var(--r-card)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
 }
-.d-head{background:var(--panel)!important;border-bottom:1px solid var(--hairline)!important}
+.d-head{background:var(--panel)!important;border-bottom:1px solid var(--line)!important}
 #app.board-mode .d-head,#detail .d-head{border-radius:0!important}
-#app.board-mode #detail .d-head{border-radius:12px 12px 0 0!important}
+#app.board-mode #detail .d-head{border-radius:var(--r-card) var(--r-card) 0 0!important}
 
 /* ---- vensters, meldingen, inloggen ---- */
-dialog{background:var(--panel)!important;border:0!important;border-radius:12px!important;box-shadow:var(--shadow)!important}
-.box{border-radius:10px}
-#toast{background:#2c2c2e!important;color:#fff;border:0!important;border-radius:10px!important;box-shadow:0 10px 30px rgba(0,0,0,.25)!important}
-.lock-card{background:var(--panel)!important;border:0!important;border-radius:16px!important;box-shadow:var(--shadow)!important}
+dialog{background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:18px!important;box-shadow:var(--shadow)!important}
+#toast{background:#1f2624!important;color:#fff;border:0!important;border-radius:12px!important}
+.lock-card{background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:20px!important;box-shadow:var(--shadow)!important}
 
 /* ---- gsm ---- */
 @media (max-width:860px){
   #side{border-radius:0!important;box-shadow:none!important}
   #app.side-open #side{box-shadow:var(--shadow)!important}
-  dialog{border-radius:14px 14px 0 0!important}
-  #tabBar{background:var(--panel)!important;border:0!important;box-shadow:0 0 0 1px var(--line),0 6px 20px rgba(0,0,0,.08)!important;border-radius:18px!important}
+  dialog{border-radius:18px 18px 0 0!important}
+  #tabBar{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:0 6px 20px rgba(24,42,36,.08)!important;border-radius:18px!important}
   #tabBar button{border-radius:12px!important}
-  #tabBar button.on{background:var(--sel)!important;box-shadow:none!important}
+  #tabBar button.on{background:var(--accent-soft)!important;box-shadow:none!important;color:var(--accent)!important}
   #fab{background:var(--accent)!important;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)!important}
-  #quickAdd{background:var(--panel)!important;border:0!important;box-shadow:0 0 0 1px var(--line),0 6px 20px rgba(0,0,0,.08)!important;border-radius:12px!important}
-  .col-tabs button{border-radius:8px!important;background:var(--fill)!important;border:0!important;box-shadow:none!important}
-  .col-tabs button.on{background:var(--panel)!important;box-shadow:0 0 0 1.5px var(--c,var(--accent))!important}
-  .toolbar.open .tb-more{background:var(--group)!important;border:0!important;box-shadow:none!important;border-radius:12px!important}
+  #quickAdd{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:0 6px 20px rgba(24,42,36,.08)!important;border-radius:14px!important}
+  .col-tabs button{border-radius:999px!important;background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important}
+  .col-tabs button.on{background:var(--accent-soft)!important;border-color:var(--accent-line)!important;box-shadow:none!important}
+  .toolbar.open .tb-more{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:14px!important}
   .main-head h2{font-size:30px}
 }
 
@@ -1487,12 +1521,6 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
 #banner .btn.bn-later{color:var(--faint)!important;font-weight:500!important}
 #banner .btn:hover{text-decoration:underline}
 /* bord: geen grijze vakken meer; kolommen zijn gewoon een kop met kaartjes eronder */
-.col{background:transparent!important;padding:2px 2px 6px!important}
-.col.over{background:color-mix(in srgb,var(--c) 7%,transparent)!important}
-.col>header{border-bottom:0!important;margin-bottom:2px!important;padding:2px 4px 8px!important}
-.col>header .count{background:none!important;padding:0!important;color:var(--faint)!important;font-weight:500!important}
-.card{box-shadow:none!important;border:1px solid var(--line)!important}
-.card:hover{box-shadow:0 2px 10px rgba(0,0,0,.06)!important}
 .col-add input{color:var(--faint)!important}
 .col-empty{color:var(--faint);opacity:.7}
 @media (hover:hover) and (pointer:fine){
@@ -1507,8 +1535,6 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
 @media (max-width:860px){
   #banner{flex-wrap:wrap!important;row-gap:4px!important;font-size:14px!important}
   #banner>span{flex:1 1 100%}
-  .col-tabs button{background:transparent!important;box-shadow:none!important;color:var(--muted)}
-  .col-tabs button.on{background:var(--fill)!important;box-shadow:none!important;color:var(--text)}
   .col-add input{background:transparent!important}
 }
 
@@ -1639,6 +1665,12 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
   <div id="scrim"></div>
 
   <main id="main">
+    <div class="topbar">
+      <span class="tb-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span id="topDate"></span></span>
+      <span class="grow"></span>
+      <button type="button" class="top-search" id="topSearch" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><span>Zoeken…</span><kbd>/</kbd></button>
+      <button type="button" class="top-btn" id="topHelp" title="Sneltoetsen (?)" aria-label="Sneltoetsen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 16.6v.01"/></svg></button>
+    </div>
     <div class="main-inner">
       <header class="main-head">
         <button id="menuBtn" class="icon-btn only-mobile" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -1646,6 +1678,7 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
         <span class="grow"></span>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
+      <p id="viewSub" class="view-sub"></p>
       <textarea id="projNotes" class="proj-notes" rows="1" placeholder="Klik hier om notities toe te voegen…" aria-label="Notities bij dit project" hidden></textarea>
       <div id="archBar" hidden></div>
       <div id="banner" hidden></div>
@@ -2648,11 +2681,24 @@ function renderNav() {
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   renderSync();
 }
+function viewSubtitle() {
+  const t = view.type;
+  if (['all', 'project', 'inbox', 'today', 'upcoming'].includes(t)) {
+    const open = viewTasks(false).filter(x => !x.done), late = open.filter(x => x.due && x.due < today()).length;
+    if (!open.length) return 'Geen open taken.';
+    return `${open.length} open ${open.length === 1 ? 'taak' : 'taken'}${late ? ` · ${late} te laat` : ''}`;
+  }
+  if (t === 'clients') return `${data.clients.length.toLocaleString('nl-BE')} klanten`;
+  if (t === 'agenda') { const n = eventsSoon(); return n ? `${n} ${n === 1 ? 'datum' : 'data'} de komende 7 dagen` : 'Niets gepland de komende 7 dagen.'; }
+  return '';
+}
 function renderHead() {
   const isP = view.type === 'project' || view.type === 'inbox' || view.type === 'sales';
   const color = view.type === 'project' ? proj(view.id).color : null;
   const pr = view.type === 'project' || view.type === 'inbox' ? proj(view.type === 'inbox' ? 'inbox' : view.id) : null;
   $('#viewTitle').innerHTML = `${pr?.emoji ? `<span class="emo">${esc(pr.emoji)}</span>` : color ? `<span class="dot" style="background:${color}"></span>` : ''}<span>${esc(viewTitle())}</span>`;
+  $('#topDate').textContent = cap(new Date().toLocaleDateString('nl-BE', {weekday:'long', day:'numeric', month:'long'}));
+  $('#viewSub').textContent = viewSubtitle();
   const notes = $('#projNotes');
   notes.hidden = !pr;
   if (pr && document.activeElement !== notes) { notes.value = pr.notes || ''; notes.dataset.pid = pr.id; autosize(notes); }
@@ -4931,6 +4977,8 @@ document.addEventListener('keydown', e => {
   else if (e.key === '/') { e.preventDefault(); openSearch(); }
 });
 
+$('#topSearch').onclick = () => { if (view.type === 'clients') $('#clSearch')?.focus(); else if (!isPageView() && view.type !== 'sales') openSearch(); else toast('Zoeken kan op de pagina zelf'); };
+$('#topHelp').onclick = () => openShortcutsDialog();
 function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbSearch')?.focus(); $('#tbSearch')?.select(); }
 
 function openShortcutsDialog() {
