@@ -31,7 +31,7 @@
 
 
 <style>
-  /* Huisstijl SB — Design Language v1.0, kleur 60/20/10/7/3 */
+  /* Huisstijl SB — 2026, achromatisch: inkt op wit, geen kleuraccent */
   :root{
     --bg:#FFFFFF;
     --bg-elevated:#F6F6F6;
@@ -240,7 +240,7 @@
   .sound-note{ margin-top:20px; font-size:17px; line-height:1.6; color:var(--text-secondary); max-width:44ch; }
 
   /* ---------- PEOPLE I'VE PARTIED WITH ---------- */
-  .partied-scene{ padding:120px 0; background:var(--cord); }
+  .partied-scene{ padding:120px 0 150px; background:var(--cord); }
   .partied-scene .display{ font-size:clamp(30px, 6vw, 46px); max-width:18ch; }
   .partied-wall{
     list-style:none;
@@ -275,41 +275,6 @@
     .partied-wall li:first-child{ grid-column:span 2; }
   }
 
-  /* ---------- CONNECT ---------- */
-  .connect-scene{ padding:120px 0 140px; }
-  .connect-social{
-    max-width:460px;
-    padding:44px 36px;
-    border-radius:var(--r-lg);
-    background:var(--bg-elevated);
-    border:1px solid var(--hairline);
-    box-shadow:0 24px 48px -32px rgba(20,20,20,.18);
-  }
-  .connect-social h2{ font-size:clamp(24px, 4.5vw, 34px); margin-top:8px; }
-  .row{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:18px 4px;
-    margin:0 -4px;
-    border-top:1px solid var(--hairline);
-    border-radius:var(--r-sm);
-    transition:background .2s ease;
-  }
-  .row:hover{ background:rgba(20,20,20,.03); }
-  .social-rows{ margin-top:32px; }
-  .social-rows .row:first-child{ border-top:1px solid var(--hairline); }
-  .row svg.ico{ width:22px; height:22px; flex-shrink:0; color:var(--text-secondary); }
-  .row .row-text{ flex:1; min-width:0; }
-  .row .row-name{ font-size:16px; font-weight:600; }
-  .row .row-handle{ font-size:13px; color:var(--text-secondary); margin-top:2px; }
-  .row .go{
-    font-size:13px;
-    color:var(--text-secondary);
-    transition:color .2s ease, transform .2s ease;
-  }
-  .row:hover .go, .row:focus-visible .go{ color:var(--accent); transform:translateX(3px); }
-
   /* ---------- FOOTER ---------- */
   .foot{
     max-width:920px;
@@ -342,8 +307,7 @@
     .bio-hero{ padding-top:160px; }
     .bio-hero-photo-wrap{ width:220px; }
     .sound-scene{ padding:160px 0; }
-    .partied-scene{ padding:160px 0; }
-    .connect-scene{ padding:160px 0 180px; }
+    .partied-scene{ padding:160px 0 190px; }
     .foot{ margin-top:48px; }
   }
 
@@ -481,7 +445,7 @@
   .cookie-banner .tag{ flex-shrink:0; padding:10px 20px; font-size:13px; }
 
   @media (prefers-reduced-motion: reduce){
-    .modal-overlay, .modal, .tag, .partied-wall li, .sound-bar, .row, .row .go, .site-nav-links a::after, .cookie-banner{ transition:none; }
+    .modal-overlay, .modal, .tag, .partied-wall li, .sound-bar, .site-nav-links a::after, .cookie-banner{ transition:none; }
     .modal{ transform:none; }
   }
 
@@ -551,41 +515,6 @@
           <li>Café De Planeet</li>
           <li>De Loods</li>
         </ul>
-      </div>
-    </section>
-
-    <section class="connect-scene" id="connect">
-      <div class="wrap reveal">
-        <div class="connect-social" aria-labelledby="volg-title">
-          <span class="idx">Socials</span>
-          <h2 class="display" id="volg-title">Volg SB.</h2>
-          <div class="social-rows">
-            <a class="row" href="https://instagram.com/sbmusicbe" target="_blank" rel="noopener">
-              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>
-              <div class="row-text">
-                <div class="row-name display">Instagram</div>
-                <div class="row-handle mono">@sbmusicbe</div>
-              </div>
-              <span class="go mono" aria-hidden="true">Volg →</span>
-            </a>
-            <a class="row" href="https://tiktok.com/@sbmusicbe" target="_blank" rel="noopener">
-              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 3v10.2a3.4 3.4 0 1 1-2.6-3.3"/><path d="M14 3c.3 2.2 2 3.9 4.2 4.2"/></svg>
-              <div class="row-text">
-                <div class="row-name display">TikTok</div>
-                <div class="row-handle mono">@sbmusicbe</div>
-              </div>
-              <span class="go mono" aria-hidden="true">Kijk →</span>
-            </a>
-            <a class="row" href="https://facebook.com/sbmusicbe" target="_blank" rel="noopener">
-              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 9h2.5V6H14c-1.7 0-3 1.3-3 3v2H9v3h2v7h3v-7h2.3l.7-3H14V9z"/></svg>
-              <div class="row-text">
-                <div class="row-name display">Facebook</div>
-                <div class="row-handle mono">@sbmusicbe</div>
-              </div>
-              <span class="go mono" aria-hidden="true">Like →</span>
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   </main>

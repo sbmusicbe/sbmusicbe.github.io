@@ -233,8 +233,8 @@
   .home-teaser a{ color:var(--text); text-decoration:underline; text-underline-offset:2px; }
   .home-teaser a:hover{ color:var(--text-secondary); }
   .home-cta-row{ margin-top:48px; display:flex; flex-wrap:wrap; justify-content:center; gap:16px; }
+  .home-social-row{ margin-top:28px; display:flex; justify-content:center; gap:14px; }
   .home-social{
-    margin:28px auto 0;
     width:44px; height:44px;
     display:flex; align-items:center; justify-content:center;
     border:1px solid var(--hairline);
@@ -294,7 +294,7 @@
     .home-logo{ margin:0; }
     .home-teaser{ margin-left:0; margin-right:0; }
     .home-cta-row{ justify-content:flex-start; }
-    .home-social{ margin-left:0; margin-right:auto; }
+    .home-social-row{ justify-content:flex-start; }
   }
 
   /* ---------- BOOKING MODAL ---------- */
@@ -471,11 +471,19 @@
         <p class="home-teaser">Ik voel de zaal aan en draai wat het feest nodig heeft: van meezingers tot house en hiphop, de hele nacht vol energie. <a href="bio.html">Lees meer →</a></p>
         <div class="home-cta-row">
           <a class="tag krijt" href="#booking-modal">Boek SB</a>
-          <a class="tag" href="bio.html#connect">Volg SB</a>
+          <a class="tag" href="contact.html#connect">Volg SB</a>
         </div>
-        <a class="home-social" href="https://instagram.com/sbmusicbe" target="_blank" rel="noopener" aria-label="SB op Instagram">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>
-        </a>
+        <div class="home-social-row">
+          <a class="home-social" href="https://instagram.com/sbmusicbe" target="_blank" rel="noopener" aria-label="SB op Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>
+          </a>
+          <a class="home-social" href="https://tiktok.com/@sbmusicbe" target="_blank" rel="noopener" aria-label="SB op TikTok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 3v10.2a3.4 3.4 0 1 1-2.6-3.3"/><path d="M14 3c.3 2.2 2 3.9 4.2 4.2"/></svg>
+          </a>
+          <a class="home-social" href="https://facebook.com/sbmusicbe" target="_blank" rel="noopener" aria-label="SB op Facebook">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 9h2.5V6H14c-1.7 0-3 1.3-3 3v2H9v3h2v7h3v-7h2.3l.7-3H14V9z"/></svg>
+          </a>
+        </div>
       </div>
     </div>
   </main>
