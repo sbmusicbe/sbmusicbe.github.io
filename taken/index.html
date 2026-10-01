@@ -1599,6 +1599,57 @@ dialog{background:var(--panel)!important;border:0!important;border-radius:12px!i
 #clMenu,#clMenu2{width:var(--ctl-h);height:var(--ctl-h);color:var(--muted)}
 #clMenu svg,#clMenu2 svg{width:18px;height:18px}
 @media (pointer:coarse){ #ctxMenu button{padding:11px 12px;font-size:16px} #ctxMenu{min-width:240px} }
+
+/* ===== Duidelijk wat klikbaar is + scheiding tussen lagen die overlappen ===== */
+@media (hover:hover) and (pointer:fine){
+  /* handje op alles wat je kan aanklikken (ook in het geïnstalleerde venster) */
+  button:not(:disabled),a[href],summary,label.chk,label.tgl,select,input[type=checkbox],input[type=date],
+  .card,.task,.nav-item,.nav-year,.nav-arch,[data-client],[data-salespage],[data-task],[data-ev],.ag-day,.cell.t-format,
+  #ctxMenu button:not([disabled]),#timePop button,.dp-grid button,.dp-foot button,#tabBar button,.seg button,.col-tabs button{cursor:pointer!important}
+  /* zichtbare reactie bij hover */
+  .nav-item:not(.on):hover,.nav-year:hover,.nav-arch:hover{background:color-mix(in srgb,var(--text) 7%,transparent)!important}
+  .icon-btn:not(:disabled):hover{background:color-mix(in srgb,var(--text) 9%,transparent)!important;color:var(--text)!important}
+  .btn:not(.primary):not(.danger):not(:disabled):hover{background:color-mix(in srgb,var(--text) 6%,var(--panel))!important;border-color:color-mix(in srgb,var(--text) 24%,transparent)!important}
+  .btn.primary:not(:disabled):hover{filter:brightness(1.1)}
+  .btn.danger:not(:disabled):hover{background:color-mix(in srgb,var(--danger) 10%,transparent)!important}
+  .seg button:not(.on):hover{background:color-mix(in srgb,var(--text) 8%,transparent)!important;color:var(--text)}
+  .card:hover{border-color:color-mix(in srgb,var(--text) 22%,transparent)!important;box-shadow:0 4px 14px rgba(0,0,0,.09)!important}
+  .task:hover{background:color-mix(in srgb,var(--text) 5%,transparent)!important}
+  .pg-table tbody tr[data-client]:hover td,.pg-table tbody tr[data-salespage]:hover td,.pg-list button:hover{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+  .ag-day:hover{background:color-mix(in srgb,var(--text) 7%,transparent)!important}
+  .col-add input:hover{background:color-mix(in srgb,var(--text) 5%,transparent)!important}
+  a[href]:not(.btn):hover,.link:hover,.linklike:hover,#banner .btn:hover{text-decoration:underline;text-underline-offset:2px}
+  .fchip[data-edfilter]:hover,.cl-edrow .fchip:hover{filter:brightness(.95)}
+  #ctxMenu button:not([disabled]):hover{background:var(--accent)!important;color:#fff!important}
+}
+/* toetsenbord: duidelijke focusring */
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* lagen: vensters, menu's en het zwevende detailpaneel komen duidelijk los van wat eronder ligt */
+dialog::backdrop{background:rgba(18,18,22,.4)!important}
+dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24px rgba(0,0,0,.12)!important}
+#ctxMenu,#timePop,#datePop,#fmtPop{border:1px solid color-mix(in srgb,var(--text) 14%,transparent)!important;box-shadow:0 20px 50px rgba(0,0,0,.22),0 3px 10px rgba(0,0,0,.1)!important}
+#toast{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 14px 36px rgba(0,0,0,.3)!important}
+@media (min-width:861px){
+  #side{border-right:1px solid var(--line)!important}
+  #detail{border-left:1px solid var(--line)!important;box-shadow:-10px 0 30px rgba(0,0,0,.05)!important}
+  #app.board-mode #detail{border:1px solid color-mix(in srgb,var(--text) 12%,transparent)!important;box-shadow:-16px 0 50px rgba(0,0,0,.16),0 24px 60px rgba(0,0,0,.14)!important}
+  .main-head.scrolled{box-shadow:0 1px 0 var(--line),0 6px 16px -10px rgba(0,0,0,.18)!important}
+}
+@media (max-width:860px){
+  #detail{box-shadow:0 -10px 40px rgba(0,0,0,.18)!important}
+  #app.side-open #side{box-shadow:12px 0 40px rgba(0,0,0,.22)!important}
+}
+@media (prefers-color-scheme:dark){
+  dialog::backdrop{background:rgba(0,0,0,.55)!important}
+  dialog,#ctxMenu,#timePop,#datePop,#fmtPop{box-shadow:0 0 0 1px rgba(255,255,255,.1),0 24px 60px rgba(0,0,0,.6)!important}
+  #app.board-mode #detail{box-shadow:0 0 0 1px rgba(255,255,255,.1),-16px 0 50px rgba(0,0,0,.55)!important}
+}
+
+/* klantenfiche: projectnummer en blokkering */
+.fchip .pj-no{font-size:11px;font-weight:600;opacity:.65;margin-right:5px}
+.cl-block{display:inline-flex;align-items:center;height:var(--ctl-h);padding:0 12px;border-radius:var(--ctl-r,8px);font-size:13px;font-weight:600;color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.ci-prev{overflow-x:auto}
 </style>
 </head>
 <body>
@@ -2965,7 +3016,7 @@ function renderDetail(force) {
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
-        ${(() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${cl?.phone ? `<a class="icon-btn" href="tel:${esc(telHref(cl.phone))}" title="${esc(cl.phone)} bellen" aria-label="Bellen">${I.phone}</a>` : ''}</span></label>`; })()}
+        ${(() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}</span></label>`; })()}
       </div>
       <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
       <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
@@ -4952,8 +5003,9 @@ function sortedClients() {
   return list;
 }
 const telHref = s => String(s || '').replace(/[^\d+]/g, '');
+const phoneOf = c => c?.phone || c?.mobile || '';
 const isClientCol = c => c.type === 'text' && /klant|client|adverteerder|firma/i.test(c.name);
-const newClientObj = o => { clientsChanged(); return touch({id:uid(), no:'', company:'', contact:'', phone:'', email:'', city:'', notes:'', editions:[], createdAt:now(), ...o}); };
+const newClientObj = o => { clientsChanged(); return touch({id:uid(), no:'', company:'', contact:'', phone:'', mobile:'', email:'', city:'', block:'', notes:'', editions:[], createdAt:now(), ...o}); };
 const editionsOf = c => Array.isArray(c.editions) ? c.editions : [];
 // Zoekt een klant op naam, contactpersoon of klantnummer (ook "261523 Carremans" of "Carremans (261523)").
 // Index op naam en klantnr, zodat opzoeken ook met duizenden klanten meteen gaat.
@@ -5060,7 +5112,7 @@ let clQuery = '', clEdition = '', clLimit = 200, searchMemo = null;
 function clientSearchKeys() {
   if (searchMemo && searchMemo.arr === data.clients && searchMemo.len === data.clients.length && searchMemo.ver === clientsVer) return searchMemo.map;
   const map = new Map();
-  for (const c of data.clients) map.set(c.id, normName([c.company, c.contact, c.no, c.city, c.phone, c.email, ...editionsOf(c)].join(' ')) + ' ' + telHref(c.phone));
+  for (const c of data.clients) map.set(c.id, normName([c.company, c.contact, c.no, c.city, c.phone, c.mobile, c.email, c.block, ...editionsOf(c), ...Object.values(c.projNos || {})].join(' ')) + ' ' + telHref(c.phone) + ' ' + telHref(c.mobile));
   searchMemo = {arr:data.clients, len:data.clients.length, ver:clientsVer, map};
   return map;
 }
@@ -5095,7 +5147,7 @@ function sortClientList(list, sales, maps) {
   let val;
   if (k === 'open' || k === 'total' || k === 'last') { const agg = new Map(list.map(c => [c.id, clientAgg(c, sales, maps)])); val = c => agg.get(c.id)[k]; }
   else if (k === 'eds') val = c => [...editionsOf(c)].sort(nlCollator.compare)[0];
-  else if (k === 'phone') val = c => telHref(c.phone);
+  else if (k === 'phone') val = c => telHref(phoneOf(c));
   else val = c => c[k];
   const empty = v => v === undefined || v === null || v === '' || v === 0;
   return list.map(c => [c, val(c)]).sort((x, y) => {
@@ -5112,7 +5164,7 @@ function applyClientFilter() {
       <td><b>${esc(clientLabel(c))}</b>${c.company && c.contact ? `<div class="muted small">${esc(c.contact)}</div>` : ''}</td>
       <td class="mono">${esc(c.no || '')}</td>
       <td class="hide-m cl-eds">${chips(ed)}</td>
-      <td>${c.phone ? `<a href="tel:${esc(telHref(c.phone))}" class="tel">${esc(c.phone)}</a>` : ''}</td>
+      <td>${phoneOf(c) ? `<a href="tel:${esc(telHref(phoneOf(c)))}" class="tel">${esc(phoneOf(c))}</a>` : ''}</td>
       <td class="hide-m">${esc(c.city || '')}</td>
       <td class="num hide-m">${g.open || ''}</td>
       <td class="num">${g.total ? eur(g.total) : ''}</td>
@@ -5333,40 +5385,45 @@ function textSource(text, name) {
     }};
 }
 const cleanNo = v => { const s = String(v ?? '').trim(); return /^\d+\.0+$/.test(s) ? s.replace(/\.0+$/, '') : s; };
-const CI_KEYS = ['no', 'name', 'ed', 'phone', 'email', 'city', 'contact', 'gsm'];
+const CI_KEYS = ['no', 'name', 'ed', 'phone', 'email', 'city', 'contact', 'gsm', 'block', 'projno'];
 function guessCols(head, rows) {
   const h = head.map(x => normName(x)), used = new Set();
   const find = (re, not) => { const i = h.findIndex((x, j) => !used.has(j) && re.test(x) && !(not && not.test(x))); if (i >= 0) used.add(i); return i; };
   const sample = i => rows.slice(0, 40).map(r => String(r[i] ?? '').trim()).filter(Boolean);
   const byContent = test => { const i = head.findIndex((_, j) => { if (used.has(j)) return false; const v = sample(j); return v.length >= Math.min(3, rows.length) && v.filter(test).length >= v.length * 0.6; }); if (i >= 0) used.add(i); return i; };
   let email = find(/(^| )(e ?mail|email|mail|mailadres)( |$)/);
-  let phone = find(/(^| )(tel|telefoon|telefoonnummer|tel nr|telnr|phone)( |$)/, /fax/);
-  let gsm = find(/(^| )(gsm|gsm nummer|gsmnummer|mobiel|mobile|gsm nr)( |$)/);
-  if (phone < 0 && gsm >= 0) { phone = gsm; gsm = -1; }
-  let no = find(/^(klant ?(nr|nummer|no|code)|nr|nummer|debiteur|klantnr|customer ?(no|number|id))/);
+  let phone = find(/(^| )(tel|telefoon|telefoonnr|telefoonnummer|tel nr|telnr|phone)( |$)/, /fax/);
+  let gsm = find(/(^| )(gsm|gsm nummer|gsmnummer|gsmnr|gsm nr|mobiel|mobile)( |$)/);
+  let block = find(/(blokkering|geblokkeerd|blocked|blokkade)/);
+  let projno = find(/^project ?(nr|nummer|no|code|id)$/);
+  let no = find(/^((order ?|debiteur ?)?klant ?(nr|nummer|no|code)|nr|nummer|debiteur|debiteurnr|klantnr|customer ?(no|number|id))/);
   let contact = find(/(contact|aanspreek|zaakvoerder|verantwoordelijke)/);
   let city = find(/(gemeente|stad|woonplaats|plaats|city|town|localiteit|deelgemeente)/, /postcode/);
   let name = find(/(bedrijf|firma|naam|klant$|^klant |company|name|adverteerder)/);
-  let ed = find(/(uitgave|editie|publicatie|titel|magazine|blad|krant|medium|edition)/);
+  let ed = find(/(uitgave|editie|publicatie|titel|magazine|blad|krant|medium|edition|project ?omschrijving|projectnaam|project ?naam)/);
   const byHeader = [no, name, ed].filter(i => i >= 0).length;
   if (email < 0) email = byContent(v => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v));
   if (no < 0) { no = head.findIndex((_, i) => !used.has(i) && rows.slice(0, 30).filter(r => /^\d{3,}$/.test(cleanNo(r[i]))).length >= Math.min(10, rows.length * 0.6)); if (no >= 0) used.add(no); }
   if (phone < 0) phone = byContent(v => /^\+?[\d\s./()-]{8,}$/.test(v) && v.replace(/\D/g, '').length >= 8);
   if (name < 0) { name = head.findIndex((_, i) => !used.has(i) && rows.slice(0, 30).some(r => /[a-z]{3}/i.test(r[i] || ''))); if (name >= 0) used.add(name); }
-  return {no, name, ed, phone, email, city, contact, gsm, byHeader};
+  return {no, name, ed, phone, email, city, contact, gsm, block, projno, byHeader};
 }
 // rijen [klantnr, naam, uitgave] → unieke klanten (dubbele samengevoegd per klantnr, anders per naam)
 function groupClientRows(rows) {
   const groups = new Map(); let skipped = 0;
-  for (const [n0, n1, n2, ph0, em, ci, co, gs] of rows) {
-    const ph = String(ph0 ?? '').trim() || String(gs ?? '').trim();   // geen vast nummer → gsm
+  for (const [n0, n1, n2, ph, em, ci, co, gs, bl, pn] of rows) {
     const no = cleanNo(n0), name = String(n1 || '').trim(), ed = String(n2 || '').trim();
     if (!no && !name) { skipped++; continue; }
     const key = no ? 'no:' + no : 'nm:' + normName(name);
     let g = groups.get(key);
-    if (!g) groups.set(key, g = {no, name:'', eds:new Set(), rows:0, phone:'', email:'', city:'', contact:''});
+    if (!g) groups.set(key, g = {no, name:'', eds:new Set(), rows:0, phone:'', mobile:'', email:'', city:'', contact:'', block:'', projNos:{}});
     if (!g.name && name) g.name = name;
-    if (!g.phone && ph) { let t = cleanNo(ph); if (/^[1-9]\d{7,8}$/.test(t)) t = '0' + t; g.phone = t; }   // Excel laat de 0 vooraan vallen
+    const tel = v => { let t = cleanNo(v); if (/^[1-9]\d{7,8}$/.test(t)) t = '0' + t; return t; };   // Excel laat de 0 vooraan vallen
+    if (!g.phone && String(ph ?? '').trim()) g.phone = tel(ph);
+    if (!g.mobile && String(gs ?? '').trim()) g.mobile = tel(gs);
+    if (!g.block && String(bl ?? '').trim()) g.block = String(bl).trim();
+    const pno = cleanNo(pn);
+    if (pno) { const nm = ed || ('Project ' + pno); g.eds.add(nm); if (!g.projNos[nm]) g.projNos[nm] = pno; }
     if (!g.email && em) g.email = String(em).trim().toLowerCase();
     if (!g.city && ci) g.city = String(ci).trim();
     if (!g.contact && co) g.contact = String(co).trim();
@@ -5375,7 +5432,7 @@ function groupClientRows(rows) {
   }
   const ix = clientIndex(); let isNew = 0, upd = 0;
   const list = [];
-  for (const g of groups.values()) { const ex = (g.no && ix.byNo.get(g.no)) || (g.name && ix.byName.get(normName(g.name))); if (ex) upd++; else isNew++; list.push({no:g.no, name:g.name, eds:[...g.eds], ex:!!ex, rows:g.rows, phone:g.phone, email:g.email, city:g.city, contact:g.contact}); }
+  for (const g of groups.values()) { const ex = (g.no && ix.byNo.get(g.no)) || (g.name && ix.byName.get(normName(g.name))); if (ex) upd++; else isNew++; list.push({no:g.no, name:g.name, eds:[...g.eds], ex:!!ex, rows:g.rows, phone:g.phone, mobile:g.mobile, email:g.email, city:g.city, contact:g.contact, block:g.block, projNos:g.projNos}); }
   return {list, isNew, upd, skipped, rows:rows.length};
 }
 function runClientImport(plan) {
@@ -5388,14 +5445,16 @@ function runClientImport(plan) {
       let ch = false;
       if (!ex.no && g.no) { ex.no = g.no; ch = true; }
       if (!ex.company && g.name) { ex.company = g.name; ch = true; }
-      for (const k of ['phone', 'email', 'city', 'contact']) if (!ex[k] && g[k]) { ex[k] = g[k]; ch = true; }
+      for (const k of ['phone', 'mobile', 'email', 'city', 'contact', 'block']) if (!ex[k] && g[k]) { ex[k] = g[k]; ch = true; }
+      for (const [nm, no] of Object.entries(g.projNos || {})) if (!ex.projNos?.[nm]) { ex.projNos = {...(ex.projNos || {}), [nm]:no}; ch = true; }
       const set = new Set(editionsOf(ex));
       for (const e of g.eds) if (!set.has(e)) { set.add(e); edAdded++; ch = true; }
       if (ch) { ex.editions = [...set]; touch(ex); updated++; }
     } else {
       // compact bewaren: enkel wat ingevuld is (scheelt veel ruimte bij tienduizenden klanten)
       const nc = {id:shortId(), u:ts, ...(g.no ? {no:g.no} : {}), ...(g.name ? {company:g.name} : {}), ...(g.eds.length ? {editions:g.eds} : {}),
-        ...(g.phone ? {phone:g.phone} : {}), ...(g.email ? {email:g.email} : {}), ...(g.city ? {city:g.city} : {}), ...(g.contact ? {contact:g.contact} : {})};
+        ...(g.phone ? {phone:g.phone} : {}), ...(g.mobile ? {mobile:g.mobile} : {}), ...(g.email ? {email:g.email} : {}), ...(g.city ? {city:g.city} : {}), ...(g.contact ? {contact:g.contact} : {}),
+        ...(g.block ? {block:g.block} : {}), ...(Object.keys(g.projNos || {}).length ? {projNos:g.projNos} : {})};
       data.clients.push(nc); if (g.no) byNo.set(g.no, nc); if (g.name) byName.set(normName(g.name), nc);
       added++; edAdded += g.eds.length;
     }
@@ -5404,7 +5463,7 @@ function runClientImport(plan) {
   return {added, updated, edAdded};
 }
 function openClientImport() {
-  let src = null, hasHead = true, map = {no:-1, name:-1, ed:-1, phone:-1, email:-1, city:-1, contact:-1, gsm:-1}, busy = false;
+  let src = null, hasHead = true, map = {no:-1, name:-1, ed:-1, phone:-1, email:-1, city:-1, contact:-1, gsm:-1, block:-1, projno:-1}, busy = false;
   const fmt = n => n.toLocaleString('nl-BE');
   const render = d => {
     if (!src) { $('#ciBody', d).innerHTML = ''; $('#ciGo', d).disabled = true; return; }
@@ -5416,11 +5475,11 @@ function openClientImport() {
     $('#ciBody', d).innerHTML = `
       <p class="muted small" style="margin:10px 0 6px">${esc(src.name)} · ${src.more ? 'meer dan ' + fmt(all) : (partial ? '± ' : '') + fmt(all)} rijen${partial ? ' (voorbeeld van de eerste ' + body.length + ')' : ''}</p>
       <label class="chk" style="margin:0 0 8px"><input type="checkbox" id="ciHead" ${hasHead ? 'checked' : ''}> Eerste rij bevat de kolomnamen</label>
-      <div class="ci-map">${sel('no', 'Klantnr')}${sel('name', 'Bedrijfsnaam')}${sel('ed', 'Uitgave')}${sel('phone', 'Telefoon')}${sel('email', 'E-mail')}${sel('city', 'Gemeente')}${sel('contact', 'Contactpersoon')}${sel('gsm', 'Gsm (als telefoon leeg is)')}</div>
+      <div class="ci-map">${sel('no', 'Klantnr')}${sel('name', 'Bedrijfsnaam')}${sel('contact', 'Contactpersoon')}${sel('city', 'Gemeente')}${sel('phone', 'Telefoon')}${sel('gsm', 'Gsm')}${sel('email', 'E-mail')}${sel('block', 'Blokkeringscode')}${sel('ed', 'Uitgave / project')}${sel('projno', 'Projectnr.')}</div>
       <div class="ci-sum">${partial ? `Alle ${src.more ? '' : fmt(all) + ' '}rijen worden bij het importeren verwerkt; dubbele klanten worden samengevoegd per klantnr.<br><span class="muted">In de eerste ${body.length} rijen: ${plan.list.length} unieke klanten, ${plan.isNew} nieuw, ${plan.upd} bestaand.</span>`
         : `<b>${plan.list.length}</b> unieke klanten <span class="muted">(${plan.rows} rijen${plan.rows > plan.list.length ? ', dubbele samengevoegd' : ''})</span><br><span class="ok">${plan.isNew} nieuw</span> · ${plan.upd} bestaand (ontbrekende gegevens en uitgaves aangevuld, niets overschreven)${plan.skipped ? ` · ${plan.skipped} lege rijen overgeslagen` : ''}`}</div>
-      <div class="table-wrap ci-prev"><table class="pg-table"><thead><tr><th>Klantnr</th><th>Bedrijfsnaam</th><th>Telefoon</th><th>E-mail</th><th>Gemeente</th><th>Uitgaves</th><th></th></tr></thead><tbody>
-        ${plan.list.slice(0, 8).map(g => `<tr><td class="mono">${esc(g.no)}</td><td>${esc(g.name)}</td><td>${esc(g.phone)}</td><td>${esc(g.email)}</td><td>${esc(g.city)}</td><td>${g.eds.map(e => `<span class="fchip">${esc(e)}</span>`).join(' ')}</td><td class="muted small">${g.ex ? 'bestaat' : 'nieuw'}</td></tr>`).join('')}
+      <div class="table-wrap ci-prev"><table class="pg-table"><thead><tr><th>Klantnr</th><th>Bedrijfsnaam</th><th>Contact</th><th>Telefoon</th><th>Gsm</th><th>Gemeente</th><th>Blok.</th><th>Projecten</th><th></th></tr></thead><tbody>
+        ${plan.list.slice(0, 8).map(g => `<tr><td class="mono">${esc(g.no)}</td><td>${esc(g.name)}</td><td>${esc(g.contact)}</td><td>${esc(g.phone)}</td><td>${esc(g.mobile)}</td><td>${esc(g.city)}</td><td>${esc(g.block)}</td><td>${g.eds.map(e => `<span class="fchip">${g.projNos?.[e] ? esc(g.projNos[e]) + ' · ' : ''}${esc(e)}</span>`).join(' ')}</td><td class="muted small">${g.ex ? 'bestaat' : 'nieuw'}</td></tr>`).join('')}
       </tbody></table></div>
       <div class="ci-prog" id="ciProg" hidden><progress max="100" value="0"></progress><span></span></div>`;
     $('#ciGo', d).disabled = busy || (map.no < 0 && map.name < 0);
@@ -5499,7 +5558,9 @@ function clientHtml() {
   return `
     <div class="pg-bar">
       ${c.no ? `<button type="button" class="btn cl-no" data-copy="${esc(c.no)}" title="Klantnummer kopiëren (voor Navision)"><span class="muted">Klantnr</span> <b class="mono">${esc(c.no)}</b> ${I.copy || ''}</button>` : ''}
+      ${c.block ? `<span class="cl-block" title="Blokkeringscode uit Navision">Geblokkeerd · ${esc(c.block)}</span>` : ''}
       ${c.phone ? `<a class="btn" href="tel:${esc(telHref(c.phone))}">${I.phone}Bellen</a>` : ''}
+      ${c.mobile ? `<a class="btn" href="tel:${esc(telHref(c.mobile))}">${I.phone}${c.phone ? 'Gsm' : 'Bellen'}</a>` : ''}
       ${c.email ? `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Mailen</a>` : ''}
       <button type="button" class="btn primary" id="clTask">+ Taak</button>
       <span class="grow"></span>
@@ -5513,7 +5574,7 @@ function clientHtml() {
       ${posSt && negSt ? `<div class="sales-stat"><span>${esc(posSt.label)} / ${esc(negSt.label)}</span><b>${fin('positive')} / ${fin('negative')}</b></div>` : ''}
       <div class="sales-stat"><span>Laatste contact</span><b>${relDay(g.last)}</b></div>
     </div>
-    ${editionsOf(c).length ? `<div class="cl-edrow"><span class="muted small">Meegewerkt aan</span>${editionsOf(c).map(e => `<button type="button" class="fchip" data-edfilter="${esc(e)}" title="Alle klanten van ${esc(e)}">${esc(e)}</button>`).join('')}</div>` : ''}
+    ${editionsOf(c).length ? `<div class="cl-edrow"><span class="muted small">Meegewerkt aan</span>${editionsOf(c).map(e => `<button type="button" class="fchip" data-edfilter="${esc(e)}" title="Alle klanten van ${esc(e)}">${c.projNos?.[e] ? `<span class="mono pj-no">${esc(c.projNos[e])}</span>` : ''}${esc(e)}</button>`).join('')}</div>` : ''}
     <div class="cl-grid">
       <section class="pg-card">
         <h3>Gegevens</h3>
@@ -5522,8 +5583,10 @@ function clientHtml() {
           <label class="fl"><span>Klantnr <small class="muted">(Navision)</small></span><span class="inline"><input type="text" data-cf="no" value="${esc(c.no || '')}" inputmode="numeric" placeholder="bv. 261523" class="mono"><button type="button" class="icon-btn" data-copy-field="no" title="Klantnummer kopiëren" aria-label="Klantnummer kopiëren">${I.copy}</button></span></label>
           ${field('contact', 'Contactpersoon', 'text', 'autocomplete="name"')}
           ${field('phone', 'Telefoon', 'tel', 'autocomplete="tel"')}
+          ${field('mobile', 'Gsm', 'tel', 'autocomplete="tel"')}
           ${field('email', 'E-mail', 'email', 'autocomplete="email"')}
           ${field('city', 'Gemeente', 'text', 'autocomplete="address-level2"')}
+          ${field('block', 'Blokkeringscode', 'text', 'placeholder="leeg = niet geblokkeerd"')}
           <label class="fl cl-notes"><span>Meegewerkt aan <small class="muted">(uitgaves, één per regel)</small></span><textarea data-cf="editions" rows="2" placeholder="bv. Turnhout Deze Week">${esc(editionsOf(c).join('\n'))}</textarea></label>
           <label class="fl cl-notes"><span>Notities</span><textarea data-cf="notes" rows="3" placeholder="Afspraken, voorkeuren, budget, beslisser…">${esc(c.notes || '')}</textarea></label>
         </div>
