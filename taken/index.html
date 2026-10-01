@@ -1622,6 +1622,59 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 
 .lock-card #lockBio{width:100%;margin-top:8px;padding-top:10px;padding-bottom:10px}
 #lockBio[hidden]{display:none}
+
+/* ===== Compacter: minder lege ruimte ===== */
+@media (min-width:861px){
+  /* titelregel: titel + ondertitel links, werkbalk (Bord/Lijst, Filter, + Taak) rechts */
+  .main-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:12px 20px 56px}
+  .main-inner>*{grid-column:1/-1}
+  .main-inner>.main-head{grid-column:1;grid-row:1}
+  .main-inner>.toolbar{grid-column:2;grid-row:1;margin:0;position:relative;flex-wrap:nowrap;justify-content:flex-end}
+  .main-inner>.toolbar .tb-toggle{margin-left:0}
+  .toolbar.open .tb-more{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:min(560px,90vw);padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);flex-basis:auto}
+  .main-head{align-items:baseline;gap:12px;margin:0 0 2px!important}
+  .main-head h2{font-size:24px}
+  .main-head .view-sub{font-size:13px;color:var(--muted);margin:0;white-space:nowrap}
+  .main-head #editProject{align-self:center}
+  /* taak open in het bord: het detailpaneel ligt over de rechterkant, dus de werkbalk schuift mee op */
+  #app.board-mode.with-detail .main-inner>.toolbar{margin-right:calc(var(--detail-w,400px) + 24px)}
+  #app.board-mode.with-detail .main-head #editProject{margin-right:calc(var(--detail-w,400px) + 24px)}
+  .topbar{height:40px;padding:0 20px}
+  .tb-date{font-size:12.5px}
+  .top-search,.top-btn{height:28px}
+  .top-btn{width:28px}
+  .proj-notes{font-size:13.5px;line-height:1.45;margin:2px 0 10px}
+}
+.view-sub{margin:0}
+/* bord */
+.board{gap:12px!important;padding:2px 2px 8px!important;margin-top:6px!important}
+.col{padding:10px 10px 8px!important}
+.col>header{padding:0 2px 8px!important}
+.cards{gap:6px}
+.card{padding:8px 10px!important}
+.card .t-meta{margin-top:4px}
+.card .t-title{font-size:13.5px;line-height:1.3}
+.t-fields{gap:1px;margin-top:5px;font-size:12.5px;line-height:1.3}
+.col-add{margin-top:6px}
+.col-add input{padding:6px 10px}
+.board-bar{gap:6px;margin-bottom:6px}
+.hidden-cols{font-size:12px}
+/* lijst */
+.group{padding:6px 10px 4px;margin:0 0 10px}
+.group h3{margin:2px 4px 2px}
+.task{padding:7px 10px}
+/* tabellen en cijfers */
+.pg-table td{padding-top:8px;padding-bottom:8px}
+.pg-table th{padding-top:8px;padding-bottom:8px}
+.sales-stat{padding:10px 14px}
+.sales-head{gap:10px;margin-bottom:10px}
+.pg-bar{margin-bottom:10px}
+/* zijbalk */
+.side-head{padding:0 6px 12px}
+.nav-item{padding:6px 10px}
+.side-section{padding:14px 10px 4px}
+#side{padding:14px 10px 12px}
+.side-foot{margin-top:8px;padding:8px 10px}
 </style>
 </head>
 <body>
@@ -1675,10 +1728,10 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
       <header class="main-head">
         <button id="menuBtn" class="icon-btn only-mobile" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <h2 id="viewTitle"></h2>
+        <span id="viewSub" class="view-sub"></span>
         <span class="grow"></span>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
-      <p id="viewSub" class="view-sub"></p>
       <textarea id="projNotes" class="proj-notes" rows="1" placeholder="Klik hier om notities toe te voegen…" aria-label="Notities bij dit project" hidden></textarea>
       <div id="archBar" hidden></div>
       <div id="banner" hidden></div>
@@ -4979,6 +5032,11 @@ document.addEventListener('keydown', e => {
 
 $('#topSearch').onclick = () => { if (view.type === 'clients') $('#clSearch')?.focus(); else if (!isPageView() && view.type !== 'sales') openSearch(); else toast('Zoeken kan op de pagina zelf'); };
 $('#topHelp').onclick = () => openShortcutsDialog();
+// de uitklapper onder Filter (computer) sluit zodra je ernaast klikt
+document.addEventListener('pointerdown', e => {
+  if (!tbOpen || matchMedia('(max-width:860px)').matches || e.target.closest('.toolbar')) return;
+  tbOpen = false; if (!$('#toolbar').hidden) renderToolbar();
+}, true);
 function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbSearch')?.focus(); $('#tbSearch')?.select(); }
 
 function openShortcutsDialog() {
