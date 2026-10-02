@@ -1624,6 +1624,8 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 #lockBio[hidden]{display:none}
 
 /* ===== Compacter: minder lege ruimte ===== */
+/* de glaslaag achter de kop (verscheen bij scrollen) hoort niet bij deze look en bedekte de hele pagina */
+.main-head::before,.main-head.scrolled::before{content:none!important;display:none!important}
 @media (min-width:861px){
   /* titelregel: titel + ondertitel links, werkbalk (Bord/Lijst, Filter, + Taak) rechts */
   .main-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:12px 20px 56px}
