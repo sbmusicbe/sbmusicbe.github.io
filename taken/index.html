@@ -4089,9 +4089,11 @@ function salesPace(pg, total) {
   const days = workdaysOf(pg.month), td = today(), n = pg.workdays > 0 ? pg.workdays : days.length;
   let elapsed = days.filter(d => d < td).length;
   elapsed = Math.min(elapsed, n);
-  const remaining = Math.max(0, n - elapsed);
+  const remaining = Math.max(0, n - elapsed);                       // werkdagen over, vandaag meegeteld
+  const after = Math.max(0, n - Math.min(n, days.filter(d => d <= td).length));   // werkdagen na vandaag
   const left = round2(target - total);
-  return {n, elapsed, remaining, left, perDay:remaining ? left / remaining : null,
+  // Het bedrag per dag wordt verdeeld over de werkdagen ná vandaag: wat vandaag verkocht wordt zit al in de omzet.
+  return {n, elapsed, remaining, after, left, perDay:after ? left / after : null, todayWork:days.includes(td),
     diff:round2(total - target * elapsed / n), past:td.slice(0, 7) > pg.month, future:td.slice(0, 7) < pg.month};
 }
 function paceHtml(pg, total) {
@@ -4099,8 +4101,10 @@ function paceHtml(pg, total) {
   if (p.left <= 0) return `<div class="pace hit"><b>🎉 Doel behaald!</b><span>${eur(-p.left)} boven de doelstelling · ${p.n} werkdagen</span></div>`;
   if (p.past || !p.remaining) return `<div class="pace behind"><b>Nog ${eur(p.left)} tekort</b><span>maand afgelopen · ${p.n} werkdagen</span></div>`;
   const sched = p.elapsed ? (p.diff >= 0 ? `<em class="ahead">${eur(p.diff)} vóór op schema</em>` : `<em class="behind">${eur(-p.diff)} achter op schema</em>`) : '';
+  if (!p.after) return `<div class="pace behind"><div><b>Nog ${eur(p.left)} te gaan</b><span>vandaag is de laatste werkdag van de maand</span></div>${sched ? `<div>${sched}</div>` : ''}</div>`;
+  const nd = p.after;
   return `<div class="pace ${p.elapsed && p.diff < 0 ? 'behind' : ''}">
-    <div><b>Nog ${eur(p.left)} te gaan</b><span>${p.remaining} ${p.remaining === 1 ? 'werkdag' : 'werkdagen'} over${p.future ? '' : ' (incl. vandaag)'} van ${p.n}</span></div>
+    <div><b>Nog ${eur(p.left)} te gaan</b><span>${nd} ${nd === 1 ? 'werkdag' : 'werkdagen'} over${p.future || !p.todayWork ? '' : ' (vandaag niet meegeteld)'} van ${p.n}</span></div>
     <div><b>${eur(p.perDay)} per dag nodig</b>${sched}</div>
   </div>`;
 }
