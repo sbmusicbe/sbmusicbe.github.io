@@ -230,27 +230,29 @@
     pointer-events:none;
     background:radial-gradient(50% 50% at 25% 15%, rgba(20,20,20,.05), transparent 72%);
   }
-  .contact-hero .wrap{ position:relative; z-index:1; }
+  .contact-hero .wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; }
   .contact-hero h1{ font-size:clamp(38px, 8vw, 60px); max-width:14ch; }
-  .contact-hero p{ margin-top:24px; font-size:18px; line-height:1.6; color:var(--text-secondary); max-width:48ch; }
+  .contact-hero p{ margin-top:24px; font-size:18px; line-height:1.6; color:var(--text-secondary); max-width:48ch; text-align:left; }
 
-  /* ---------- CONTACT FORM ---------- */
-  .contact-form-scene{ padding:64px 0 48px; }
+  /* ---------- CONTACT FORM + SOCIALS ---------- */
+  .contact-main{ padding:64px 0 120px; }
+  .contact-main .wrap{ max-width:1120px; display:flex; flex-direction:column; align-items:center; gap:40px; }
+  .contact-form-col{ width:100%; max-width:540px; display:flex; flex-direction:column; align-items:center; }
   .contact-form-card{
-    max-width:540px;
+    width:100%;
     padding:44px 36px;
     border-radius:var(--r-lg);
     background:var(--bg-elevated);
     border:1px solid var(--hairline);
     box-shadow:0 24px 48px -32px rgba(20,20,20,.18);
   }
-  .contact-direct{ margin-top:40px; display:flex; flex-direction:column; gap:10px; }
+  .contact-direct{ margin-top:40px; display:flex; flex-direction:column; align-items:center; gap:10px; }
   .contact-direct a{ color:var(--text-secondary); transition:color .2s ease; }
   .contact-direct a:hover{ color:var(--text); }
 
   /* ---------- CONNECT / SOCIALS ---------- */
-  .connect-scene{ padding:0 0 120px; }
   .connect-social{
+    width:100%;
     max-width:460px;
     padding:44px 36px;
     border-radius:var(--r-lg);
@@ -314,9 +316,12 @@
     }
     .nav-toggle-btn, .mobile-nav{ display:none; }
     .contact-hero{ padding-top:160px; }
-    .contact-form-scene{ padding:80px 0 60px; }
-    .connect-scene{ padding:0 0 160px; }
+    .contact-main{ padding:80px 0 160px; }
     .foot{ margin-top:56px; }
+  }
+
+  @media (min-width:960px){
+    .contact-main .wrap{ flex-direction:row; align-items:flex-start; justify-content:center; }
   }
 
   /* ---------- BOOKING FORM ---------- */
@@ -437,57 +442,55 @@
       </div>
     </section>
 
-    <section class="contact-form-scene" id="contact-form">
+    <section class="contact-main" id="contact-form">
       <div class="wrap reveal">
-        <div class="contact-form-card">
-          <form class="modal-form" id="booking-form" action="https://formsubmit.co/hey@sbmusic.be" method="POST">
-            <input type="hidden" name="_subject" value="Booking aanvraag SB">
-            <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-            <div>
-              <label for="bf-naam">Naam</label>
-              <input id="bf-naam" name="naam" type="text" required autocomplete="name">
-            </div>
-            <div>
-              <label for="bf-email">E-mail</label>
-              <input id="bf-email" name="email" type="email" required autocomplete="email">
-            </div>
-            <div>
-              <label for="bf-type">Type event</label>
-              <select id="bf-type" name="type">
-                <option>Club</option>
-                <option>Festival</option>
-                <option>Bruiloft</option>
-                <option>Private event</option>
-                <option>Anders</option>
-              </select>
-            </div>
-            <div>
-              <label for="bf-datum">Datum</label>
-              <input id="bf-datum" name="datum" type="date">
-            </div>
-            <div>
-              <label for="bf-bericht">Bericht</label>
-              <textarea id="bf-bericht" name="bericht" rows="4" placeholder="Locatie, uur, stijl …"></textarea>
-            </div>
-            <label class="modal-consent" for="bf-consent">
-              <input id="bf-consent" name="consent" type="checkbox" required>
-              <span>Ik ga akkoord met de <a href="privacy.html" target="_blank" rel="noopener">privacyverklaring</a> en <a href="terms.html" target="_blank" rel="noopener">algemene voorwaarden</a>.</span>
-            </label>
-            <button type="submit" class="tag krijt modal-submit">Stuur aanvraag →</button>
-            <p class="modal-note" id="booking-form-note">Komt rechtstreeks bij mij binnen, geen mailprogramma nodig.</p>
-          </form>
+        <div class="contact-form-col">
+          <div class="contact-form-card">
+            <form class="modal-form" id="booking-form" action="https://formsubmit.co/hey@sbmusic.be" method="POST">
+              <input type="hidden" name="_subject" value="Booking aanvraag SB">
+              <input type="hidden" name="_template" value="table">
+              <input type="hidden" name="_captcha" value="false">
+              <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+              <div>
+                <label for="bf-naam">Naam</label>
+                <input id="bf-naam" name="naam" type="text" required autocomplete="name">
+              </div>
+              <div>
+                <label for="bf-email">E-mail</label>
+                <input id="bf-email" name="email" type="email" required autocomplete="email">
+              </div>
+              <div>
+                <label for="bf-type">Type event</label>
+                <select id="bf-type" name="type">
+                  <option>Club</option>
+                  <option>Festival</option>
+                  <option>Bruiloft</option>
+                  <option>Private event</option>
+                  <option>Anders</option>
+                </select>
+              </div>
+              <div>
+                <label for="bf-datum">Datum</label>
+                <input id="bf-datum" name="datum" type="date">
+              </div>
+              <div>
+                <label for="bf-bericht">Bericht</label>
+                <textarea id="bf-bericht" name="bericht" rows="4" placeholder="Locatie, uur, stijl …"></textarea>
+              </div>
+              <label class="modal-consent" for="bf-consent">
+                <input id="bf-consent" name="consent" type="checkbox" required>
+                <span>Ik ga akkoord met de <a href="privacy.html" target="_blank" rel="noopener">privacyverklaring</a> en <a href="terms.html" target="_blank" rel="noopener">algemene voorwaarden</a>.</span>
+              </label>
+              <button type="submit" class="tag krijt modal-submit">Stuur aanvraag →</button>
+              <p class="modal-note" id="booking-form-note">Komt rechtstreeks bij mij binnen, geen mailprogramma nodig.</p>
+            </form>
+          </div>
+          <div class="contact-direct mono">
+            <a href="mailto:hey@sbmusic.be">hey@sbmusic.be</a>
+          </div>
         </div>
-        <div class="contact-direct mono">
-          <a href="mailto:hey@sbmusic.be">hey@sbmusic.be</a>
-        </div>
-      </div>
-    </section>
 
-    <section class="connect-scene" id="connect">
-      <div class="wrap reveal">
-        <div class="connect-social" aria-labelledby="volg-title">
+        <div class="connect-social" id="connect" aria-labelledby="volg-title">
           <span class="idx">Socials</span>
           <h2 class="display" id="volg-title">Volg SB.</h2>
           <div class="social-rows">

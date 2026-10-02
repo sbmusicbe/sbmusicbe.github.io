@@ -244,7 +244,7 @@
     pointer-events:none;
     background:radial-gradient(50% 50% at 30% 15%, rgba(20,20,20,.05), transparent 72%);
   }
-  .bio-hero .wrap{ position:relative; z-index:1; }
+  .bio-hero .wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; }
   .bio-hero-photo-wrap{ position:relative; width:180px; max-width:100%; }
   .bio-hero-photo-frame{
     position:absolute;
@@ -266,13 +266,14 @@
   }
   .bio-hero-photo img{ width:100%; height:100%; object-fit:cover; object-position:50% 18%; }
   .bio-hero h1{ margin-top:40px; font-size:clamp(36px, 8vw, 64px); max-width:14ch; }
-  .bio-hero p{ margin-top:28px; font-size:18px; line-height:1.7; color:var(--text-secondary); max-width:56ch; }
+  .bio-hero p{ margin-top:28px; font-size:18px; line-height:1.7; color:var(--text-secondary); max-width:56ch; text-align:left; }
   .bio-hero p + p{ margin-top:18px; }
 
   /* ---------- SOUND ---------- */
   .sound-scene{ padding:120px 0; }
+  .sound-scene .wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .sound-scene .display{ font-size:clamp(30px, 6vw, 46px); max-width:16ch; }
-  .sound-bars{ list-style:none; display:flex; flex-wrap:wrap; gap:12px; margin-top:44px; }
+  .sound-bars{ list-style:none; display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:44px; max-width:100%; }
   .sound-bar{
     padding:11px 22px;
     border-radius:var(--r-md);
@@ -285,12 +286,14 @@
   }
   .sound-bar:hover{ border-color:var(--text); transform:translateY(-2px); }
   .sound-bar.accent{ background:var(--accent); color:var(--accent-text); border-color:transparent; font-weight:700; }
-  .sound-note{ margin-top:20px; font-size:17px; line-height:1.6; color:var(--text-secondary); max-width:44ch; }
+  .sound-note{ margin-top:20px; font-size:17px; line-height:1.6; color:var(--text-secondary); max-width:44ch; text-align:left; }
 
   /* ---------- PEOPLE I'VE PARTIED WITH ---------- */
   .partied-scene{ padding:120px 0 150px; background:var(--cord); }
+  .partied-scene .wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .partied-scene .display{ font-size:clamp(30px, 6vw, 46px); max-width:18ch; }
   .partied-wall{
+    width:100%;
     list-style:none;
     margin-top:44px;
     display:grid;
