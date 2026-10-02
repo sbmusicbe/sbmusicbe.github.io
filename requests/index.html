@@ -5,94 +5,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Verzoekjes</title>
 <meta name="description" content="Vraag je nummer aan bij de DJ.">
-<meta name="theme-color" content="#0A0A0A">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="icon.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.wrap{max-width:684px;margin:0 auto;padding:0 22px max(40px,env(safe-area-inset-bottom))}
+.page{position:relative;max-width:620px;margin:0 auto;padding:0 22px}
+.aurora{position:absolute;left:0;right:0;top:-80px;height:560px;z-index:0;pointer-events:none;background:radial-gradient(50% 50% at 50% 10%,rgba(20,20,20,.05),transparent 72%)}
+.page > :not(.aurora){position:relative;z-index:1}
 
-/* hero: poster-stijl zoals sbmusic.be — titel op de foto */
-.hero-scene{padding:16px 0 0}
-.hero-photo{position:relative;aspect-ratio:4/5;border-radius:var(--r-lg);overflow:hidden;background:var(--cord);box-shadow:var(--shadow-photo)}
-.hero-photo.nophoto{aspect-ratio:auto;min-height:260px}
-.hero-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
-.hero-scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,10,.88) 0%,rgba(10,10,10,.5) 30%,transparent 58%);pointer-events:none;z-index:1}
-.hero-photo.nophoto .hero-scrim{display:none}
-.hero-cta{position:absolute;top:18px;right:18px;z-index:2;padding:10px 18px;font-size:13px}
-.hero-copy{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:24px 24px 28px}
-.hero-copy .idx{margin-bottom:12px}
-.hero-copy h1{font-size:clamp(26px,6.4vw,40px);overflow-wrap:anywhere}
-.lede{margin-top:32px;font-size:17px;line-height:1.5;color:var(--text-secondary);white-space:pre-line}
+/* hero zoals de startpagina: foto met verschoven lijnkader, logo of titel eronder, gecentreerd */
+.hero{padding:64px 0 0;display:flex;flex-direction:column;align-items:center;text-align:center}
+.photo-wrap{position:relative;width:240px;max-width:100%;margin-bottom:48px}
+.photo-frame{position:absolute;inset:22px -22px -22px 22px;border:1px solid var(--text);border-radius:var(--r-lg);z-index:0}
+.photo{position:relative;z-index:1;width:100%;aspect-ratio:4/5;border-radius:var(--r-lg);overflow:hidden;background:var(--bg-elevated);border:1px solid var(--hairline);box-shadow:var(--shadow-card)}
+.photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.hero.nophoto .photo-wrap{display:none}
+.hero-logo{width:78px;margin-bottom:28px}
+.hero:not(.nophoto) .hero-logo{display:none}
+.hero h1{font-size:clamp(36px,9vw,56px);overflow-wrap:anywhere;max-width:14ch}
+.hero .mono{margin-top:22px;font-size:14px}
+.lede{margin-top:22px;font-size:17px;line-height:1.65;color:var(--text-secondary);max-width:38ch;white-space:pre-line}
+@media (min-width:700px){.photo-wrap{width:280px}}
 
-.now{display:flex;gap:14px;align-items:center;padding:18px 20px;margin-top:24px}
-.now .t{font-weight:600;margin-top:6px}
-.section{padding-top:64px;scroll-margin-top:24px}
-#form,#done{scroll-margin-top:16px}
-.section h2{font-size:clamp(26px,5vw,38px);margin-bottom:16px}
-.section .note{font-size:17px;color:var(--text-secondary);margin-bottom:24px;max-width:44ch}
-.search{position:relative}
-.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-secondary);pointer-events:none}
-.search input{padding-left:42px}
-#results{list-style:none;margin-top:16px}
+.now{display:flex;gap:16px;align-items:center;padding:20px 22px;margin-top:56px;text-align:left}
+.now .t{font-weight:600;margin-top:8px}
+.section{padding-top:88px;scroll-margin-top:88px}
+.section h2{font-size:clamp(30px,6vw,40px);margin-bottom:14px}
+.section .note{font-size:17px;line-height:1.65;color:var(--text-secondary);margin-bottom:28px;max-width:40ch}
+.search{position:relative;margin-top:28px}
+.search svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-secondary);pointer-events:none}
+.search input{padding:16px 20px 16px 48px;border-radius:var(--r-pill);font-size:16px}
+#results{list-style:none;margin-top:20px}
 #results li{border-top:1px solid var(--hairline)}
 #results li:last-child{border-bottom:1px solid var(--hairline)}
-.song{display:flex;gap:14px;align-items:center;padding:12px 0;width:100%;text-align:left;color:var(--text)}
+.song{display:flex;gap:14px;align-items:center;padding:14px 0;width:100%;text-align:left;color:var(--text)}
 .song .meta{min-width:0;flex:1}
 .song .t,.song .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .song .t{font-weight:600}
-.song .a{color:var(--text-secondary);font-size:13px}
-.song .plus{color:var(--text-secondary);flex:none;transition:color .2s,transform .2s}
-.song:hover .plus,.song:focus-visible .plus{color:var(--accent);transform:translateX(3px)}
-.hint{text-align:center;color:var(--text-secondary);font-size:15px;padding:24px 8px;line-height:2}
-.formcard{padding:32px 28px 28px}
-#form .picked{display:flex;gap:14px;align-items:center;padding-bottom:8px}
+.song .a{color:var(--text-secondary);font-size:14px}
+.song .plus{color:var(--text-tertiary);flex:none;transition:color .2s,transform .2s}
+.song:hover .plus,.song:focus-visible .plus{color:var(--text);transform:translateX(3px)}
+.hint{text-align:center;color:var(--text-secondary);font-size:15px;padding:28px 8px;line-height:2}
+.formcard{padding:40px 36px 36px;margin-top:28px}
+#form .picked{display:flex;gap:14px;align-items:center;padding-bottom:4px}
 #form .picked .t{font-weight:600;font-size:17px}
-#form .submit{margin-top:24px;padding:14px 26px}
-.closed{padding:32px 28px;margin-top:64px}
-.closed h2{font-size:26px;margin-bottom:10px}
-.done-card{padding:32px 28px}
-.done-card h2{font-size:clamp(26px,5vw,38px);margin-bottom:12px}
-.done-card p{color:var(--text-secondary);margin-bottom:24px}
+#form .submit{margin-top:30px}
+.closed{padding:40px 36px;margin-top:56px;text-align:center}
+.closed h2{font-size:28px;margin-bottom:14px}
+.done-card{padding:40px 36px;text-align:center}
+.done-card h2{font-size:clamp(30px,6vw,40px);margin-bottom:14px}
+.done-card p{color:var(--text-secondary);margin:0 auto 28px;max-width:34ch}
 
 .queue ul,.mine ul{list-style:none}
 .queue li,.mine li{display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--hairline)}
 .queue li:last-child,.mine li:last-child{border-bottom:1px solid var(--hairline)}
 .queue .meta,.mine .meta{flex:1;min-width:0}
 .queue .t,.mine .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .a,.mine .a{font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .rank{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-secondary);width:22px;flex:none}
-.vote{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:64px;padding:8px 14px;border-radius:var(--r-sm);font-size:14px;font-weight:600;
-  background:var(--bg-elevated);border:1px solid var(--hairline);color:var(--text);flex:none;transition:background .2s,border-color .2s,transform .15s}
-.vote:hover{border-color:var(--hairline-strong)}
+.queue .a,.mine .a{font-size:14px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue .rank{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text-tertiary);width:22px;flex:none;font-variant-numeric:tabular-nums}
+.vote{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:68px;padding:10px 16px;border-radius:var(--r-pill);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;
+  background:var(--bg);border:1px solid var(--hairline);color:var(--text);flex:none;transition:background .2s,border-color .2s,transform .15s,box-shadow .25s}
+.vote:hover{border-color:var(--text);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(20,20,20,.18)}
 .vote:active{transform:scale(.97)}
-.vote svg{width:11px;height:11px}
-.vote.on{background:var(--accent);color:var(--accent-text);border-color:transparent;font-weight:700}
-.vote:disabled{cursor:default;transform:none}
-.vote.own{background:none;color:var(--text-faint)}
-.queue .more{margin-top:20px}
-.mine{padding-top:64px}
+.vote svg{width:10px;height:10px}
+.vote.on{background:var(--text);color:var(--white);border-color:transparent}
+.vote:disabled{cursor:default;transform:none;box-shadow:none}
+.vote.own{color:var(--text-tertiary);border-style:dashed}
+.queue .more{margin-top:24px}
+.mine{padding-top:88px}
+.mine .idx{margin-bottom:18px}
 </style>
 </head>
 <body>
-<header class="topbar">
+<header class="site-nav">
   <a href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"><span class="logo" role="img" aria-label="SB"></span></a>
-  <span class="chip">Verzoekjes</span>
+  <div class="site-nav-right"><span class="chip">Verzoekjes</span></div>
 </header>
 
-<div class="wrap">
-  <section class="hero-scene">
-    <div class="hero-photo nophoto" id="hero">
-      <div class="hero-scrim" aria-hidden="true"></div>
-      <img id="evPhoto" alt="" hidden>
-      <div class="hero-copy">
-        <span class="idx">Muziek op aanvraag</span>
-        <h1 class="display" id="evName">Verzoekjes</h1>
-      </div>
+<main class="page">
+  <div class="aurora" aria-hidden="true"></div>
+
+  <section class="hero nophoto reveal" id="hero">
+    <div class="photo-wrap">
+      <div class="photo-frame" aria-hidden="true"></div>
+      <div class="photo"><img id="evPhoto" alt="" hidden></div>
     </div>
+    <span class="logo hero-logo" role="img" aria-label="SB"></span>
+    <h1 id="evName">Verzoekjes</h1>
+    <p class="mono">Muziek op aanvraag</p>
     <p class="lede" id="evWelcome" hidden></p>
   </section>
 
@@ -117,7 +121,7 @@
     <p class="muted" id="closedMsg" style="white-space:pre-line"></p>
   </div>
 
-  <main id="open" hidden>
+  <div id="open" hidden>
     <section class="section" id="searchBox">
       <span class="idx">01 — Zoek</span>
       <h2>Wat wil jij horen?</h2>
@@ -153,7 +157,7 @@
           <label for="fMsg">Boodschap voor de DJ <span class="opt">(optioneel)</span></label>
           <textarea id="fMsg" maxlength="300" placeholder="Bv. voor de jarige Sarah"></textarea>
         </div>
-        <button class="btn primary submit" id="fSubmit" type="submit">Verstuur naar de DJ</button>
+        <button class="btn primary submit" id="fSubmit" type="submit">Verstuur naar de DJ →</button>
         <p class="err" id="fErr"></p>
       </div>
     </form>
@@ -166,7 +170,7 @@
         <button class="btn" id="again" type="button">Nog een nummer</button>
       </div>
     </div>
-  </main>
+  </div>
 
   <section class="queue section" id="queue" hidden>
     <span class="idx">03 — Stem mee</span>
@@ -181,12 +185,12 @@
     <span class="idx">Mijn verzoekjes</span>
     <ul id="mineList"></ul>
   </section>
+</main>
 
-  <footer class="foot">
-    <div class="copy mono">© 2026 SB — Allround DJ</div>
-    <a class="mono" href="https://sbmusic.be/">sbmusic.be</a>
-  </footer>
-</div>
+<footer class="foot">
+  <div class="copy mono">© 2026 SB — Allround DJ</div>
+  <a class="mono" href="https://sbmusic.be/">sbmusic.be</a>
+</footer>
 
 <script type="module">
 import {
@@ -383,7 +387,7 @@ $('#form').addEventListener('submit', async e => {
       ? 'Het is erg druk. Probeer over een minuutje opnieuw.'
       : 'Versturen mislukt. Controleer je verbinding en probeer opnieuw.';
   } finally {
-    btn.disabled = false; btn.textContent = 'Verstuur naar de DJ';
+    btn.disabled = false; btn.textContent = 'Verstuur naar de DJ →';
   }
 });
 
