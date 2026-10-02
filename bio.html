@@ -172,6 +172,54 @@
   .site-nav-links a:hover, .site-nav-links a[aria-current="page"]{ color:var(--text); }
   .site-nav-links a:hover::after, .site-nav-links a[aria-current="page"]::after{ right:0; }
   .site-nav-cta{ padding:11px 24px; font-size:13px; flex-shrink:0; }
+  .site-nav-right{ display:flex; align-items:center; gap:10px; }
+
+  /* ---------- MOBIEL MENU ---------- */
+  .nav-toggle-btn{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+    width:40px;
+    height:40px;
+    cursor:pointer;
+  }
+  .nav-toggle-btn span{
+    display:block;
+    width:20px;
+    height:2px;
+    margin:0 auto;
+    background:var(--text);
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  #nav-toggle:checked ~ .site-nav-right .nav-toggle-btn span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  #nav-toggle:checked ~ .site-nav-right .nav-toggle-btn span:nth-child(2){ opacity:0; }
+  #nav-toggle:checked ~ .site-nav-right .nav-toggle-btn span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+  .mobile-nav{
+    position:fixed;
+    top:76px; left:0; right:0;
+    z-index:99;
+    display:flex;
+    flex-direction:column;
+    padding:4px 22px 16px;
+    background:var(--bg);
+    border-bottom:1px solid var(--hairline);
+    box-shadow:0 20px 40px -24px rgba(20,20,20,.2);
+    opacity:0;
+    transform:translateY(-10px);
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .mobile-nav a{
+    padding:15px 0;
+    border-bottom:1px solid var(--hairline);
+    font-size:15px;
+    font-weight:500;
+    color:var(--text-secondary);
+  }
+  .mobile-nav a:last-child{ border-bottom:none; }
+  .mobile-nav a:hover, .mobile-nav a[aria-current="page"]{ color:var(--text); }
+  #nav-toggle:checked ~ .mobile-nav{ opacity:1; pointer-events:auto; transform:translateY(0); }
 
   /* ---------- WRAP + LABEL ---------- */
   .wrap{ max-width:920px; margin:0 auto; padding:0 28px; }
@@ -304,6 +352,7 @@
       text-transform:uppercase;
       letter-spacing:.12em;
     }
+    .nav-toggle-btn, .mobile-nav{ display:none; }
     .bio-hero{ padding-top:160px; }
     .bio-hero-photo-wrap{ width:220px; }
     .sound-scene{ padding:160px 0; }
@@ -445,7 +494,7 @@
   .cookie-banner .tag{ flex-shrink:0; padding:10px 20px; font-size:13px; }
 
   @media (prefers-reduced-motion: reduce){
-    .modal-overlay, .modal, .tag, .partied-wall li, .sound-bar, .site-nav-links a::after, .cookie-banner{ transition:none; }
+    .modal-overlay, .modal, .tag, .partied-wall li, .sound-bar, .site-nav-links a::after, .nav-toggle-btn span, .mobile-nav, .cookie-banner{ transition:none; }
     .modal{ transform:none; }
   }
 
@@ -459,13 +508,22 @@
 <body id="top">
 
   <header class="site-nav">
+    <input type="checkbox" id="nav-toggle" class="sr-only">
     <a class="site-nav-logo" href="index.html" aria-label="SB — naar startpagina"><span class="logo" role="img" aria-label="SB"></span></a>
     <nav class="site-nav-links" aria-label="Hoofdnavigatie">
       <a href="index.html">Home</a>
       <a href="bio.html" aria-current="page">Bio</a>
       <a href="contact.html">Contact</a>
     </nav>
-    <a class="tag krijt site-nav-cta" href="#booking-modal">Boek SB</a>
+    <div class="site-nav-right">
+      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu"><span></span><span></span><span></span></label>
+      <a class="tag krijt site-nav-cta" href="#booking-modal">Boek SB</a>
+    </div>
+    <nav class="mobile-nav" aria-label="Mobiel menu">
+      <a href="index.html">Home</a>
+      <a href="bio.html" aria-current="page">Bio</a>
+      <a href="contact.html">Contact</a>
+    </nav>
   </header>
 
   <main>
@@ -522,8 +580,6 @@
   <footer class="foot">
     <div class="copy mono">© 2026 SB — Allround DJ</div>
     <div class="foot-links">
-      <a class="foot-privacy mono" href="index.html">Home</a>
-      <a class="foot-privacy mono" href="contact.html">Contact</a>
       <a class="foot-privacy mono" href="mailto:hey@sbmusic.be">hey@sbmusic.be</a>
       <a class="foot-privacy mono" href="privacy.html">Privacyverklaring</a>
       <a class="foot-privacy mono" href="terms.html">Algemene voorwaarden</a>
