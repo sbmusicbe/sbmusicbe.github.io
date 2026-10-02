@@ -234,6 +234,14 @@
   .contact-hero h1{ font-size:clamp(38px, 8vw, 60px); max-width:14ch; }
   .contact-hero p{ margin-top:24px; font-size:18px; line-height:1.6; color:var(--text-secondary); max-width:48ch; text-align:left; }
 
+  /* ---------- HOE HET WERKT ---------- */
+  .steps-scene{ padding:56px 0 0; }
+  .steps-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
+  .step-card{ padding:28px 26px; border-radius:var(--r-lg); background:var(--bg-elevated); border:1px solid var(--hairline); }
+  .step-num{ font-size:28px; color:var(--text-tertiary); }
+  .step-card h3{ margin-top:14px; font-size:17px; font-weight:700; }
+  .step-card p{ margin-top:8px; font-size:14px; line-height:1.55; color:var(--text-secondary); }
+
   /* ---------- CONTACT FORM + SOCIALS ---------- */
   .contact-main{ padding:64px 0 120px; }
   .contact-main .wrap{ max-width:1120px; display:flex; flex-direction:column; align-items:center; gap:40px; }
@@ -439,6 +447,28 @@
         <span class="idx">Boeken</span>
         <h1 class="display">Boek SB.</h1>
         <p>Vertel me over je feest — ik lees elke aanvraag zelf en reageer snel.</p>
+      </div>
+    </section>
+
+    <section class="steps-scene">
+      <div class="wrap">
+        <div class="steps-grid reveal-stagger">
+          <div class="step-card">
+            <span class="step-num display">1</span>
+            <h3>Vertel je verhaal</h3>
+            <p>Datum, locatie en sfeer — via het formulier hieronder.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-num display">2</span>
+            <h3>Ik stem af</h3>
+            <p>Ik lees elke aanvraag zelf en denk mee over de juiste set.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-num display">3</span>
+            <h3>Afspraak rond</h3>
+            <p>We leggen de details vast en jij kan rekenen op een volle vloer.</p>
+          </div>
+        </div>
       </div>
     </section>
 

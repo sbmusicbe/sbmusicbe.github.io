@@ -269,6 +269,15 @@
   .bio-hero p{ margin-top:28px; font-size:18px; line-height:1.7; color:var(--text-secondary); max-width:56ch; text-align:left; }
   .bio-hero p + p{ margin-top:18px; }
 
+  /* ---------- VOOR ELK MOMENT ---------- */
+  .events-scene{ padding:100px 0; border-top:1px solid var(--hairline); }
+  .events-head{ text-align:center; }
+  .events-grid{ margin-top:48px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
+  .event-card{ padding:28px; border-radius:var(--r-lg); background:var(--bg-elevated); border:1px solid var(--hairline); transition:border-color .2s ease, transform .2s ease; }
+  .event-card:hover{ border-color:var(--text); transform:translateY(-3px); }
+  .event-card h3{ font-size:20px; font-family:'Inter',sans-serif; font-weight:700; }
+  .event-card p{ margin-top:8px; font-size:14px; line-height:1.55; color:var(--text-secondary); }
+
   /* ---------- SOUND ---------- */
   .sound-scene{ padding:120px 0; }
   .sound-scene .wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; }
@@ -542,6 +551,34 @@
         <h1 class="display">Jouw feest, mijn missie.</h1>
         <p>SB is allround dj: de ene avond house, de volgende hiphop, R&amp;B of gewoon de meezingers die iedereen wil horen. Geen vaste playlist, wel een scherp gevoel voor wat een zaal op dat moment nodig heeft.</p>
         <p>Van club tot bruiloft tot festival — SB voelt de energie aan en schakelt live, zodat de dansvloer de hele avond vol blijft.</p>
+        <p>Of het nu een intieme privéset is of een avondvullend programma: dezelfde voorbereiding, dezelfde focus op de dansvloer.</p>
+      </div>
+    </section>
+
+    <section class="events-scene">
+      <div class="wrap reveal">
+        <div class="events-head">
+          <span class="idx">Voor elk moment</span>
+          <h2 class="display">Club. Festival. Bruiloft. Privé.</h2>
+        </div>
+        <div class="events-grid reveal-stagger">
+          <div class="event-card">
+            <h3>Club</h3>
+            <p>Strakke sets die de dansvloer vullen en vasthouden, van opening tot closing.</p>
+          </div>
+          <div class="event-card">
+            <h3>Festival</h3>
+            <p>Energie die meegaat met een groot publiek — herkenbaar, maar nooit voorspelbaar.</p>
+          </div>
+          <div class="event-card">
+            <h3>Bruiloft</h3>
+            <p>Van het eerste dansje tot het laatste nummer: een avond die aanvoelt als die van jullie.</p>
+          </div>
+          <div class="event-card">
+            <h3>Privéfeest</h3>
+            <p>Een intieme set op maat van jouw gasten en de sfeer die je zoekt.</p>
+          </div>
+        </div>
       </div>
     </section>
 

@@ -273,11 +273,29 @@
   .home-social svg{ width:18px; height:18px; }
   .home-social:hover{ color:var(--text); border-color:var(--text); transform:translateY(-2px); }
 
+  /* ---------- HOE HET WERKT / VOOR ELK MOMENT ---------- */
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 22px; }
+  .home-steps{ padding:100px 0; border-top:1px solid var(--hairline); }
+  .home-steps-head, .home-events-head{ text-align:center; max-width:560px; margin:0 auto; }
+  .home-steps-head h2, .home-events-head h2{ margin-top:14px; font-size:clamp(26px, 4.5vw, 38px); }
+  .steps-grid{ margin-top:56px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:24px; }
+  .step-card{ padding:32px 28px; border-radius:var(--r-lg); background:var(--bg-elevated); border:1px solid var(--hairline); }
+  .step-num{ font-size:32px; color:var(--text-tertiary); }
+  .step-card h3{ margin-top:18px; font-size:19px; font-weight:700; }
+  .step-card p{ margin-top:10px; font-size:15px; line-height:1.6; color:var(--text-secondary); }
+
+  .home-events{ padding:100px 0; background:var(--cord); border-top:1px solid var(--hairline); }
+  .events-grid{ margin-top:56px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
+  .event-card{ padding:28px; border-radius:var(--r-lg); background:var(--bg); border:1px solid var(--hairline); transition:border-color .2s ease, transform .2s ease; }
+  .event-card:hover{ border-color:var(--text); transform:translateY(-3px); }
+  .event-card h3{ font-size:20px; }
+  .event-card p{ margin-top:8px; font-size:14px; line-height:1.55; color:var(--text-secondary); }
+
   /* ---------- FOOTER ---------- */
   .foot{
-    max-width:480px;
-    margin:40px auto 0;
-    padding:64px 22px 72px;
+    max-width:1180px;
+    margin:0 auto;
+    padding:48px 22px 72px;
     display:flex;
     flex-wrap:wrap;
     align-items:center;
@@ -492,7 +510,8 @@
     </nav>
   </header>
 
-  <main class="home-page">
+  <main>
+  <section class="home-page">
     <div class="aurora" aria-hidden="true"></div>
     <div class="home-header reveal">
       <div class="home-photo-wrap">
@@ -523,6 +542,60 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <section class="home-steps">
+    <div class="wrap">
+      <div class="home-steps-head reveal">
+        <span class="mono">Hoe het werkt</span>
+        <h2 class="display">Van bericht tot volle vloer.</h2>
+      </div>
+      <div class="steps-grid reveal-stagger">
+        <div class="step-card">
+          <span class="step-num display">1</span>
+          <h3>Vertel je verhaal</h3>
+          <p>Stuur je datum, locatie en sfeer door via het boekingsformulier.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num display">2</span>
+          <h3>Ik stem af</h3>
+          <p>Ik lees elke aanvraag zelf en denk mee over de juiste set voor jouw feest.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num display">3</span>
+          <h3>Volle dansvloer</h3>
+          <p>Op de avond zelf voel ik de zaal aan en schakel live tussen genres.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-events">
+    <div class="wrap">
+      <div class="home-events-head reveal">
+        <span class="mono">Voor elk moment</span>
+        <h2 class="display">Club. Festival. Bruiloft. Privé.</h2>
+      </div>
+      <div class="events-grid reveal-stagger">
+        <div class="event-card">
+          <h3>Club</h3>
+          <p>Strakke sets die de dansvloer vullen en vasthouden, van opening tot closing.</p>
+        </div>
+        <div class="event-card">
+          <h3>Festival</h3>
+          <p>Energie die meegaat met een groot publiek — herkenbaar, maar nooit voorspelbaar.</p>
+        </div>
+        <div class="event-card">
+          <h3>Bruiloft</h3>
+          <p>Van het eerste dansje tot het laatste nummer: een avond die aanvoelt als die van jullie.</p>
+        </div>
+        <div class="event-card">
+          <h3>Privéfeest</h3>
+          <p>Een intieme set op maat van jouw gasten en de sfeer die je zoekt.</p>
+        </div>
+      </div>
+    </div>
+  </section>
   </main>
 
   <footer class="foot">
@@ -667,7 +740,7 @@
     var overlay = document.getElementById('booking-modal');
     var panel = overlay.querySelector('.modal');
     var navEl = document.querySelector('header.site-nav');
-    var mainEl = document.querySelector('main.home-page');
+    var mainEl = document.querySelector('main');
     var footEl = document.querySelector('footer.foot');
     var cookieEl = document.getElementById('cookie-banner');
     var lastFocused = null;
