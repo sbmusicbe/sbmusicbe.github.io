@@ -9,21 +9,23 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="vendor/qrcode.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#1b1b1b;color:#F2EFEA;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
-.bar{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 16px;flex-wrap:wrap}
-.bar input,.bar button,.bar select{font:inherit;font-size:14px;padding:9px 12px;border-radius:9px;border:1px solid #3a3a3a;background:#262626;color:#F2EFEA}
+html,body{background:#F6F6F6;color:#141414;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+.bar{position:sticky;top:0;z-index:2;display:flex;gap:10px;justify-content:center;align-items:center;padding:16px;flex-wrap:wrap;background:rgba(246,246,246,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #E8E8E8}
+.bar input,.bar button,.bar select{font:inherit;font-size:14px;font-weight:500;padding:11px 20px;border-radius:999px;border:1px solid #E8E8E8;background:#fff;color:#141414;outline:none}
+.bar input:focus,.bar select:focus{border-color:#141414;box-shadow:0 0 0 3px rgba(20,20,20,.08)}
 .bar input{width:min(340px,100%)}
-.bar button{cursor:pointer}
-.bar button.primary{background:#6FA283;border-color:#6FA283;color:#0A0A0A;font-weight:600}
-.bar button:disabled{opacity:.5;cursor:default}
-.hint{text-align:center;font-size:13px;color:rgba(242,239,234,.55);padding:0 16px 12px}
-.sheet{display:block;width:min(210mm,calc(100vw - 32px));height:auto;margin:0 auto 32px;box-shadow:0 8px 30px rgba(0,0,0,.45);background:#0A0A0A}
+.bar button{cursor:pointer;transition:border-color .2s,transform .15s}
+.bar button:hover{border-color:#141414;transform:translateY(-2px)}
+.bar button.primary{background:#141414;border-color:transparent;color:#fff}
+.bar button:disabled{opacity:.5;cursor:default;transform:none}
+.hint{text-align:center;font-size:13px;color:#707070;padding:16px 16px 20px}
+.sheet{display:block;width:min(210mm,calc(100vw - 32px));height:auto;margin:0 auto 40px;border-radius:6px;box-shadow:0 30px 60px -20px rgba(20,20,20,.25);background:#fff}
 #printImg{display:none}
 @media print{
   html,body{background:none}
@@ -36,8 +38,8 @@ html,body{background:#1b1b1b;color:#F2EFEA;font-family:'Inter',sans-serif;-webki
 <div class="bar">
   <input id="headline" value="Vraag je nummer aan." aria-label="Titel op de poster" maxlength="60">
   <select id="theme" aria-label="Achtergrond">
-    <option value="dark">Zwart (zoals sbmusic.be)</option>
-    <option value="light">Wit (spaart inkt)</option>
+    <option value="light">Wit (zoals sbmusic.be)</option>
+    <option value="dark">Zwart</option>
   </select>
   <button class="primary" id="pdfBtn" disabled>Download PDF</button>
   <button id="printBtn" disabled>Afdrukken</button>
@@ -51,7 +53,7 @@ import { configured, api, parseEvent, EVENT_LABEL, loadPhoto, store } from './gh
 const $ = s => document.querySelector(s);
 
 // Huisstijl SB (zelfde kleuren als sbmusic.be)
-const C = {studio: '#0A0A0A', corduroy: '#24312A', krijt: '#F2EFEA', signaal: '#6FA283', white: '#FFFFFF'};
+const C = {ink: '#141414', white: '#FFFFFF', elevated: '#F6F6F6', hairline: '#E8E8E8', secondary: '#707070', tertiary: '#ADADAD'};
 const PX = 8;                             // pixels per mm → 1680 × 2376 px (± 200 dpi)
 const W = 210, H = 297;
 const m = v => v * PX;
@@ -59,7 +61,7 @@ const m = v => v * PX;
 const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
 const url = new URL('./?e=' + encodeURIComponent(id), location.href).href;
 const shortUrl = url.replace(/^https?:\/\//, '');
-const state = {event: null, photo: null, logo: null, headline: $('#headline').value, theme: store.get('vz_poster_theme', 'dark')};
+const state = {event: null, photo: null, logo: null, headline: $('#headline').value, theme: store.get('vz_poster_theme2', 'light')};
 $('#theme').value = state.theme;
 
 const canvas = $('#sheet');
@@ -77,8 +79,8 @@ function tinted(img, color) {
 
 // ---- tekst (Design Language v2.0) ----
 const FONT = {
-  display: size => `800 ${m(size)}px Inter, system-ui, sans-serif`,     // Inter Black 800, zinsopbouw
-  mono: (size, w = 700) => `${w} ${m(size)}px "Space Mono", ui-monospace, monospace`,
+  display: size => `800 ${m(size)}px Inter, system-ui, sans-serif`,
+  label: size => `600 ${m(size)}px Inter, system-ui, sans-serif`,       // labels: hoofdletters, tracking +14%
   body: (size, w = 400) => `${w} ${m(size)}px Inter, system-ui, sans-serif`
 };
 function setFont(f) { ctx.font = f; }
@@ -88,7 +90,7 @@ function setTracking(em, size) { try { ctx.letterSpacing = (m(size) * em) + 'px'
 function spaced(text, x, y, spacing, size, align = 'left') {
   const gap = m(size) * spacing;
   const width = [...text].reduce((w, ch) => w + ctx.measureText(ch).width + gap, -gap);
-  let cx = align === 'right' ? x - width : x;
+  let cx = align === 'right' ? x - width : align === 'center' ? x - width / 2 : x;
   for (const ch of text) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + gap; }
   return width;
 }
@@ -102,131 +104,129 @@ function wrap(text, maxW) {
   if (line) lines.push(line);
   return lines;
 }
-// Titels: Inter 800, regelafstand 1,0, tracking −2,8%; verkleinen tot ze binnen maxW × maxH passen.
+// Titels zoals op de site: Inter 800, tracking −4%, regelafstand 0,98; verkleinen tot ze passen.
 function fitDisplay(text, size, maxW, maxH) {
   for (let s = size; ; s *= 0.94) {
-    setFont(FONT.display(s)); setTracking(-0.028, s);
+    setFont(FONT.display(s)); setTracking(-0.04, s);
     const lines = wrap(text, m(maxW));
     const tooWide = lines.some(l => ctx.measureText(l).width > m(maxW));
-    if ((!tooWide && lines.length * s <= maxH) || s < size * 0.35) { setTracking(0, s); return {lines, size: s}; }
+    if ((!tooWide && lines.length * s * 0.98 <= maxH) || s < size * 0.35) { setTracking(0, s); return {lines, size: s, h: lines.length * s * 0.98}; }
   }
 }
-function drawDisplay(t, x, top, color) {
-  setFont(FONT.display(t.size)); setTracking(-0.028, t.size); ctx.fillStyle = color;
-  t.lines.forEach((l, i) => ctx.fillText(l, x, top + m(t.size * (0.82 + i))));
-  setTracking(0, t.size);
+function drawDisplayCentered(t, cx, top, color) {
+  setFont(FONT.display(t.size)); setTracking(-0.04, t.size); ctx.fillStyle = color; ctx.textAlign = 'center';
+  t.lines.forEach((l, i) => ctx.fillText(l, cx, top + m(t.size * (0.8 + i * 0.98))));
+  ctx.textAlign = 'left'; setTracking(0, t.size);
 }
-
 function rrect(x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
-// Zachte schaduw, zoals in de vormtaal.
+// Zachte schaduw zoals op de site (0 24px 48px -28px).
 function softShadow(on, light) {
-  if (on) { ctx.shadowColor = light ? 'rgba(10,10,10,.18)' : 'rgba(0,0,0,.55)'; ctx.shadowBlur = m(6); ctx.shadowOffsetY = m(2); }
+  if (on) { ctx.shadowColor = light ? 'rgba(20,20,20,.22)' : 'rgba(0,0,0,.6)'; ctx.shadowBlur = m(8); ctx.shadowOffsetY = m(4); }
   else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
 }
-// Ronde chip met mono-label (radius "rond").
-function chip(text, x, y, {size = 3, align = 'left', color, bg, alpha = 1} = {}) {
-  setFont(FONT.mono(size));
-  const gap = m(size) * 0.09;
+// Pil met label (zoals de chips en knoppen op de site).
+function pill(text, cx, y, {size = 3, color, bg, border, font = FONT.label, spacing = 0.14, padX = 5, h = null, align = 'center'} = {}) {
+  setFont(font(size));
+  const gap = m(size) * spacing;
   const tw = [...text].reduce((w, ch) => w + ctx.measureText(ch).width + gap, -gap);
-  const h = m(size + 5), w = tw + m(8), x0 = align === 'right' ? x - w : x;
-  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = bg; rrect(x0, y, w, h, h / 2); ctx.fill(); ctx.restore();
+  const ph = m(h ?? size + 4.6), w = tw + m(padX * 2);
+  const x0 = align === 'right' ? cx - w : align === 'left' ? cx : cx - w / 2;
+  if (bg) { ctx.fillStyle = bg; rrect(x0, y, w, ph, ph / 2); ctx.fill(); }
+  if (border) { ctx.strokeStyle = border; ctx.lineWidth = m(.3); rrect(x0, y, w, ph, ph / 2); ctx.stroke(); }
   ctx.fillStyle = color; ctx.textBaseline = 'middle';
-  spaced(text, x0 + m(4), y + h / 2 + m(0.15), 0.09, size);
+  spaced(text, x0 + m(padX), y + ph / 2 + m(0.1), spacing, size);
   ctx.textBaseline = 'alphabetic';
-  return {w, h};
+  return {w, h: ph};
 }
 
 // ---- tekenen ----
-// Raster van 4 mm: marges 16, gaps 8/12. Radius: groot 7 mm (fotokader, QR-kaart), rond (chips).
+// Opgebouwd zoals de startpagina van sbmusic.be: logo + label bovenaan, foto met verschoven lijnkader,
+// titel eronder, en de QR-code met een zwarte pilknop. Alles gecentreerd, veel witruimte.
 function draw() {
-  const light = state.theme === 'light';
-  const bg = light ? C.white : C.studio, fg = light ? C.studio : C.krijt;
-  const mute = light ? 'rgba(10,10,10,.6)' : 'rgba(242,239,234,.6)';
-  const line = light ? 'rgba(10,10,10,.14)' : 'rgba(242,239,234,.14)';
-  const labelCol = light ? '#356047' : C.signaal;          // Moss-deep op wit, Moss op donker
-  const R = m(7), X = 16, CW = W - 32;
+  const light = state.theme !== 'dark';
+  const bg = light ? C.white : C.ink, fg = light ? C.ink : C.white;
+  const sec = light ? C.secondary : 'rgba(255,255,255,.62)';
+  const line = light ? C.hairline : 'rgba(255,255,255,.16)';
+  const X = 18, CW = W - 36, CX = m(W / 2);
   ctx.save();
   ctx.fillStyle = bg; ctx.fillRect(0, 0, m(W), m(H));
-
-  // Fotokader: grote radius en zachte schaduw, nooit hard afgesneden. Zonder foto: Cord Green.
-  const photoH = state.photo ? 124 : 96, py = 16;
-  ctx.save(); softShadow(true, light); ctx.fillStyle = C.corduroy; rrect(m(X), m(py), m(CW), m(photoH), R); ctx.fill(); ctx.restore();
-  ctx.save(); rrect(m(X), m(py), m(CW), m(photoH), R); ctx.clip();
-  if (state.photo) {
-    const p = state.photo, s = Math.max(m(CW) / p.naturalWidth, m(photoH) / p.naturalHeight);
-    const dw = p.naturalWidth * s, dh = p.naturalHeight * s;
-    ctx.drawImage(p, m(X) + (m(CW) - dw) / 2, m(py) + (m(photoH) - dh) * 0.35, dw, dh);
-    const g = ctx.createLinearGradient(0, m(py), 0, m(py + photoH));
-    g.addColorStop(0, 'rgba(10,10,10,.35)'); g.addColorStop(.25, 'rgba(10,10,10,0)'); g.addColorStop(.5, 'rgba(10,10,10,0)'); g.addColorStop(1, 'rgba(10,10,10,.85)');
-    ctx.fillStyle = g; ctx.fillRect(m(X), m(py), m(CW), m(photoH));
+  if (light) {   // de zachte "aurora" bovenaan de site
+    const g = ctx.createRadialGradient(CX, m(20), 0, CX, m(20), m(150));
+    g.addColorStop(0, 'rgba(20,20,20,.05)'); g.addColorStop(1, 'rgba(20,20,20,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(170));
   }
-  ctx.restore();
-  // Logo linksboven met ½ H vrije ruimte; label rechtsboven.
-  const logoW = 28, logoH = logoW * 429 / 1000;
-  if (state.logo) ctx.drawImage(tinted(state.logo, C.white), m(X + 8), m(py + 8), m(logoW), m(logoH));
-  chip('VERZOEKJES', m(X + CW - 8), m(py + 8 + logoH / 2 - 4), {align: 'right', color: C.krijt, bg: C.studio, alpha: .55});
+
+  // Kopregel: logo links, label rechts.
+  const logoW = 20, logoH = logoW * 429 / 1000;
+  if (state.logo) ctx.drawImage(tinted(state.logo, fg), m(X), m(16), m(logoW), m(logoH));
+  pill('VERZOEKJES', m(X + CW), m(16 + logoH / 2 - 3.8), {size: 2.8, color: fg, border: line, align: 'right'});
+
+  // Foto met het verschoven lijnkader (of het grote logo zonder foto).
+  let y = 40;
+  const footTop = H - 26;
   const name = state.event?.name || '';
-  if (name) {
-    const t = fitDisplay(name, 13, CW - 16, 27);
-    drawDisplay(t, m(X + 8), m(py + photoH - 8) - m(t.size * t.lines.length), C.krijt);
+  const nameFit = name ? fitDisplay(name, 15, CW - 10, 34) : {lines: [], size: 0, h: 0};
+  const headH = nameFit.h + (name ? 8 : 0) + 3 + 12;          // naam + label + ruimte
+  const minQr = 66, pillH = 14, noteH = 5;
+  if (state.photo) {
+    const room = footTop - 10 - y - headH - minQr - 10 - pillH - 8 - noteH;
+    const pw = Math.max(52, Math.min(86, (room - 8) / 1.25)), ph = pw * 1.25, px = (W - pw) / 2 - 3;
+    const R = m(7.5);
+    ctx.strokeStyle = fg; ctx.lineWidth = m(.3); rrect(m(px + 6), m(y + 6), m(pw), m(ph), R); ctx.stroke();
+    ctx.save(); softShadow(true, light); ctx.fillStyle = C.elevated; rrect(m(px), m(y), m(pw), m(ph), R); ctx.fill(); ctx.restore();
+    ctx.save(); rrect(m(px), m(y), m(pw), m(ph), R); ctx.clip();
+    const p = state.photo, s = Math.max(m(pw) / p.naturalWidth, m(ph) / p.naturalHeight);
+    const dw = p.naturalWidth * s, dh = p.naturalHeight * s;
+    ctx.drawImage(p, m(px) + (m(pw) - dw) / 2, m(y) + (m(ph) - dh) * 0.3, dw, dh);
+    ctx.restore();
+    ctx.strokeStyle = line; ctx.lineWidth = m(.25); rrect(m(px), m(y), m(pw), m(ph), R); ctx.stroke();
+    y += ph + 6 + 14;
+  } else {
+    const lw = 50, lh = lw * 429 / 1000;
+    if (state.logo) ctx.drawImage(tinted(state.logo, fg), m((W - lw) / 2), m(y + 10), m(lw), m(lh));
+    y += lh + 30;
   }
 
-  // Midden: label, titel, stappen + QR-kaart. Verticaal gecentreerd tussen foto en voet.
-  const footTop = H - 12 - 8;
-  const head = fitDisplay(state.headline || ' ', 16, CW, 34);
-  const qrSize = 80, gapTitleRow = 12;
-  const blockH = 3.2 + 4 + head.lines.length * head.size + gapTitleRow + qrSize;
-  const top = py + photoH + 12, avail = footTop - 8 - top;
-  let y = top + Math.max(0, (avail - blockH) / 2);
+  // Eventnaam en label, gecentreerd.
+  if (name) { drawDisplayCentered(nameFit, CX, m(y), fg); y += nameFit.h + 8; }
+  setFont(FONT.label(3.2)); ctx.fillStyle = sec;
+  spaced('MUZIEK OP AANVRAAG', CX, m(y + 2.6), 0.14, 3.2, 'center');
+  y += 3.2 + 12;
 
-  setFont(FONT.mono(3.2)); ctx.fillStyle = labelCol;
-  spaced('MUZIEK OP AANVRAAG', m(X), m(y + 3.2 * .8), 0.09, 3.2);
-  y += 3.2 + 4;
-  drawDisplay(head, m(X), m(y), fg);
-  y += head.lines.length * head.size + gapTitleRow;
-
-  // QR-kaart rechts (Bone, grote radius, zachte schaduw).
-  const qx = X + CW - qrSize, qy = y;
-  ctx.save(); softShadow(true, light); ctx.fillStyle = light ? C.white : C.krijt; rrect(m(qx), m(qy), m(qrSize), m(qrSize), R); ctx.fill(); ctx.restore();
-  if (light) { ctx.strokeStyle = line; ctx.lineWidth = m(.3); rrect(m(qx), m(qy), m(qrSize), m(qrSize), R); ctx.stroke(); }
+  // QR-kaart (wit, hairline, zachte schaduw).
+  const q = Math.max(60, Math.min(78, footTop - 10 - y - 10 - pillH - 8 - noteH));
+  const qx = (W - q) / 2;
+  ctx.save(); softShadow(true, light); ctx.fillStyle = C.white; rrect(m(qx), m(y), m(q), m(q), m(6)); ctx.fill(); ctx.restore();
+  ctx.strokeStyle = light ? C.hairline : 'transparent'; ctx.lineWidth = m(.3); rrect(m(qx), m(y), m(q), m(q), m(6)); ctx.stroke();
   if (window.qrcode) {
     const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-    const n = qr.getModuleCount(), inner = m(qrSize - 16), cell = inner / n, ox = m(qx + 8), oy = m(qy + 8);
-    ctx.fillStyle = C.studio;
+    const n = qr.getModuleCount(), pad = q * 0.09, inner = m(q - 2 * pad), cell = inner / n, ox = m(qx + pad), oy = m(y + pad);
+    ctx.fillStyle = C.ink;
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
       if (qr.isDark(r, c)) ctx.fillRect(Math.floor(ox + c * cell), Math.floor(oy + r * cell), Math.ceil(cell), Math.ceil(cell));
   }
+  y += q + 10;
 
-  // Links: het focusvlak (het enige Moss-vlak) + de stappen.
-  const leftW = CW - qrSize - 12;
-  const fh = 22;
-  ctx.save(); softShadow(true, light); ctx.fillStyle = C.signaal; rrect(m(X), m(qy), m(leftW), m(fh), m(4)); ctx.fill(); ctx.restore();
-  setFont(FONT.display(7)); setTracking(-0.028, 7); ctx.fillStyle = C.studio;
-  ctx.fillText('Scan de code.', m(X + 6), m(qy + 6 + 7 * .82)); setTracking(0, 7);
-  setFont(FONT.mono(2.8)); ctx.fillStyle = C.studio;
-  spaced('MET JE GSM-CAMERA', m(X + 6), m(qy + fh - 5), 0.09, 2.8);
+  // De titel als zwarte pilknop (zoals "Boek SB"), met een korte uitleg eronder.
+  const head = (state.headline || '').trim() || 'Vraag je nummer aan.';
+  let hs = 5.2; setFont(FONT.body(hs, 600));
+  while (ctx.measureText(head).width > m(CW - 24) && hs > 3) { hs -= 0.2; setFont(FONT.body(hs, 600)); }
+  pill(head, CX, m(y), {size: hs, color: light ? C.white : C.ink, bg: light ? C.ink : C.white, font: s2 => FONT.body(s2, 600), spacing: -0.011, padX: 9, h: pillH});
+  y += pillH + 7;
+  setFont(FONT.body(3.6)); ctx.fillStyle = sec; ctx.textAlign = 'center';
+  ctx.fillText('Scan de code met je gsm-camera. Geen app nodig.', CX, m(y + 3));
+  ctx.textAlign = 'left';
 
-  const steps = [['01', 'Zoek je nummer.'], ['02', 'Verstuur het naar de DJ.'], ['03', 'Stem op wat je wil horen.']];
-  const rowH = 12, sy = qy + qrSize - steps.length * rowH;
+  // Voet zoals de site: hairline, link links, © rechts.
   ctx.strokeStyle = line; ctx.lineWidth = m(.3);
-  steps.forEach(([nr, text], i) => {
-    const t = sy + i * rowH;
-    ctx.beginPath(); ctx.moveTo(m(X), m(t)); ctx.lineTo(m(X + leftW), m(t)); ctx.stroke();
-    setFont(FONT.mono(3.2)); ctx.fillStyle = labelCol;
-    spaced(nr, m(X), m(t + rowH / 2 + 1.2), 0.09, 3.2);
-    setFont(FONT.body(4.6, 500)); ctx.fillStyle = fg;
-    ctx.fillText(text, m(X + 12), m(t + rowH / 2 + 1.6));
-  });
-
-  // Voet: link en logo.
-  ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(m(X), m(footTop)); ctx.lineTo(m(X + CW), m(footTop)); ctx.stroke();
-  setFont(FONT.mono(3, 400)); ctx.fillStyle = mute;
-  spaced(shortUrl.toUpperCase(), m(X), m(footTop + 7.2), 0.09, 3);
-  if (state.logo) ctx.drawImage(tinted(state.logo, light ? C.studio : C.white), m(X + CW - 13), m(footTop + 3.4), m(13), m(13 * 429 / 1000));
+  ctx.beginPath(); ctx.moveTo(m(X), m(footTop)); ctx.lineTo(m(X + CW), m(footTop)); ctx.stroke();
+  setFont(FONT.label(2.7)); ctx.fillStyle = sec;
+  spaced(shortUrl.toUpperCase(), m(X), m(footTop + 8), 0.12, 2.7);
+  spaced('© 2026 SB — ALLROUND DJ', m(X + CW), m(footTop + 8), 0.12, 2.7, 'right');
   ctx.restore();
 }
 
@@ -244,13 +244,12 @@ $('#printBtn').onclick = () => { $('#printImg').src = canvas.toDataURL('image/pn
 addEventListener('beforeprint', () => { $('#printImg').src = canvas.toDataURL('image/png'); });
 
 $('#headline').oninput = e => { state.headline = e.target.value; draw(); };
-$('#theme').onchange = e => { state.theme = e.target.value; store.set('vz_poster_theme', state.theme); draw(); };
+$('#theme').onchange = e => { state.theme = e.target.value; store.set('vz_poster_theme2', state.theme); draw(); };
 
 // ---- laden ----
 (async () => {
   const fonts = document.fonts ? Promise.all([
-    document.fonts.load(`800 40px Inter`), document.fonts.load(`500 20px Inter`), document.fonts.load(`700 20px "Space Mono"`),
-    document.fonts.load(`400 20px "Space Mono"`), document.fonts.load(`400 20px Inter`)
+    document.fonts.load(`800 40px Inter`), document.fonts.load(`600 20px Inter`), document.fonts.load(`400 20px Inter`)
   ]).catch(() => {}) : Promise.resolve();
   const logo = loadImg('sb-logo.png').then(i => { state.logo = i; }).catch(() => {});
   const event = (configured && id ? api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`) : Promise.resolve([]))
