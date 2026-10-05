@@ -1911,35 +1911,72 @@ async function deriveKey(pw, salt, iter) {
   return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
 }
 const gzipBytes = async (bytes, back) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(back ? new DecompressionStream('gzip') : new CompressionStream('gzip'))).arrayBuffer());
-// Bij tienduizenden klanten kostte elke wijziging (zelfs een vinkje) een volledige serialisatie van alle klanten.
-// De klanten worden daarom één keer omgezet naar bytes en hergebruikt zolang ze niet veranderen; elke 25e keer
-// en bij vergrendelen/sluiten wordt het volledig opnieuw gedaan als extra zekerheid.
+/* ---- Werkthread: samendrukken, versleutelen en ontsleutelen gebeuren buiten de hoofdthread,
+   zodat de pagina niet vastloopt bij tienduizenden klanten. Zonder werkthread draait alles gewoon op de hoofdthread. ---- */
+const WK_SRC = 'const gz=async(b,d)=>new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(d?new DecompressionStream("gzip"):new CompressionStream("gzip"))).arrayBuffer());'
+  + 'const b64=u=>{let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};'
+  + 'const unb64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};'
+  + 'onmessage=async e=>{const m=e.data;try{'
+  + 'if(m.op==="seal"){let n=0;for(const p of m.parts)n+=p.length;let pt=new Uint8Array(n),o=0;for(const p of m.parts){pt.set(p,o);o+=p.length}if(m.zip)pt=await gz(pt,false);'
+  + 'const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:m.iv},m.key,pt));postMessage({id:m.id,ct:b64(ct)})}'
+  + 'else{let pt=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(m.iv)},m.key,unb64(m.ct)));if(m.zip)pt=await gz(pt,true);postMessage({id:m.id,text:new TextDecoder().decode(pt)})}'
+  + '}catch(err){postMessage({id:m.id,err:String(err&&err.message||err)})}};';
+let wk = null, wkSeq = 0, wkBroken = false;
+const wkWait = new Map();
+function wkCall(msg) {
+  if (wkBroken || !window.Worker || !window.Blob || !URL.createObjectURL) return Promise.reject(new Error('geen werkthread'));
+  try {
+    if (!wk) {
+      wk = new Worker(URL.createObjectURL(new Blob([WK_SRC], {type:'text/javascript'})));
+      wk.onmessage = e => { const w = wkWait.get(e.data.id); if (!w) return; wkWait.delete(e.data.id); e.data.err ? w[1](new Error(e.data.err)) : w[0](e.data); };
+      wk.onerror = () => { wkBroken = true; for (const w of wkWait.values()) w[1](new Error('werkthread gestopt')); wkWait.clear(); };
+    }
+    return new Promise((res, rej) => { const id = ++wkSeq; wkWait.set(id, [res, rej]); try { wk.postMessage({...msg, id}); } catch (e) { wkWait.delete(id); wkBroken = true; rej(e); } });
+  } catch (e) { wkBroken = true; return Promise.reject(e); }
+}
+const concatBytes = parts => { const out = new Uint8Array(parts.reduce((a, p) => a + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out; };
+// Klanten (tienduizenden) worden in blokken van 1000 omgezet naar tekst en bewaard zolang ze niet veranderen.
+// Een blok is de inhoud van een JSON-lijst zonder haken; blokken worden gescheiden door ",\n" (komt in JSON-tekst nooit voor).
 const CL_MARK = '"@@clients@@"';
 let clCache = null, persistCount = 0, forceFull = false;
 const clientsSig = arr => { let sum = 0, mx = 0; for (const c of arr) { const u = c.u || 0; sum += u; if (u > mx) mx = u; } return arr.length + ':' + mx + ':' + sum + ':' + clientsVer; };
-function encodeData(obj, full) {
-  if (obj !== data || !obj.clients || obj.clients.length < 500) return te.encode(JSON.stringify(obj));
-  const sg = clientsSig(obj.clients);
-  if (full || !clCache || clCache.arr !== obj.clients || clCache.sig !== sg) clCache = {arr:obj.clients, sig:sg, bytes:te.encode(JSON.stringify(obj.clients))};
+function clientBytes(arr, full) {
+  const sg = clientsSig(arr);
+  if (full || !clCache || clCache.arr !== arr || clCache.sig !== sg) {
+    const parts = []; for (let i = 0; i < arr.length; i += 1000) parts.push(JSON.stringify(arr.slice(i, i + 1000)).slice(1, -1));
+    clCache = {arr, sig:sg, bytes:te.encode(parts.join(',\n'))};
+  }
+  return clCache.bytes;
+}
+// volledige kluis (zoals in de gist en in back-ups): alle gegevens inclusief klanten in één stuk
+function encodeParts(obj, full) {
+  if (obj !== data || !obj.clients || obj.clients.length < 500) return [te.encode(JSON.stringify(obj))];
+  const cb = clientBytes(obj.clients, full);
   const head = JSON.stringify({...obj, clients:'@@clients@@'}), i = head.indexOf(CL_MARK);
-  const a = te.encode(head.slice(0, i)), b = te.encode(head.slice(i + CL_MARK.length)), cb = clCache.bytes;
-  const out = new Uint8Array(a.length + cb.length + b.length);
-  out.set(a); out.set(cb, a.length); out.set(b, a.length + cb.length);
-  return out;
+  return [te.encode(head.slice(0, i) + '['), cb, te.encode(']' + head.slice(i + CL_MARK.length))];
 }
-async function seal(k, obj, full) {
+async function sealBytes(k, parts) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  let pt = encodeData(obj, full), z;
-  // grote kluis (bv. duizenden klanten) eerst comprimeren: kleiner op het toestel en in de gist
-  if (pt.length > 200000 && 'CompressionStream' in window) { pt = await gzipBytes(pt); z = 'gzip'; }
-  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, k.key, pt);
-  return {v:1, kdf:'PBKDF2-SHA256', iter:k.iter, salt:b64(k.salt), iv:b64(iv), ct:b64(ct), ...(z ? {z} : {})};
+  const len = parts.reduce((a, p) => a + p.length, 0), zip = len > 200000 && 'CompressionStream' in window;   // grote kluis eerst samendrukken
+  let ct;
+  try { ct = (await wkCall({op:'seal', parts, iv, zip, key:k.key})).ct; }
+  catch {
+    let pt = concatBytes(parts); if (zip) pt = await gzipBytes(pt);
+    ct = b64(await crypto.subtle.encrypt({name:'AES-GCM', iv}, k.key, pt));
+  }
+  return {v:1, kdf:'PBKDF2-SHA256', iter:k.iter, salt:b64(k.salt), iv:b64(iv), ct, ...(zip ? {z:'gzip'} : {})};
 }
-async function unseal(key, blob) {
-  let pt = new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(blob.iv)}, key, unb64(blob.ct)));
-  if (blob.z === 'gzip') pt = await gzipBytes(pt, true);
-  return JSON.parse(td.decode(pt));
+const seal = (k, obj, full) => sealBytes(k, encodeParts(obj, full));
+async function unsealText(key, blob) {
+  try { return (await wkCall({op:'open', ct:blob.ct, iv:blob.iv, zip:blob.z === 'gzip', key})).text; }
+  catch (e) {
+    if (/decrypt|operation/i.test(String(e && e.message))) throw e;   // verkeerd wachtwoord: niet nog eens proberen
+    let pt = new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(blob.iv)}, key, unb64(blob.ct)));
+    if (blob.z === 'gzip') pt = await gzipBytes(pt, true);
+    return td.decode(pt);
+  }
 }
+async function unseal(key, blob) { return JSON.parse(await unsealText(key, blob)); }
 /* Kluis op het toestel: localStorage (klein en snel), IndexedDB als ze daar te groot voor wordt (> ± 3 MB). */
 let vaultCache = null;
 function idbOpen() {
@@ -2040,14 +2077,71 @@ function tombstone(id) { data.deleted[id] = now(); }
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
+/* Op het toestel staat de kluis in twee delen: een kleine kern (taken, verkopen, instellingen) en de klanten apart (IndexedDB).
+   Een gewone wijziging schrijft enkel de kern; de klanten enkel als ze veranderd zijn. Bij het ontgrendelen opent de app
+   meteen met de kern en laden de klanten daarna op de achtergrond. De gist en back-ups blijven één volledige kluis. */
+const CL_KEY = 'taken.clients.';
+let clPending = false, clFailed = false, clRev = null, clSigSaved = null, clReadyP = Promise.resolve();
 function persist() {
   persistChain = persistChain.then(async () => {
     const full = forceFull || ++persistCount % 25 === 0; forceFull = false;
-    const blob = await seal(K, data, full);
+    if (clPending || data.clients.length >= 500) {
+      try {
+        let rev = clRev;
+        if (!clPending) {
+          const stamp = clientsSig(data.clients) + '|' + b64(K.salt);
+          if (!rev || stamp !== clSigSaved) {
+            rev = uid();
+            const cb = await sealBytes(K, [clientBytes(data.clients, full)]);
+            cb.n = data.clients.length; cb.rev = rev;
+            await idbKV('set', CL_KEY + rev, cb);
+            clSigSaved = stamp;
+          }
+        }
+        const core = await sealBytes(K, [te.encode(JSON.stringify({...data, clients:[]}))]);
+        core.split = 1; core.clv = rev;
+        await storeVault(core);
+        if (clRev && clRev !== rev) idbKV('del', CL_KEY + clRev).catch(() => {});
+        clRev = rev;
+        return core;
+      } catch (e) { if (clPending) throw e; console.warn('Gesplitste opslag mislukt, terug naar één kluis', e); }
+    }
+    const blob = await seal(K, data, full);   // klein, of gesplitste opslag niet beschikbaar: één kluis zoals vroeger
     await storeVault(blob);
+    if (clRev) { idbKV('del', CL_KEY + clRev).catch(() => {}); clRev = null; clSigSaved = null; }
     return blob;
   }).catch(e => { console.error(e); toast('Opslaan mislukt: ' + e.message); });
   return persistChain;
+}
+// volledige kluis voor de gist, een back-up of een controle (bevat alle klanten)
+async function persistFull() {
+  await persist(); await clReadyP;
+  if (clPending) throw new Error('de klanten zijn nog niet geladen');
+  return seal(K, data);
+}
+async function readClients(blob, key) {
+  const chunks = (await unsealText(key, blob)).split(',\n'), out = [];
+  for (let i = 0; i < chunks.length;) {
+    const t0 = performance.now();
+    while (i < chunks.length && performance.now() - t0 < 10) { const part = JSON.parse('[' + chunks[i++] + ']'); for (const c of part) out.push(c); }
+    await new Promise(r => setTimeout(r, 0));
+  }
+  return out;
+}
+function startClientLoad(local, key) {
+  clPending = true; clFailed = false; clRev = local.clv;
+  clReadyP = (async () => {
+    try {
+      const b = await idbKV('get', CL_KEY + local.clv);
+      if (!b) throw new Error('het klantenbestand ontbreekt op dit toestel');
+      const arr = await readClients(b, key), cur = data.clients;
+      if (cur.length) { const at = new Map(arr.map((c, i) => [c.id, i])); for (const c of cur) { const i = at.get(c.id); if (i === undefined) arr.push(c); else if ((c.u || 0) > (arr[i].u || 0)) arr[i] = c; } }
+      data.clients = arr; clientsChanged();
+      clSigSaved = cur.length ? null : clientsSig(arr) + '|' + b64(K.salt);   // intussen toegevoegde klanten moeten nog bewaard worden
+      clPending = false;
+    } catch (e) { clFailed = true; console.error(e); toast('Klanten konden niet geladen worden: ' + (e.message || e)); }
+    if (data && !$('#app').hidden) { if (document.activeElement?.closest?.('#detail,#quickAdd,#toolbar,dialog')) renderNav(); else renderAll(); }
+  })();
 }
 let saveTimer = null;
 function save(soon) {
@@ -2090,8 +2184,9 @@ const gistPut = (s, blob, meta) => gh(s.token, 'PATCH', '/gists/' + encodeURICom
 const gistCreate = (token, blob) => gh(token, 'POST', '/gists', {description:'Taken — versleutelde kluis', public:false, files:{[GIST_FILE]:{content:JSON.stringify(blob)}}});
 
 let syncTimer = null, syncing = false, syncAgain = false, syncState = {state:'idle'}, syncEtag = null;
-function scheduleSync(delay = 1500) {
+function scheduleSync(delay) {
   if (!data?.settings.sync) return;
+  if (delay === undefined) delay = data.clients.length > 5000 ? 5000 : 1500;   // grote kluis: minder vaak uploaden
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => syncNow(), delay);
 }
@@ -2102,13 +2197,13 @@ async function syncNow(pw) {
   if (syncing) { syncAgain = true; return; }
   syncing = true; setSync('busy');
   try {
-    await persistChain;
+    await persistChain; await clReadyP;
     const dirtyAtStart = syncDirty; syncDirty = false;
     const gmeta = {ifNoneMatch:syncEtag};
     const remoteBlob = await gistGet(s, gmeta);
     if (remoteBlob === NOT_MODIFIED) {
       // online is niets veranderd sinds de vorige keer: enkel eigen wijzigingen doorsturen, niets downloaden of samenvoegen
-      if (dirtyAtStart || syncDirty) { const pm = {}; await gistPut(s, await persist(), pm); syncEtag = pm.etag; }
+      if (dirtyAtStart || syncDirty) { const pm = {}; await gistPut(s, await persistFull(), pm); syncEtag = pm.etag; }
     } else if (remoteBlob) {
       let rkey = K.key;
       const differentSalt = remoteBlob.salt !== b64(K.salt);
@@ -2124,13 +2219,14 @@ async function syncNow(pw) {
       merged.settings.sync = s;
       if (sig(merged) !== sig(data) || differentSalt) {
         data = merged;
+        if (clPending && merged.clients.length) { clPending = false; clFailed = false; clSigSaved = null; }   // klanten ontbraken op dit toestel: die komen nu uit de gist
         await persist();
         renderAll();
       }
-      if (sig(merged) !== sig(remote) || differentSalt) { const pm = {}; await gistPut(s, await persist(), pm); syncEtag = pm.etag; }
+      if (sig(merged) !== sig(remote) || differentSalt) { const pm = {}; await gistPut(s, await persistFull(), pm); syncEtag = pm.etag; }
       else syncEtag = gmeta.etag;
     } else {
-      const pm = {}; await gistPut(s, await persist(), pm); syncEtag = pm.etag;
+      const pm = {}; await gistPut(s, await persistFull(), pm); syncEtag = pm.etag;
     }
     setSync('ok');
   } catch (e) {
@@ -2255,6 +2351,7 @@ async function unlockWith(pw) {
     K = await keyObj(local);
     data = localData;
     if (creds) data.settings.sync = creds;
+    if (local.split) startClientLoad(local, K.key);   // klanten laden op de achtergrond
     enterApp();
     syncNow(pw);
     return;
@@ -2835,7 +2932,7 @@ function renderAll() {
   renderNav(); renderHead(); renderBanner();
   for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = sales;
   $('#salesPage').hidden = !sales;
-  if (view.type === 'client' && !clientById(view.id)) view = {type:'clients'};
+  if (view.type === 'client' && !clPending && !clientById(view.id)) view = {type:'clients'};
   const page = isPageView();
   $('#pageView').hidden = !page;
   if (page) {
@@ -3481,7 +3578,7 @@ detail.addEventListener('change', e => {
     if (!v) delete t.clientId;
     else {
       const c = clientByName(v);
-      if (!c) { openNewClientDialog(v, t); return; }   // nieuwe klant: eerst de gegevens (telefoon, e-mail, …) laten invullen
+      if (!c) { if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); renderDetail(true); return; } openNewClientDialog(v, t); return; }   // nieuwe klant: eerst de gegevens (telefoon, e-mail, …) laten invullen
       t.clientId = c.id;
     }
     touch(t); save(); renderNav(); renderMain(); renderDetail(true);
@@ -3975,7 +4072,7 @@ function openSettings() {
       e.target.disabled = true; e.target.textContent = 'Bezig…'; err.textContent = '';
       try {
         if (!gistId) {
-          const g = await gistCreate(token, await persist());
+          const g = await gistCreate(token, await persistFull());
           data.settings.sync = {token, gistId:g.id};
           save();
           setSync('ok');
@@ -3999,11 +4096,12 @@ function openSettings() {
       err.textContent = '';
       if (n1.length < 8) { err.textContent = 'Gebruik minstens 8 tekens.'; return; }
       if (n1 !== n2) { err.textContent = 'De nieuwe wachtwoorden komen niet overeen.'; return; }
-      try { await unseal(await deriveKey(o, K.salt, K.iter), await persist()); }
+      await clReadyP; if (clPending) { err.textContent = 'De klanten zijn nog niet geladen. Probeer zo meteen opnieuw.'; return; }
+      try { await persist(); await unseal(await deriveKey(o, K.salt, K.iter), vaultBlob()); }
       catch { err.textContent = 'Huidig wachtwoord klopt niet.'; return; }
       const salt = crypto.getRandomValues(new Uint8Array(16));
       K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER};
-      const blob = await persist();
+      await persist(); const blob = await persistFull();
       if (bioGet()) { localStorage.removeItem(BIO_KEY); toast('Wachtwoord gewijzigd; zet ' + bioName() + ' opnieuw aan'); }
       if (data.settings.sync) {
         try { await gistPut(data.settings.sync, blob); setSync('ok'); }
@@ -4018,8 +4116,9 @@ function openSettings() {
       a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], {type:'application/json'}));
       a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
-    $('#stExpEnc', d).onclick = async () => download(`taken-backup-${today()}.json`, await persist());
+    $('#stExpEnc', d).onclick = async () => { try { download(`taken-backup-${today()}.json`, await persistFull()); } catch (ex) { toast('Back-up mislukt: ' + ex.message); } };
     $('#stExpPlain', d).onclick = () => {
+      if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); return; }
       if (!confirm('De leesbare export is NIET versleuteld. Bewaar het bestand veilig. Doorgaan?')) return;
       const copy = JSON.parse(JSON.stringify(data)); copy.settings.sync = null;
       download(`taken-export-${today()}.json`, copy);
@@ -4027,6 +4126,7 @@ function openSettings() {
     $('#stImp', d).onclick = () => $('#stFile', d).click();
     $('#stFile', d).onchange = async e => {
       const file = e.target.files[0]; if (!file) return;
+      if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); return; }
       try {
         const obj = JSON.parse(await file.text());
         let incoming;
@@ -4045,6 +4145,7 @@ function openSettings() {
     $('#stWipe', d).onclick = () => {
       if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden (een gesynchroniseerde gist blijft bestaan).')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
+      if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
       localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); lsSet(NT_ON, null); lsSet(NT_SENT, null); try { sessionStorage.removeItem(NT_PLAN); } catch {}
       idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
     };
@@ -5338,6 +5439,7 @@ function clientsFromSales() {
   }
 /* ---- Klantenlijst ---- */
 function clientsHtml() {
+  if (clPending) return '<div class="pg-empty"><b>Klanten laden…</b></div>';
   const sales = allSales();
   const known = new Set(), unmatched = [];
   for (const x of sales) if (x.clientName && !x.clientId) { const k = normName(x.clientName); if (!known.has(k)) { known.add(k); unmatched.push(x.clientName); } }
@@ -5696,6 +5798,7 @@ function openClientImport() {
 
 /* ---- Klantenfiche ---- */
 function clientHtml() {
+  if (clPending) return '<div class="pg-empty"><b>Klanten laden…</b></div>';
   const c = clientById(view.id); if (!c) return '';
   const sales = allSales(), g = clientAgg(c, sales), y = today().slice(0, 4);
   const fin = st => g.tasks.filter(t => t.done && t.stage === st).length;
