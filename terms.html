@@ -22,7 +22,7 @@
 <meta name="twitter:description" content="Algemene voorwaarden van sbmusic.be.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="images/favicon.png">
 
 
@@ -31,13 +31,17 @@
   :root{
     --bg:#0A0A0A;
     --bg-elevated:#161616;
-    --text:#F5F5F0;
+    --text:#F5F3EE;
     --text-secondary:#949490;
     --text-tertiary:#7E7E7A;
     --hairline:#272726;
-    --accent:#F5F5F0;
-    --accent-deep:#FFFFFF;
+    --accent:#FF4D1C;
+    --accent-deep:#E8430F;
+    --accent-text:#0A0A0A;
     --white:#FFFFFF;
+    --r-sm:3px;
+    --r-md:3px;
+    --r-lg:4px;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
   html{ background:var(--bg); }
@@ -45,7 +49,7 @@
     position:relative;
     background:var(--bg);
     color:var(--text);
-    font-family:'Hanken Grotesk',sans-serif;
+    font-family:'Schibsted Grotesk',sans-serif;
     line-height:1.5;
     min-height:100svh;
     display:flex;
@@ -66,11 +70,11 @@
     line-height:.98;
   }
   .mono{
-    font-family:'Hanken Grotesk',sans-serif;
-    font-size:12px;
-    font-weight:600;
+    font-family:'Martian Mono',monospace;
+    font-size:11px;
+    font-weight:500;
     text-transform:uppercase;
-    letter-spacing:.14em;
+    letter-spacing:.08em;
     color:var(--text-secondary);
   }
 

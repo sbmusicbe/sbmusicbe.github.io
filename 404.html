@@ -10,17 +10,18 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
     --bg:#0A0A0A;
-    --text:#F5F5F0;
+    --text:#F5F3EE;
     --text-secondary:#949490;
-    --accent:#F5F5F0;
-    --accent-deep:#FFFFFF;
+    --accent:#FF4D1C;
+    --accent-deep:#E8430F;
+    --accent-text:#0A0A0A;
     --white:#FFFFFF;
-    --r-md:14px;
+    --r-md:3px;
     --r-pill:999px;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -29,7 +30,7 @@
     position:relative;
     background:var(--bg);
     color:var(--text);
-    font-family:'Hanken Grotesk',sans-serif;
+    font-family:'Schibsted Grotesk',sans-serif;
     line-height:1.5;
     min-height:100svh;
     display:flex;
@@ -74,15 +75,15 @@
     padding:16px 30px;
     margin-top:44px;
     border-radius:var(--r-pill);
-    background:var(--text);
-    font-weight:500;
+    background:var(--accent);
+    font-weight:700;
     font-size:15px;
     letter-spacing:-.011em;
-    color:var(--bg);
+    color:var(--accent-text);
     white-space:nowrap;
     transition:background .2s ease;
   }
-  .tag:hover{ background:var(--white); }
+  .tag:hover{ background:var(--accent-deep); }
 
   #page-loader{
     position:fixed;

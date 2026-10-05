@@ -25,7 +25,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>if(!window.matchMedia||!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('has-reveal');}</script>
 <link rel="icon" href="images/favicon.png">
 
@@ -36,18 +36,17 @@
     --bg:#0A0A0A;
     --bg-elevated:#161616;
     --cord:#111111;
-    --text:#F5F5F0;
+    --text:#F5F3EE;
     --text-secondary:#949490;
     --text-tertiary:#7E7E7A;
     --hairline:#272726;
-    --accent:#F5F5F0;
-    --accent-deep:#FFFFFF;
-    --accent2:#F5F5F0;
+    --accent:#FF4D1C;
+    --accent-deep:#E8430F;
     --accent-text:#0A0A0A;
     --white:#FFFFFF;
-    --r-sm:8px;
-    --r-md:14px;
-    --r-lg:24px;
+    --r-sm:3px;
+    --r-md:3px;
+    --r-lg:4px;
     --r-pill:999px;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -56,7 +55,7 @@
     position:relative;
     background:var(--bg);
     color:var(--text);
-    font-family:'Hanken Grotesk',sans-serif;
+    font-family:'Schibsted Grotesk',sans-serif;
     font-size:16px;
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
@@ -67,7 +66,7 @@
   button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
   a:focus-visible, button:focus-visible{ outline:2px solid var(--accent); outline-offset:4px; border-radius:4px; }
 
-  /* ---------- TYPO: Archivo Black voor koppen, Hanken Grotesk voor de rest ---------- */
+  /* ---------- TYPO: Archivo Black voor koppen, Schibsted Grotesk voor de rest, Martian Mono voor catalogusnummers ---------- */
   .display{
     font-family:'Archivo Black',sans-serif;
     font-weight:400;
@@ -75,13 +74,22 @@
     line-height:.98;
   }
   .mono{
-    font-family:'Hanken Grotesk',sans-serif;
-    font-size:12px;
-    font-weight:600;
+    font-family:'Martian Mono',monospace;
+    font-size:11px;
+    font-weight:500;
     text-transform:uppercase;
-    letter-spacing:.14em;
+    letter-spacing:.08em;
     color:var(--text-secondary);
   }
+  .cat-no{
+    font-family:'Martian Mono',monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--accent);
+  }
+  .section-mark{ position:absolute; top:36px; right:22px; z-index:1; }
+  @media (min-width:700px){ .section-mark{ right:40px; } }
 
   /* ---------- SCROLL REVEAL ---------- */
   html.has-reveal .reveal{
@@ -131,9 +139,9 @@
     color:var(--text);
     transition:background .2s ease, border-color .2s ease, transform .15s ease, box-shadow .25s ease;
   }
-  .tag.krijt{ background:var(--text); color:var(--accent-text); border-color:transparent; }
-  a.tag:hover, button.tag:hover{ border-color:var(--text); transform:translateY(-2px); box-shadow:0 10px 24px -14px rgba(0,0,0,.5); }
-  a.tag.krijt:hover, button.tag.krijt:hover{ background:var(--white); }
+  .tag.krijt{ background:var(--accent); color:var(--accent-text); border-color:transparent; font-weight:700; }
+  a.tag:hover, button.tag:hover{ border-color:var(--accent); transform:translateY(-2px); box-shadow:0 10px 24px -14px rgba(0,0,0,.5); }
+  a.tag.krijt:hover, button.tag.krijt:hover{ background:var(--accent-deep); }
   a.tag:active, button.tag:active{ transform:scale(.97); }
   .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
@@ -160,9 +168,7 @@
     position:sticky;
     top:0;
     z-index:100;
-    background:rgba(10,10,10,.78);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
+    background:var(--bg);
     border-bottom:1px solid var(--hairline);
   }
   .site-nav-inner{
@@ -242,18 +248,8 @@
   .mobile-nav a:hover, .mobile-nav a[aria-current="page"]{ color:var(--text); }
   #nav-toggle:checked ~ .mobile-nav{ opacity:1; pointer-events:auto; transform:translateY(0); }
 
-  /* ---------- WRAP + LABEL ---------- */
+  /* ---------- WRAP ---------- */
   .wrap{ max-width:920px; margin:0 auto; padding:0 28px; }
-  .idx{
-    display:block;
-    font-family:'Hanken Grotesk',sans-serif;
-    font-size:12px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.14em;
-    color:var(--accent);
-    margin-bottom:18px;
-  }
 
   /* ---------- BIO HERO ---------- */
   .bio-hero{ padding:112px 0 0; position:relative; overflow:hidden; }
@@ -263,26 +259,43 @@
     height:520px;
     z-index:0;
     pointer-events:none;
-    background:radial-gradient(50% 50% at 30% 15%, rgba(245,245,240,.06), transparent 72%);
+    background:radial-gradient(50% 50% at 30% 15%, rgba(255,77,28,.08), transparent 72%);
   }
   .bio-hero .wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; }
   .bio-hero-photo-wrap{ position:relative; width:180px; max-width:100%; }
   .bio-hero-photo-frame{
     position:absolute;
-    inset:18px -18px -18px 18px;
-    border:1px solid var(--text);
-    border-radius:var(--r-lg);
+    inset:16px -16px -16px 16px;
+    border:1px solid var(--hairline);
     z-index:0;
   }
   .bio-hero-photo{
     position:relative;
     z-index:1;
     width:100%;
-    aspect-ratio:4/5;
-    border-radius:var(--r-lg);
+    aspect-ratio:1/1;
     overflow:hidden;
     background:var(--bg-elevated);
     border:1px solid var(--hairline);
+  }
+  .sleeve-sticker{
+    position:absolute;
+    z-index:2;
+    top:-14px;
+    right:-14px;
+    width:56px;
+    height:56px;
+    border-radius:var(--r-pill);
+    background:var(--accent);
+    color:var(--accent-text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Martian Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    transform:rotate(-8deg);
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.6);
   }
   .bio-hero-photo img{ width:100%; height:100%; object-fit:cover; object-position:50% 18%; }
   .bio-hero h1{ margin-top:40px; font-size:clamp(36px, 8vw, 64px); max-width:14ch; }
@@ -290,23 +303,24 @@
   .bio-hero p + p{ margin-top:18px; }
 
   /* ---------- VOOR ELK MOMENT ---------- */
-  .events-scene{ padding:100px 0; border-top:1px solid var(--hairline); }
+  .events-scene{ padding:100px 0; border-top:1px solid var(--hairline); position:relative; }
   .events-head{ text-align:center; }
-  .events-grid{ margin-top:44px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
-  .event-card{ padding:28px; border-radius:var(--r-lg); background:var(--bg-elevated); border:1px solid var(--hairline); transition:border-color .2s ease, transform .2s ease; }
-  .event-card:hover{ border-color:var(--text); transform:translateY(-3px); }
-  .event-card h3{ font-size:20px; font-family:'Hanken Grotesk',sans-serif; font-weight:700; }
-  .event-card p{ margin-top:8px; font-size:14px; line-height:1.55; color:var(--text-secondary); }
+  .tracklist{ margin-top:44px; list-style:none; max-width:640px; margin-left:auto; margin-right:auto; }
+  .tracklist li{ display:flex; gap:24px; padding:26px 0; border-top:1px solid var(--hairline); text-align:left; }
+  .tracklist li:last-child{ border-bottom:1px solid var(--hairline); }
+  .tracklist .track-idx{ flex-shrink:0; width:40px; padding-top:.2em; }
+  .tracklist .track-body h3{ font-size:19px; font-family:'Schibsted Grotesk',sans-serif; font-weight:700; }
+  .tracklist .track-body p{ margin-top:8px; font-size:15px; line-height:1.6; color:var(--text-secondary); }
 
   /* ---------- OP DE VLOER ---------- */
-  .gallery-scene{ padding:100px 0; border-top:1px solid var(--hairline); }
+  .gallery-scene{ padding:100px 0; border-top:1px solid var(--hairline); position:relative; }
   .photo-grid{ margin-top:44px; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px; }
   .photo-tile{ position:relative; border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--hairline); background:var(--bg-elevated); }
   .photo-tile img{ width:100%; aspect-ratio:4/5; object-fit:cover; display:block; transition:transform .4s ease; }
   .photo-tile:hover img{ transform:scale(1.04); }
 
   /* ---------- SOUND ---------- */
-  .sound-scene{ padding:120px 0; }
+  .sound-scene{ padding:120px 0; position:relative; }
   .sound-scene .wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .sound-scene .display{ font-size:clamp(30px, 6vw, 46px); max-width:16ch; }
   .sound-bars{ list-style:none; display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:44px; max-width:100%; }
@@ -325,7 +339,7 @@
   .sound-note{ margin-top:20px; font-size:17px; line-height:1.6; color:var(--text-secondary); max-width:44ch; text-align:left; }
 
   /* ---------- PEOPLE I'VE PARTIED WITH ---------- */
-  .partied-scene{ padding:120px 0 150px; background:var(--cord); }
+  .partied-scene{ padding:120px 0 150px; background:var(--cord); position:relative; }
   .partied-scene .wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .partied-scene .display{ font-size:clamp(30px, 6vw, 46px); max-width:18ch; }
   .partied-note{ margin-top:18px; font-size:16px; color:var(--text-secondary); }
@@ -345,7 +359,7 @@
     border-radius:var(--r-lg);
     background:var(--bg);
     border:1px solid var(--hairline);
-    font-family:'Hanken Grotesk',sans-serif;
+    font-family:'Schibsted Grotesk',sans-serif;
     font-weight:800;
     letter-spacing:-.025em;
     line-height:1.1;
@@ -384,7 +398,7 @@
     .site-nav-links{
       display:flex;
       gap:36px;
-      font-family:'Hanken Grotesk',sans-serif;
+      font-family:'Schibsted Grotesk',sans-serif;
       font-weight:600;
       font-size:13px;
       text-transform:uppercase;
@@ -540,7 +554,6 @@
   @media (prefers-reduced-transparency: reduce){
     .modal-overlay{ background:rgba(0,0,0,.85); backdrop-filter:none; -webkit-backdrop-filter:none; }
     .modal-overlay:target{ backdrop-filter:none; -webkit-backdrop-filter:none; }
-    .site-nav{ background:var(--bg); backdrop-filter:none; -webkit-backdrop-filter:none; }
   }
 </style>
 </head>
@@ -578,6 +591,7 @@
         <div class="bio-hero-photo">
         <img src="images/hero-portrait.jpg" alt="SB wijst recht in de lens, zwarte trui en groene corduroy beanie">
         </div>
+        <span class="sleeve-sticker" aria-hidden="true">SB-001</span>
         </div>
         <h1 class="display">Jouw feest, mijn missie.</h1>
         <p>SB is allround dj: de ene avond house, de volgende hiphop, R&amp;B of gewoon de meezingers die iedereen wil horen. Geen vaste playlist, wel een scherp gevoel voor wat een zaal op dat moment nodig heeft.</p>
@@ -587,35 +601,47 @@
     </section>
 
     <section class="events-scene">
+      <span class="cat-no section-mark" aria-hidden="true">SB-004</span>
       <div class="wrap reveal">
         <div class="events-head">
-          <span class="idx">Voor elk moment</span>
           <h2 class="display">Club. Festival. Bruiloft. Privé.</h2>
         </div>
-        <div class="events-grid reveal-stagger">
-          <div class="event-card">
-            <h3>Club</h3>
-            <p>Strakke sets die de dansvloer vullen en vasthouden, van opening tot closing.</p>
-          </div>
-          <div class="event-card">
-            <h3>Festival</h3>
-            <p>Energie die meegaat met een groot publiek — herkenbaar, maar nooit voorspelbaar.</p>
-          </div>
-          <div class="event-card">
-            <h3>Bruiloft</h3>
-            <p>Van het eerste dansje tot het laatste nummer: een avond die aanvoelt als die van jullie.</p>
-          </div>
-          <div class="event-card">
-            <h3>Privéfeest</h3>
-            <p>Een intieme set op maat van jouw gasten en de sfeer die je zoekt.</p>
-          </div>
-        </div>
+        <ol class="tracklist reveal-stagger">
+          <li>
+            <span class="track-idx cat-no">B1</span>
+            <div class="track-body">
+              <h3>Club</h3>
+              <p>Strakke sets die de dansvloer vullen en vasthouden, van opening tot closing.</p>
+            </div>
+          </li>
+          <li>
+            <span class="track-idx cat-no">B2</span>
+            <div class="track-body">
+              <h3>Festival</h3>
+              <p>Energie die meegaat met een groot publiek — herkenbaar, maar nooit voorspelbaar.</p>
+            </div>
+          </li>
+          <li>
+            <span class="track-idx cat-no">B3</span>
+            <div class="track-body">
+              <h3>Bruiloft</h3>
+              <p>Van het eerste dansje tot het laatste nummer: een avond die aanvoelt als die van jullie.</p>
+            </div>
+          </li>
+          <li>
+            <span class="track-idx cat-no">B4</span>
+            <div class="track-body">
+              <h3>Privéfeest</h3>
+              <p>Een intieme set op maat van jouw gasten en de sfeer die je zoekt.</p>
+            </div>
+          </li>
+        </ol>
       </div>
     </section>
 
     <section class="gallery-scene">
+      <span class="cat-no section-mark" aria-hidden="true">SB-005</span>
       <div class="wrap reveal">
-        <span class="idx">Op de vloer</span>
         <h2 class="display">In actie.</h2>
         <div class="photo-grid reveal-stagger">
           <figure class="photo-tile">
@@ -641,8 +667,8 @@
     </section>
 
     <section class="sound-scene">
+      <span class="cat-no section-mark" aria-hidden="true">SB-006</span>
       <div class="wrap reveal">
-        <span class="idx">Sound</span>
         <h2 class="display">Geen vast genre. Altijd het juiste.</h2>
         <p class="sound-note">Ik voel de zaal aan en schakel live tussen wat het feest nodig heeft — van meezingers tot house en hiphop.</p>
         <ul class="sound-bars reveal-stagger">
@@ -659,8 +685,8 @@
     </section>
 
     <section class="partied-scene" id="partied" aria-labelledby="partied-title">
+      <span class="cat-no section-mark" aria-hidden="true">SB-007</span>
       <div class="wrap reveal">
-        <span class="idx">People I've partied with</span>
         <h2 class="display" id="partied-title">Waar je me al hoorde.</h2>
         <p class="partied-note">Vaste resident bij Café De Zwarte Ruiter in Turnhout — en te gast op:</p>
         <ul class="partied-wall reveal-stagger">

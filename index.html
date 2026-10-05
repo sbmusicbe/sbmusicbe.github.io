@@ -25,7 +25,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>if(!window.matchMedia||!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('has-reveal');}</script>
 <link rel="icon" href="images/favicon.png">
 
@@ -36,18 +36,17 @@
     --bg:#0A0A0A;
     --bg-elevated:#161616;
     --cord:#111111;
-    --text:#F5F5F0;
+    --text:#F5F3EE;
     --text-secondary:#949490;
     --text-tertiary:#7E7E7A;
     --hairline:#272726;
-    --accent:#F5F5F0;
-    --accent-deep:#FFFFFF;
-    --accent2:#F5F5F0;
+    --accent:#FF4D1C;
+    --accent-deep:#E8430F;
     --accent-text:#0A0A0A;
     --white:#FFFFFF;
-    --r-sm:8px;
-    --r-md:14px;
-    --r-lg:24px;
+    --r-sm:3px;
+    --r-md:3px;
+    --r-lg:4px;
     --r-pill:999px;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -56,7 +55,7 @@
     position:relative;
     background:var(--bg);
     color:var(--text);
-    font-family:'Hanken Grotesk',sans-serif;
+    font-family:'Schibsted Grotesk',sans-serif;
     font-size:16px;
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
@@ -67,7 +66,7 @@
   button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
   a:focus-visible, button:focus-visible{ outline:2px solid var(--accent); outline-offset:4px; border-radius:4px; }
 
-  /* ---------- TYPO: Archivo Black voor koppen, Hanken Grotesk voor de rest ---------- */
+  /* ---------- TYPO: Archivo Black voor koppen, Schibsted Grotesk voor de rest, Martian Mono voor catalogusnummers ---------- */
   .display{
     font-family:'Archivo Black',sans-serif;
     font-weight:400;
@@ -75,12 +74,19 @@
     line-height:.98;
   }
   .mono{
-    font-family:'Hanken Grotesk',sans-serif;
-    font-size:12px;
-    font-weight:600;
+    font-family:'Martian Mono',monospace;
+    font-size:11px;
+    font-weight:500;
     text-transform:uppercase;
-    letter-spacing:.14em;
+    letter-spacing:.08em;
     color:var(--text-secondary);
+  }
+  .cat-no{
+    font-family:'Martian Mono',monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--accent);
   }
 
   /* ---------- SCROLL REVEAL ---------- */
@@ -132,9 +138,9 @@
     color:var(--text);
     transition:background .2s ease, border-color .2s ease, transform .15s ease, box-shadow .25s ease;
   }
-  .tag.krijt{ background:var(--text); color:var(--accent-text); border-color:transparent; }
-  a.tag:hover, button.tag:hover{ border-color:var(--text); transform:translateY(-2px); box-shadow:0 10px 24px -14px rgba(0,0,0,.5); }
-  a.tag.krijt:hover, button.tag.krijt:hover{ background:var(--white); }
+  .tag.krijt{ background:var(--accent); color:var(--accent-text); border-color:transparent; font-weight:700; }
+  a.tag:hover, button.tag:hover{ border-color:var(--accent); transform:translateY(-2px); box-shadow:0 10px 24px -14px rgba(0,0,0,.5); }
+  a.tag.krijt:hover, button.tag.krijt:hover{ background:var(--accent-deep); }
   a.tag:active, button.tag:active{ transform:scale(.97); }
   .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
@@ -161,9 +167,7 @@
     position:sticky;
     top:0;
     z-index:100;
-    background:rgba(10,10,10,.78);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
+    background:var(--bg);
     border-bottom:1px solid var(--hairline);
   }
   .site-nav-inner{
@@ -251,28 +255,45 @@
     height:560px;
     z-index:0;
     pointer-events:none;
-    background:radial-gradient(50% 50% at 50% 10%, rgba(245,245,240,.06), transparent 72%);
+    background:radial-gradient(50% 50% at 50% 10%, rgba(255,77,28,.08), transparent 72%);
   }
   .home-header{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; }
   .home-photo-wrap{ position:relative; width:240px; max-width:100%; }
   .home-photo-frame{
     position:absolute;
-    inset:22px -22px -22px 22px;
-    border:1px solid var(--text);
-    border-radius:var(--r-lg);
+    inset:18px -18px -18px 18px;
+    border:1px solid var(--hairline);
     z-index:0;
   }
   .home-avatar{
     position:relative;
     z-index:1;
     width:100%;
-    aspect-ratio:4/5;
-    border-radius:var(--r-lg);
+    aspect-ratio:1/1;
     overflow:hidden;
     background:var(--bg-elevated);
     border:1px solid var(--hairline);
   }
-  .home-avatar img{ width:100%; height:100%; object-fit:cover; object-position:50% 18%; }
+  .home-avatar img{ width:100%; height:100%; object-fit:cover; object-position:50% 22%; }
+  .sleeve-sticker{
+    position:absolute;
+    z-index:2;
+    top:-16px;
+    right:-16px;
+    width:62px;
+    height:62px;
+    border-radius:var(--r-pill);
+    background:var(--accent);
+    color:var(--accent-text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Martian Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+    transform:rotate(-8deg);
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.6);
+  }
   .home-text{ margin-top:40px; max-width:440px; }
   .home-logo{ display:block; width:60px; margin:0 auto; }
   .home-headline{ margin-top:26px; font-size:clamp(40px, 9vw, 76px); }
@@ -296,20 +317,17 @@
   /* ---------- HOE HET WERKT / VOOR ELK MOMENT ---------- */
   .wrap{ max-width:1180px; margin:0 auto; padding:0 22px; }
   .home-steps{ padding:100px 0; border-top:1px solid var(--hairline); }
-  .home-steps-head, .home-events-head{ text-align:center; max-width:560px; margin:0 auto; }
-  .home-steps-head h2, .home-events-head h2{ margin-top:14px; font-size:clamp(26px, 4.5vw, 38px); }
-  .steps-grid{ margin-top:56px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:24px; }
-  .step-card{ padding:32px 28px; border-radius:var(--r-lg); background:var(--bg-elevated); border:1px solid var(--hairline); }
-  .step-num{ font-size:32px; color:var(--text-tertiary); }
-  .step-card h3{ margin-top:18px; font-size:19px; font-weight:700; }
-  .step-card p{ margin-top:10px; font-size:15px; line-height:1.6; color:var(--text-secondary); }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .section-head h2{ font-size:clamp(26px, 4.5vw, 38px); }
+  .section-head .cat-no{ padding-bottom:.3em; }
+  .tracklist{ margin-top:44px; list-style:none; max-width:720px; }
+  .tracklist li{ display:flex; gap:24px; padding:26px 0; border-top:1px solid var(--hairline); transition:background .2s ease; }
+  .tracklist li:last-child{ border-bottom:1px solid var(--hairline); }
+  .tracklist .track-idx{ flex-shrink:0; width:40px; padding-top:.2em; }
+  .tracklist .track-body h3{ font-family:'Schibsted Grotesk',sans-serif; font-size:19px; font-weight:700; }
+  .tracklist .track-body p{ margin-top:8px; font-size:15px; line-height:1.6; color:var(--text-secondary); max-width:56ch; }
 
   .home-events{ padding:100px 0; background:var(--cord); border-top:1px solid var(--hairline); }
-  .events-grid{ margin-top:56px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
-  .event-card{ padding:28px; border-radius:var(--r-lg); background:var(--bg); border:1px solid var(--hairline); transition:border-color .2s ease, transform .2s ease; }
-  .event-card:hover{ border-color:var(--text); transform:translateY(-3px); }
-  .event-card h3{ font-size:20px; }
-  .event-card p{ margin-top:8px; font-size:14px; line-height:1.55; color:var(--text-secondary); }
 
   /* ---------- FOOTER ---------- */
   .foot{
@@ -333,7 +351,7 @@
     .site-nav-links{
       display:flex;
       gap:36px;
-      font-family:'Hanken Grotesk',sans-serif;
+      font-family:'Schibsted Grotesk',sans-serif;
       font-weight:600;
       font-size:13px;
       text-transform:uppercase;
@@ -505,7 +523,6 @@
   @media (prefers-reduced-transparency: reduce){
     .modal-overlay{ background:rgba(0,0,0,.85); backdrop-filter:none; -webkit-backdrop-filter:none; }
     .modal-overlay:target{ backdrop-filter:none; -webkit-backdrop-filter:none; }
-    .site-nav{ background:var(--bg); backdrop-filter:none; -webkit-backdrop-filter:none; }
   }
 </style>
 </head>
@@ -543,6 +560,7 @@
         <div class="home-avatar">
         <img src="images/hero-portrait.jpg" alt="SB wijst recht in de lens, zwarte trui en groene corduroy beanie">
       </div>
+        <span class="sleeve-sticker" aria-hidden="true">SB-001</span>
       </div>
       <div class="home-text">
         <h1 class="sr-only">SB — Allround dj</h1>
@@ -570,54 +588,72 @@
 
   <section class="home-steps">
     <div class="wrap">
-      <div class="home-steps-head reveal">
-        <span class="mono">Hoe het werkt</span>
+      <div class="section-head reveal">
         <h2 class="display">Van bericht tot volle vloer.</h2>
+        <span class="cat-no" aria-hidden="true">SB-002</span>
       </div>
-      <div class="steps-grid reveal-stagger">
-        <div class="step-card">
-          <span class="step-num display">1</span>
-          <h3>Vertel je verhaal</h3>
-          <p>Stuur je datum, locatie en sfeer door via het boekingsformulier.</p>
-        </div>
-        <div class="step-card">
-          <span class="step-num display">2</span>
-          <h3>Ik stem af</h3>
-          <p>Ik lees elke aanvraag zelf en denk mee over de juiste set voor jouw feest.</p>
-        </div>
-        <div class="step-card">
-          <span class="step-num display">3</span>
-          <h3>Volle dansvloer</h3>
-          <p>Op de avond zelf voel ik de zaal aan en schakel live tussen genres.</p>
-        </div>
-      </div>
+      <ol class="tracklist reveal-stagger">
+        <li>
+          <span class="track-idx cat-no">A1</span>
+          <div class="track-body">
+            <h3>Vertel je verhaal</h3>
+            <p>Stuur je datum, locatie en sfeer door via het boekingsformulier.</p>
+          </div>
+        </li>
+        <li>
+          <span class="track-idx cat-no">A2</span>
+          <div class="track-body">
+            <h3>Ik stem af</h3>
+            <p>Ik lees elke aanvraag zelf en denk mee over de juiste set voor jouw feest.</p>
+          </div>
+        </li>
+        <li>
+          <span class="track-idx cat-no">A3</span>
+          <div class="track-body">
+            <h3>Volle dansvloer</h3>
+            <p>Op de avond zelf voel ik de zaal aan en schakel live tussen genres.</p>
+          </div>
+        </li>
+      </ol>
     </div>
   </section>
 
   <section class="home-events">
     <div class="wrap">
-      <div class="home-events-head reveal">
-        <span class="mono">Voor elk moment</span>
+      <div class="section-head reveal">
         <h2 class="display">Club. Festival. Bruiloft. Privé.</h2>
+        <span class="cat-no" aria-hidden="true">SB-003</span>
       </div>
-      <div class="events-grid reveal-stagger">
-        <div class="event-card">
-          <h3>Club</h3>
-          <p>Strakke sets die de dansvloer vullen en vasthouden, van opening tot closing.</p>
-        </div>
-        <div class="event-card">
-          <h3>Festival</h3>
-          <p>Energie die meegaat met een groot publiek — herkenbaar, maar nooit voorspelbaar.</p>
-        </div>
-        <div class="event-card">
-          <h3>Bruiloft</h3>
-          <p>Van het eerste dansje tot het laatste nummer: een avond die aanvoelt als die van jullie.</p>
-        </div>
-        <div class="event-card">
-          <h3>Privéfeest</h3>
-          <p>Een intieme set op maat van jouw gasten en de sfeer die je zoekt.</p>
-        </div>
-      </div>
+      <ol class="tracklist reveal-stagger">
+        <li>
+          <span class="track-idx cat-no">B1</span>
+          <div class="track-body">
+            <h3>Club</h3>
+            <p>Strakke sets die de dansvloer vullen en vasthouden, van opening tot closing.</p>
+          </div>
+        </li>
+        <li>
+          <span class="track-idx cat-no">B2</span>
+          <div class="track-body">
+            <h3>Festival</h3>
+            <p>Energie die meegaat met een groot publiek — herkenbaar, maar nooit voorspelbaar.</p>
+          </div>
+        </li>
+        <li>
+          <span class="track-idx cat-no">B3</span>
+          <div class="track-body">
+            <h3>Bruiloft</h3>
+            <p>Van het eerste dansje tot het laatste nummer: een avond die aanvoelt als die van jullie.</p>
+          </div>
+        </li>
+        <li>
+          <span class="track-idx cat-no">B4</span>
+          <div class="track-body">
+            <h3>Privéfeest</h3>
+            <p>Een intieme set op maat van jouw gasten en de sfeer die je zoekt.</p>
+          </div>
+        </li>
+      </ol>
     </div>
   </section>
   </main>
