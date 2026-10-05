@@ -2,7 +2,7 @@
    Bewaart de app zelf (HTML, iconen, logo) op het toestel, zodat Taken meteen
    opent, ook zonder internet. Je gegevens staan al versleuteld in de browser;
    config.json en GitHub worden nooit gecachet en gaan altijd naar het netwerk. */
-const CACHE = 'taken-app-v6';
+const CACHE = 'taken-app-v7';
 const ASSETS = ['./', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
   'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 const PAGE = new URL('./', self.registration.scope).href;
@@ -73,17 +73,5 @@ self.addEventListener('fetch', e => {
     const res = await fetch(req);
     if (res.ok) (await caches.open(CACHE)).put(req, res.clone());
     return res;
-  })());
-});
-
-// Klik op een melding: het open venster naar voren halen (en de taak/agenda tonen), anders Taken openen.
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  const open = e.notification.data?.open || null;
-  e.waitUntil((async () => {
-    const wins = await self.clients.matchAll({type: 'window', includeUncontrolled: true});
-    const win = wins.find(w => w.url.startsWith(self.registration.scope));
-    if (win) { await win.focus(); win.postMessage({type: 'notify-open', open}); return; }
-    await self.clients.openWindow(PAGE + (open ? '?nt=' + encodeURIComponent(JSON.stringify(open)) : ''));
   })());
 });
