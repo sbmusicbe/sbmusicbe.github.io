@@ -1262,13 +1262,6 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .ci-prog progress{width:100%;height:8px;accent-color:var(--accent)}
 .ci-prog span{display:block;margin-top:6px;font-size:13px;color:var(--muted)}
 
-/* meldingen (instellingen) */
-.nt-head{display:flex;align-items:center;gap:12px;justify-content:space-between}
-.nt-head .btn{flex:none}
-.nt-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
-.nt-chk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
-.nt-at{display:flex;align-items:center;gap:6px;font-size:14px}
-.nt-at select{width:auto}
 
 /* desktop: invoerbalk enkel na "+ Taak" / N, compactere werkbalk */
 .tb-add{display:none}
@@ -2442,8 +2435,6 @@ function enterApp() {
   warmClients();
   checkConfig();
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
-  if (ntPending) { const o = ntPending; ntPending = null; ntOpen(o); }
-  ntTick();
 }
 // Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
 let pendingLaunch = /[?&](view|new)=/.test(location.search) ? location.href : null;
@@ -4076,7 +4067,6 @@ function openSettings() {
       </div>`}
 
     <h4>Meldingen</h4>
-    ${notifyBox()}
 
     <h4>Beveiliging</h4>
     <label class="fl">Automatisch vergrendelen na inactiviteit
@@ -4105,7 +4095,7 @@ function openSettings() {
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="stClose">Klaar</button></div>`, d => {
     $('#stClose', d).onclick = () => dlg.close();
     $('#stAuto', d).onchange = e => { data.settings.autolock = +e.target.value; save(); };
-    bindNotifyBox(d); bindBioBox(d);
+    bindBioBox(d);
     $('#stSync', d)?.addEventListener('click', () => syncNow());
     $('#stUnlink', d)?.addEventListener('click', () => {
       if (!confirm('Synchronisatie in deze browser ontkoppelen? De gist en het sleutelbestand op je site blijven bestaan.')) return;
@@ -4193,7 +4183,7 @@ function openSettings() {
       if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden (een gesynchroniseerde gist blijft bestaan).')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
       if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
-      localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); lsSet(NT_ON, null); lsSet(NT_SENT, null); try { sessionStorage.removeItem(NT_PLAN); } catch {}
+      localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY);
       idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
     };
   });
@@ -6142,134 +6132,6 @@ fetchConfig().then(c => {
 });
 });
 
-/* ---------------- Meldingen (herinneringen) ----------------
-   Taken heeft geen eigen server: de meldingen komen uit de app zelf, zolang Taken open staat
-   (ook geminimaliseerd of vergrendeld). Het lijstje komende meldingen staat enkel in dit tabblad
-   (sessionStorage), zodat het vergrendelen overleeft maar nooit op schijf in je kluis belandt. */
-const NT_ON = 'taken.notify.on', NT_SENT = 'taken.notify.sent', NT_PLAN = 'taken.notify.plan';
-const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
-const lsSet = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
-const ntSupported = () => 'Notification' in window;
-const ntActive = () => ntSupported() && Notification.permission === 'granted' && lsGet(NT_ON) === '1';
-const ntCfg = () => ({lead:0, ev:'day', digest:true, at:'08:00', ...(data?.settings.notify || {})});
-const ntAt = (day, hm) => { const d = parseYmd(day), [h, m] = hm.split(':').map(Number); d.setHours(h, m, 0, 0); return d.getTime(); };
-const ntLive = t => !t.done && !t.archived && !projArchived(t.projectId);
-
-function ntPlan() {
-  const c = ntCfg(), td = today(), mor = c.at || '08:00', out = [];
-  for (const t of data.tasks) {
-    if (!ntLive(t) || !t.due || !t.time || t.due < addDays(td, -1) || t.due > addDays(td, 2)) continue;
-    const due = ntAt(t.due, t.time), p = proj(t.projectId), cl = t.clientId ? clientById(t.clientId) : null;
-    out.push({k:`t:${t.id}:${t.due} ${t.time}:${c.lead}`, at:due - c.lead * 60000, until:due + 3 * 3600000, title:t.title || 'Taak',
-      body:[(t.due === td ? 'Vandaag ' : dueLabel(t.due) + ' ') + t.time, cl?.company, p && p.id !== 'inbox' ? p.name : ''].filter(Boolean).join(' · '), open:{task:t.id}});
-  }
-  if (c.ev !== 'off') for (const e of data.events) {
-    if (e.date < td || e.date > addDays(td, 1)) continue;
-    const lbl = (EV_TYPES.find(x => x[0] === e.type) || EV_TYPES[0])[1], name = e.title || e.edition || '', p = e.projectId ? data.projects.find(x => x.id === e.projectId) : null;
-    const body = [e.title && e.edition ? e.edition : '', p?.name, e.note].filter(Boolean).join(' · ');
-    const add = (day, when, n) => out.push({k:`e:${e.id}:${e.date}:${n}`, at:ntAt(day, mor), until:ntAt(day, '23:59'), title:`${lbl} ${when}${name ? ': ' + name : ''}`, body, open:{view:'agenda', date:e.date}});
-    if (c.ev !== 'before') add(e.date, 'vandaag', 0);
-    if (c.ev !== 'day') add(addDays(e.date, -1), 'morgen', 1);
-  }
-  if (c.digest && parseYmd(td).getDay() % 6) {
-    const open = data.tasks.filter(ntLive), due = open.filter(t => t.due === td).sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
-    const late = open.filter(t => t.due && t.due < td), evs = data.events.filter(e => e.date === td), n = due.length;
-    if (n || late.length || evs.length) {
-      const title = n ? `Vandaag: ${n} ${n === 1 ? 'taak' : 'taken'}` + (late.length ? `, ${late.length} te laat` : '') : evs.length ? 'Vandaag in de agenda' : `${late.length} ${late.length === 1 ? 'taak' : 'taken'} te laat`;
-      const lines = [...evs.slice(0, 2).map(e => '📅 ' + (e.title || e.edition || (EV_TYPES.find(x => x[0] === e.type) || EV_TYPES[0])[1])),
-        ...due.slice(0, 3).map(t => (t.time ? t.time + ' ' : '') + t.title)];
-      if (n > 3) lines.push(`+ ${n - 3} meer`);
-      if (!n) lines.push(...late.slice(0, 3).map(t => t.title));
-      const a = ntAt(td, mor);
-      out.push({k:`d:${td}`, at:a, until:Math.max(a + 4 * 3600000, ntAt(td, '12:00')), title, body:lines.join('\n'), open:{view:'today'}});
-    }
-  }
-  return out;
-}
-
-let ntPlanStr = '';
-function ntLoadPlan() {
-  if (data) {
-    const plan = ntPlan(), s = JSON.stringify(plan);
-    if (s !== ntPlanStr) { ntPlanStr = s; try { sessionStorage.setItem(NT_PLAN, s); } catch {} }
-    return plan;
-  }
-  try { return JSON.parse(sessionStorage.getItem(NT_PLAN) || '[]'); } catch { return []; }
-}
-// markeert wat nu al verschuldigd is als verstuurd, zodat aanzetten geen stapel oude meldingen geeft
-function ntSkipDue() {
-  const t = now(), sent = ntSent();
-  for (const it of ntLoadPlan()) if (t >= it.at) sent[it.k] = t;
-  lsSet(NT_SENT, JSON.stringify(sent));
-}
-function ntSent() { try { return JSON.parse(lsGet(NT_SENT) || '{}'); } catch { return {}; } }
-function ntTick() {
-  if (!ntActive()) return;
-  const t = now(), sent = ntSent(), fire = [];
-  for (const it of ntLoadPlan()) if (t >= it.at && t < it.until && !sent[it.k]) { sent[it.k] = t; fire.push(it); }
-  let pruned = false;
-  for (const k in sent) if (t - sent[k] > 4 * 864e5) { delete sent[k]; pruned = true; }
-  if (fire.length || pruned) lsSet(NT_SENT, JSON.stringify(sent));
-  fire.forEach(ntShow);
-}
-async function ntShow(it) {
-  const opts = {body:it.body, tag:it.k, icon:'icon-192.png', badge:'favicon-48.png', data:{open:it.open}};
-  try {
-    const reg = 'serviceWorker' in navigator && await navigator.serviceWorker.getRegistration();
-    if (reg) { await reg.showNotification(it.title, opts); return; }
-  } catch {}
-  try { const n = new Notification(it.title, opts); n.onclick = () => { window.focus(); n.close(); ntOpen(it.open); }; } catch {}
-}
-let ntPending = null;
-{ const q = new URLSearchParams(location.search).get('nt');   // geopend vanuit een melding
-  if (q) { try { ntPending = JSON.parse(q); } catch {} history.replaceState(null, '', location.pathname); } }
-function ntOpen(o) {
-  if (!o) return;
-  if (!data || $('#app').hidden) { ntPending = o; return; }
-  if (o.task) { if (taskById(o.task)) openTask(o.task); }
-  else if (o.view === 'agenda') { if (o.date) { agendaSel = o.date; agendaMonth = o.date.slice(0, 7); } setView({type:'agenda'}); }
-  else if (o.view) setView({type:o.view});
-}
-setInterval(ntTick, 20000);
-document.addEventListener('visibilitychange', ntTick);
-
-function notifyBox() {
-  const c = ntCfg(), on = ntActive();
-  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const standalone = matchMedia('(display-mode:standalone)').matches || navigator.standalone;
-  let state;
-  if (!ntSupported()) state = ios && !standalone ? 'Op iPhone werken meldingen alleen als Taken op je beginscherm staat: tik in Safari op <b>Deel</b> → <b>Zet op beginscherm</b>, open Taken van daaruit en zet ze hier aan.' : 'Deze browser ondersteunt geen meldingen.';
-  else if (Notification.permission === 'denied') state = 'Meldingen zijn geblokkeerd voor deze site. Sta ze toe via het slotje/de site-instellingen van je browser en probeer opnieuw.';
-  const sel = (id, opts, v) => `<select id="${id}">${opts.map(([k, l]) => `<option value="${k}" ${String(k) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
-  return `<div class="box nt-box">
-      <div class="nt-head"><div><b>Meldingen op dit toestel</b><br><span class="muted small">${on ? 'Aan' : 'Uit'} · werkt zolang Taken open staat (ook geminimaliseerd of vergrendeld)</span></div>
-        ${ntSupported() && Notification.permission !== 'denied' ? `<button type="button" class="btn ${on ? '' : 'primary'}" id="ntToggle">${on ? 'Uitzetten' : 'Aanzetten'}</button>` : ''}</div>
-      ${state ? `<p class="muted small">${state}</p>` : ''}
-      <label class="fl">Taak met een uur${sel('ntLead', [[0, 'Op het uur zelf'], [5, '5 minuten vooraf'], [10, '10 minuten vooraf'], [15, '15 minuten vooraf'], [30, '30 minuten vooraf'], [60, '1 uur vooraf']], c.lead)}</label>
-      <label class="fl">Drukdata en andere agenda-items${sel('ntEv', [['day', 'Op de dag zelf'], ['before', 'De dag ervoor'], ['both', 'De dag ervoor én op de dag zelf'], ['off', 'Geen melding']], c.ev)}</label>
-      <div class="nt-row"><label class="nt-chk"><input type="checkbox" id="ntDigest" ${c.digest ? 'checked' : ''}> Dagoverzicht op werkdagen</label>
-        <label class="nt-at">om ${sel('ntAt', ['06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00'].map(x => [x, x.replace(':', 'u')]), c.at)}</label></div>
-      <p class="muted small">Het uur van het dagoverzicht geldt ook voor meldingen over drukdata.</p>
-      ${on ? '<button type="button" class="btn" id="ntTest">Testmelding sturen</button>' : ''}
-    </div>`;
-}
-function bindNotifyBox(d) {
-  const redraw = () => { const b = $('.nt-box', d); b.outerHTML = notifyBox(); bindNotifyBox(d); };
-  const set = (k, v) => { data.settings.notify = {...ntCfg(), [k]:v}; save(); ntTick(); };
-  $('#ntLead', d).onchange = e => set('lead', +e.target.value);
-  $('#ntEv', d).onchange = e => set('ev', e.target.value);
-  $('#ntDigest', d).onchange = e => set('digest', e.target.checked);
-  $('#ntAt', d).onchange = e => set('at', e.target.value);
-  $('#ntTest', d)?.addEventListener('click', () => ntShow({k:'test:' + now(), title:'Taken', body:'Meldingen werken op dit toestel 👍', open:null}));
-  $('#ntToggle', d)?.addEventListener('click', async () => {
-    if (ntActive()) { lsSet(NT_ON, null); redraw(); return; }
-    let p = Notification.permission;
-    if (p === 'default') try { p = await Notification.requestPermission(); } catch { p = Notification.permission; }
-    if (p === 'granted') { lsSet(NT_ON, '1'); ntSkipDue(); toast('Meldingen staan aan'); }
-    redraw();
-  });
-}
-
 /* ---------------- Face ID / Touch ID ----------------
    Het wachtwoord wordt versleuteld met een sleutel die enkel met Face ID/Touch ID (WebAuthn PRF) opgevraagd kan worden.
    Op dit toestel staat dus enkel een versleutelde kopie; zonder biometrie is ze onbruikbaar. */
@@ -6343,7 +6205,6 @@ function bindBioBox(d) {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(e => console.warn('Service worker niet geregistreerd', e));
   navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data?.type === 'notify-open') { window.focus(); ntOpen(e.data.open); return; }
     if (e.data?.type !== 'update-ready') return;
     const el = $('#toast');
     el.innerHTML = '<span>Nieuwe versie klaar. Wordt gebruikt bij de volgende keer openen.</span><button type="button">Nu vernieuwen</button>';
