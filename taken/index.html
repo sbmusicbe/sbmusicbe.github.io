@@ -1670,6 +1670,8 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 .side-section{padding:14px 10px 4px}
 #side{padding:14px 10px 12px}
 .side-foot{margin-top:8px;padding:8px 10px}
+/* snelheid: rijen buiten beeld worden niet getekend of opgemeten (verkopen en klantenlijst) */
+table.sales tbody tr,.cl-table tbody tr{content-visibility:auto;contain-intrinsic-size:auto 40px}
 </style>
 </head>
 <body>
@@ -1865,6 +1867,18 @@ const I = {
 
 /* ---------------- Utilities ---------------- */
 const $ = (s, r = document) => r.querySelector(s);
+// Hertekenen met exact dezelfde inhoud slaan we over: geen nieuwe opmaak- en tekenronde (en focus/scroll blijven staan)
+{
+  const d = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+  for (const id of ['list', 'nav', 'projNav', 'salesNav', 'toolNav', 'viewTitle', 'toolbar']) {
+    const el = document.getElementById(id); if (!el) continue;
+    let lastIn = null, lastOut = null;
+    Object.defineProperty(el, 'innerHTML', {configurable:true, get() { return d.get.call(this); }, set(v) {
+      if (v === lastIn && d.get.call(this) === lastOut) return;
+      d.set.call(this, v); lastIn = v; lastOut = d.get.call(this);
+    }});
+  }
+}
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -4291,7 +4305,8 @@ const fmtChips = v => { const l = formatList(v); return l.length ? l.map(o => `<
 function cellInput(c, r) {
   const v = r.values[c.id] ?? '';
   const a = `class="cell t-${c.type}" data-col="${c.id}" aria-label="${esc(c.name)}"`;
-  if (c.type === 'date') return `<input type="date" ${a} value="${esc(v)}">`;
+  // een echt datumveld per rij is zwaar om te tekenen: tekstveld tot je erin klikt, dan pas de datumkiezer (zie focusin)
+  if (c.type === 'date') return `<input type="text" ${a} value="${esc(fmtDateInp(v))}" data-iso="${esc(v)}" placeholder="dd/mm/jjjj" autocomplete="off">`;
   if (c.type === 'format') return `<button type="button" ${a} aria-haspopup="true">${fmtChips(v)}</button>`;
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
   return `<input type="text" ${a} value="${esc(v)}"${isClientCol(c) ? ' list="clientNames" autocomplete="off"' : ''}>`;
@@ -4481,6 +4496,8 @@ sp.addEventListener('change', e => {
   if (e.target.matches('.cell.t-date')) setTimeout(() => renderSales(true), 0);
 });
 sp.addEventListener('focusout', e => {
+  const dc = e.target.closest('.cell.t-date');
+  if (dc && dc.type === 'date') { dc.dataset.iso = dc.value; dc.type = 'text'; dc.value = fmtDateInp(dc.dataset.iso); return; }
   // bedragen netjes opmaken na het typen
   const cell = e.target.closest('.cell.t-money,.cell.t-number'); if (!cell) return;
   const r = data.sales.find(x => x.id === cell.closest('tr').dataset.row);
@@ -4488,6 +4505,8 @@ sp.addEventListener('focusout', e => {
   cell.value = v === undefined || !c ? '' : fmtCell(c, v);
 });
 sp.addEventListener('focusin', e => {
+  const dc = e.target.closest('.cell.t-date');
+  if (dc && dc.type === 'text') { dc.type = 'date'; dc.value = dc.dataset.iso || ''; return; }
   const cell = e.target.closest('.cell.t-money,.cell.t-number'); if (!cell) return;
   const r = data.sales.find(x => x.id === cell.closest('tr').dataset.row);
   const v = r?.values[cell.dataset.col];
@@ -5393,7 +5412,7 @@ function clientMaps(sales) {
   for (const m of data.comments) { const d = tsYmd(m.at); if (d > (lastComment.get(m.taskId) || '')) lastComment.set(m.taskId, d); }
   return {tasks, sales:bySales, lastComment};
 }
-let clQuery = '', clEdition = '', clLimit = 100, searchMemo = null;
+let clQuery = '', clEdition = '', clLimit = 50, searchMemo = null;
 // zoektekst per klant (één keer per wijziging berekend, ook voor tienduizenden klanten)
 function clientSearchKeys() {
   if (searchMemo && searchMemo.arr === data.clients && searchMemo.len === data.clients.length && searchMemo.ver === clientsVer) return searchMemo.map;
@@ -5425,7 +5444,7 @@ const clSortPref = () => { const p = data.prefs.clientsSort; return p && CL_SORT
 function setClientSort(k, dir) {
   const cur = clSortPref(), def = (CL_SORTS.find(x => x[0] === k) || [])[2] || 1;
   data.prefs.clientsSort = {k, dir:dir ?? (cur.k === k ? -cur.dir : def)};
-  save(true); clLimit = 100; renderPage(true);
+  save(true); clLimit = 50; renderPage(true);
 }
 function sortClientList(list, sales, maps) {
   const {k, dir} = clSortPref();
@@ -5824,7 +5843,7 @@ function openClientImport() {
         const res = runClientImport(plan);
         bar.value = 100; dlg.close();
         toast(`${fmt(res.added)} klanten toegevoegd, ${fmt(res.updated)} aangevuld · ${fmt(res.edAdded)} uitgaves`);
-        clLimit = 100; if (view.type !== 'clients') setView({type:'clients'}); else renderPage(true);
+        clLimit = 50; if (view.type !== 'clients') setView({type:'clients'}); else renderPage(true);
       } catch (ex) {
         busy = false; $('#ciCancel', d).disabled = false; $('#ciGo', d).disabled = false; prog.hidden = true;
         $('#ciErr', d).textContent = 'Importeren mislukt: ' + ex.message;
@@ -6069,7 +6088,7 @@ pv.addEventListener('keydown', e => {
 });
 pv.addEventListener('input', e => {
   const t = e.target;
-  if (t.id === 'clSearch') { clQuery = t.value; clLimit = 100; clearTimeout(applyClientFilter.t); applyClientFilter.t = setTimeout(applyClientFilter, data.clients.length > 3000 ? 140 : 0); return; }
+  if (t.id === 'clSearch') { clQuery = t.value; clLimit = 50; clearTimeout(applyClientFilter.t); applyClientFilter.t = setTimeout(applyClientFilter, data.clients.length > 3000 ? 140 : 0); return; }
   const k = t.dataset.cf; if (!k) return;
   const c = clientById(view.id); if (!c) return;
   if (k === 'editions') c.editions = [...new Set(t.value.split(/\n|;/).map(x => x.trim()).filter(Boolean))];
