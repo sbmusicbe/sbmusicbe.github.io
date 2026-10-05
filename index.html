@@ -297,7 +297,8 @@
   .home-text{ margin-top:40px; max-width:440px; }
   .home-logo{ display:block; width:60px; margin:0 auto; }
   .home-headline{ margin-top:26px; font-size:clamp(40px, 9vw, 76px); }
-  .home-tagline{ margin-top:18px; font-size:14px; letter-spacing:.14em; color:var(--text-secondary); }
+  .home-tagline{ margin-top:18px; font-family:'Martian Mono',monospace; font-size:12px; font-weight:500; letter-spacing:.02em; color:var(--text-secondary); }
+  .home-tagline .accent{ color:var(--accent); }
   .home-teaser{ margin-top:26px; font-size:17px; line-height:1.65; color:var(--text-secondary); max-width:38ch; margin-left:auto; margin-right:auto; }
   .home-teaser a{ color:var(--text); text-decoration:underline; text-underline-offset:2px; }
   .home-teaser a:hover{ color:var(--text-secondary); }
@@ -317,7 +318,7 @@
   /* ---------- HOE HET WERKT / VOOR ELK MOMENT ---------- */
   .wrap{ max-width:1180px; margin:0 auto; padding:0 22px; }
   .home-steps{ padding:100px 0; border-top:1px solid var(--hairline); }
-  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:24px; flex-wrap:wrap; max-width:720px; }
   .section-head h2{ font-size:clamp(26px, 4.5vw, 38px); }
   .section-head .cat-no{ padding-bottom:.3em; }
   .tracklist{ margin-top:44px; list-style:none; max-width:720px; }
@@ -370,7 +371,7 @@
     .home-header{
       flex-direction:row-reverse;
       align-items:center;
-      justify-content:space-between;
+      justify-content:center;
       gap:80px;
       text-align:left;
       width:100%;
@@ -565,6 +566,7 @@
       <div class="home-text">
         <h1 class="sr-only">SB — Allround dj</h1>
         <span class="logo home-logo" role="img" aria-label="SB"></span>
+        <p class="home-tagline"><span class="accent">Resident</span> — Café De Zwarte Ruiter, Turnhout</p>
         <p class="home-headline display">Allround DJ.</p>
         <p class="home-teaser">Ik voel de zaal aan en draai wat het feest nodig heeft: van meezingers tot house en hiphop, de hele nacht vol energie. <a href="bio.html">Lees meer →</a></p>
         <div class="home-cta-row">

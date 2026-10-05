@@ -88,8 +88,7 @@
     letter-spacing:.02em;
     color:var(--accent);
   }
-  .section-mark{ position:absolute; top:36px; right:22px; z-index:1; }
-  @media (min-width:700px){ .section-mark{ right:40px; } }
+  .section-mark{ position:absolute; top:4px; right:28px; z-index:1; }
 
   /* ---------- SCROLL REVEAL ---------- */
   html.has-reveal .reveal{
@@ -249,7 +248,7 @@
   #nav-toggle:checked ~ .mobile-nav{ opacity:1; pointer-events:auto; transform:translateY(0); }
 
   /* ---------- WRAP ---------- */
-  .wrap{ max-width:920px; margin:0 auto; padding:0 28px; }
+  .wrap{ position:relative; max-width:920px; margin:0 auto; padding:0 28px; }
 
   /* ---------- BIO HERO ---------- */
   .bio-hero{ padding:112px 0 0; position:relative; overflow:hidden; }
@@ -601,8 +600,8 @@
     </section>
 
     <section class="events-scene">
-      <span class="cat-no section-mark" aria-hidden="true">SB-004</span>
       <div class="wrap reveal">
+        <span class="cat-no section-mark" aria-hidden="true">SB-004</span>
         <div class="events-head">
           <h2 class="display">Club. Festival. Bruiloft. Privé.</h2>
         </div>
@@ -640,8 +639,8 @@
     </section>
 
     <section class="gallery-scene">
-      <span class="cat-no section-mark" aria-hidden="true">SB-005</span>
       <div class="wrap reveal">
+        <span class="cat-no section-mark" aria-hidden="true">SB-005</span>
         <h2 class="display">In actie.</h2>
         <div class="photo-grid reveal-stagger">
           <figure class="photo-tile">
@@ -667,8 +666,8 @@
     </section>
 
     <section class="sound-scene">
-      <span class="cat-no section-mark" aria-hidden="true">SB-006</span>
       <div class="wrap reveal">
+        <span class="cat-no section-mark" aria-hidden="true">SB-006</span>
         <h2 class="display">Geen vast genre. Altijd het juiste.</h2>
         <p class="sound-note">Ik voel de zaal aan en schakel live tussen wat het feest nodig heeft — van meezingers tot house en hiphop.</p>
         <ul class="sound-bars reveal-stagger">
@@ -685,13 +684,14 @@
     </section>
 
     <section class="partied-scene" id="partied" aria-labelledby="partied-title">
-      <span class="cat-no section-mark" aria-hidden="true">SB-007</span>
       <div class="wrap reveal">
+        <span class="cat-no section-mark" aria-hidden="true">SB-007</span>
         <h2 class="display" id="partied-title">Waar je me al hoorde.</h2>
         <p class="partied-note">Vaste resident bij Café De Zwarte Ruiter in Turnhout — en te gast op:</p>
         <ul class="partied-wall reveal-stagger">
           <li>Sunrise Festival</li>
           <li>Café De Zwarte Ruiter</li>
+          <li>Klimax</li>
           <li>Futur</li>
           <li>BarBoesj</li>
           <li>Club Madelon</li>
