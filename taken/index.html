@@ -3065,6 +3065,16 @@ $('#quickAdd').addEventListener('submit', e => {
   renderQaPreview();
   createTask(r);
 });
+// Tab in de invoerbalk: taak aanmaken en meteen verder naar de velden van die taak (notities, status, deadline, klant, …)
+$('#qaInput').addEventListener('keydown', e => {
+  if (e.key !== 'Tab' || e.shiftKey || e.isComposing) return;
+  const r = parseQuick($('#qaInput').value); if (!r.title) return;
+  e.preventDefault();
+  $('#qaInput').value = ''; renderQaPreview();
+  const t = createTask({...r, silent:true});
+  openTask(t.id);
+  setTimeout(() => { const el = $('#dNotes'); if (el) el.focus(); }, 60);
+});
 
 /* ---------------- Task actions ---------------- */
 // Verplaatst een kaart naar een kolom.
@@ -3177,6 +3187,8 @@ function renderDetail(force) {
   const p = proj(t.projectId), fs = fieldsFor(t.projectId);
   const created = new Date(t.createdAt || t.order || now());
   const wide = detailIsWide(detailWidth());
+  const keep = el.dataset.tid === t.id ? focusKey(document.activeElement, el) : null;   // zelfde taak opnieuw tekenen: focus (en dus Tab) mag niet verloren gaan
+  el.dataset.tid = t.id;
   el.innerHTML = `
     <div class="d-grab" aria-hidden="true"></div>
     <div class="d-resize" role="separator" aria-orientation="vertical" tabindex="0" title="Sleep om het paneel breder of smaller te maken (dubbelklik = standaard)" aria-label="Breedte van het paneel aanpassen"></div>
@@ -3213,6 +3225,21 @@ function renderDetail(force) {
       <p class="muted small" style="margin-top:28px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
     </div>`;
   autosize($('#dTitle'));
+  if (keep) restoreFocus(el, keep);
+}
+// Sleutel van het element met focus: id, veld of knop; zo vinden we het na het hertekenen terug
+function focusKey(a, root) {
+  if (!a || a === root || !root.contains(a)) return null;
+  const d = a.dataset || {};
+  const sel = a.id ? '#' + CSS.escape(a.id) : d.field ? `[data-field="${d.field}"]` : d.multi ? `[data-multi="${d.multi}"][data-opt="${String(d.opt || '').replace(/"/g, '\\"')}"]` : d.act ? `[data-act="${d.act}"]` : null;
+  if (!sel) return null;
+  let pos = null; try { if (a.selectionStart != null) pos = [a.selectionStart, a.selectionEnd]; } catch {}
+  return {sel, pos};
+}
+function restoreFocus(root, k) {
+  const n = root.querySelector(k.sel); if (!n) return;
+  n.focus({preventScroll:true});
+  try { if (k.pos && n.setSelectionRange) n.setSelectionRange(k.pos[0], k.pos[1]); } catch {}
 }
 const commentDrafts = {};
 function addComment(t) {
@@ -3563,13 +3590,16 @@ addEventListener('pointerdown', e => { if (timePop && !timePop.contains(e.target
 detail.addEventListener('scroll', () => { const i = $('#dTime'); if (timePop && i) placeTimePop(i); }, true);
 addEventListener('resize', () => { const i = $('#dTime'); if (timePop && i) placeTimePop(i); });
 window.visualViewport?.addEventListener('resize', () => { const i = $('#dTime'); if (timePop && i) placeTimePop(i); });
+// 'change' vuurt tijdens het verlaten van het veld (Tab): pas hertekenen als de focus op het volgende veld staat, anders raakt die kwijt
+let redrawT = 0;
+function redrawDetail() { clearTimeout(redrawT); redrawT = setTimeout(() => renderDetail(true), 0); }
 detail.addEventListener('change', e => {
   const t = taskById(selectedId); if (!t) return;
   const el = e.target;
   if (el.classList.contains('date-inp')) return;   // eigen kalender, zie commitDate
   if (el.id === 'dStage') {
     const undo = undoFor(t), res = setStage(t, el.value);
-    save(); renderNav(); renderMain(); renderDetail(true);
+    save(); renderNav(); renderMain(); redrawDetail();
     stageToast(t, res, undo);
     return;
   }
@@ -3578,10 +3608,10 @@ detail.addEventListener('change', e => {
     if (!v) delete t.clientId;
     else {
       const c = clientByName(v);
-      if (!c) { if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); renderDetail(true); return; } openNewClientDialog(v, t); return; }   // nieuwe klant: eerst de gegevens (telefoon, e-mail, …) laten invullen
+      if (!c) { if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); redrawDetail(); return; } openNewClientDialog(v, t); return; }   // nieuwe klant: eerst de gegevens (telefoon, e-mail, …) laten invullen
       t.clientId = c.id;
     }
-    touch(t); save(); renderNav(); renderMain(); renderDetail(true);
+    touch(t); save(); renderNav(); renderMain(); redrawDetail();
     return;
   }
   if (el.id === 'dProject') t.projectId = el.value;
@@ -3595,9 +3625,9 @@ detail.addEventListener('change', e => {
     const f = fieldById(el.dataset.field);
     if (f.type === 'checkbox') setCustom(t, f.id, el.checked);
     else if (f.type === 'select' || f.type === 'date') setCustom(t, f.id, el.value);
-    else { renderDetail(true); return; } // tekst/getal/link: al opgeslagen bij 'input'; link-knop verversen
+    else { redrawDetail(); return; } // tekst/getal/link: al opgeslagen bij 'input'; link-knop verversen
   } else return;
-  touch(t); save(); renderNav(); renderMain(); renderDetail(true);
+  touch(t); save(); renderNav(); renderMain(); redrawDetail();
 });
 detail.addEventListener('keydown', e => {
   if (e.target.id === 'dComment' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); const t = taskById(selectedId); if (t) addComment(t); return; }
@@ -3650,8 +3680,25 @@ function contactsFromText(txt) {
   for (const m of txt.matchAll(/(?:\+|00)?\d[\d\s./()-]{7,}\d/g)) { const d = m[0].replace(/\D/g, ''); if (d.length >= 9 && d.length <= 14) { phone = m[0].trim(); break; } }
   return {email, phone};
 }
+// Alles wat in de taak al is ingevuld (titel, notities, eigen velden, opmerkingen) alvast voor de klantenfiche klaarzetten
+function clientGuessFromTask(t) {
+  const texts = [t.title, t.notes], g = {no:'', contact:'', city:''};
+  for (const f of data.fields || []) {
+    const v = t.custom?.[f.id]; if (isEmpty(v) || typeof v === 'boolean') continue;
+    const val = Array.isArray(v) ? v.join(', ') : String(v), n = (f.name || '').toLowerCase();
+    texts.push(val);
+    if (/klantn|klant ?nr|orderklant|navision/.test(n) && !g.no) g.no = val.replace(/\D/g, '');
+    else if (/contact|persoon/.test(n) && !g.contact) g.contact = val;
+    else if (/plaats|gemeente|stad|woonplaats/.test(n) && !g.city) g.city = val;
+    else if (/tel|gsm|mobiel/.test(n) && !g.phone && contactsFromText(val).phone) g.phone = contactsFromText(val).phone;
+    else if (/mail/.test(n) && !g.email && contactsFromText(val).email) g.email = contactsFromText(val).email;
+  }
+  for (const c of commentsOf(t.id)) texts.push(c.text);
+  const found = contactsFromText(texts.join(' \n '));
+  return {no:g.no, contact:g.contact, city:g.city, phone:g.phone || found.phone, email:g.email || found.email};
+}
 function openNewClientDialog(name, t) {
-  const guess = contactsFromText([t.title, t.notes].join(' '));
+  const guess = clientGuessFromTask(t);
   let created = false;
   showDialog(`
     <h3>Nieuwe klant</h3>
@@ -3659,11 +3706,11 @@ function openNewClientDialog(name, t) {
     <form id="ncForm" autocomplete="off">
       <div class="nc-grid">
         <label class="fl">Firma<input id="ncCompany" type="text" value="${esc(name)}" autocomplete="organization"></label>
-        <label class="fl">Klantnr <small class="muted">(Navision)</small><input id="ncNo" type="text" inputmode="numeric" autofocus></label>
+        <label class="fl">Klantnr <small class="muted">(Navision)</small><input id="ncNo" type="text" inputmode="numeric" value="${esc(guess.no)}" autofocus></label>
         <label class="fl">Telefoon<input id="ncPhone" type="tel" value="${esc(guess.phone)}" autocomplete="tel"></label>
         <label class="fl">E-mail<input id="ncEmail" type="email" value="${esc(guess.email)}" autocomplete="email"></label>
-        <label class="fl">Contactpersoon<input id="ncContact" type="text" autocomplete="name"></label>
-        <label class="fl">Gemeente<input id="ncCity" type="text" autocomplete="address-level2"></label>
+        <label class="fl">Contactpersoon<input id="ncContact" type="text" value="${esc(guess.contact)}" autocomplete="name"></label>
+        <label class="fl">Gemeente<input id="ncCity" type="text" value="${esc(guess.city)}" autocomplete="address-level2"></label>
       </div>
       <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="ncCancel">Annuleren</button><button type="submit" class="btn primary" id="ncOk">Klant aanmaken</button></div>
     </form>`, d => {
