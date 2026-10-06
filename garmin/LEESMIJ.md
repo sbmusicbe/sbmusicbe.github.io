@@ -10,5 +10,6 @@ Elke ochtend vervangt een geplande Claude-taak `data.json` met verse data uit Ga
 - `last_activity`: nieuwste uit `get_activities_by_date(D-14, D)` (geen ID's of locatie)
 - `days`: `get_sleep_summary_range` + `get_stats_range` over 14 dagen (vandaag: steps/calories = null)
 - `updated`: huidige tijd (ISO), `date`: D
+- Schrijf het resultaat naar `garmin/data.json` (staat in .gitignore, nooit committen) en voer daarna uit: `GARMIN_PASSWORD=<wachtwoord> python3 garmin/encrypt.py`. Commit alleen `garmin/data.enc.json`.
 
 Bewaar het schema exact zoals in het huidige `data.json`.
