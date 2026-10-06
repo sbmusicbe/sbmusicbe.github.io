@@ -51,6 +51,15 @@ footer{padding-top:24px;font-size:13px;color:var(--muted)}
 a{color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion:no-preference){.meter i,.bar i{transition:width .6s ease}}
+
+.lock{min-height:80vh;display:grid;place-items:center}
+.lock form{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+.lock h1{font-size:28px;margin:6px 0 16px}
+.lock label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.lock input{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:var(--r);padding:11px 12px;font:inherit}
+.lock button{width:100%;margin-top:12px;background:var(--accent);color:#0A0A0A;border:0;border-radius:var(--r);padding:11px;font:700 15px inherit;font-family:inherit;cursor:pointer}
+.lock button:disabled{opacity:.6;cursor:default}
+.lock .err{color:var(--bad);font-size:14px;min-height:1.4em;margin-top:10px}
 </style>
 </head>
 <body>
@@ -205,9 +214,32 @@ a{color:var(--accent)}
     '<footer>Gegevens komen automatisch uit Garmin Connect en worden elke ochtend ververst. Dit is geen medisch advies.</footer>';
   }
 
-  fetch('data.json',{cache:'no-cache'}).then(function(r){
+  var b64 = function(x){ return Uint8Array.from(atob(x),function(c){return c.charCodeAt(0);}); };
+  async function decrypt(box,pw){
+    var enc=new TextEncoder();
+    var km=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']);
+    var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(box.salt),iterations:box.iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+    var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(box.iv)},key,b64(box.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  function lock(box,msg){
+    app.innerHTML='<div class="lock"><form><div class="eyebrow">Garmin</div><h1>Wachtwoord</h1>'+
+      '<label for="pw">Wachtwoord</label><input id="pw" type="password" autocomplete="current-password" autofocus required>'+
+      '<button type="submit">Openen</button><p class="err" role="alert">'+(msg||'')+'</p></form></div>';
+    var f=app.querySelector('form'), i=f.pw||document.getElementById('pw'), e=f.querySelector('.err'), b=f.querySelector('button');
+    f.addEventListener('submit',async function(ev){
+      ev.preventDefault(); b.disabled=true; e.textContent='';
+      try{ var d=await decrypt(box,i.value); try{sessionStorage.setItem('garmin.pw',i.value);}catch(x){} render(d); }
+      catch(x){ b.disabled=false; e.textContent='Onjuist wachtwoord.'; i.select(); }
+    });
+  }
+  fetch('data.enc.json',{cache:'no-cache'}).then(function(r){
     if(!r.ok) throw new Error(r.status); return r.json();
-  }).then(render).catch(function(){
+  }).then(async function(box){
+    var saved=null; try{saved=sessionStorage.getItem('garmin.pw');}catch(x){}
+    if(saved){ try{ return render(await decrypt(box,saved)); }catch(x){ try{sessionStorage.removeItem('garmin.pw');}catch(y){} } }
+    lock(box);
+  }).catch(function(){
     app.innerHTML='<div class="empty">De gegevens konden niet geladen worden. Probeer het later opnieuw.</div>';
   });
 })();
