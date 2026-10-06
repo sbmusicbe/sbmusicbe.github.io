@@ -11,12 +11,12 @@ Een app waarmee gasten nummers aanvragen, zoals requestbox.app. Ze draait volled
 | `sbmusic.be/requests/beheer.html` | Jij (wachtwoord) |
 | `sbmusic.be/requests/poster.html?e=<event-code>` | Afdrukbare A4-poster met QR-code |
 
-De app ziet eruit zoals sbmusic.be (2026, achromatisch: inkt op wit, geen kleuraccent) en gebruikt dezelfde bouwstenen:
-- Inter als enige lettertype;
-- pilknoppen en de wazige navigatiebalk;
-- de foto met het verschoven lijnkader;
-- formulieren zoals het boekingsformulier;
-- rijen met een lijntje ertussen, en dezelfde voet.
+De app ziet eruit zoals sbmusic.be ("Noir / Catalogue No.": licht op donker, één groen accent) en gebruikt dezelfde bouwstenen:
+- lettertypes: Archivo Black voor koppen, Schibsted Grotesk voor tekst, Martian Mono voor labels en catalogusnummers;
+- pilknoppen en de navigatiebalk;
+- de vierkante foto met verschoven kader en groene sticker;
+- tracklists (A1, A2 …) voor de wachtrij;
+- formulieren zoals het boekingsformulier, en dezelfde voet.
 
 De stijl staat in `style.css`.
 
