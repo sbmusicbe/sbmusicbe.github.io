@@ -5,185 +5,209 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Verzoekjes</title>
 <meta name="description" content="Vraag je nummer aan bij de DJ.">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#0A0A0A">
 <link rel="icon" href="icon.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.page{position:relative;max-width:620px;margin:0 auto;padding:0 22px}
-.aurora{position:absolute;left:0;right:0;top:-80px;height:560px;z-index:0;pointer-events:none;background:radial-gradient(50% 50% at 50% 10%,rgba(20,20,20,.05),transparent 72%)}
-.page > :not(.aurora){position:relative;z-index:1}
+.aurora{position:absolute;left:0;right:0;top:-80px;height:560px;z-index:0;pointer-events:none;background:radial-gradient(50% 50% at 50% 10%,rgba(34,160,109,.07),transparent 72%)}
+.wrap{max-width:720px;margin:0 auto;padding:0 22px}
 
-/* hero zoals de startpagina: foto met verschoven lijnkader, logo of titel eronder, gecentreerd */
-.hero{padding:64px 0 0;display:flex;flex-direction:column;align-items:center;text-align:center}
-.photo-wrap{position:relative;width:240px;max-width:100%;margin-bottom:48px}
-.photo-frame{position:absolute;inset:22px -22px -22px 22px;border:1px solid var(--text);border-radius:var(--r-lg);z-index:0}
-.photo{position:relative;z-index:1;width:100%;aspect-ratio:4/5;border-radius:var(--r-lg);overflow:hidden;background:var(--bg-elevated);border:1px solid var(--hairline);box-shadow:var(--shadow-card)}
+/* hero zoals de startpagina: vierkante foto met verschoven kader en sticker, titel eronder, gecentreerd */
+.hero{position:relative;max-width:1180px;margin:0 auto;padding:88px 22px 0}
+.hero-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.photo-wrap{position:relative;width:240px;max-width:100%;margin-bottom:40px}
+.photo-frame{position:absolute;inset:18px -18px -18px 18px;border:1px solid var(--hairline);z-index:0}
+.photo{position:relative;z-index:1;width:100%;aspect-ratio:1/1;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--hairline)}
 .photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.sleeve-sticker{position:absolute;z-index:2;top:-16px;right:-16px;width:62px;height:62px;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-text);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;transform:rotate(-8deg);box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
 .hero.nophoto .photo-wrap{display:none}
-.hero-logo{width:78px;margin-bottom:28px}
+.hero-logo{width:60px}
 .hero:not(.nophoto) .hero-logo{display:none}
-.hero h1{font-size:clamp(36px,9vw,56px);overflow-wrap:anywhere;max-width:14ch}
-.hero .mono{margin-top:22px;font-size:14px}
+.hero h1{margin-top:26px;font-size:clamp(40px,9vw,76px);overflow-wrap:anywhere;max-width:14ch}
+.hero:not(.nophoto) h1{margin-top:0}
+.hero .tagline{margin-top:22px}
 .lede{margin-top:22px;font-size:17px;line-height:1.65;color:var(--text-secondary);max-width:38ch;white-space:pre-line}
-@media (min-width:700px){.photo-wrap{width:280px}}
+.cta-row{margin-top:40px;display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+@media (min-width:700px){.hero{padding-top:120px}.photo-wrap{width:280px}}
 
-.now{display:flex;gap:16px;align-items:center;padding:20px 22px;margin-top:56px;text-align:left}
-.now .t{font-weight:600;margin-top:8px}
-.section{padding-top:88px;scroll-margin-top:88px}
-.section h2{font-size:clamp(30px,6vw,40px);margin-bottom:14px}
-.section .note{font-size:17px;line-height:1.65;color:var(--text-secondary);margin-bottom:28px;max-width:40ch}
-.search{position:relative;margin-top:28px}
+.now{display:flex;gap:18px;align-items:center;padding:20px 22px;margin:56px 0 0;text-align:left}
+.now .t{font-weight:700;margin-top:8px}
+.block{padding:96px 0;border-top:1px solid var(--hairline);scroll-margin-top:76px}
+.block.alt{background:var(--cord)}
+.block .note{margin-top:18px;font-size:17px;line-height:1.65;color:var(--text-secondary);max-width:44ch}
+.first{margin-top:88px}
+@media (min-width:700px){.block{padding:128px 0}}
+
+.search{position:relative;margin-top:36px}
 .search svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-secondary);pointer-events:none}
-.search input{padding:16px 20px 16px 48px;border-radius:var(--r-pill);font-size:16px}
-#results{list-style:none;margin-top:20px}
+.search input{padding:16px 20px 16px 48px;border-radius:var(--r-pill)}
+#results{list-style:none;margin-top:24px}
 #results li{border-top:1px solid var(--hairline)}
 #results li:last-child{border-bottom:1px solid var(--hairline)}
-.song{display:flex;gap:14px;align-items:center;padding:14px 0;width:100%;text-align:left;color:var(--text)}
+.song{display:flex;gap:16px;align-items:center;padding:16px 0;width:100%;text-align:left;color:var(--text)}
 .song .meta{min-width:0;flex:1}
 .song .t,.song .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.song .t{font-weight:600}
+.song .t{font-weight:700}
 .song .a{color:var(--text-secondary);font-size:14px}
 .song .plus{color:var(--text-tertiary);flex:none;transition:color .2s,transform .2s}
-.song:hover .plus,.song:focus-visible .plus{color:var(--text);transform:translateX(3px)}
-.hint{text-align:center;color:var(--text-secondary);font-size:15px;padding:28px 8px;line-height:2}
-.formcard{padding:40px 36px 36px;margin-top:28px}
-#form .picked{display:flex;gap:14px;align-items:center;padding-bottom:4px}
-#form .picked .t{font-weight:600;font-size:17px}
+.song:hover .plus,.song:focus-visible .plus{color:var(--accent);transform:translateX(3px)}
+.hint{text-align:center;color:var(--text-secondary);font-size:15px;padding:32px 8px;line-height:2}
+.formcard{padding:40px 36px 36px;margin-top:36px}
+#form .picked{display:flex;gap:16px;align-items:center;padding-bottom:4px}
+#form .picked .t{font-weight:700;font-size:17px}
 #form .submit{margin-top:30px}
-.closed{padding:40px 36px;margin-top:56px;text-align:center}
+.closed{padding:40px 36px;margin:56px 0 0;text-align:center}
 .closed h2{font-size:28px;margin-bottom:14px}
-.done-card{padding:40px 36px;text-align:center}
-.done-card h2{font-size:clamp(30px,6vw,40px);margin-bottom:14px}
+.done-card{padding:44px 36px;margin-top:36px;text-align:center}
+.done-card h2{font-size:clamp(32px,6vw,48px);margin-bottom:16px}
 .done-card p{color:var(--text-secondary);margin:0 auto 28px;max-width:34ch}
 
-.queue ul,.mine ul{list-style:none}
-.queue li,.mine li{display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--hairline)}
+.queue ul,.mine ul{list-style:none;margin-top:36px}
+.queue li,.mine li{display:flex;gap:18px;align-items:center;padding:18px 0;border-top:1px solid var(--hairline)}
 .queue li:last-child,.mine li:last-child{border-bottom:1px solid var(--hairline)}
 .queue .meta,.mine .meta{flex:1;min-width:0}
-.queue .t,.mine .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue .t,.mine .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .queue .a,.mine .a{font-size:14px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .rank{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text-tertiary);width:22px;flex:none;font-variant-numeric:tabular-nums}
-.vote{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:68px;padding:10px 16px;border-radius:var(--r-pill);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;
+.queue .rank{width:30px;flex:none}
+.vote{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:70px;padding:10px 16px;border-radius:var(--r-pill);font-family:var(--mono);font-size:13px;font-weight:600;
   background:var(--bg);border:1px solid var(--hairline);color:var(--text);flex:none;transition:background .2s,border-color .2s,transform .15s,box-shadow .25s}
-.vote:hover{border-color:var(--text);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(20,20,20,.18)}
+.vote:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(0,0,0,.5)}
 .vote:active{transform:scale(.97)}
-.vote svg{width:10px;height:10px}
-.vote.on{background:var(--text);color:var(--white);border-color:transparent}
+.vote svg{width:9px;height:9px}
+.vote.on{background:var(--accent);color:var(--accent-text);border-color:transparent;font-weight:700}
 .vote:disabled{cursor:default;transform:none;box-shadow:none}
 .vote.own{color:var(--text-tertiary);border-style:dashed}
-.queue .more{margin-top:24px}
-.mine{padding-top:88px}
-.mine .idx{margin-bottom:18px}
+.queue .more{margin-top:28px}
 </style>
 </head>
 <body>
 <header class="site-nav">
-  <a href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"><span class="logo" role="img" aria-label="SB"></span></a>
-  <div class="site-nav-right"><span class="chip">Verzoekjes</span></div>
+  <div class="site-nav-inner">
+    <a href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"><span class="logo" role="img" aria-label="SB"></span></a>
+    <div class="site-nav-right">
+      <span class="mono">Verzoekjes</span>
+    </div>
+  </div>
 </header>
 
-<main class="page">
-  <div class="aurora" aria-hidden="true"></div>
-
-  <section class="hero nophoto reveal" id="hero">
-    <div class="photo-wrap">
-      <div class="photo-frame" aria-hidden="true"></div>
-      <div class="photo"><img id="evPhoto" alt="" hidden></div>
+<main>
+  <section class="hero nophoto" id="hero">
+    <div class="aurora" aria-hidden="true"></div>
+    <div class="hero-inner reveal">
+      <div class="photo-wrap">
+        <div class="photo-frame" aria-hidden="true"></div>
+        <div class="photo"><img id="evPhoto" alt="" hidden></div>
+        <span class="sleeve-sticker" id="sticker" aria-hidden="true" hidden>LIVE</span>
+      </div>
+      <span class="logo hero-logo" role="img" aria-label="SB"></span>
+      <h1 id="evName">Verzoekjes</h1>
+      <p class="mono tagline">Muziek op aanvraag</p>
+      <p class="lede" id="evWelcome" hidden></p>
+      <div class="cta-row" id="ctaRow" hidden>
+        <a class="btn krijt" href="#searchBox">Vraag een nummer aan</a>
+        <a class="btn" href="#queue" id="ctaVote">Stem mee</a>
+      </div>
     </div>
-    <span class="logo hero-logo" role="img" aria-label="SB"></span>
-    <h1 id="evName">Verzoekjes</h1>
-    <p class="mono">Muziek op aanvraag</p>
-    <p class="lede" id="evWelcome" hidden></p>
   </section>
 
-  <div id="loading" class="spinner" aria-label="Laden"></div>
+  <div class="wrap">
+    <div id="loading" class="spinner" aria-label="Laden"></div>
 
-  <div id="setup" class="card setup" hidden>
-    <h1>Nog niet ingesteld.</h1>
-    <p class="muted">Deze pagina is nog niet gekoppeld aan een GitHub-repo. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
-  </div>
+    <div id="setup" class="card setup" hidden>
+      <h1>Nog niet ingesteld.</h1>
+      <p class="muted">Deze pagina is nog niet gekoppeld aan een GitHub-repo. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
+    </div>
 
-  <div id="nowPlaying" class="card now" hidden>
-    <div class="art" id="npArt"></div>
-    <div class="grow" style="min-width:0">
-      <span class="pill live"><span class="dot"></span>Nu te horen</span>
-      <div class="t" id="npTitle"></div>
-      <div class="muted small" id="npArtist"></div>
+    <div id="nowPlaying" class="card now" hidden>
+      <div class="art" id="npArt"></div>
+      <div class="grow" style="min-width:0">
+        <span class="pill live"><span class="dot"></span>Nu te horen</span>
+        <div class="t" id="npTitle"></div>
+        <div class="muted small" id="npArtist"></div>
+      </div>
+    </div>
+
+    <div id="closed" class="card closed" hidden>
+      <h2>Verzoekjes zijn dicht.</h2>
+      <p class="muted" id="closedMsg" style="white-space:pre-line"></p>
     </div>
   </div>
 
-  <div id="closed" class="card closed" hidden>
-    <h2>Verzoekjes zijn dicht.</h2>
-    <p class="muted" id="closedMsg" style="white-space:pre-line"></p>
-  </div>
-
-  <div id="open" hidden>
-    <section class="section" id="searchBox">
-      <span class="idx">01 — Zoek</span>
-      <h2>Wat wil jij horen?</h2>
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Titel of artiest" autocomplete="off" enterkeyhint="search" aria-label="Zoek een nummer">
+  <div id="open" class="first" hidden>
+    <section class="block" id="searchBox">
+      <div class="wrap">
+        <div class="section-head"><h2>Wat wil jij horen?</h2><span class="cat-no" aria-hidden="true">REQ-01</span></div>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Titel of artiest" autocomplete="off" enterkeyhint="search" aria-label="Zoek een nummer">
+        </div>
+        <ul id="results"></ul>
+        <div id="searchHint" class="hint">Typ een titel of artiest.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in.</button></div>
       </div>
-      <ul id="results"></ul>
-      <div id="searchHint" class="hint">Typ een titel of artiest.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in.</button></div>
     </section>
 
-    <form id="form" class="section" hidden autocomplete="on">
-      <span class="idx">02 — Verstuur</span>
-      <h2>Jouw nummer.</h2>
-      <div class="card formcard">
-        <div class="picked">
-          <div class="art" id="fArt"></div>
-          <div class="grow" style="min-width:0">
-            <div class="t" id="fTitle"></div>
-            <div class="muted small" id="fArtist"></div>
+    <form id="form" class="block" hidden autocomplete="on">
+      <div class="wrap">
+        <div class="section-head"><h2>Jouw nummer.</h2><span class="cat-no" aria-hidden="true">REQ-02</span></div>
+        <div class="card formcard">
+          <div class="picked">
+            <div class="art" id="fArt"></div>
+            <div class="grow" style="min-width:0">
+              <div class="t" id="fTitle"></div>
+              <div class="muted small" id="fArtist"></div>
+            </div>
+            <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
           </div>
-          <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          <div id="manualFields" hidden>
+            <label for="mTitle">Titel</label>
+            <input id="mTitle" type="text" maxlength="200">
+            <label for="mArtist">Artiest</label>
+            <input id="mArtist" type="text" maxlength="200">
+          </div>
+          <label for="fName">Je naam <span class="opt">(optioneel)</span></label>
+          <input id="fName" type="text" maxlength="60" autocomplete="given-name">
+          <div id="msgField">
+            <label for="fMsg">Boodschap voor de DJ <span class="opt">(optioneel)</span></label>
+            <textarea id="fMsg" maxlength="300" placeholder="Bv. voor de jarige Sarah"></textarea>
+          </div>
+          <button class="btn primary submit" id="fSubmit" type="submit">Verstuur naar de DJ →</button>
+          <p class="err" id="fErr"></p>
         </div>
-        <div id="manualFields" hidden>
-          <label for="mTitle">Titel</label>
-          <input id="mTitle" type="text" maxlength="200">
-          <label for="mArtist">Artiest</label>
-          <input id="mArtist" type="text" maxlength="200">
-        </div>
-        <label for="fName">Je naam <span class="opt">(optioneel)</span></label>
-        <input id="fName" type="text" maxlength="60" autocomplete="given-name">
-        <div id="msgField">
-          <label for="fMsg">Boodschap voor de DJ <span class="opt">(optioneel)</span></label>
-          <textarea id="fMsg" maxlength="300" placeholder="Bv. voor de jarige Sarah"></textarea>
-        </div>
-        <button class="btn primary submit" id="fSubmit" type="submit">Verstuur naar de DJ →</button>
-        <p class="err" id="fErr"></p>
       </div>
     </form>
 
-    <div id="done" class="section" hidden>
-      <div class="card done-card">
-        <span class="idx">Verstuurd</span>
-        <h2>Ontvangen.</h2>
-        <p>De DJ ziet je nummer nu. Hou deze pagina open om te zien wanneer het speelt.</p>
-        <button class="btn" id="again" type="button">Nog een nummer</button>
+    <div id="done" class="block" hidden>
+      <div class="wrap">
+        <div class="card done-card">
+          <span class="cat-no">Verstuurd</span>
+          <h2 style="margin-top:14px">Ontvangen.</h2>
+          <p>De DJ ziet je nummer nu. Hou deze pagina open om te zien wanneer het speelt.</p>
+          <button class="btn" id="again" type="button">Nog een nummer</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <section class="queue section" id="queue" hidden>
-    <span class="idx">03 — Stem mee</span>
-    <h2>De wachtrij.</h2>
-    <p class="note">Wil jij een nummer ook horen? Geef het een stem.</p>
-    <ul id="queueList"></ul>
-    <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
-    <button class="btn more" id="queueMore" type="button" hidden>Toon alles</button>
+  <section class="queue block alt" id="queue" hidden>
+    <div class="wrap">
+      <div class="section-head"><h2>De wachtrij.</h2><span class="cat-no" aria-hidden="true">REQ-03</span></div>
+      <p class="note">Wil jij een nummer ook horen? Geef het een stem.</p>
+      <ul id="queueList"></ul>
+      <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
+      <button class="btn more" id="queueMore" type="button" hidden>Toon alles</button>
+    </div>
   </section>
 
-  <section class="mine" id="mine" hidden>
-    <span class="idx">Mijn verzoekjes</span>
-    <ul id="mineList"></ul>
+  <section class="mine block" id="mine" hidden>
+    <div class="wrap">
+      <div class="section-head"><h2>Mijn verzoekjes.</h2><span class="cat-no" aria-hidden="true">REQ-04</span></div>
+      <ul id="mineList"></ul>
+    </div>
   </section>
 </main>
 
@@ -270,6 +294,9 @@ function render() {
   if (np && np.title) { $('#npTitle').textContent = np.title; $('#npArtist').textContent = np.artist || ''; artEl($('#npArt'), np.artwork); }
 
   $('#open').hidden = !s.open;
+  $('#sticker').hidden = !s.open;
+  $('#ctaRow').hidden = !s.open;
+  $('#ctaVote').hidden = s.allowVotes === false;
   $('#closed').hidden = !!s.open;
   $('#closedMsg').textContent = s.closedMessage || 'Kom later nog eens terug.';
   renderMine();
@@ -463,7 +490,7 @@ function renderQueue() {
   $('#queueList').innerHTML = list.map((g, i) => {
     const mineSong = own.has(g.key), voted = !!votes[voteKey(g.key)];
     return `<li>
-      <span class="rank">${String(i + 1).padStart(2, '0')}</span>
+      <span class="rank cat-no">A${i + 1}</span>
       <div class="art" style="${safeArt(g.artwork) ? `background-image:url('${esc(safeArt(g.artwork))}')` : ''}">${safeArt(g.artwork) ? '' : NOTE}</div>
       <div class="meta"><div class="t">${esc(g.title)}</div><div class="a">${esc(g.artist)}</div></div>
       <button class="vote ${voted ? 'on' : ''} ${mineSong ? 'own' : ''}" type="button" data-key="${esc(g.key)}" ${mineSong ? 'disabled title="Jouw nummer"' : ''}

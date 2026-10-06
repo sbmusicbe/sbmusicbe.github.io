@@ -9,23 +9,24 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="vendor/qrcode.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#F6F6F6;color:#141414;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
-.bar{position:sticky;top:0;z-index:2;display:flex;gap:10px;justify-content:center;align-items:center;padding:16px;flex-wrap:wrap;background:rgba(246,246,246,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #E8E8E8}
-.bar input,.bar button,.bar select{font:inherit;font-size:14px;font-weight:500;padding:11px 20px;border-radius:999px;border:1px solid #E8E8E8;background:#fff;color:#141414;outline:none}
-.bar input:focus,.bar select:focus{border-color:#141414;box-shadow:0 0 0 3px rgba(20,20,20,.08)}
+html,body{background:#111;color:#F5F3EE;font-family:'Schibsted Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+.bar{position:sticky;top:0;z-index:2;display:flex;gap:10px;justify-content:center;align-items:center;padding:16px;flex-wrap:wrap;background:#0A0A0A;border-bottom:1px solid #272726}
+.bar input,.bar button,.bar select{font:inherit;font-size:14px;font-weight:500;padding:11px 20px;border-radius:999px;border:1px solid #272726;background:#0A0A0A;color:#F5F3EE;outline:none;color-scheme:dark}
+.bar input:focus,.bar select:focus{border-color:#F5F3EE;box-shadow:0 0 0 3px rgba(245,245,240,.12)}
 .bar input{width:min(340px,100%)}
 .bar button{cursor:pointer;transition:border-color .2s,transform .15s}
-.bar button:hover{border-color:#141414;transform:translateY(-2px)}
-.bar button.primary{background:#141414;border-color:transparent;color:#fff}
+.bar button:hover{border-color:#22a06d;transform:translateY(-2px)}
+.bar button.primary{background:#22a06d;border-color:transparent;color:#0A0A0A;font-weight:700}
+.bar button.primary:hover{background:#198f60}
 .bar button:disabled{opacity:.5;cursor:default;transform:none}
-.hint{text-align:center;font-size:13px;color:#707070;padding:16px 16px 20px}
-.sheet{display:block;width:min(210mm,calc(100vw - 32px));height:auto;margin:0 auto 40px;border-radius:6px;box-shadow:0 30px 60px -20px rgba(20,20,20,.25);background:#fff}
+.hint{text-align:center;font-size:13px;color:#949490;padding:16px 16px 20px}
+.sheet{display:block;width:min(210mm,calc(100vw - 32px));height:auto;margin:0 auto 40px;border-radius:4px;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);background:#0A0A0A}
 #printImg{display:none}
 @media print{
   html,body{background:none}
@@ -38,8 +39,8 @@ html,body{background:#F6F6F6;color:#141414;font-family:'Inter',sans-serif;-webki
 <div class="bar">
   <input id="headline" value="Vraag je nummer aan." aria-label="Titel op de poster" maxlength="60">
   <select id="theme" aria-label="Achtergrond">
-    <option value="light">Wit (zoals sbmusic.be)</option>
-    <option value="dark">Zwart</option>
+    <option value="dark">Zwart (zoals sbmusic.be)</option>
+    <option value="light">Wit (spaart inkt)</option>
   </select>
   <button class="primary" id="pdfBtn" disabled>Download PDF</button>
   <button id="printBtn" disabled>Afdrukken</button>
@@ -53,7 +54,7 @@ import { configured, api, parseEvent, EVENT_LABEL, loadPhoto, store } from './gh
 const $ = s => document.querySelector(s);
 
 // Huisstijl SB (zelfde kleuren als sbmusic.be)
-const C = {ink: '#141414', white: '#FFFFFF', elevated: '#F6F6F6', hairline: '#E8E8E8', secondary: '#707070', tertiary: '#ADADAD'};
+const C = {bg: '#0A0A0A', elevated: '#161616', text: '#F5F3EE', secondary: '#949490', hairline: '#272726', accent: '#22a06d', accentText: '#0A0A0A', white: '#FFFFFF', ink: '#0A0A0A'};
 const PX = 8;                             // pixels per mm → 1680 × 2376 px (± 200 dpi)
 const W = 210, H = 297;
 const m = v => v * PX;
@@ -61,7 +62,7 @@ const m = v => v * PX;
 const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
 const url = new URL('./?e=' + encodeURIComponent(id), location.href).href;
 const shortUrl = url.replace(/^https?:\/\//, '');
-const state = {event: null, photo: null, logo: null, headline: $('#headline').value, theme: store.get('vz_poster_theme2', 'light')};
+const state = {event: null, photo: null, logo: null, headline: $('#headline').value, theme: store.get('vz_poster_theme3', 'dark')};
 $('#theme').value = state.theme;
 
 const canvas = $('#sheet');
@@ -79,9 +80,9 @@ function tinted(img, color) {
 
 // ---- tekst (Design Language v2.0) ----
 const FONT = {
-  display: size => `800 ${m(size)}px Inter, system-ui, sans-serif`,
-  label: size => `600 ${m(size)}px Inter, system-ui, sans-serif`,       // labels: hoofdletters, tracking +14%
-  body: (size, w = 400) => `${w} ${m(size)}px Inter, system-ui, sans-serif`
+  display: size => `400 ${m(size)}px "Archivo Black", "Arial Black", sans-serif`,
+  mono: (size, w = 500) => `${w} ${m(size)}px "Martian Mono", ui-monospace, monospace`,
+  body: (size, w = 400) => `${w} ${m(size)}px "Schibsted Grotesk", system-ui, sans-serif`
 };
 function setFont(f) { ctx.font = f; }
 function setTracking(em, size) { try { ctx.letterSpacing = (m(size) * em) + 'px'; return true; } catch { return false; } }
@@ -104,18 +105,18 @@ function wrap(text, maxW) {
   if (line) lines.push(line);
   return lines;
 }
-// Titels zoals op de site: Inter 800, tracking −4%, regelafstand 0,98; verkleinen tot ze passen.
+// Koppen zoals op de site: Archivo Black, tracking −2%, regelafstand 0,98; verkleinen tot ze passen.
 function fitDisplay(text, size, maxW, maxH) {
   for (let s = size; ; s *= 0.94) {
-    setFont(FONT.display(s)); setTracking(-0.04, s);
+    setFont(FONT.display(s)); setTracking(-0.02, s);
     const lines = wrap(text, m(maxW));
     const tooWide = lines.some(l => ctx.measureText(l).width > m(maxW));
     if ((!tooWide && lines.length * s * 0.98 <= maxH) || s < size * 0.35) { setTracking(0, s); return {lines, size: s, h: lines.length * s * 0.98}; }
   }
 }
 function drawDisplayCentered(t, cx, top, color) {
-  setFont(FONT.display(t.size)); setTracking(-0.04, t.size); ctx.fillStyle = color; ctx.textAlign = 'center';
-  t.lines.forEach((l, i) => ctx.fillText(l, cx, top + m(t.size * (0.8 + i * 0.98))));
+  setFont(FONT.display(t.size)); setTracking(-0.02, t.size); ctx.fillStyle = color; ctx.textAlign = 'center';
+  t.lines.forEach((l, i) => ctx.fillText(l, cx, top + m(t.size * (0.78 + i * 0.98))));
   ctx.textAlign = 'left'; setTracking(0, t.size);
 }
 function rrect(x, y, w, h, r) {
@@ -123,13 +124,12 @@ function rrect(x, y, w, h, r) {
   ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
-// Zachte schaduw zoals op de site (0 24px 48px -28px).
 function softShadow(on, light) {
-  if (on) { ctx.shadowColor = light ? 'rgba(20,20,20,.22)' : 'rgba(0,0,0,.6)'; ctx.shadowBlur = m(8); ctx.shadowOffsetY = m(4); }
+  if (on) { ctx.shadowColor = light ? 'rgba(10,10,10,.2)' : 'rgba(0,0,0,.6)'; ctx.shadowBlur = m(6); ctx.shadowOffsetY = m(3); }
   else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
 }
-// Pil met label (zoals de chips en knoppen op de site).
-function pill(text, cx, y, {size = 3, color, bg, border, font = FONT.label, spacing = 0.14, padX = 5, h = null, align = 'center'} = {}) {
+// Pil (zoals de knoppen op de site).
+function pill(text, cx, y, {size = 3, color, bg, border, font = FONT.mono, spacing = 0.08, padX = 5, h = null, align = 'center'} = {}) {
   setFont(font(size));
   const gap = m(size) * spacing;
   const tw = [...text].reduce((w, ch) => w + ctx.measureText(ch).width + gap, -gap);
@@ -144,64 +144,70 @@ function pill(text, cx, y, {size = 3, color, bg, border, font = FONT.label, spac
 }
 
 // ---- tekenen ----
-// Opgebouwd zoals de startpagina van sbmusic.be: logo + label bovenaan, foto met verschoven lijnkader,
-// titel eronder, en de QR-code met een zwarte pilknop. Alles gecentreerd, veel witruimte.
+// "Noir / Catalogue No." zoals sbmusic.be: logo + catalogusnummer bovenaan, vierkante foto met verschoven
+// kader en groene sticker, titel in Archivo Black, QR-kaart, groene pilknop en een tracklist A1–A3.
 function draw() {
-  const light = state.theme !== 'dark';
-  const bg = light ? C.white : C.ink, fg = light ? C.ink : C.white;
-  const sec = light ? C.secondary : 'rgba(255,255,255,.62)';
-  const line = light ? C.hairline : 'rgba(255,255,255,.16)';
+  const light = state.theme === 'light';
+  const bg = light ? C.white : C.bg, fg = light ? C.ink : C.text;
+  const sec = light ? '#6b6b67' : C.secondary;
+  const line = light ? '#E3E1DC' : C.hairline;
+  const accentTxt = light ? '#147a52' : C.accent;            // AA-contrast op wit
   const X = 18, CW = W - 36, CX = m(W / 2);
   ctx.save();
   ctx.fillStyle = bg; ctx.fillRect(0, 0, m(W), m(H));
-  if (light) {   // de zachte "aurora" bovenaan de site
-    const g = ctx.createRadialGradient(CX, m(20), 0, CX, m(20), m(150));
-    g.addColorStop(0, 'rgba(20,20,20,.05)'); g.addColorStop(1, 'rgba(20,20,20,0)');
+  { // zachte groene gloed bovenaan, zoals de "aurora" van de site
+    const g = ctx.createRadialGradient(CX, m(30), 0, CX, m(30), m(140));
+    g.addColorStop(0, light ? 'rgba(34,160,109,.06)' : 'rgba(34,160,109,.09)'); g.addColorStop(1, 'rgba(34,160,109,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(170));
   }
 
-  // Kopregel: logo links, label rechts.
-  const logoW = 20, logoH = logoW * 429 / 1000;
+  // Kopregel: logo links, catalogusnummer rechts.
+  const logoW = 18, logoH = logoW * 429 / 1000;
   if (state.logo) ctx.drawImage(tinted(state.logo, fg), m(X), m(16), m(logoW), m(logoH));
-  pill('VERZOEKJES', m(X + CW), m(16 + logoH / 2 - 3.8), {size: 2.8, color: fg, border: line, align: 'right'});
+  setFont(FONT.mono(3, 600)); ctx.fillStyle = accentTxt;
+  spaced('SB-REQ', m(X + CW), m(16 + logoH / 2 + 1.1), 0.02, 3, 'right');
 
-  // Foto met het verschoven lijnkader (of het grote logo zonder foto).
   let y = 40;
-  const footTop = H - 26;
+  const footTop = H - 24;
   const name = state.event?.name || '';
-  const nameFit = name ? fitDisplay(name, 15, CW - 10, 34) : {lines: [], size: 0, h: 0};
-  const headH = nameFit.h + (name ? 8 : 0) + 3 + 12;          // naam + label + ruimte
-  const minQr = 66, pillH = 14, noteH = 5;
+  const nameFit = name ? fitDisplay(name, 17, CW - 8, 38) : {lines: [], size: 0, h: 0};
+  const pillH = 14, stepsH = 6;
+  const tailH = nameFit.h + (name ? 8 : 0) + 3 + 12 + 10 + pillH + 10 + stepsH;   // alles onder de foto behalve de QR
   if (state.photo) {
-    const room = footTop - 10 - y - headH - minQr - 10 - pillH - 8 - noteH;
-    const pw = Math.max(52, Math.min(86, (room - 8) / 1.25)), ph = pw * 1.25, px = (W - pw) / 2 - 3;
-    const R = m(7.5);
-    ctx.strokeStyle = fg; ctx.lineWidth = m(.3); rrect(m(px + 6), m(y + 6), m(pw), m(ph), R); ctx.stroke();
-    ctx.save(); softShadow(true, light); ctx.fillStyle = C.elevated; rrect(m(px), m(y), m(pw), m(ph), R); ctx.fill(); ctx.restore();
-    ctx.save(); rrect(m(px), m(y), m(pw), m(ph), R); ctx.clip();
-    const p = state.photo, s = Math.max(m(pw) / p.naturalWidth, m(ph) / p.naturalHeight);
+    const minQr = 62;
+    const room = footTop - 10 - y - tailH - minQr - 18;
+    const pw = Math.max(52, Math.min(84, room)), px = (W - pw) / 2 - 2.5;
+    ctx.strokeStyle = line; ctx.lineWidth = m(.3); ctx.strokeRect(m(px + 5), m(y + 5), m(pw), m(pw));      // verschoven kader
+    ctx.save(); softShadow(true, light); ctx.fillStyle = C.elevated; ctx.fillRect(m(px), m(y), m(pw), m(pw)); ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.rect(m(px), m(y), m(pw), m(pw)); ctx.clip();
+    const p = state.photo, s = Math.max(m(pw) / p.naturalWidth, m(pw) / p.naturalHeight);
     const dw = p.naturalWidth * s, dh = p.naturalHeight * s;
-    ctx.drawImage(p, m(px) + (m(pw) - dw) / 2, m(y) + (m(ph) - dh) * 0.3, dw, dh);
+    ctx.drawImage(p, m(px) + (m(pw) - dw) / 2, m(y) + (m(pw) - dh) * 0.3, dw, dh);
     ctx.restore();
-    ctx.strokeStyle = line; ctx.lineWidth = m(.25); rrect(m(px), m(y), m(pw), m(ph), R); ctx.stroke();
-    y += ph + 6 + 14;
+    ctx.strokeStyle = line; ctx.lineWidth = m(.25); ctx.strokeRect(m(px), m(y), m(pw), m(pw));
+    // groene sticker, licht gedraaid
+    ctx.save(); ctx.translate(m(px + pw), m(y)); ctx.rotate(-8 * Math.PI / 180);
+    softShadow(true, light); ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(0, 0, m(8.5), 0, Math.PI * 2); ctx.fill(); softShadow(false);
+    setFont(FONT.mono(2.6, 700)); ctx.fillStyle = C.accentText; ctx.textBaseline = 'middle'; spaced('LIVE', 0, m(0.2), 0.02, 2.6, 'center'); ctx.textBaseline = 'alphabetic';
+    ctx.restore();
+    y += pw + 5 + 14;
   } else {
-    const lw = 50, lh = lw * 429 / 1000;
-    if (state.logo) ctx.drawImage(tinted(state.logo, fg), m((W - lw) / 2), m(y + 10), m(lw), m(lh));
-    y += lh + 30;
+    const lw = 34, lh = lw * 429 / 1000;
+    if (state.logo) ctx.drawImage(tinted(state.logo, fg), m((W - lw) / 2), m(y + 8), m(lw), m(lh));
+    y += lh + 26;
   }
 
-  // Eventnaam en label, gecentreerd.
+  // Eventnaam en tagline.
   if (name) { drawDisplayCentered(nameFit, CX, m(y), fg); y += nameFit.h + 8; }
-  setFont(FONT.label(3.2)); ctx.fillStyle = sec;
-  spaced('MUZIEK OP AANVRAAG', CX, m(y + 2.6), 0.14, 3.2, 'center');
-  y += 3.2 + 12;
+  setFont(FONT.mono(3, 500)); ctx.fillStyle = sec;
+  spaced('MUZIEK OP AANVRAAG', CX, m(y + 2.4), 0.08, 3, 'center');
+  y += 3 + 12;
 
-  // QR-kaart (wit, hairline, zachte schaduw).
-  const q = Math.max(60, Math.min(78, footTop - 10 - y - 10 - pillH - 8 - noteH));
+  // QR-kaart.
+  const q = Math.max(56, Math.min(80, footTop - 10 - y - 10 - pillH - 10 - stepsH));
   const qx = (W - q) / 2;
-  ctx.save(); softShadow(true, light); ctx.fillStyle = C.white; rrect(m(qx), m(y), m(q), m(q), m(6)); ctx.fill(); ctx.restore();
-  ctx.strokeStyle = light ? C.hairline : 'transparent'; ctx.lineWidth = m(.3); rrect(m(qx), m(y), m(q), m(q), m(6)); ctx.stroke();
+  ctx.save(); softShadow(true, light); ctx.fillStyle = C.white; rrect(m(qx), m(y), m(q), m(q), m(1.2)); ctx.fill(); ctx.restore();
+  if (light) { ctx.strokeStyle = line; ctx.lineWidth = m(.3); rrect(m(qx), m(y), m(q), m(q), m(1.2)); ctx.stroke(); }
   if (window.qrcode) {
     const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
     const n = qr.getModuleCount(), pad = q * 0.09, inner = m(q - 2 * pad), cell = inner / n, ox = m(qx + pad), oy = m(y + pad);
@@ -211,22 +217,31 @@ function draw() {
   }
   y += q + 10;
 
-  // De titel als zwarte pilknop (zoals "Boek SB"), met een korte uitleg eronder.
+  // De titel als groene pilknop (zoals "Boek SB").
   const head = (state.headline || '').trim() || 'Vraag je nummer aan.';
-  let hs = 5.2; setFont(FONT.body(hs, 600));
-  while (ctx.measureText(head).width > m(CW - 24) && hs > 3) { hs -= 0.2; setFont(FONT.body(hs, 600)); }
-  pill(head, CX, m(y), {size: hs, color: light ? C.white : C.ink, bg: light ? C.ink : C.white, font: s2 => FONT.body(s2, 600), spacing: -0.011, padX: 9, h: pillH});
-  y += pillH + 7;
-  setFont(FONT.body(3.6)); ctx.fillStyle = sec; ctx.textAlign = 'center';
-  ctx.fillText('Scan de code met je gsm-camera. Geen app nodig.', CX, m(y + 3));
-  ctx.textAlign = 'left';
+  let hs = 5.2; setFont(FONT.body(hs, 700));
+  while (ctx.measureText(head).width > m(CW - 24) && hs > 3) { hs -= 0.2; setFont(FONT.body(hs, 700)); }
+  pill(head, CX, m(y), {size: hs, color: C.accentText, bg: C.accent, font: s2 => FONT.body(s2, 700), spacing: -0.011, padX: 9, h: pillH});
+  y += pillH + 10;
 
-  // Voet zoals de site: hairline, link links, © rechts.
+  // Tracklist op één regel: A1 Scan · A2 Kies · A3 Stem mee.
+  const steps = [['A1', 'Scan de code'], ['A2', 'Kies je nummer'], ['A3', 'Stem mee']];
+  const parts = steps.map(([nr, t]) => { setFont(FONT.mono(2.8, 600)); const a = ctx.measureText(nr).width; setFont(FONT.body(3.6, 500)); return {nr, t, a, b: ctx.measureText(t).width}; });
+  const gapIn = m(2.2), gapOut = m(8);
+  const total = parts.reduce((w, p, i) => w + p.a + gapIn + p.b + (i ? gapOut : 0), 0);
+  let sx = CX - total / 2;
+  parts.forEach((p, i) => {
+    if (i) sx += gapOut;
+    setFont(FONT.mono(2.8, 600)); ctx.fillStyle = accentTxt; ctx.fillText(p.nr, sx, m(y + 3.2)); sx += p.a + gapIn;
+    setFont(FONT.body(3.6, 500)); ctx.fillStyle = fg; ctx.fillText(p.t, sx, m(y + 3.2)); sx += p.b;
+  });
+
+  // Voet zoals de site.
   ctx.strokeStyle = line; ctx.lineWidth = m(.3);
   ctx.beginPath(); ctx.moveTo(m(X), m(footTop)); ctx.lineTo(m(X + CW), m(footTop)); ctx.stroke();
-  setFont(FONT.label(2.7)); ctx.fillStyle = sec;
-  spaced(shortUrl.toUpperCase(), m(X), m(footTop + 8), 0.12, 2.7);
-  spaced('© 2026 SB — ALLROUND DJ', m(X + CW), m(footTop + 8), 0.12, 2.7, 'right');
+  setFont(FONT.mono(2.4, 500)); ctx.fillStyle = sec;
+  spaced(shortUrl.toUpperCase(), m(X), m(footTop + 8), 0.08, 2.4);
+  spaced('© 2026 SB — ALLROUND DJ', m(X + CW), m(footTop + 8), 0.08, 2.4, 'right');
   ctx.restore();
 }
 
@@ -244,12 +259,13 @@ $('#printBtn').onclick = () => { $('#printImg').src = canvas.toDataURL('image/pn
 addEventListener('beforeprint', () => { $('#printImg').src = canvas.toDataURL('image/png'); });
 
 $('#headline').oninput = e => { state.headline = e.target.value; draw(); };
-$('#theme').onchange = e => { state.theme = e.target.value; store.set('vz_poster_theme2', state.theme); draw(); };
+$('#theme').onchange = e => { state.theme = e.target.value; store.set('vz_poster_theme3', state.theme); draw(); };
 
 // ---- laden ----
 (async () => {
   const fonts = document.fonts ? Promise.all([
-    document.fonts.load(`800 40px Inter`), document.fonts.load(`600 20px Inter`), document.fonts.load(`400 20px Inter`)
+    document.fonts.load(`400 40px "Archivo Black"`), document.fonts.load(`700 20px "Schibsted Grotesk"`), document.fonts.load(`500 20px "Schibsted Grotesk"`),
+    document.fonts.load(`500 20px "Martian Mono"`), document.fonts.load(`600 20px "Martian Mono"`), document.fonts.load(`700 20px "Martian Mono"`)
   ]).catch(() => {}) : Promise.resolve();
   const logo = loadImg('sb-logo.png').then(i => { state.logo = i; }).catch(() => {});
   const event = (configured && id ? api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`) : Promise.resolve([]))
