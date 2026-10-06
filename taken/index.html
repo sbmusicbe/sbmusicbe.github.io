@@ -1791,6 +1791,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)!important}
   :root:not([data-theme="light"]) #themeBtn .i-moon{display:none}
 }
 .sales-stat.target .bar i{background:var(--accent)}
+/* invoerveld staat bovenaan elke kolom */
+.col-add{margin:0 0 8px!important}
+.col-add input{opacity:1!important}
 </style>
 </head>
 <body>
@@ -2730,6 +2733,11 @@ function matchFilter(t, ff, fv) {
     default: return String(v ?? '').toLowerCase().includes(fv.toLowerCase());
   }
 }
+// Bij een actieve sortering staan taken zonder deadline altijd bovenaan; de eigen (sleep)volgorde blijft zoals ze is
+function taskSorter(key) {
+  const f = sortFn(key);
+  return key === 'manual' ? f : (a, b) => (!a.due === !b.due ? f(a, b) : a.due ? 1 : -1);
+}
 function sortFn(key) {
   const byOrder = (a, b) => (a.order || 0) - (b.order || 0);
   const dk = t => (t.due || '9999') + (t.time || '99:99');
@@ -2833,7 +2841,7 @@ function taskCard(t) {
 function renderList() {
   const p = prefs();
   const all = viewTasks(p.showDone).filter(t => matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv));
-  const open = all.filter(t => !t.done).sort(sortFn(p.sort));
+  const open = all.filter(t => !t.done).sort(taskSorter(p.sort));
   const done = all.filter(t => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
   let html = '';
   for (const g of groupTasks(open, p.group)) {
@@ -2855,7 +2863,7 @@ const DONE_LIMIT = 30, COL_LIMIT = 60, LIST_LIMIT = 100;
 function renderBoard() {
   const p = prefs();
   const all = viewTasks(true).filter(t => matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv));
-  const sorter = sortFn(p.sort);
+  const sorter = taskSorter(p.sort), plainSorter = sortFn(p.sort);
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
   const hidden = new Set(p.hidden || []);
@@ -2866,7 +2874,7 @@ function renderBoard() {
     ${hid.length ? `<div class="hidden-cols"><span>Verborgen:</span>${hid.map(st => `<button type="button" data-showcol="${st.id}" style="--c:${st.color}" title="${esc(st.label)} weer tonen">${I.eye}${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
   </div>`;
   $('#list').innerHTML = bar + (vis.length ? '' : '<div class="empty">Alle kolommen zijn verborgen in deze weergave.</div>') + `<div class="board" style="--ncols:${vis.length}">${vis.map(st => {
-    let ts = all.filter(t => t.stage === st.id).sort(st.done && p.sort === 'manual' ? byDoneAt : sorter);
+    let ts = all.filter(t => t.stage === st.id).sort(st.done ? (p.sort === 'manual' ? byDoneAt : plainSorter) : sorter);
     const total = ts.length;
     let more = '';
     const lim = st.done ? DONE_LIMIT : COL_LIMIT;
@@ -2876,10 +2884,9 @@ function renderBoard() {
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
       <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right">${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-menu" data-colmenu="${st.id}" data-total="${total}" title="Meer" aria-label="Meer acties voor ${esc(st.label)}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
-      ${topAdd === st.id ? `<form class="col-add col-add-top" data-stage="${st.id}" data-top="1" autocomplete="off"><input type="text" placeholder="Nieuwe kaart in ${esc(st.label)}…" aria-label="Nieuwe kaart bovenaan ${esc(st.label)}" enterkeyhint="done"></form>` : ''}
+      <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
-      <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Kaart toevoegen" aria-label="Kaart toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
     </section>`;
   }).join('')}</div>`;
   const boardEl = $('.board');
@@ -5165,28 +5172,17 @@ $('#list').addEventListener('click', e => {
 $('#list').addEventListener('submit', e => {
   const form = e.target.closest('.col-add'); if (!form) return;
   e.preventDefault();
-  const stage = form.dataset.stage, input = $('input', form), top = !!form.dataset.top;
+  const stage = form.dataset.stage, input = $('input', form);
   const r = parseQuick(input.value);
   if (!r.title) return;
-  createTask(r, stage, top);
-  $(`.col-add${top ? '.col-add-top' : ':not(.col-add-top)'}[data-stage="${stage}"] input`)?.focus();
+  createTask(r, stage);
+  $(`.col-add[data-stage="${stage}"] input`)?.focus();
 });
-// Plusje in de kolomkop: invoerveld bovenaan die kolom
-let topAdd = null;
+// Plusje in de kolomkop: naar het invoerveld bovenaan die kolom
 function openTopAdd(stage) {
-  topAdd = stage; renderMain();
-  const inp = $(`.col-add-top[data-stage="${stage}"] input`);
+  const inp = $(`.col-add[data-stage="${stage}"] input`);
   inp?.focus(); inp?.scrollIntoView({block:'nearest', behavior:'smooth'});
 }
-$('#list').addEventListener('focusout', e => {
-  const form = e.target.closest?.('.col-add-top'); if (!form) return;
-  setTimeout(() => {
-    if (topAdd && !form.contains(document.activeElement) && !$('input', form)?.value.trim() && form.isConnected) { topAdd = null; renderMain(); }
-  }, 120);
-});
-$('#list').addEventListener('keydown', e => {
-  if (e.key === 'Escape' && e.target.closest('.col-add-top')) { e.stopPropagation(); topAdd = null; renderMain(); }
-}, true);
 
 /* ---------------- Kanban: slepen (muis + aanraken) ---------------- */
 let drag = null, justDragged = false;
