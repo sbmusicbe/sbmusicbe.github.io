@@ -40,8 +40,8 @@
     --text-secondary:#949490;
     --text-tertiary:#7E7E7A;
     --hairline:#272726;
-    --accent:#FF4D1C;
-    --accent-deep:#E8430F;
+    --accent:#22a06d;
+    --accent-deep:#18865a;
     --accent-text:#0A0A0A;
     --white:#FFFFFF;
     --r-sm:3px;
@@ -272,10 +272,6 @@
     background:var(--bg-elevated);
     border:1px solid var(--hairline);
   }
-  .contact-direct{ margin-top:40px; display:flex; flex-direction:column; align-items:center; gap:10px; }
-  .contact-direct a{ color:var(--text-secondary); transition:color .2s ease; }
-  .contact-direct a:hover{ color:var(--text); }
-
   /* ---------- CONNECT / SOCIALS ---------- */
   .connect-social{
     width:100%;
@@ -298,6 +294,7 @@
   }
   .row:hover{ background:rgba(245,245,240,.05); }
   .social-rows{ margin-top:32px; }
+  .connect-email{ width:100%; margin-top:28px; }
   .social-rows .row:first-child{ border-top:1px solid var(--hairline); }
   .row svg.ico{ width:22px; height:22px; flex-shrink:0; color:var(--text-secondary); }
   .row .row-text{ flex:1; min-width:0; }
@@ -544,9 +541,6 @@
               <p class="modal-note" id="booking-form-note">Komt rechtstreeks bij mij binnen, geen mailprogramma nodig.</p>
             </form>
           </div>
-          <div class="contact-direct mono">
-            <a href="mailto:hey@sbmusic.be">hey@sbmusic.be</a>
-          </div>
         </div>
 
         <div class="connect-social" id="connect" aria-labelledby="volg-title">
@@ -580,6 +574,7 @@
               <span class="go mono" aria-hidden="true">Like →</span>
             </a>
           </div>
+          <a class="tag krijt connect-email" href="mailto:hey@sbmusic.be">hey@sbmusic.be →</a>
         </div>
       </div>
     </section>

@@ -21,7 +21,7 @@ OWN-WORLD: Near-black ground (#0A0A0A) and warm off-white (#F5F3EE), ONE committ
 
 STORY: Visitor lands on what reads as a record sleeve for "SB — Allround DJ", understands within the first viewport this is a working DJ with a real residency and real catalog of genres/venues, and converts via a CTA styled like a sticker/stamp on the sleeve.
 
-FIRST VIEWPOINT (index.html): Square-cropped hero portrait as the "sleeve", accent-orange corner sticker reading "SB-001", Archivo Black headline set tight like a sleeve title, genre/service list below set as a tracklist, CTA as a stamped sticker button.
+FIRST VIEWPOINT (index.html): Square-cropped hero portrait as the "sleeve", accent-green corner sticker reading "SB-001" (sampled from the cap in the press photo), Archivo Black headline set tight like a sleeve title, genre/service list below set as a tracklist, CTA as a stamped sticker button.
 
 FORM: Catalogue No. — record-label minimalism. Chosen directly by the user from 3 presented directions (Catalogue No. / De Zwarte Ruiter knight-heraldry / Sunrise Set gradient). No concept-seed script run — no image generation available in this harness; directions were authored and presented via AskUserQuestion instead, disclosed to the user.
 
