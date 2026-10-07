@@ -1,3 +1,3 @@
-// Online synchronisatie (optioneel). Laat leeg om zonder te werken (codes via mail).
-// Vul na het opzetten van Supabase in: zie LEESMIJ.md. De anon-sleutel is bedoeld om publiek te zijn.
-window.SB_SYNC={url:"",key:""};
+// Online synchronisatie. De publishable key is bedoeld om publiek te zijn (nooit de secret/service_role key hier plaatsen).
+// Zie LEESMIJ.md voor het instellen.
+window.SB_SYNC={url:"https://umnyszacpnadrahjmsmr.supabase.co",key:"sb_publishable_T9naSzLU2CQNo4OZGIIcvg_FMOTwvPZ"};
