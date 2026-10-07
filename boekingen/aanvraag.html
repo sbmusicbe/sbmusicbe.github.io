@@ -59,7 +59,7 @@ a{color:inherit}
 </main>
 <script>
 const $=s=>document.querySelector(s),SY=window.SB_SYNC||{},cloud=!!(SY.url&&SY.key);
-const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,Authorization:"Bearer "+SY.key,"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status)});
+const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,...(String(SY.key).startsWith("eyJ")?{Authorization:"Bearer "+SY.key}:{}),"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status)});
 $("#f").onsubmit=async e=>{
   e.preventDefault();const f=e.currentTarget,err=$("#err");err.hidden=true;
   const d={};new FormData(f).forEach((v,k)=>d[k]=String(v).trim().slice(0,2000));
