@@ -277,7 +277,7 @@ const b64u=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringif
 const unb64u=t=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0))));
 const musicLink=b=>location.href.replace(/[?#].*$/,"").replace(/[^/]*$/,"")+"muziek.html?d="+b64u({id:b.id.slice(0,10),k:b.klant.split(" ")[0],dat:b.datum,ev:b.type,dj:S.firma.naam,m:(b.muziek.momenten||[]).slice(0,30),...(CLOUD?{tok:b.tok}:{})});
 const SY=SYc;
-const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,Authorization:"Bearer "+SY.key,"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
+const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,...(String(SY.key).startsWith("eyJ")?{Authorization:"Bearer "+SY.key}:{}),"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
 const mergeL=(a=[],b=[])=>{const m=new Map();[...a,...b].forEach(x=>{if(!x||!x.id)return;const o=m.get(x.id);if(!o||(x.ts||0)>(o.ts||0))m.set(x.id,x)});return[...m.values()].slice(0,400)};
 const nrm=t=>String(t||"").toLowerCase().replace(/\s+/g," ").trim();
 const lineOf=x=>(x.t||"")+(x.a?" — "+x.a:"");

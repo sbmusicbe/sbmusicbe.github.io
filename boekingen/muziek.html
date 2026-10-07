@@ -71,7 +71,7 @@ const uid=()=>crypto.randomUUID().slice(0,12),now=()=>Date.now(),cap=(s,n=120)=>
 let P={};try{P=unb(new URLSearchParams(location.search).get("d")||"")||{}}catch(e){}
 const ID=String(P.id||"algemeen").replace(/\W/g,"").slice(0,24),SK="sbm.muziek.v2."+ID;
 const SY=window.SB_SYNC||{},cloud=!!(SY.url&&SY.key&&P.tok&&String(P.tok).length>=16);
-const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,Authorization:"Bearer "+SY.key,"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
+const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,...(String(SY.key).startsWith("eyJ")?{Authorization:"Bearer "+SY.key}:{}),"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
 const LISTS=["req","must","nogo","mom"];
 let M={req:[],must:[],nogo:[],mom:[],pl:"",plTs:0,naam:"",mail:""};
 try{M={...M,...JSON.parse(localStorage.getItem(SK)||"{}")}}catch(e){}
