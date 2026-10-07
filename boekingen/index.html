@@ -96,9 +96,22 @@ label input:focus,label select:focus,label textarea:focus{outline:2px solid var(
 .cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}.cal-nav b{min-width:150px;text-align:center;text-transform:capitalize}
 @media(max-width:600px){.cal .d{min-height:56px}.cal .e{font-size:0;height:6px;padding:0}}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--on-ink);padding:10px 18px;border-radius:999px;z-index:20}
+#lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+#lock[hidden]{display:none}
+#lock form{width:min(400px,100%);background:var(--panel);border:1px solid var(--line);border-radius:28px;display:grid;gap:12px}
+#lock .err{color:var(--red);font-size:13px;min-height:18px}
+body.locked main,body.locked header{visibility:hidden}
 </style>
 </head>
 <body>
+<div id="lock" hidden><form id="lf" autocomplete="off">
+  <h2 id="lt">Boekingen</h2><p class="sub" id="ls" style="margin:0"></p>
+  <label>Wachtwoord<input id="pw" type="password" autocomplete="current-password" required></label>
+  <label id="pw2l" hidden>Herhaal wachtwoord<input id="pw2" type="password" autocomplete="new-password"></label>
+  <div class="err" id="le" role="alert"></div>
+  <button class="btn pri" id="lb">Ontgrendel</button>
+  <button class="btn sm danger" type="button" id="reset" hidden>Wachtwoord vergeten? Alles wissen</button>
+</form></div>
 <header><div class="bar">
   <span class="brand">SB · Boekingen</span>
   <nav id="nav">
@@ -110,6 +123,7 @@ label input:focus,label select:focus,label textarea:focus{outline:2px solid var(
   </nav>
   <span class="sp"></span>
   <button class="btn" id="more">Back-up</button>
+  <button class="btn" id="lockbtn">🔒 Vergrendel</button>
   <button class="btn pri" id="add">+ Nieuwe boeking</button>
 </div></header>
 <main id="main"></main>
@@ -147,11 +161,19 @@ label input:focus,label select:focus,label textarea:focus{outline:2px solid var(
 const STATUS={aanvraag:"Aanvraag",offerte:"Offerte verstuurd",geboekt:"Geboekt",afgerond:"Afgerond",verloren:"Verloren"};
 const KEY="sb.boekingen.v1";
 let D=[],view="overzicht",editing=null,cal=new Date(),q="",fs="";
-try{view=localStorage.getItem(KEY+".view")||view;D=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){}
+try{view=localStorage.getItem(KEY+".view")||view}catch(e){}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const eur=n=>"€ "+Math.round(n||0).toLocaleString("nl-BE");
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast("Opslaan mislukt")}};
+/* versleutelde opslag: AES-GCM, sleutel via PBKDF2 uit je wachtwoord; zonder wachtwoord is de data onleesbaar */
+const VK=KEY+".vault",enc=new TextEncoder();let CK=null,SALT=null,fails=0,idle=null;
+const b64=u=>btoa(String.fromCharCode(...new Uint8Array(u))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function derive(pw,salt){const m=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function persist(){if(!CK)return;const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},CK,enc.encode(JSON.stringify(D)));
+  localStorage.setItem(VK,JSON.stringify({s:b64(SALT),i:b64(iv),d:b64(ct)}))}
+const save=()=>{persist().catch(()=>toast("Opslaan mislukt"))};
 const today=()=>new Date().toISOString().slice(0,10);
 const fmt=d=>d?new Date(d+"T12:00").toLocaleDateString("nl-BE",{weekday:"short",day:"numeric",month:"short",year:"numeric"}):"";
 const paid=b=>(b.voorschotBetaald?+b.voorschot||0:0)+(b.saldoBetaald?Math.max(0,(+b.prijs||0)-(+b.voorschot||0)):0);
@@ -288,13 +310,50 @@ document.addEventListener("change",e=>{if(e.target.id==="fs"){fs=e.target.value;
 
 /* back-up */
 $("#more").onclick=()=>{
-  const a=prompt("Back-up (alles wordt enkel in deze browser bewaard)\n\n1 = JSON exporteren\n2 = CSV exporteren (Excel)\n3 = JSON importeren (vervangt alles)");
+  const a=prompt("Back-up (alles wordt enkel in deze browser bewaard)\n\n1 = JSON exporteren\n2 = CSV exporteren (Excel)\n3 = JSON importeren (vervangt alles)\n4 = Wachtwoord wijzigen\n\nLet op: exports zijn NIET versleuteld, bewaar ze veilig.");
   if(a==="1")download(`boekingen-${today()}.json`,JSON.stringify(D,null,1),"application/json");
   else if(a==="2"){const h=["klant","email","tel","type","status","datum","van","tot","locatie","prijs","voorschot","voorschotBetaald","saldoBetaald","contract","playlist","notities"];
     download(`boekingen-${today()}.csv`,"﻿"+[h,...D.map(b=>h.map(k=>`"${String(b[k]??"").replace(/"/g,'""')}"`))].map(r=>r.join(";")).join("\n"),"text/csv")}
+  else if(a==="4"){const n=prompt("Nieuw wachtwoord (minstens 10 tekens):");if(n&&n.length>=10){SALT=crypto.getRandomValues(new Uint8Array(16));derive(n,SALT).then(k=>{CK=k;return persist()}).then(()=>toast("Wachtwoord gewijzigd")).catch(()=>toast("Mislukt"))}else if(n!==null)toast("Te kort")}
   else if(a==="3"){const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text());if(!Array.isArray(j))throw 0;D=j;save();render();toast("Geïmporteerd")}catch(e){toast("Ongeldig bestand")}};i.click()}
 };
-render();
+
+/* vergrendelen / ontgrendelen */
+const L=$("#lock"),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function showLock(){
+  let v=null;try{v=JSON.parse(localStorage.getItem(VK))}catch(e){}
+  const setup=!v;document.body.classList.add("locked");L.hidden=false;
+  $("#lt").textContent=setup?"Kies een wachtwoord":"Boekingen";
+  $("#ls").textContent=setup?"Je gegevens worden versleuteld in deze browser bewaard. Vergeet je dit wachtwoord, dan zijn ze niet te herstellen. Minstens 10 tekens.":"Voer je wachtwoord in om verder te gaan.";
+  $("#pw2l").hidden=!setup;$("#pw2").required=setup;$("#pw").autocomplete=setup?"new-password":"current-password";
+  $("#lb").textContent=setup?"Wachtwoord instellen":"Ontgrendel";$("#reset").hidden=setup;
+  $("#pw").value=$("#pw2").value="";$("#le").textContent="";$("#pw").focus();
+}
+$("#lf").onsubmit=async e=>{
+  e.preventDefault();const pw=$("#pw").value,err=$("#le"),btn=$("#lb");btn.disabled=true;err.textContent="";
+  try{
+    let v=null;try{v=JSON.parse(localStorage.getItem(VK))}catch(x){}
+    if(!v){
+      if(pw.length<10){err.textContent="Gebruik minstens 10 tekens.";return}
+      if(pw!==$("#pw2").value){err.textContent="De wachtwoorden komen niet overeen.";return}
+      SALT=crypto.getRandomValues(new Uint8Array(16));CK=await derive(pw,SALT);
+      try{D=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(x){D=[]}   // oude, onversleutelde data overnemen
+      await persist();localStorage.removeItem(KEY);
+    }else{
+      if(fails)await sleep(Math.min(fails*1000,10000));
+      try{SALT=unb64(v.s);const k=await derive(pw,SALT);
+        D=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(v.i)},k,unb64(v.d))));CK=k;
+      }catch(x){fails++;err.textContent="Verkeerd wachtwoord.";return}
+    }
+    fails=0;L.hidden=true;document.body.classList.remove("locked");render();arm();
+  }finally{btn.disabled=false;$("#pw").value=$("#pw2").value=""}
+};
+function lock(){CK=null;D=[];editing=null;q="";$("#dlg").close();$("#main").innerHTML="";clearTimeout(idle);showLock()}
+function arm(){clearTimeout(idle);if(CK)idle=setTimeout(lock,10*60*1000)}   // automatisch na 10 min inactiviteit
+["pointerdown","keydown"].forEach(t=>addEventListener(t,arm,{passive:true}));
+$("#lockbtn").onclick=lock;
+$("#reset").onclick=()=>{if(confirm("Dit wist ALLE boekingen definitief uit deze browser. Doorgaan?")){localStorage.removeItem(VK);localStorage.removeItem(KEY);showLock()}};
+if(!crypto?.subtle){document.body.textContent="Deze pagina vereist een beveiligde verbinding (https)."}else showLock();
 </script>
 </body>
 </html>
