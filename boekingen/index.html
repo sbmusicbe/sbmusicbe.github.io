@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Boekingen</title>
 <meta name="theme-color" content="#faf6ef">
+<script src="sync-config.js"></script>
 <link rel="icon" href="../assets/logo-sb-black.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -216,7 +217,7 @@ function load(p){
   D=(Array.isArray(p)?p:p.D||[]).map(ensure);
 }
 function ensure(b){
-  b.gear??=[];b.crew??=[];b.muziek??={must:"",nogo:"",momenten:[]};b.muziek.verzoeken??=[];b.muziek.playlist??="";b.items??=[];b.adv??=[];b.kosten??=[];b.taken??=[];b.vragen??={};b.auto??={};
+  b.gear??=[];b.crew??=[];b.muziek??={must:"",nogo:"",momenten:[]};b.muziek.verzoeken??=[];b.muziek.playlist??="";b.muziek.gone??=[];b.muziek.synced??={must:[],nogo:[]};b.tok??=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");b.items??=[];b.adv??=[];b.kosten??=[];b.taken??=[];b.vragen??={};b.auto??={};
   if(!b.betalingen){b.betalingen=[];const t=num(b.prijs),v=num(b.voorschot);
     if(v)b.betalingen.push({id:uid(),label:"Voorschot",bedrag:v,due:"",betaald:b.voorschotBetaald?(b.datum||today()):""});
     if(t-v>0)b.betalingen.push({id:uid(),label:"Saldo",bedrag:t-v,due:b.datum?addDays(b.datum,-7):"",betaald:b.saldoBetaald?(b.datum||today()):""})}
@@ -234,7 +235,42 @@ const conflicts=b=>D.filter(o=>o.id!==b.id&&o.datum&&o.datum===b.datum&&["geboek
 const crewKost=b=>r2(b.crew.reduce((s,c)=>s+num(c.fee),0)),kosten=b=>r2(b.kosten.reduce((s,k)=>s+num(k.bedrag),0)+crewKost(b)),winst=b=>r2(net(b)-kosten(b));
 const b64u=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 const unb64u=t=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0))));
-const musicLink=b=>location.href.replace(/[?#].*$/,"").replace(/[^/]*$/,"")+"muziek.html?d="+b64u({id:b.id.slice(0,10),k:b.klant.split(" ")[0],dat:b.datum,ev:b.type,dj:S.firma.naam,m:(b.muziek.momenten||[]).slice(0,30)});
+const musicLink=b=>location.href.replace(/[?#].*$/,"").replace(/[^/]*$/,"")+"muziek.html?d="+b64u({id:b.id.slice(0,10),k:b.klant.split(" ")[0],dat:b.datum,ev:b.type,dj:S.firma.naam,m:(b.muziek.momenten||[]).slice(0,30),...(CLOUD?{tok:b.tok}:{})});
+const SY=window.SB_SYNC||{},CLOUD=!!(SY.url&&SY.key);
+const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,Authorization:"Bearer "+SY.key,"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
+const mergeL=(a=[],b=[])=>{const m=new Map();[...a,...b].forEach(x=>{if(!x||!x.id)return;const o=m.get(x.id);if(!o||(x.ts||0)>(o.ts||0))m.set(x.id,x)});return[...m.values()].slice(0,400)};
+const nrm=t=>String(t||"").toLowerCase().replace(/\s+/g," ").trim();
+const lineOf=x=>(x.t||"")+(x.a?" — "+x.a:"");
+function stamp(o,fields){const sig=JSON.stringify(fields);if(o.sig!==sig){o.sig=sig;o.ts=Date.now()}}
+async function syncMusic(b){
+  const M=b.muziek,R=(await rpc("muziek_get",{p_token:b.tok}))||{},cap=(x,n=120)=>String(x??"").slice(0,n),now=Date.now();
+  const rem=k=>(R[k]||[]).map(x=>({...x,t:cap(x.t),a:cap(x.a)}));
+  // verzoeknummers & momenten (DJ heeft id's)
+  M.verzoeken.forEach(r=>{r.id??=uid();stamp(r,[r.t,r.a,r.status])});M.momenten.forEach(m=>{m.id??=uid();stamp(m,[m.tijd,m.omschr,m.nummer])});
+  const tomb=ids=>ids.map(id=>({id,del:true,ts:now}));
+  const req=mergeL(rem("req"),[...M.verzoeken.map(r=>({id:r.id,t:r.t,a:r.a,status:r.status,door:r.door||"DJ",ts:r.ts})),...tomb(M.gone)]);
+  const mom=mergeL((R.mom||[]).map(x=>({...x})),[...M.momenten.map(m=>({id:m.id,tijd:m.tijd,omschr:m.omschr,nummer:m.nummer,ts:m.ts})),...tomb(M.gone)]);
+  // must/nogo: regels <-> items (id via tekst, of de id van een bestaand klant-item met dezelfde tekst)
+  const lists={};
+  for(const k of["must","nogo"]){
+    const remote=rem(k),all=new Map(remote.map(x=>[nrm(lineOf(x)),x]));
+    const lines=String(M[k]||"").split("\n").map(x=>x.trim()).filter(Boolean),cur=new Set(),local=[];
+    lines.forEach(l=>{const r=all.get(nrm(l));
+      if(r&&r.del&&(M.synced[k]||[]).includes(r.id))return;   // door de klant verwijderd
+      const id=r&&!r.del?r.id:"t:"+nrm(l);cur.add(id);const [t,...a]=l.split(" — ");local.push({id,t,a:a.join(" — "),ts:r&&!r.del?r.ts:now,door:"DJ"})});
+    const gone=(M.synced[k]||[]).filter(id=>!cur.has(id)),gt=tomb(gone);
+    lists[k]=mergeL(remote,[...local,...gt]);
+  }
+  if(M.plSig!==M.playlist){M.plSig=M.playlist;M.plTs=(M.playlist||M.plTs)?now:0}const plL={v:M.playlist||"",ts:M.plTs||0};
+  const pl=(R.pl?.ts||0)>plL.ts?{v:cap(R.pl.v,300),ts:R.pl.ts}:plL;
+  const doc={v:2,req,mom,must:lists.must,nogo:lists.nogo,pl};
+  await rpc("muziek_set",{p_token:b.tok,p_data:doc});
+  // terugschrijven
+  M.verzoeken=req.filter(x=>!x.del).map(x=>({...(M.verzoeken.find(r=>r.id===x.id)||{}),id:x.id,t:x.t,a:x.a,status:x.status||"Nieuw",door:x.door||"klant",ts:x.ts,sig:JSON.stringify([x.t,x.a,x.status||"Nieuw"])}));
+  M.momenten=mom.filter(x=>!x.del).map(x=>({id:x.id,tijd:cap(x.tijd,5),omschr:cap(x.omschr),nummer:cap(x.nummer),ts:x.ts,sig:JSON.stringify([x.tijd,x.omschr,x.nummer])}));
+  for(const k of["must","nogo"]){const arr=lists[k].filter(x=>!x.del).sort((a,c)=>(a.ts||0)-(c.ts||0));M[k]=[...new Set(arr.map(lineOf).filter(Boolean))].join("\n");M.synced[k]=arr.map(x=>x.id)}
+  M.playlist=pl.v;M.plSig=pl.v;M.plTs=pl.ts;M.gone=[];
+}
 const q1=t=>encodeURIComponent(t);
 const teamName=id=>S.team.find(t=>t.id===id)?.naam||"?",gearName=id=>S.materiaal.find(m=>m.id===id)?.naam||"?";
 const busy=(b,d)=>D.filter(o=>o.id!==b.id&&o.datum===d&&["geboekt","optie"].includes(o.status));
@@ -467,6 +503,12 @@ function instellingen(){
 
 /* ---------- boeking-dialog ---------- */
 const TABS={gegevens:"Gegevens",offerte:"Offerte",contract:"Contract",betalingen:"Betalingen",planning:"Planning",team:"Team & materiaal",muziek:"Muziek",show:"Show",afrekening:"Afrekening"};
+let syncedFor="";
+async function doSync(manual){
+  if(!CLOUD||!E)return;const id=E.id;if(manual)toast("Synchroniseren…");
+  try{await syncMusic(E);if(editing&&E&&E.id===id){editing.muziek=structuredClone(E.muziek);save()}if(manual)toast("☁ Gesynchroniseerd");if(E&&E.id===id&&tab==="muziek")reDlg()}
+  catch(e){toast("Synchroniseren mislukt, controleer de instellingen")}
+}
 function modal(h){$("#dlg2").innerHTML=h;$("#dlg2").showModal()}
 function parseLead(t){const m={};t.split(/\r?\n/).forEach(l=>{const x=l.match(/^\s*([^:]{2,30}):\s*(.+)$/);if(x)m[x[1].trim().toLowerCase()]=x[2].trim()});
   const g=(...k)=>{for(const key of k){const f=Object.keys(m).find(z=>z.includes(key));if(f)return m[f]}return ""};
@@ -512,8 +554,8 @@ function drawDlg(){
     <td style="white-space:nowrap"><a href="https://open.spotify.com/search/${q1((r.t||"")+" "+(r.a||""))}" target="_blank" rel="noopener" title="Zoek op Spotify">S</a> · <a href="https://music.apple.com/search?term=${q1((r.t||"")+" "+(r.a||""))}" target="_blank" rel="noopener" title="Zoek op Apple Music">A</a> · <a href="https://www.beatsource.com/search?q=${q1((r.t||"")+" "+(r.a||""))}" target="_blank" rel="noopener" title="Zoek op Beatsource">B</a></td>
     <td><button class="x" data-act="delReq" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div>
     <div class="df" style="border:0;padding:8px 0 0"><button class="btn sm" data-act="addReq">+ Nummer</button><button class="btn sm" data-act="exportSet">⬇ Setlijst (.txt)</button></div>
-    <div class="card" style="margin:14px 0 0;background:var(--honey-soft)"><b>Muziek samen met de klant invullen</b><p class="hint" style="margin:4px 0 8px">De klant opent de link op de gsm, vult nummers en momenten in en drukt op “Verstuur”. Jij krijgt een mail met een code: plak die hieronder om alles in te lezen.</p>
-    <div class="df" style="border:0;padding:0"><button class="btn sm" data-act="copyLink">🔗 Kopieer klantlink</button><a class="btn sm" href="${mail("muzieklink",b)}" data-act="mailnote">✉ Mail klantlink</a><button class="btn sm" data-act="importMusic">📥 Muziek van klant inlezen</button></div></div>
+    <div class="card" style="margin:14px 0 0;background:var(--honey-soft)"><b>Muziek samen met de klant invullen</b><p class="hint" style="margin:4px 0 8px">${CLOUD?"☁ Live gekoppeld: wat de klant (en zijn vrienden en familie) invult, verschijnt hier na synchroniseren, en jouw goed- of afkeuringen en momenten zien zij meteen.":"De klant opent de link op de gsm, vult nummers en momenten in en drukt op “Verstuur”. Jij krijgt een mail met een code: plak die hieronder om alles in te lezen."}</p>
+    <div class="df" style="border:0;padding:0"><button class="btn sm" data-act="copyLink">🔗 Kopieer klantlink</button><a class="btn sm" href="${mail("muzieklink",b)}" data-act="mailnote">✉ Mail klantlink</a>${CLOUD?'<button class="btn sm" data-act="syncMusic">☁ Nu synchroniseren</button>':""}<button class="btn sm" data-act="importMusic">📥 ${CLOUD?"Code inlezen":"Muziek van klant inlezen"}</button></div></div>
     <h3 style="margin-top:14px">Momenten</h3>
     <div class="tw"><table>${b.muziek.momenten.map((m,n)=>`<tr><td style="width:110px"><input type="time" data-r="E" data-p="muziek.momenten.${n}.tijd" value="${esc(m.tijd)}"></td><td><input data-r="E" data-p="muziek.momenten.${n}.omschr" placeholder="Openingsdans, taart…" value="${esc(m.omschr)}"></td><td><input data-r="E" data-p="muziek.momenten.${n}.nummer" placeholder="Nummer / link" value="${esc(m.nummer)}"></td><td><button class="x" data-act="delMom" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div>
     <div class="df" style="border:0;padding:8px 0 0"><button class="btn sm" data-act="addMom">+ Moment</button><button class="btn sm" data-act="doc" data-k="muziek">📄 Muziekplanner (PDF)</button></div>`,
@@ -554,9 +596,10 @@ function pad(c,key){
 /* ---------- acties ---------- */
 const reDlg=()=>{const y=$(".db")?.scrollTop;drawDlg();if(y)$(".db").scrollTop=y};
 const ACT={
-  tab:a=>{tab=a.dataset.k;drawDlg()},
+  tab:a=>{tab=a.dataset.k;drawDlg();if(tab==="muziek"&&CLOUD&&syncedFor!==E.id){syncedFor=E.id;doSync(false)}},
   newB:()=>openForm(),
-  addReq:()=>{E.muziek.verzoeken.push({id:uid(),t:"",a:"",status:"Nieuw",door:"DJ"});reDlg()},delReq:a=>{E.muziek.verzoeken.splice(+a.dataset.i,1);reDlg()},
+  syncMusic:()=>doSync(true),
+  addReq:()=>{E.muziek.verzoeken.push({id:uid(),t:"",a:"",status:"Nieuw",door:"DJ"});reDlg()},delReq:a=>{const r=E.muziek.verzoeken.splice(+a.dataset.i,1)[0];if(r?.id)E.muziek.gone.push(r.id);reDlg()},
   copyLink:()=>{const l=musicLink(E);navigator.clipboard?.writeText(l).then(()=>toast("Link gekopieerd")).catch(()=>prompt("Kopieer de link:",l))||prompt("Kopieer de link:",l)},
   exportSet:()=>{const m=E.muziek,L=x=>String(x||"").split("\n").filter(Boolean);dl(`setlijst-${E.datum||"show"}.txt`,[`Setlijst ${E.klant} — ${fmt(E.datum)}`,"","ZEKER DRAAIEN",...L(m.must),"","NIET DRAAIEN",...L(m.nogo),"","VERZOEKEN",...m.verzoeken.filter(r=>r.status!=="Afgewezen").map(r=>`${r.t}${r.a?" — "+r.a:""} [${r.status}]`),"","MOMENTEN",...m.momenten.map(x=>`${x.tijd} ${x.omschr}${x.nummer?" ("+x.nummer+")":""}`),m.playlist?"\nPlaylist: "+m.playlist:""].join("\n"),"text/plain")},
   importMusic:()=>modal(`<div class="dh"><h2>Muziek van klant inlezen</h2></div><div class="db"><p class="hint">Plak de mail die je van de klant kreeg (of enkel de code die met SBM1: begint).</p><label>Tekst of code<textarea id="mcode" rows="8"></textarea></label></div><div class="df"><button class="btn pri" data-act="doImportMusic">Inlezen</button><button class="btn" data-act="close2">Annuleren</button></div>`),
@@ -571,7 +614,7 @@ const ACT={
   addGear:()=>{S.materiaal.push({id:uid(),naam:"",cat:"",aantal:1});save();render()},delGear:a=>{S.materiaal.splice(+a.dataset.i,1);save();render()},
   addTeam:()=>{S.team.push({id:uid(),naam:"",rol:"",tarief:"",email:"",tel:""});save();render()},delTeam:a=>{S.team.splice(+a.dataset.i,1);save();render()},
   delCrew:a=>{E.crew.splice(+a.dataset.i,1);reDlg()},delGearB:a=>{E.gear.splice(+a.dataset.i,1);reDlg()},
-  addMom:()=>{E.muziek.momenten.push({tijd:"",omschr:"",nummer:""});reDlg()},delMom:a=>{E.muziek.momenten.splice(+a.dataset.i,1);reDlg()},
+  addMom:()=>{E.muziek.momenten.push({tijd:"",omschr:"",nummer:""});reDlg()},delMom:a=>{const r=E.muziek.momenten.splice(+a.dataset.i,1)[0];if(r?.id)E.muziek.gone.push(r.id);reDlg()},
   km:()=>{if(!num(E.km)){toast("Vul eerst de afstand in");return}E.items.push({omschr:`Verplaatsing (${num(E.km)} km)`,aantal:1,prijs:r2(num(E.km)*num(S.firma.kmTarief))});toast("Toegevoegd aan de offerte");reDlg()},
   payCrew:a=>{const c=D.find(x=>x.id===a.dataset.b)?.crew.find(x=>x.id===a.dataset.c);if(c){c.betaald=today();save();render()}},
   unpayCrew:a=>{const c=D.find(x=>x.id===a.dataset.b)?.crew.find(x=>x.id===a.dataset.c);if(c){c.betaald="";save();render()}},
@@ -691,7 +734,7 @@ $("#lf").onsubmit=async e=>{
     fails=0;L.hidden=true;document.body.classList.remove("locked");render();arm();
   }finally{btn.disabled=false;$("#pw").value=$("#pw2").value=""}
 };
-function lock(){CK=null;D=[];S=defaults();E=editing=null;q="";gsq="";$("#gs").value="";if($("#dlg").open)$("#dlg").close();if($("#dlg2").open)$("#dlg2").close();$("#dlg2").innerHTML="";$("#dlg").innerHTML="";$("#main").innerHTML="";clearTimeout(idle);showLock()}
+function lock(){CK=null;D=[];S=defaults();E=editing=null;q="";gsq="";$("#gs").value="";syncedFor="";if($("#dlg").open)$("#dlg").close();if($("#dlg2").open)$("#dlg2").close();$("#dlg2").innerHTML="";$("#dlg").innerHTML="";$("#main").innerHTML="";clearTimeout(idle);showLock()}
 function arm(){clearTimeout(idle);if(CK)idle=setTimeout(lock,10*60*1000)}
 ["pointerdown","keydown"].forEach(t=>addEventListener(t,arm,{passive:true}));
 $("#lockbtn").onclick=lock;
