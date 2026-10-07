@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Boekingen</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/logo-sb-black.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f6f4; --panel:#fff; --text:#111; --muted:#6b6b66; --line:#e6e6e1; --ink:#111; --on-ink:#fff;
+  --green:#0f4a37; --green-soft:#e3efe9; --amber:#a15c07; --amber-soft:#fbefd9; --red:#b42318; --red-soft:#fde8e6;
+  --blue:#1d4ed8; --blue-soft:#e4ebfc; --r:22px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0c0c0b; --panel:#171715; --text:#f2f2ee; --muted:#9a9a93; --line:#2a2a27; --ink:#f2f2ee; --on-ink:#111;
+  --green:#5fc59b; --green-soft:#12261f; --amber:#e6a64a; --amber-soft:#2a2013; --red:#f27a6e; --red-soft:#2e1613;
+  --blue:#8aa8ff; --blue-soft:#171f38; color-scheme:dark;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Onest,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.02em;margin-right:6px}
+nav{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;overflow-x:auto}
+nav button{border:0;background:none;padding:7px 16px;border-radius:999px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+nav button[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.sm{padding:4px 12px;font-size:13px}
+.btn.danger{color:var(--red)}
+main{max-width:1200px;margin:0 auto;padding:20px 16px 80px}
+h2{font-size:22px;letter-spacing:-.02em;margin:0 0 14px}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-weight:600}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.stat b{display:block;font-size:30px;letter-spacing:-.03em;line-height:1.1}
+.stat span{color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.row{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.row:first-of-type{border-top:0}
+.date{min-width:54px;text-align:center;background:var(--bg);border-radius:14px;padding:6px 4px;line-height:1.1}
+.date b{display:block;font-size:20px}.date small{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}
+.grow{flex:1;min-width:0}.grow .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{color:var(--muted);font-size:13px}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bg);color:var(--muted)}
+.pill.aanvraag{background:var(--blue-soft);color:var(--blue)}
+.pill.offerte{background:var(--amber-soft);color:var(--amber)}
+.pill.geboekt{background:var(--green-soft);color:var(--green)}
+.pill.afgerond{background:var(--ink);color:var(--on-ink)}
+.pill.verloren{background:var(--red-soft);color:var(--red)}
+.pill.warn{background:var(--red-soft);color:var(--red)}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:12px;overflow-x:auto;padding-bottom:10px;align-items:start}
+.col{background:color-mix(in srgb,var(--line) 45%,transparent);border-radius:var(--r);padding:12px;min-height:140px}
+.col.over{outline:2px dashed var(--green)}
+.col h3{display:flex;justify-content:space-between}
+.k{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:8px;cursor:pointer}
+.k .t{font-weight:600}.k .m{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.k .mv{display:flex;gap:4px}.k .mv button{border:1px solid var(--line);background:none;border-radius:999px;width:28px;height:28px;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 8px;border-top:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{border:0;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+.empty{color:var(--muted);padding:18px 0;text-align:center}
+.tools{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tools input,.tools select{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 14px}
+.tools input{flex:1;min-width:160px}
+dialog{border:0;border-radius:28px;padding:0;width:min(640px,calc(100vw - 24px));max-height:92vh;background:var(--panel);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+form{padding:22px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg .full{grid-column:1/-1}
+@media(max-width:520px){.fg{grid-template-columns:1fr}}
+label{display:block;font-size:13px;color:var(--muted);font-weight:500}
+label input,label select,label textarea{display:block;width:100%;margin-top:4px;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:9px 12px;color:var(--text)}
+label input:focus,label select:focus,label textarea:focus{outline:2px solid var(--green);outline-offset:-1px}
+.chk{display:flex;gap:8px;align-items:center;color:var(--text);font-size:14px}
+.chk input{width:auto;margin:0}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .h{font-size:12px;color:var(--muted);text-align:center;padding:4px;text-transform:uppercase}
+.cal .d{min-height:78px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px 6px;font-size:12px;overflow:hidden}
+.cal .d.off{opacity:.4}.cal .d.today{border-color:var(--green);border-width:2px}
+.cal .e{display:block;width:100%;text-align:left;border:0;border-radius:6px;padding:1px 5px;margin-top:2px;font-size:11px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .e.geboekt{background:var(--green-soft);color:var(--green)}.cal .e.offerte{background:var(--amber-soft);color:var(--amber)}
+.cal .e.aanvraag{background:var(--blue-soft);color:var(--blue)}.cal .e.afgerond{background:var(--line);color:var(--muted)}
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}.cal-nav b{min-width:150px;text-align:center;text-transform:capitalize}
+@media(max-width:600px){.cal .d{min-height:56px}.cal .e{font-size:0;height:6px;padding:0}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--on-ink);padding:10px 18px;border-radius:999px;z-index:20}
+#lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+#lock[hidden]{display:none}
+#lock form{width:min(400px,100%);background:var(--panel);border:1px solid var(--line);border-radius:28px;display:grid;gap:12px}
+#lock .err{color:var(--red);font-size:13px;min-height:18px}
+body.locked main,body.locked header{visibility:hidden}
+</style>
+</head>
+<body>
+<div id="lock" hidden><form id="lf" autocomplete="off">
+  <h2 id="lt">Boekingen</h2><p class="sub" id="ls" style="margin:0"></p>
+  <label>Wachtwoord<input id="pw" type="password" autocomplete="current-password" required></label>
+  <label id="pw2l" hidden>Herhaal wachtwoord<input id="pw2" type="password" autocomplete="new-password"></label>
+  <div class="err" id="le" role="alert"></div>
+  <button class="btn pri" id="lb">Ontgrendel</button>
+  <button class="btn sm danger" type="button" id="reset" hidden>Wachtwoord vergeten? Alles wissen</button>
+</form></div>
+<header><div class="bar">
+  <span class="brand">SB · Boekingen</span>
+  <nav id="nav">
+    <button data-v="overzicht">Overzicht</button>
+    <button data-v="pijplijn">Pijplijn</button>
+    <button data-v="agenda">Agenda</button>
+    <button data-v="klanten">Klanten</button>
+    <button data-v="financien">Financiën</button>
+  </nav>
+  <span class="sp"></span>
+  <button class="btn" id="more">Back-up</button>
+  <button class="btn" id="lockbtn">🔒 Vergrendel</button>
+  <button class="btn pri" id="add">+ Nieuwe boeking</button>
+</div></header>
+<main id="main"></main>
+
+<dialog id="dlg"><form id="f" method="dialog">
+  <h2 id="dt">Boeking</h2>
+  <div class="fg">
+    <label class="full">Klant / opdrachtgever<input name="klant" required></label>
+    <label>E-mail<input name="email" type="email"></label>
+    <label>Telefoon<input name="tel" type="tel"></label>
+    <label>Type event<select name="type"><option>Privéfeest</option><option>Bruiloft</option><option>Club</option><option>Festival</option><option>Bedrijfsfeest</option><option>Andere</option></select></label>
+    <label>Status<select name="status"></select></label>
+    <label>Datum<input name="datum" type="date" required></label>
+    <label>Locatie<input name="locatie" placeholder="Zaal, plaats"></label>
+    <label>Start<input name="van" type="time"></label>
+    <label>Einde<input name="tot" type="time"></label>
+    <label>Totaalprijs (€)<input name="prijs" type="number" min="0" step="1"></label>
+    <label>Voorschot (€)<input name="voorschot" type="number" min="0" step="1"></label>
+    <label class="chk"><input type="checkbox" name="voorschotBetaald"> Voorschot ontvangen</label>
+    <label class="chk"><input type="checkbox" name="saldoBetaald"> Saldo ontvangen</label>
+    <label class="chk"><input type="checkbox" name="contract"> Contract ondertekend</label>
+    <label class="chk"><input type="checkbox" name="playlist"> Wensen/playlist ontvangen</label>
+    <label class="full">Notities<textarea name="notities" rows="3" placeholder="Technische info, contactpersoon ter plaatse, speciale wensen…"></textarea></label>
+  </div>
+  <div id="warn" class="sub" style="color:var(--red);margin-top:10px"></div>
+  <div class="acts">
+    <button class="btn pri" value="ok">Opslaan</button>
+    <button class="btn" type="button" id="cancel">Annuleren</button>
+    <span class="sp"></span>
+    <span id="extra" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+  </div>
+</form></dialog>
+
+<script>
+const STATUS={aanvraag:"Aanvraag",offerte:"Offerte verstuurd",geboekt:"Geboekt",afgerond:"Afgerond",verloren:"Verloren"};
+const KEY="sb.boekingen.v1";
+let D=[],view="overzicht",editing=null,cal=new Date(),q="",fs="";
+try{view=localStorage.getItem(KEY+".view")||view}catch(e){}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const eur=n=>"€ "+Math.round(n||0).toLocaleString("nl-BE");
+/* versleutelde opslag: AES-GCM, sleutel via PBKDF2 uit je wachtwoord; zonder wachtwoord is de data onleesbaar */
+const VK=KEY+".vault",enc=new TextEncoder();let CK=null,SALT=null,fails=0,idle=null;
+const b64=u=>btoa(String.fromCharCode(...new Uint8Array(u))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function derive(pw,salt){const m=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function persist(){if(!CK)return;const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},CK,enc.encode(JSON.stringify(D)));
+  localStorage.setItem(VK,JSON.stringify({s:b64(SALT),i:b64(iv),d:b64(ct)}))}
+const save=()=>{persist().catch(()=>toast("Opslaan mislukt"))};
+const today=()=>new Date().toISOString().slice(0,10);
+const fmt=d=>d?new Date(d+"T12:00").toLocaleDateString("nl-BE",{weekday:"short",day:"numeric",month:"short",year:"numeric"}):"";
+const paid=b=>(b.voorschotBetaald?+b.voorschot||0:0)+(b.saldoBetaald?Math.max(0,(+b.prijs||0)-(+b.voorschot||0)):0);
+const open=b=>b.status==="geboekt"||b.status==="afgerond"?Math.max(0,(+b.prijs||0)-paid(b)):0;
+const conflicts=b=>D.filter(o=>o.id!==b.id&&o.datum===b.datum&&["geboekt","offerte"].includes(o.status)&&["geboekt","offerte"].includes(b.status));
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
+
+function setView(v){view=v;try{localStorage.setItem(KEY+".view",v)}catch(e){}render()}
+$("#nav").onclick=e=>{const v=e.target.dataset.v;if(v)setView(v)};
+function render(){
+  document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===view));
+  $("#main").innerHTML=({overzicht,pijplijn,agenda,klanten,financien})[view]();
+  if(view==="pijplijn")dnd();
+}
+const rowHtml=b=>`<div class="row" data-id="${b.id}"><div class="date"><b>${new Date(b.datum+"T12:00").getDate()}</b><small>${new Date(b.datum+"T12:00").toLocaleDateString("nl-BE",{month:"short"})}</small></div>
+<div class="grow"><div class="t">${esc(b.klant)}</div><div class="sub">${esc(b.type)}${b.locatie?" · "+esc(b.locatie):""}${b.van?" · "+esc(b.van):""}</div></div>
+${conflicts(b).length?'<span class="pill warn">dubbel</span>':""}<span class="pill ${b.status}">${STATUS[b.status]}</span></div>`;
+
+function overzicht(){
+  const t=today(),yr=t.slice(0,4);
+  const up=D.filter(b=>b.datum>=t&&["geboekt","offerte","aanvraag"].includes(b.status)).sort((a,b)=>a.datum.localeCompare(b.datum));
+  const omzet=D.filter(b=>["geboekt","afgerond"].includes(b.status)&&b.datum.startsWith(yr)).reduce((s,b)=>s+(+b.prijs||0),0);
+  const uit=D.reduce((s,b)=>s+open(b),0);
+  const todo=D.filter(b=>b.status==="geboekt"&&b.datum>=t&&(!b.contract||!b.voorschotBetaald||!b.playlist));
+  return `<div class="stats">
+  <div class="card stat"><b>${D.filter(b=>b.status==="geboekt"&&b.datum>=t).length}</b><span>Komende boekingen</span></div>
+  <div class="card stat"><b>${D.filter(b=>["aanvraag","offerte"].includes(b.status)).length}</b><span>Open aanvragen/offertes</span></div>
+  <div class="card stat"><b>${eur(omzet)}</b><span>Omzet ${yr}</span></div>
+  <div class="card stat"><b>${eur(uit)}</b><span>Nog te ontvangen</span></div></div>
+  <div class="grid2"><div class="card"><h3>Eerstvolgende</h3>${up.slice(0,8).map(rowHtml).join("")||'<div class="empty">Nog niets gepland.</div>'}</div>
+  <div class="card"><h3>Nog te regelen</h3>${todo.map(b=>`<div class="row" data-id="${b.id}"><div class="grow"><div class="t">${esc(b.klant)} · ${fmt(b.datum)}</div>
+  <div class="sub">${[!b.contract&&"contract",!b.voorschotBetaald&&"voorschot",!b.playlist&&"wensen"].filter(Boolean).join(" · ")} ontbreekt</div></div></div>`).join("")||'<div class="empty">Alles in orde 🎧</div>'}</div></div>`;
+}
+
+function pijplijn(){
+  const cols=Object.keys(STATUS);
+  return `<h2>Pijplijn</h2><div class="board">${cols.map(s=>{
+    const items=D.filter(b=>b.status===s).sort((a,b)=>a.datum.localeCompare(b.datum));
+    return `<div class="col" data-s="${s}"><h3>${STATUS[s]}<span>${items.length}</span></h3>${items.map(b=>`<div class="k" draggable="true" data-id="${b.id}">
+      <div class="t">${esc(b.klant)}</div><div class="sub">${fmt(b.datum)} · ${esc(b.type)}</div>
+      <div class="m"><b>${b.prijs?eur(b.prijs):""}</b><span class="mv">${cols.indexOf(s)>0?`<button data-mv="-1" aria-label="Vorige fase">←</button>`:""}${cols.indexOf(s)<cols.length-1?`<button data-mv="1" aria-label="Volgende fase">→</button>`:""}</span></div></div>`).join("")}</div>`}).join("")}</div>`;
+}
+function dnd(){
+  let drag=null;
+  document.querySelectorAll(".k").forEach(k=>k.ondragstart=()=>drag=k.dataset.id);
+  document.querySelectorAll(".col").forEach(c=>{
+    c.ondragover=e=>{e.preventDefault();c.classList.add("over")};
+    c.ondragleave=()=>c.classList.remove("over");
+    c.ondrop=e=>{e.preventDefault();const b=D.find(x=>x.id===drag);if(b){b.status=c.dataset.s;save();render()}};
+  });
+}
+
+function agenda(){
+  const y=cal.getFullYear(),m=cal.getMonth(),first=new Date(y,m,1),start=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate();
+  let cells="";for(let i=0;i<Math.ceil((start+days)/7)*7;i++){
+    const d=new Date(y,m,1-start+i),iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    cells+=`<div class="d ${d.getMonth()!==m?"off":""} ${iso===today()?"today":""}">${d.getDate()}${D.filter(b=>b.datum===iso&&b.status!=="verloren").map(b=>`<button class="e ${b.status}" data-id="${b.id}">${esc(b.van||"")} ${esc(b.klant)}</button>`).join("")}</div>`}
+  return `<h2>Agenda</h2><div class="cal-nav"><button class="btn sm" data-cal="-1">←</button><b>${cal.toLocaleDateString("nl-BE",{month:"long",year:"numeric"})}</b><button class="btn sm" data-cal="1">→</button><button class="btn sm" data-cal="0">Vandaag</button></div>
+  <div class="cal">${["ma","di","wo","do","vr","za","zo"].map(x=>`<div class="h">${x}</div>`).join("")}${cells}</div>`;
+}
+
+function klanten(){
+  const map={};D.forEach(b=>{const k=(b.email||b.klant).toLowerCase();(map[k]??={naam:b.klant,email:b.email,tel:b.tel,b:[]}).b.push(b)});
+  const list=Object.values(map).filter(c=>(c.naam+c.email).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.naam.localeCompare(b.naam));
+  return `<h2>Klanten</h2><div class="tools"><input id="q" placeholder="Zoek klant…" value="${esc(q)}"></div><div class="card tw"><table>
+  <tr><th>Naam</th><th>Contact</th><th class="n">Boekingen</th><th class="n">Omzet</th></tr>
+  ${list.map(c=>`<tr><td><b>${esc(c.naam)}</b></td><td>${c.email?`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:""}<div class="sub">${esc(c.tel||"")}</div></td>
+  <td class="n">${c.b.length}</td><td class="n">${eur(c.b.filter(b=>["geboekt","afgerond"].includes(b.status)).reduce((s,b)=>s+(+b.prijs||0),0))}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">Geen klanten.</td></tr>`}</table></div>`;
+}
+
+function financien(){
+  const rows=D.filter(b=>["geboekt","afgerond"].includes(b.status)).filter(b=>!fs||(fs==="open"?open(b)>0:open(b)===0)).sort((a,b)=>b.datum.localeCompare(a.datum));
+  const tot=rows.reduce((s,b)=>s+(+b.prijs||0),0),ont=rows.reduce((s,b)=>s+paid(b),0);
+  return `<h2>Financiën</h2><div class="stats"><div class="card stat"><b>${eur(tot)}</b><span>Gefactureerd</span></div><div class="card stat"><b>${eur(ont)}</b><span>Ontvangen</span></div><div class="card stat"><b>${eur(tot-ont)}</b><span>Openstaand</span></div></div>
+  <div class="tools"><select id="fs"><option value="">Alles</option><option value="open" ${fs==="open"?"selected":""}>Openstaand</option><option value="betaald" ${fs==="betaald"?"selected":""}>Volledig betaald</option></select></div>
+  <div class="card tw"><table><tr><th>Datum</th><th>Klant</th><th class="n">Totaal</th><th class="n">Voorschot</th><th class="n">Ontvangen</th><th class="n">Open</th><th></th></tr>
+  ${rows.map(b=>`<tr><td>${fmt(b.datum)}</td><td><a href="#" data-id="${b.id}">${esc(b.klant)}</a></td><td class="n">${eur(b.prijs)}</td><td class="n">${eur(b.voorschot)} ${b.voorschotBetaald?"✓":""}</td><td class="n">${eur(paid(b))}</td><td class="n"><b>${eur(open(b))}</b></td>
+  <td>${open(b)>0&&b.email?`<a class="btn sm" href="${mail(b,"herinnering")}">Herinnering</a>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">Geen boekingen.</td></tr>`}</table></div>`;
+}
+
+function mail(b,kind){
+  const naam=b.klant.split(" ")[0],dat=fmt(b.datum);
+  const T={
+    offerte:[`Offerte DJ SB — ${dat}`,`Hoi ${naam},\n\nBedankt voor je aanvraag! Hierbij mijn voorstel voor ${b.type.toLowerCase()} op ${dat}${b.locatie?" in "+b.locatie:""}${b.van?` (${b.van}${b.tot?"–"+b.tot:""})`:""}.\n\nTotaalprijs: ${eur(b.prijs)} (incl. DJ-set, geluid en licht)\nVoorschot om de datum vast te leggen: ${eur(b.voorschot)}\n\nLaat je het weten als je akkoord bent? Dan stuur ik het contract door.\n\nGroeten,\nSB — Allround DJ`],
+    bevestiging:[`Bevestiging boeking ${dat}`,`Hoi ${naam},\n\nTop, je boeking staat vast: ${b.type} op ${dat}${b.locatie?" in "+b.locatie:""}.\n\nWil je me vóór het feest je muziekwensen en de praktische info (aankomstuur, contactpersoon) bezorgen?\n\nTot dan!\nSB`],
+    herinnering:[`Openstaand bedrag — ${dat}`,`Hoi ${naam},\n\nEen vriendelijke herinnering: voor ${b.type.toLowerCase()} op ${dat} staat er nog ${eur(open(b))} open.\n\nAlvast bedankt!\nSB`]
+  }[kind];
+  return `mailto:${encodeURIComponent(b.email||"")}?subject=${encodeURIComponent(T[0])}&body=${encodeURIComponent(T[1])}`;
+}
+function ics(b){
+  const d=b.datum.replace(/-/g,""),t=x=>(x||"2000").replace(":","")+"00",
+  s=`${d}T${t(b.van||"20:00")}`,e=`${d}T${t(b.tot||"23:59")}`;
+  const txt=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SB//Boekingen//NL\r\nBEGIN:VEVENT\r\nUID:${b.id}@sbmusic.be\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]|\.\d+/g,"")}\r\nDTSTART:${s}\r\nDTEND:${e}\r\nSUMMARY:DJ SB — ${b.klant}\r\nLOCATION:${(b.locatie||"").replace(/[,;]/g," ")}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  download(`dj-${b.datum}.ics`,txt,"text/calendar");
+}
+function download(name,txt,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+
+/* modal */
+const f=$("#f");
+$("[name=status]").innerHTML=Object.entries(STATUS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+function openForm(b){
+  editing=b||null;f.reset();
+  $("#dt").textContent=b?"Boeking bewerken":"Nieuwe boeking";
+  const v=b||{status:"aanvraag",datum:"",type:"Privéfeest"};
+  for(const el of f.elements){if(!el.name)continue;el.type==="checkbox"?el.checked=!!v[el.name]:el.value=v[el.name]??""}
+  $("#extra").innerHTML=b?`<a class="btn sm" href="${mail(b,"offerte")}">✉ Offerte</a><a class="btn sm" href="${mail(b,"bevestiging")}">✉ Bevestiging</a><button type="button" class="btn sm" id="bics">📅 Agenda</button>${b.tel?`<a class="btn sm" href="https://wa.me/${b.tel.replace(/\D/g,"")}">WhatsApp</a>`:""}<button type="button" class="btn sm danger" id="del">Verwijder</button>`:"";
+  if(b){$("#bics").onclick=()=>ics(b);$("#del").onclick=()=>{if(confirm("Deze boeking verwijderen?")){D=D.filter(x=>x!==b);save();$("#dlg").close();render()}}}
+  checkWarn();$("#dlg").showModal();
+}
+function checkWarn(){
+  const b={id:editing?.id,datum:f.datum.value,status:f.status.value},c=b.datum?conflicts(b):[];
+  $("#warn").textContent=c.length?`⚠ Let op: op deze datum staat al ${c.map(x=>x.klant).join(", ")}.`:"";
+}
+f.datum.onchange=f.status.onchange=checkWarn;
+$("#cancel").onclick=()=>$("#dlg").close();
+f.onsubmit=()=>{
+  const o=editing||{id:crypto.randomUUID(),created:Date.now()};
+  for(const el of f.elements){if(!el.name)continue;o[el.name]=el.type==="checkbox"?el.checked:el.type==="number"?(el.value===""?"":+el.value):el.value.trim()}
+  if(!editing)D.push(o);save();render();
+};
+$("#add").onclick=()=>openForm();
+
+/* events */
+document.addEventListener("click",e=>{
+  const mv=e.target.closest("[data-mv]");
+  if(mv){e.stopPropagation();const k=mv.closest(".k"),b=D.find(x=>x.id===k.dataset.id),s=Object.keys(STATUS);b.status=s[s.indexOf(b.status)+ +mv.dataset.mv];save();render();return}
+  const c=e.target.closest("[data-cal]");
+  if(c){cal=c.dataset.cal==="0"?new Date():new Date(cal.getFullYear(),cal.getMonth()+ +c.dataset.cal,1);render();return}
+  const t=e.target.closest("[data-id]");
+  if(t&&!e.target.closest("dialog")){e.preventDefault();const b=D.find(x=>x.id===t.dataset.id);if(b)openForm(b)}
+});
+document.addEventListener("input",e=>{if(e.target.id==="q"){q=e.target.value;const p=e.target.selectionStart;render();const i=$("#q");i.focus();i.setSelectionRange(p,p)}});
+document.addEventListener("change",e=>{if(e.target.id==="fs"){fs=e.target.value;render()}});
+
+/* back-up */
+$("#more").onclick=()=>{
+  const a=prompt("Back-up (alles wordt enkel in deze browser bewaard)\n\n1 = JSON exporteren\n2 = CSV exporteren (Excel)\n3 = JSON importeren (vervangt alles)\n4 = Wachtwoord wijzigen\n\nLet op: exports zijn NIET versleuteld, bewaar ze veilig.");
+  if(a==="1")download(`boekingen-${today()}.json`,JSON.stringify(D,null,1),"application/json");
+  else if(a==="2"){const h=["klant","email","tel","type","status","datum","van","tot","locatie","prijs","voorschot","voorschotBetaald","saldoBetaald","contract","playlist","notities"];
+    download(`boekingen-${today()}.csv`,"﻿"+[h,...D.map(b=>h.map(k=>`"${String(b[k]??"").replace(/"/g,'""')}"`))].map(r=>r.join(";")).join("\n"),"text/csv")}
+  else if(a==="4"){const n=prompt("Nieuw wachtwoord (minstens 10 tekens):");if(n&&n.length>=10){SALT=crypto.getRandomValues(new Uint8Array(16));derive(n,SALT).then(k=>{CK=k;return persist()}).then(()=>toast("Wachtwoord gewijzigd")).catch(()=>toast("Mislukt"))}else if(n!==null)toast("Te kort")}
+  else if(a==="3"){const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text());if(!Array.isArray(j))throw 0;D=j;save();render();toast("Geïmporteerd")}catch(e){toast("Ongeldig bestand")}};i.click()}
+};
+
+/* vergrendelen / ontgrendelen */
+const L=$("#lock"),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function showLock(){
+  let v=null;try{v=JSON.parse(localStorage.getItem(VK))}catch(e){}
+  const setup=!v;document.body.classList.add("locked");L.hidden=false;
+  $("#lt").textContent=setup?"Kies een wachtwoord":"Boekingen";
+  $("#ls").textContent=setup?"Je gegevens worden versleuteld in deze browser bewaard. Vergeet je dit wachtwoord, dan zijn ze niet te herstellen. Minstens 10 tekens.":"Voer je wachtwoord in om verder te gaan.";
+  $("#pw2l").hidden=!setup;$("#pw2").required=setup;$("#pw").autocomplete=setup?"new-password":"current-password";
+  $("#lb").textContent=setup?"Wachtwoord instellen":"Ontgrendel";$("#reset").hidden=setup;
+  $("#pw").value=$("#pw2").value="";$("#le").textContent="";$("#pw").focus();
+}
+$("#lf").onsubmit=async e=>{
+  e.preventDefault();const pw=$("#pw").value,err=$("#le"),btn=$("#lb");btn.disabled=true;err.textContent="";
+  try{
+    let v=null;try{v=JSON.parse(localStorage.getItem(VK))}catch(x){}
+    if(!v){
+      if(pw.length<10){err.textContent="Gebruik minstens 10 tekens.";return}
+      if(pw!==$("#pw2").value){err.textContent="De wachtwoorden komen niet overeen.";return}
+      SALT=crypto.getRandomValues(new Uint8Array(16));CK=await derive(pw,SALT);
+      try{D=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(x){D=[]}   // oude, onversleutelde data overnemen
+      await persist();localStorage.removeItem(KEY);
+    }else{
+      if(fails)await sleep(Math.min(fails*1000,10000));
+      try{SALT=unb64(v.s);const k=await derive(pw,SALT);
+        D=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(v.i)},k,unb64(v.d))));CK=k;
+      }catch(x){fails++;err.textContent="Verkeerd wachtwoord.";return}
+    }
+    fails=0;L.hidden=true;document.body.classList.remove("locked");render();arm();
+  }finally{btn.disabled=false;$("#pw").value=$("#pw2").value=""}
+};
+function lock(){CK=null;D=[];editing=null;q="";$("#dlg").close();$("#main").innerHTML="";clearTimeout(idle);showLock()}
+function arm(){clearTimeout(idle);if(CK)idle=setTimeout(lock,10*60*1000)}   // automatisch na 10 min inactiviteit
+["pointerdown","keydown"].forEach(t=>addEventListener(t,arm,{passive:true}));
+$("#lockbtn").onclick=lock;
+$("#reset").onclick=()=>{if(confirm("Dit wist ALLE boekingen definitief uit deze browser. Doorgaan?")){localStorage.removeItem(VK);localStorage.removeItem(KEY);showLock()}};
+if(!crypto?.subtle){document.body.textContent="Deze pagina vereist een beveiligde verbinding (https)."}else showLock();
+</script>
+</body>
+</html>
