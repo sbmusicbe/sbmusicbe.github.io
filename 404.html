@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pagina niet gevonden — SB</title>
 <meta name="robots" content="noindex">
+<link rel="alternate" type="text/markdown" href="/404.md">
 <meta name="theme-color" content="#0A0A0A">
-<link rel="icon" href="images/favicon.png">
+<link rel="icon" href="/images/favicon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,8 +50,8 @@
     width:80px;
     aspect-ratio:1000 / 429;
     background:var(--text);
-    -webkit-mask:url("images/logo-mask.png") center / contain no-repeat;
-            mask:url("images/logo-mask.png") center / contain no-repeat;
+    -webkit-mask:url("/images/logo-mask.png") center / contain no-repeat;
+            mask:url("/images/logo-mask.png") center / contain no-repeat;
     margin-bottom:56px;
   }
   h1{
@@ -68,6 +69,8 @@
     color:var(--text-secondary);
     max-width:38ch;
   }
+  .more{ margin-top:28px; font-size:14px; }
+  .more a{ text-decoration:underline; text-underline-offset:3px; }
   .tag{
     display:inline-flex;
     align-items:center;
@@ -114,6 +117,7 @@
   <h1>Deze pagina draait niet mee.</h1>
   <p>De link klopt niet (meer), of de pagina bestaat niet. Ga terug naar de startpagina.</p>
   <a class="tag" href="/">Naar sbmusic.be →</a>
+  <p class="more">Of kijk in de <a href="/sitemap.xml">sitemap</a>, <a href="/llms.txt">llms.txt</a> of mail naar <a href="mailto:hey@sbmusic.be">hey@sbmusic.be</a>.</p>
 
 <script>
   (function(){

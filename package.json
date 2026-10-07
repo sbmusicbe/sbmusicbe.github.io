@@ -1,0 +1,5 @@
+{
+  "name": "sbmusic-be",
+  "private": true,
+  "scripts": { "test": "node --test edge/worker.test.mjs scripts/site.test.mjs" }
+}

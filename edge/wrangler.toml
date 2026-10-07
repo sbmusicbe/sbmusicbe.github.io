@@ -1,0 +1,6 @@
+name = "sbmusic-markdown"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+# Vereist dat sbmusic.be via Cloudflare (proxy aan / oranje wolk) loopt.
+routes = [{ pattern = "sbmusic.be/*", zone_name = "sbmusic.be" }]

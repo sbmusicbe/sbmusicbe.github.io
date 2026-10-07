@@ -4,13 +4,91 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SB — Allround DJ & resident DJ @ Café De Zwarte Ruiter</title>
-<meta name="description" content="SB is een allround DJ en resident DJ van Café De Zwarte Ruiter. Open format sets voor café, feest en event — boek SB voor jouw avond." />
+<meta name="description" content="SB is een allround DJ uit België en resident DJ van Café De Zwarte Ruiter. Open format sets voor café, feest, bruiloft en bedrijfsevent — boek SB voor jouw avond." />
 <meta name="theme-color" content="#0a0a0a" />
 <link rel="canonical" href="https://sbmusic.be/" />
 <link rel="icon" href="assets/logo-sb-black.png" />
 <meta property="og:title" content="SB — Allround DJ" />
 <meta property="og:description" content="Resident DJ @ Café De Zwarte Ruiter. Open format, elke dancefloor." />
 <meta property="og:image" content="https://sbmusic.be/og-image.jpg" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://sbmusic.be/" />
+<meta property="og:locale" content="nl_BE" />
+<link rel="alternate" type="text/markdown" href="/index.md" />
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://sbmusic.be/#website",
+      "url": "https://sbmusic.be/",
+      "name": "SB — Allround DJ",
+      "inLanguage": "nl-BE",
+      "publisher": {
+        "@id": "https://sbmusic.be/#organization"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://sbmusic.be/#organization",
+      "name": "SB",
+      "alternateName": "SB — Allround DJ",
+      "url": "https://sbmusic.be/",
+      "logo": "https://sbmusic.be/assets/logo-sb-black.png",
+      "image": "https://sbmusic.be/assets/presspic.jpg",
+      "description": "SB is een allround DJ en resident DJ van Café De Zwarte Ruiter. Open format sets voor café, feest, bruiloft en bedrijfsevent in België.",
+      "email": "hey@sbmusic.be",
+      "areaServed": {
+        "@type": "Country",
+        "name": "België"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "BE"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "booking",
+          "email": "hey@sbmusic.be",
+          "availableLanguage": [
+            "nl"
+          ],
+          "areaServed": "BE"
+        }
+      ],
+      "founder": {
+        "@id": "https://sbmusic.be/#sb"
+      },
+      "sameAs": [
+        "https://instagram.com/sbmusicbe",
+        "https://www.tiktok.com/@sbmusicbe",
+        "https://www.facebook.com/sbmusicbe"
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://sbmusic.be/#sb",
+      "name": "SB",
+      "jobTitle": "Allround DJ",
+      "url": "https://sbmusic.be/about.html",
+      "image": "https://sbmusic.be/assets/presspic.jpg",
+      "description": "Allround DJ uit België en resident DJ van Café De Zwarte Ruiter.",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Café De Zwarte Ruiter"
+      },
+      "sameAs": [
+        "https://instagram.com/sbmusicbe",
+        "https://www.tiktok.com/@sbmusicbe",
+        "https://www.facebook.com/sbmusicbe"
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -489,7 +567,7 @@ textarea{ resize:none }
       <button class="pill pill--light" data-ar="up" data-act="modal"><span class="pill-in">Start je aanvraag<span class="pill-ar"><i data-i="up"></i></span></span></button>
     </div>
     <div class="f-cols" id="fcols"></div>
-    <div class="legal"><span>© 2026 SB. Alle rechten voorbehouden.</span><div><a class="alink alink--s" href="privacyverklaring.html"><span>Privacy</span></a><a class="alink alink--s" href="voorwaarden.html"><span>Voorwaarden</span></a></div></div>
+    <div class="legal"><span>© 2026 SB. Alle rechten voorbehouden.</span><div><a class="alink alink--s" href="about.html"><span>Over SB</span></a><a class="alink alink--s" href="contact.html"><span>Contact</span></a><a class="alink alink--s" href="privacy.html"><span>Privacy</span></a><a class="alink alink--s" href="voorwaarden.html"><span>Voorwaarden</span></a></div></div>
   </div>
   <div class="wm" aria-hidden="true">SB</div>
 </footer>
@@ -844,7 +922,7 @@ document.addEventListener('click',e=>{
     if(p<1) return requestAnimationFrame(f);
     L.classList.add('out');
     spring(0,-100,{t:220,f:30,eps:.05},x=>L.style.transform=`translateY(${x}%)`,()=>{
-      L.remove(); startScroll(); onReady(); window.__liquidAuto&&window.__liquidAuto();
+      L.remove(); startScroll(); onReady(); window.__liquidAuto&&window.__liquidAuto(); if(location.hash==='#aanvraag') openModal();
     });
   })(t0);
 }

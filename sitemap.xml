@@ -6,7 +6,15 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sbmusic.be/privacyverklaring.html</loc>
+    <loc>https://sbmusic.be/about.html</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sbmusic.be/contact.html</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sbmusic.be/privacy.html</loc>
     <priority>0.2</priority>
   </url>
   <url>
