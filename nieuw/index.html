@@ -230,15 +230,17 @@ h2.h{ font-size:2.25rem; font-weight:600; letter-spacing:-.02em; width:fit-conte
 .card-a{ display:block; text-align:left; width:100% }
 .card{ position:relative; min-height:22rem; overflow:hidden; border-radius:2rem; background:#0a0a0a; padding:1.5rem; color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.05); transition:transform .4s var(--e3) }
 @media (min-width:640px){ .card{ min-height:26rem; padding:2rem } }
-.card-t{ display:flex; justify-content:space-between; align-items:flex-start; font-size:.75rem; text-transform:uppercase; letter-spacing:.025em; color:rgba(255,255,255,.45) }
+.card-t{ display:flex; justify-content:space-between; align-items:flex-start; font-size:.75rem; text-transform:uppercase; letter-spacing:.025em; color:rgba(255,255,255,.65) }
 .badge{ width:2.75rem; height:2.75rem; display:grid; place-items:center; border-radius:9999px; background:rgba(255,255,255,.1); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.15); font-size:1.1rem; transition:transform .35s var(--e3) }
-.card-w{ position:absolute; inset:0; display:grid; place-items:center; pointer-events:none }
-.card-w img{ height:4.5rem; opacity:.9 }
+.c0{ background:linear-gradient(150deg,#2e5a43 0%,#1a3426 100%) }
+.c1{ background:radial-gradient(120% 90% at 100% 0%,#2e5a43 0%,#0a0a0a 62%) }
+.c2{ background:linear-gradient(150deg,#1f3d2d 0%,#0a0a0a 100%) }
+.c3{ background:radial-gradient(120% 90% at 0% 0%,#2e5a43 0%,#0a0a0a 62%) }
 .card-b{ position:absolute; inset-inline:1.5rem; bottom:1.5rem }
 @media (min-width:640px){ .card-b{ inset-inline:2rem; bottom:2rem } }
 .card-b h3{ font-size:1.5rem; font-weight:500; letter-spacing:-.01em }
 @media (min-width:640px){ .card-b h3{ font-size:1.875rem } }
-.card-b p{ margin-top:.5rem; max-width:28rem; font-size:.875rem; color:rgba(255,255,255,.55) }
+.card-b p{ margin-top:.5rem; max-width:28rem; font-size:.875rem; color:rgba(255,255,255,.75) }
 .tags{ margin-top:1.25rem; display:flex; flex-wrap:wrap; gap:.5rem }
 .tags span{ display:inline-flex; border:1px solid rgba(255,255,255,.25); color:#fff; border-radius:9999px; padding:.5rem 1rem; font-size:.875rem }
 @media (hover:hover){
@@ -346,6 +348,7 @@ input,textarea{ width:100%; font:inherit; border:1px solid #e6e5e2; background:r
 input:focus,textarea:focus{ border-color:rgba(17,17,17,.3); background:#fff }
 textarea{ resize:none }
 .m-bot{ margin-top:.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem }
+.merr{ font-size:.875rem; color:#8a2b1f } .merr a{ text-decoration:underline }
 .m-bot small{ font-size:.75rem; color:rgba(17,17,17,.45) }
 .done{ display:none; flex-direction:column; align-items:center; text-align:center; padding-block:2rem; gap:1rem }
 .mp.ok form,.mp.ok .mh{ display:none }
@@ -485,7 +488,7 @@ textarea{ resize:none }
       <button class="pill pill--light" data-ar="up" data-act="modal"><span class="pill-in">Start je aanvraag<span class="pill-ar"><i data-i="up"></i></span></span></button>
     </div>
     <div class="f-cols" id="fcols"></div>
-    <div class="legal"><span>© 2026 SB. Alle rechten voorbehouden.</span><div><a class="alink alink--s" href="#privacy"><span>Privacy</span></a><a class="alink alink--s" href="#terms"><span>Voorwaarden</span></a></div></div>
+    <div class="legal"><span>© 2026 SB. Alle rechten voorbehouden.</span><div><a class="alink alink--s" href="privacy.html"><span>Privacy</span></a><a class="alink alink--s" href="voorwaarden.html"><span>Voorwaarden</span></a></div></div>
   </div>
   <div class="wm" aria-hidden="true">SB</div>
 </footer>
@@ -505,6 +508,7 @@ textarea{ resize:none }
       <label><span>E-mail</span><input name="email" type="email" required placeholder="jij@voorbeeld.be" autocomplete="email" /></label>
       <label><span>Datum & soort event</span><input name="event" type="text" required placeholder="Bv. 14 maart, verjaardagsfeest" /></label>
       <label><span>Bericht</span><textarea name="bericht" rows="4" required placeholder="Locatie, aantal gasten, gewenste stijl en uur van de set."></textarea></label>
+      <p class="merr" id="mErr" role="alert" hidden>Versturen lukte niet. <a id="mErrLink" href="mailto:hey@sbmusic.be">Stuur je aanvraag via e-mail →</a></p>
       <div class="m-bot"><small>SB antwoordt binnen 1 werkdag.</small>
         <button class="pill pill--dark" data-ar="up" type="submit"><span class="pill-in"><b id="mSend" style="font-weight:500">Verstuur aanvraag</b><span class="pill-ar"><i data-i="up"></i></span></span></button></div>
     </form>
@@ -520,15 +524,14 @@ textarea{ resize:none }
 <script type="module">
 /* ===== SB — single-file site =====
    [AANPASSEN]-waarden (alles wat SB later invult) staan in CONTENT hieronder:
-   socials (SoundCloud, Mixcloud, café-link), portfolio-jaren, stats-cijfers.
+   portfolio-jaren, stats-cijfers.
    Assets: zet presspic.jpg, logo-sb-black.png en logo-sb-white.png in ./assets/ naast deze index.html. */
 const CONTENT = {
   hotspots: ['Café De Zwarte Ruiter', 'Sunrise Festival', 'Club Madelon', 'Futur'],
   socials: {
     instagram: 'https://instagram.com/sbmusicbe',
-    soundcloud: '#',   // [AANPASSEN]
-    mixcloud: '#',     // [AANPASSEN]
-    venue: '#'         // [AANPASSEN: link] Café De Zwarte Ruiter
+    tiktok: 'https://www.tiktok.com/@sbmusicbe',
+    facebook: 'https://www.facebook.com/sbmusicbe'
   },
   portfolio: [
     { title:'Café De Zwarte Ruiter', cat:'Residency', year:'2025', text:'Mijn thuisbasis: vaste avonden achter de draaitafels, met een publiek dat elke week terugkomt.', tags:['Resident','Open format','Café'] },
@@ -545,7 +548,7 @@ const CONTENT = {
   stats: [   // [AANPASSEN] echte cijfers van SB
     { v:250, s:'+', l:'Sets gespeeld' },
     { v:1,   s:'',  l:'Vaste residency' },
-    { v:5,   s:'+', l:'Jaar achter de draaitafels' },
+    { v:10,  s:'+', l:'Jaar achter de draaitafels' },
     { v:100, s:'%', l:'Open format' }
   ],
   carousel: [
@@ -591,6 +594,8 @@ const ICONS = {
   star: `<svg class="i" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.9l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"/></svg>`,
   dot: `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>`,
   disc: `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><circle cx="12" cy="12" r="3"/><path d="M12 2.75a9.25 9.25 0 0 1 6.5 2.7"/></svg>`,
+  tt: P('M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5M14 4c.4 2.5 2 4.1 4.5 4.3'),
+  fb: P('M14 21v-7h2.5l.5-3H14V9a1.5 1.5 0 0 1 1.5-1.5H17V5h-2.2A3.8 3.8 0 0 0 11 8.8V11H8.5v3H11v7'),
   ig: `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg>`
 };
 const ic = n => ICONS[n];
@@ -605,12 +610,11 @@ $('#hnav').innerHTML = NAV.map((n,i)=>`<li><${n.go?`button data-go="${n.go}"`:'b
 $('#hotspots').innerHTML = CONTENT.hotspots.map(h=>`<li><span>${ic('dot')}${h}</span></li>`).join('');
 $('#soc').innerHTML = `
   <a class="ig" href="${CONTENT.socials.instagram}" target="_blank" rel="noopener" aria-label="Instagram">${ic('ig')}</a>
-  <a href="${CONTENT.socials.soundcloud}" aria-label="SoundCloud">${ic('dot')}</a>
-  <a href="${CONTENT.socials.mixcloud}" aria-label="Mixcloud">${ic('dot')}</a>`;
+  <a href="${CONTENT.socials.tiktok}" target="_blank" rel="noopener" aria-label="TikTok">${ic('tt')}</a>
+  <a href="${CONTENT.socials.facebook}" target="_blank" rel="noopener" aria-label="Facebook">${ic('fb')}</a>`;
 $('#cards').innerHTML = CONTENT.portfolio.map((p,i)=>`
-  <li class="rv" data-y="48px" data-d="${i*90}"><button class="card-a" data-act="modal"><article class="card">
+  <li class="rv" data-y="48px" data-d="${i*90}"><button class="card-a" data-act="modal"><article class="card c${i%4}">
     <div class="card-t"><span>${p.cat} — ${p.year}</span><span class="badge">${ic('up')}</span></div>
-    <div class="card-w"><img data-white src="assets/logo-sb-white.png" alt="SB logo" /></div>
     <div class="card-b"><h3>${p.title}</h3><p>${p.text}</p><div class="tags">${p.tags.map(t=>`<span>${t}</span>`).join('')}</div></div>
   </article></button></li>`).join('');
 $('#srv').innerHTML = CONTENT.services.map((s,i)=>`
@@ -626,7 +630,7 @@ $('#fcols').innerHTML = `
     <li><button class="alink" data-go="works"><span>Sets</span></button></li>
     <li><button class="alink" data-go="about"><span>Over SB</span></button></li>${fm('Contact')}</ul></div>
   <div><h4>Boekingen</h4><ul>${['Café & bar nights','Feesten','Bruiloften','Bedrijfsevents'].map(fm).join('')}</ul></div>
-  <div><h4>Volg SB</h4><ul>${fl('Instagram',CONTENT.socials.instagram,1)}${fl('SoundCloud',CONTENT.socials.soundcloud)}${fl('Mixcloud',CONTENT.socials.mixcloud)}${fl('Café De Zwarte Ruiter',CONTENT.socials.venue)}</ul></div>`;
+  <div><h4>Volg SB</h4><ul>${fl('Instagram',CONTENT.socials.instagram,1)}${fl('TikTok',CONTENT.socials.tiktok,1)}${fl('Facebook',CONTENT.socials.facebook,1)}</ul></div>`;
 $('#navList').innerHTML = NAV.map((n,i)=>`<li><button class="nav-it" data-nav="${i}" style="transition-delay:${i*45+80}ms"><span class="ix">0${i+1}</span><span class="lbl">${n.l}</span></button></li>`).join('');
 hydrateIcons();
 
@@ -704,9 +708,21 @@ modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(); });
 mp.addEventListener('click',e=>e.stopPropagation());
 $('#mClose').onclick=closeModal; $('#mDone').onclick=closeModal; $('#navClose').onclick=()=>closeMenu();
 $('#mForm').addEventListener('submit',e=>{
-  e.preventDefault(); const b=$('#mSend'); b.textContent='Versturen…';
-  // TODO: koppel hier een echt endpoint (Formspree, mailto, …) met fetch(); nu is het een stub.
-  setTimeout(()=>{ b.textContent='Verstuur aanvraag'; mp.classList.add('ok'); },800);
+  e.preventDefault();
+  const form=e.currentTarget, b=$('#mSend'), btn=form.querySelector('[type=submit]');
+  const payload={}; new FormData(form).forEach((v,k)=>payload[k]=v);
+  payload._subject='Nieuwe aanvraag via sbmusic.be/nieuw'; payload._template='table'; payload._captcha='false';
+  btn.disabled=true; b.textContent='Versturen…'; $('#mErr').hidden=true;
+  fetch('https://formsubmit.co/ajax/hey@sbmusic.be',{
+    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(payload)
+  }).then(r=>{ if(!r.ok) throw new Error('mislukt'); return r.json(); })
+    .then(()=>{ mp.classList.add('ok'); })
+    .catch(()=>{
+      const body=`Naam: ${payload.naam}\nE-mail: ${payload.email}\nDatum & soort event: ${payload.event}\n\n${payload.bericht}`;
+      const a=$('#mErrLink'); a.href='mailto:hey@sbmusic.be?subject='+encodeURIComponent('Aanvraag via sbmusic.be')+'&body='+encodeURIComponent(body);
+      $('#mErr').hidden=false;
+    })
+    .finally(()=>{ btn.disabled=false; b.textContent='Verstuur aanvraag'; });
 });
 document.addEventListener('click',e=>{
   const n=e.target.closest('[data-nav]');
