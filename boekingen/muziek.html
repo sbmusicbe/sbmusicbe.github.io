@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Jullie muziek</title>
 <meta name="theme-color" content="#faf6ef">
+<script src="sync-config.js"></script>
 <link rel="icon" href="../assets/logo-sb-black.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,6 +39,8 @@ button,.btn{border:1px solid var(--line);background:var(--panel);color:var(--tex
 .err{color:var(--red);font-size:14px}
 label{font-size:13px;color:var(--muted);display:block;margin:6px 0 2px}
 .empty{color:var(--muted);font-size:14px;padding:6px 0}
+.tag{font-size:12px;font-weight:600;border-radius:999px;padding:1px 9px;background:var(--honey-soft)}.tag.no{color:var(--red)}
+#sync{font-size:13px;color:var(--muted);margin:0 0 8px}
 </style>
 </head>
 <body>
@@ -45,14 +48,16 @@ label{font-size:13px;color:var(--muted);display:block;margin:6px 0 2px}
   <p class="sub" id="dj" style="margin:0"></p>
   <h1 id="h">Jullie muziek</h1>
   <p class="sub" id="intro">Vul hier de muziek in voor jullie feest. Alles wordt op dit toestel bewaard tot je op “Verstuur” drukt. Je mag het later nog aanpassen en opnieuw versturen.</p>
+  <p id="sync" hidden></p>
   <div id="sections"></div>
 
   <div class="card"><h2>Momenten van de dag</h2><p class="sub">Openingsdans, speeches, taart, laatste nummer… met een uur en eventueel een nummer.</p><div id="mom"></div><button id="addMom">+ Moment</button></div>
   <div class="card"><h2>Playlist</h2><p class="sub">Plak hier een link naar een Spotify-, Apple Music- of Beatsource-playlist met jullie favorieten.</p><input id="pl" type="url" placeholder="https://open.spotify.com/playlist/…" inputmode="url"></div>
-  <div class="card"><h2>Samen invullen</h2><p class="sub">Stuur deze pagina door naar je partner, familie of vrienden. Iedereen vult op zijn eigen gsm in en deelt daarna een code; plak die hieronder om lijsten samen te voegen.</p>
+  <div class="card" id="codeCard"><h2>Samen invullen</h2><p class="sub">Stuur deze pagina door naar je partner, familie of vrienden. Iedereen vult op zijn eigen gsm in en deelt daarna een code; plak die hieronder om lijsten samen te voegen.</p>
     <div class="row"><button id="copy">📋 Kopieer mijn code</button></div><label for="paste">Code van iemand anders</label><div class="row"><input id="paste" placeholder="SBM1:…"><button id="merge">Voeg samen</button></div><div id="mmsg" class="sub"></div></div>
+  <div class="card" id="shareCard" hidden><h2>Samen invullen</h2><p class="sub">Iedereen met deze link kan meewerken, en je ziet elkaars wijzigingen vanzelf verschijnen. Stuur ze door naar je partner, familie of vrienden.</p><button id="copyLink">🔗 Kopieer link</button></div>
   <div class="card"><h2>Versturen</h2><label for="naam">Jouw naam</label><input id="naam" autocomplete="name"><label for="mail">E-mail (optioneel, voor een antwoord)</label><input id="mail" type="email" autocomplete="email">
-    <p class="sub" style="margin-top:10px">Je lijst wordt per e-mail naar de DJ gestuurd (via FormSubmit). Zie de <a href="../privacyverklaring.html">privacyverklaring</a>.</p></div>
+    <p class="sub" style="margin-top:10px" id="sendInfo">Je lijst wordt per e-mail naar de DJ gestuurd (via FormSubmit). Zie de <a href="../privacyverklaring.html">privacyverklaring</a>.</p></div>
   <div id="done" class="ok" hidden>✓ Verstuurd! De DJ heeft je lijst ontvangen. Je kan nog aanpassen en opnieuw versturen.</div>
   <div id="fail" class="err" hidden>Versturen lukt niet. <a id="fallback" href="#">Verstuur via je mailprogramma</a></div>
 </main>
@@ -62,51 +67,78 @@ label{font-size:13px;color:var(--muted);display:block;margin:6px 0 2px}
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const b64=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 const unb=s=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0))));
+const uid=()=>crypto.randomUUID().slice(0,12),now=()=>Date.now(),cap=(s,n=120)=>String(s??"").slice(0,n);
 let P={};try{P=unb(new URLSearchParams(location.search).get("d")||"")||{}}catch(e){}
-const ID=String(P.id||"algemeen").replace(/\W/g,"").slice(0,24),SK="sbm.muziek."+ID;
-const cap=(s,n=120)=>String(s??"").slice(0,n);
-let M={req:[],must:[],nogo:[],mom:[],pl:"",naam:"",mail:""};
+const ID=String(P.id||"algemeen").replace(/\W/g,"").slice(0,24),SK="sbm.muziek.v2."+ID;
+const SY=window.SB_SYNC||{},cloud=!!(SY.url&&SY.key&&P.tok&&String(P.tok).length>=16);
+const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,Authorization:"Bearer "+SY.key,"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
+const LISTS=["req","must","nogo","mom"];
+let M={req:[],must:[],nogo:[],mom:[],pl:"",plTs:0,naam:"",mail:""};
 try{M={...M,...JSON.parse(localStorage.getItem(SK)||"{}")}}catch(e){}
-if(!M.mom.length&&Array.isArray(P.m))M.mom=P.m.slice(0,30).map(m=>({tijd:cap(m.tijd,5),omschr:cap(m.omschr),nummer:cap(m.nummer)}));
+LISTS.forEach(k=>M[k].forEach(x=>{x.id??=uid();x.ts??=1}));
+if(!M.mom.length&&Array.isArray(P.m))M.mom=P.m.slice(0,30).map(m=>({id:uid(),ts:1,tijd:cap(m.tijd,5),omschr:cap(m.omschr),nummer:cap(m.nummer)}));
 const save=()=>{try{localStorage.setItem(SK,JSON.stringify(M))}catch(e){}};
+const live=k=>M[k].filter(x=>!x.del);
+const mergeL=(a=[],b=[])=>{const m=new Map();[...a,...b].forEach(x=>{if(!x||!x.id)return;const o=m.get(x.id);if(!o||(x.ts||0)>(o.ts||0))m.set(x.id,x)});return[...m.values()].slice(0,400)};
+const sane=x=>({...x,t:cap(x.t),a:cap(x.a),tijd:cap(x.tijd,5),omschr:cap(x.omschr),nummer:cap(x.nummer),id:cap(x.id,40)});
+function apply(d){const before=JSON.stringify([M.req,M.must,M.nogo,M.mom,M.pl]);
+  LISTS.forEach(k=>{M[k]=mergeL(M[k],(d[k]||[]).map(sane))});
+  if((d.pl?.ts||0)>M.plTs){M.pl=cap(d.pl.v,300);M.plTs=d.pl.ts}
+  return before!==JSON.stringify([M.req,M.must,M.nogo,M.mom,M.pl])}
+const toDoc=()=>({v:2,req:M.req,must:M.must,nogo:M.nogo,mom:M.mom,pl:{v:M.pl,ts:M.plTs}});
+const setSync=t=>{const e=$("#sync");e.hidden=false;e.textContent=t};
+let pushT,busy=false;
+async function push(){busy=true;setSync("Opslaan…");
+  try{const d=await rpc("muziek_get",{p_token:P.tok});if(d)apply(d);await rpc("muziek_set",{p_token:P.tok,p_data:toDoc()});save();setSync("☁ Gesynchroniseerd met de DJ")}
+  catch(e){setSync("⚠ Geen verbinding. Wijzigingen blijven op dit toestel en worden later opnieuw geprobeerd.");pushT=setTimeout(push,15000)}
+  busy=false;draw()}
+const changed=()=>{save();if(cloud){clearTimeout(pushT);pushT=setTimeout(push,700)}};
+if(cloud){$("#codeCard").hidden=true;$("#shareCard").hidden=false;$("#sendInfo").textContent="Alles wat je invult wordt automatisch gedeeld met de DJ. Met “Verstuur” stuur je hem daarnaast een e-mailmelding (via FormSubmit). Zie de privacyverklaring.";
+  $("#sendInfo").insertAdjacentHTML("beforeend"," ");
+  rpc("muziek_get",{p_token:P.tok}).then(d=>{if(d&&apply(d)){save();draw()}setSync("☁ Gesynchroniseerd met de DJ");if(!d)push()}).catch(()=>setSync("⚠ Geen verbinding met de server."));
+  setInterval(async()=>{if(document.hidden||busy)return;const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;try{const d=await rpc("muziek_get",{p_token:P.tok});if(d&&apply(d)){save();draw()}}catch(e){}},8000)}
 $("#dj").textContent=P.dj||"SB — Allround DJ";
 if(P.k||P.dat){const d=P.dat?new Date(P.dat+"T12:00").toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"";$("#h").textContent=(P.k?`Hoi ${cap(P.k,40)}! `:"")+"Jullie muziek";$("#intro").textContent=`${P.ev?cap(P.ev,40)+" ":""}${d?"op "+d+". ":""}`+$("#intro").textContent}
 const SEC=[["req","Verzoeknummers","Nummers die je graag hoort. Ik probeer ze op het juiste moment te draaien."],["must","Must-plays","Deze nummers mogen niet ontbreken."],["nogo","Do-not-plays","Deze nummers of artiesten wil je absoluut niet horen."]];
 const links=s=>{const q=encodeURIComponent(((s.t||"")+" "+(s.a||"")).trim());return `<a class="btn sm" target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}" title="Zoek op Spotify">Spotify</a> <a class="btn sm" target="_blank" rel="noopener" href="https://music.apple.com/search?term=${q}" title="Zoek op Apple Music">Apple</a>`};
+const badge=s=>s.status==="Goedgekeurd"?'<span class="tag">✓ Goedgekeurd</span>':s.status==="Afgewezen"?'<span class="tag no">Kan de DJ niet draaien</span>':"";
 function draw(){
   $("#sections").innerHTML=SEC.map(([k,t,h])=>`<div class="card"><h2>${t}</h2><p class="sub">${h}</p>
   <div class="add"><input data-k="${k}" data-f="t" placeholder="Titel" aria-label="Titel"><input data-k="${k}" data-f="a" placeholder="Artiest" aria-label="Artiest"><button class="pri" data-add="${k}">Toevoegen</button></div>
-  ${M[k].map((s,i)=>`<div class="item"><div class="t"><b>${esc(s.t)}</b><span>${esc(s.a)}</span></div>${links(s)}<button class="x" data-del="${k}" data-i="${i}" aria-label="Verwijder">×</button></div>`).join("")||'<div class="empty">Nog niets toegevoegd.</div>'}</div>`).join("");
-  $("#mom").innerHTML=M.mom.map((m,i)=>`<div class="mom"><input type="time" data-m="${i}" data-f="tijd" value="${esc(m.tijd)}" aria-label="Uur"><input data-m="${i}" data-f="omschr" value="${esc(m.omschr)}" placeholder="Moment" aria-label="Moment"><input data-m="${i}" data-f="nummer" value="${esc(m.nummer)}" placeholder="Nummer" aria-label="Nummer"><button class="x" data-delm="${i}" aria-label="Verwijder">×</button></div>`).join("")||'<div class="empty">Nog geen momenten.</div>';
+  ${live(k).map(s=>`<div class="item"><div class="t"><b>${esc(s.t)}</b><span>${esc(s.a)}</span> ${badge(s)}</div>${links(s)}<button class="x" data-del="${esc(s.id)}" data-k="${k}" aria-label="Verwijder">×</button></div>`).join("")||'<div class="empty">Nog niets toegevoegd.</div>'}</div>`).join("");
+  $("#mom").innerHTML=live("mom").map(m=>`<div class="mom"><input type="time" data-m="${esc(m.id)}" data-f="tijd" value="${esc(m.tijd)}" aria-label="Uur"><input data-m="${esc(m.id)}" data-f="omschr" value="${esc(m.omschr)}" placeholder="Moment" aria-label="Moment"><input data-m="${esc(m.id)}" data-f="nummer" value="${esc(m.nummer)}" placeholder="Nummer" aria-label="Nummer"><button class="x" data-delm="${esc(m.id)}" aria-label="Verwijder">×</button></div>`).join("")||'<div class="empty">Nog geen momenten.</div>';
   $("#pl").value=M.pl;$("#naam").value=M.naam;$("#mail").value=M.mail;
 }
 document.addEventListener("click",e=>{
   const a=e.target.closest("[data-add]");
   if(a){const k=a.dataset.add,t=$(`input[data-k=${k}][data-f=t]`),ar=$(`input[data-k=${k}][data-f=a]`);if(!t.value.trim()){t.focus();return}
-    if(M[k].length<200)M[k].push({t:cap(t.value.trim()),a:cap(ar.value.trim())});save();draw();$(`input[data-k=${k}][data-f=t]`).focus();return}
-  const d=e.target.closest("[data-del]");if(d){M[d.dataset.del].splice(+d.dataset.i,1);save();draw();return}
-  const dm=e.target.closest("[data-delm]");if(dm){M.mom.splice(+dm.dataset.delm,1);save();draw()}
+    if(live(k).length<200)M[k].push({id:uid(),ts:now(),t:cap(t.value.trim()),a:cap(ar.value.trim()),door:"klant"});changed();draw();$(`input[data-k=${k}][data-f=t]`).focus();return}
+  const d=e.target.closest("[data-del]");if(d){const x=M[d.dataset.k].find(y=>y.id===d.dataset.del);if(x){x.del=true;x.ts=now()}changed();draw();return}
+  const dm=e.target.closest("[data-delm]");if(dm){const x=M.mom.find(y=>y.id===dm.dataset.delm);if(x){x.del=true;x.ts=now()}changed();draw()}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset.k){e.preventDefault();$(`[data-add=${e.target.dataset.k}]`).click()}});
 document.addEventListener("input",e=>{const el=e.target;
-  if(el.dataset.m!==undefined){M.mom[+el.dataset.m][el.dataset.f]=cap(el.value);save()}
-  else if(el.id==="pl"){M.pl=cap(el.value,300);save()}else if(el.id==="naam"){M.naam=cap(el.value,80);save()}else if(el.id==="mail"){M.mail=cap(el.value,120);save()}});
-$("#addMom").onclick=()=>{if(M.mom.length<30)M.mom.push({tijd:"",omschr:"",nummer:""});save();draw()};
-const code=()=>"SBM1:"+b64({v:1,id:ID,n:M.naam,req:M.req,must:M.must,nogo:M.nogo,mom:M.mom,pl:M.pl});
-$("#copy").onclick=()=>{navigator.clipboard?.writeText(code()).then(()=>$("#mmsg").textContent="Code gekopieerd. Stuur ze door via WhatsApp of mail.").catch(()=>prompt("Kopieer deze code:",code()))||prompt("Kopieer deze code:",code())};
+  if(el.dataset.m!==undefined){const x=M.mom.find(y=>y.id===el.dataset.m);if(x){x[el.dataset.f]=cap(el.value);x.ts=now()}changed()}
+  else if(el.id==="pl"){M.pl=cap(el.value,300);M.plTs=now();changed()}else if(el.id==="naam"){M.naam=cap(el.value,80);save()}else if(el.id==="mail"){M.mail=cap(el.value,120);save()}});
+$("#addMom").onclick=()=>{if(live("mom").length<30)M.mom.push({id:uid(),ts:now(),tijd:"",omschr:"",nummer:""});changed();draw()};
+const strip=k=>live(k).map(s=>({t:s.t,a:s.a}));
+const code=()=>"SBM1:"+b64({v:1,id:ID,n:M.naam,req:strip("req"),must:strip("must"),nogo:strip("nogo"),mom:live("mom").map(m=>({tijd:m.tijd,omschr:m.omschr,nummer:m.nummer})),pl:M.pl});
+const copyTxt=(t,msg)=>{(navigator.clipboard?navigator.clipboard.writeText(t).then(()=>msg&&($("#mmsg").textContent=msg)):Promise.reject()).catch(()=>prompt("Kopieer dit:",t))};
+$("#copy").onclick=()=>copyTxt(code(),"Code gekopieerd. Stuur ze door via WhatsApp of mail.");
+$("#copyLink").onclick=()=>{copyTxt(location.href);$("#copyLink").textContent="✓ Gekopieerd"};
 $("#merge").onclick=()=>{
   const m=$("#paste").value.match(/SBM1:([A-Za-z0-9_-]+)/);if(!m){$("#mmsg").textContent="Geen geldige code gevonden.";return}
   let o;try{o=unb(m[1])}catch(e){$("#mmsg").textContent="Code onleesbaar.";return}if(o.v!==1){$("#mmsg").textContent="Onbekende code.";return}
-  let n=0;const has=(k,s)=>M[k].some(x=>x.t.toLowerCase()===s.t.toLowerCase()&&x.a.toLowerCase()===s.a.toLowerCase());
-  for(const k of["req","must","nogo"])(o[k]||[]).slice(0,200).forEach(s=>{const c={t:cap(s.t),a:cap(s.a)};if(c.t&&!has(k,c)&&M[k].length<200){M[k].push(c);n++}});
-  (o.mom||[]).slice(0,30).forEach(x=>{const c={tijd:cap(x.tijd,5),omschr:cap(x.omschr),nummer:cap(x.nummer)};if((c.omschr||c.nummer)&&!M.mom.some(y=>y.tijd===c.tijd&&y.omschr===c.omschr)){M.mom.push(c);n++}});
-  if(!M.pl&&o.pl)M.pl=cap(o.pl,300);save();draw();$("#paste").value="";$("#mmsg").textContent=`${n} item(s) toegevoegd.`};
-function summary(){const L=(t,a)=>a.length?`\n${t}:\n`+a.map(s=>`- ${s.t}${s.a?" — "+s.a:""}`).join("\n"):"";
-  return `Muziek van ${M.naam||P.k||"klant"} (${P.dat||"datum onbekend"}${P.ev?", "+P.ev:""})\n`+L("Verzoeknummers",M.req)+L("Must-plays",M.must)+L("Do-not-plays",M.nogo)+(M.mom.length?"\nMomenten:\n"+M.mom.map(m=>`- ${m.tijd||"?"} ${m.omschr}${m.nummer?" ("+m.nummer+")":""}`).join("\n"):"")+(M.pl?`\n\nPlaylist: ${M.pl}`:"")}
+  let n=0;const has=(k,s)=>live(k).some(x=>x.t.toLowerCase()===s.t.toLowerCase()&&x.a.toLowerCase()===s.a.toLowerCase());
+  for(const k of["req","must","nogo"])(o[k]||[]).slice(0,200).forEach(s=>{const c={t:cap(s.t),a:cap(s.a)};if(c.t&&!has(k,c)&&live(k).length<200){M[k].push({id:uid(),ts:now(),...c});n++}});
+  (o.mom||[]).slice(0,30).forEach(x=>{const c={tijd:cap(x.tijd,5),omschr:cap(x.omschr),nummer:cap(x.nummer)};if((c.omschr||c.nummer)&&!live("mom").some(y=>y.tijd===c.tijd&&y.omschr===c.omschr)){M.mom.push({id:uid(),ts:now(),...c});n++}});
+  if(!M.pl&&o.pl){M.pl=cap(o.pl,300);M.plTs=now()}changed();draw();$("#paste").value="";$("#mmsg").textContent=`${n} item(s) toegevoegd.`};
+function summary(){const L=(t,k)=>live(k).length?`\n${t}:\n`+live(k).map(s=>`- ${s.t}${s.a?" — "+s.a:""}`).join("\n"):"";
+  return `Muziek van ${M.naam||P.k||"klant"} (${P.dat||"datum onbekend"}${P.ev?", "+P.ev:""})\n`+L("Verzoeknummers","req")+L("Must-plays","must")+L("Do-not-plays","nogo")+(live("mom").length?"\nMomenten:\n"+live("mom").map(m=>`- ${m.tijd||"?"} ${m.omschr}${m.nummer?" ("+m.nummer+")":""}`).join("\n"):"")+(M.pl?`\n\nPlaylist: ${M.pl}`:"")}
 $("#send").onclick=()=>{
   const btn=$("#send");$("#fail").hidden=true;$("#done").hidden=true;
-  if(!M.req.length&&!M.must.length&&!M.nogo.length&&!M.mom.length&&!M.pl){alert("Voeg eerst iets toe.");return}
-  const payload={naam:M.naam||P.k||"Klant",email:M.mail||"",event:`${P.dat||""} ${P.ev||""}`.trim(),bericht:summary(),code:code(),_subject:`Muziek ingevuld: ${M.naam||P.k||"klant"} ${P.dat||""}`,_template:"table",_captcha:"false"};
+  if(!live("req").length&&!live("must").length&&!live("nogo").length&&!live("mom").length&&!M.pl){alert("Voeg eerst iets toe.");return}
+  const payload={naam:M.naam||P.k||"Klant",email:M.mail||"",event:`${P.dat||""} ${P.ev||""}`.trim(),bericht:summary(),code:cloud?"(live gesynchroniseerd)":code(),_subject:`Muziek ingevuld: ${M.naam||P.k||"klant"} ${P.dat||""}`,_template:"table",_captcha:"false"};
   if(M.mail)payload._replyto=M.mail;
   btn.disabled=true;btn.textContent="Versturen…";
   fetch("https://formsubmit.co/ajax/hey@sbmusic.be",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)})
