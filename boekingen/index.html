@@ -150,14 +150,14 @@ body.locked .app{visibility:hidden}
 
 <script>
 const STATUS={aanvraag:"Aanvraag",offerte:"Offerte verstuurd",optie:"Optie (hold)",geboekt:"Geboekt",afgerond:"Afgerond",verloren:"Verloren"};
-const VIEWS={overzicht:"Overzicht",crm:"CRM",agenda:"Planning",offertes:"Offertes",contracten:"Contracten",facturen:"Facturen",betalingen:"Betalingen",rapporten:"Rapporten",instellingen:"Instellingen",zoek:"Zoeken"};
-const NAV=[["Werk",["overzicht","crm","agenda"]],["Documenten",["offertes","contracten","facturen","betalingen"]],["Inzicht",["rapporten"]],["",["instellingen"]]],ICON={overzicht:"🏠",crm:"👥",agenda:"📅",offertes:"📝",contracten:"✍️",facturen:"🧾",betalingen:"💶",rapporten:"📊",instellingen:"⚙️"};
+const VIEWS={overzicht:"Overzicht",crm:"CRM",agenda:"Planning",offertes:"Offertes",contracten:"Contracten",facturen:"Facturen",betalingen:"Betalingen",rapporten:"Rapporten",instellingen:"Instellingen",zoek:"Zoeken",materiaal:"Materiaal",team:"Team"};
+const NAV=[["Werk",["overzicht","crm","agenda"]],["Documenten",["offertes","contracten","facturen","betalingen"]],["Bedrijf",["materiaal","team"]],["Inzicht",["rapporten"]],["",["instellingen"]]],ICON={overzicht:"🏠",crm:"👥",agenda:"📅",offertes:"📝",contracten:"✍️",facturen:"🧾",betalingen:"💶",rapporten:"📊",materiaal:"🎛️",team:"🧑‍🤝‍🧑",instellingen:"⚙️"};
 const CTYPES=["Venue","Promotor","Boeker","Leverancier","Klant"];
 const TYPES=["Privéfeest","Bruiloft","Club","Festival","Bedrijfsfeest","Andere"],BRON=["Website","Instagram","TikTok","Doorverwezen","Eerdere klant","Andere"];
 const Q=[["aankomst","Hoe laat kan ik opbouwen en waar kan ik laden/parkeren?"],["gasten","Hoeveel gasten verwacht je?"],["genres","Welke muziek/artiesten wil je zeker horen?"],["nogo","Wat mag ik absoluut niet draaien?"],["momenten","Speciale momenten (openingsdans, speeches, taart…) en hoe laat?"],["mc","Mag ik af en toe de micro nemen (aankondigingen)?"],["tech","Is er stroom, ruimte en geluid? Contactpersoon ter plaatse + gsm?"]];
 const KEY="sb.boekingen.v1";
 const defaults=()=>({
-  firma:{naam:"SB — Allround DJ",adres:"",btw:"",iban:"",email:"hey@sbmusic.be",tel:"",btwPct:0,btwNota:"Vrijgesteld van btw (kleine onderneming).",termijn:14,voorschotPct:25,betaallink:"",handtekening:"Groeten,\nSB — Allround DJ"},
+  firma:{naam:"SB — Allround DJ",adres:"",btw:"",iban:"",email:"hey@sbmusic.be",tel:"",btwPct:0,btwNota:"Vrijgesteld van btw (kleine onderneming).",termijn:14,voorschotPct:25,betaallink:"",kmTarief:0.5,handtekening:"Groeten,\nSB — Allround DJ"},
   diensten:[{id:"d1",naam:"DJ-set (4 uur)",prijs:0,omschr:"Allround set, afgestemd op de zaal"},{id:"d2",naam:"Extra uur",prijs:0,omschr:""},{id:"d3",naam:"Geluid & licht",prijs:0,omschr:"Professionele installatie"},{id:"d4",naam:"Verplaatsingskosten",prijs:0,omschr:""}],
   mails:{
     offerte:{o:"Offerte DJ — {{datum}}",b:"Hoi {{voornaam}},\n\nBedankt voor je aanvraag! Hierbij mijn offerte voor je {{type}} op {{datum}} (locatie: {{locatie}}).\n\nTotaal: {{totaal}}\nGeldig tot: {{geldigtot}}\n\nPas je akkoord? Laat het me weten, dan stuur ik het contract en de factuur voor het voorschot.\n\n{{handtekening}}"},
@@ -178,9 +178,9 @@ const defaults=()=>({
     geboekt:[{t:"Contract laten ondertekenen",dagen:2,rel:"nu"},{t:"Voorschot ontvangen",dagen:7,rel:"nu"},{t:"Vragenlijst/muziekwensen opvragen",dagen:-21,rel:"event"},{t:"Saldofactuur sturen",dagen:-14,rel:"event"},{t:"Technische info bevestigen met locatie",dagen:-7,rel:"event"},{t:"Materiaal en USB controleren",dagen:-1,rel:"event"}],
     afgerond:[{t:"Bedankmail + review vragen",dagen:1,rel:"event"}]
   },
-  uitgaven:[],block:[],teller:{jaar:0,n:0},contacten:[],advancing:["Stroom (230V) en opstelplaats bevestigd","DJ-booth/tafel en afmetingen","Geluid/monitoren aanwezig of meegebracht","Laadroute en parkeren","Contactpersoon ter plaatse + gsm","Set-uren en eventuele speeches bevestigd","Hospitality (drank/eten)","Facturatie- en betaalinfo bevestigd"]
+  uitgaven:[],block:[],teller:{jaar:0,n:0},materiaal:[{id:"m1",naam:"DJ-controller / CDJ-set",cat:"DJ",aantal:1},{id:"m2",naam:"Speakers (per stuk)",cat:"Geluid",aantal:2},{id:"m3",naam:"Subwoofer",cat:"Geluid",aantal:1},{id:"m4",naam:"Lichtset",cat:"Licht",aantal:1},{id:"m5",naam:"Draadloze micro",cat:"Geluid",aantal:1}],team:[],advancing:["Stroom (230V) en opstelplaats bevestigd","DJ-booth/tafel en afmetingen","Geluid/monitoren aanwezig of meegebracht","Laadroute en parkeren","Contactpersoon ter plaatse + gsm","Set-uren en eventuele speeches bevestigd","Hospitality (drank/eten)","Facturatie- en betaalinfo bevestigd"]
 });
-let D=[],S=defaults(),E=null,editing=null,tab="gegevens",view="overzicht",crmTab="pijplijn",gsq="",prevView="overzicht",cal=new Date(),q="",fs="";
+let D=[],S=defaults(),E=null,editing=null,tab="gegevens",view="overzicht",crmTab="pijplijn",gsq="",prevView="overzicht",gearDay="",cal=new Date(),q="",fs="";
 try{view=localStorage.getItem(KEY+".view")||view;if(!VIEWS[view])view="overzicht"}catch(e){}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -210,7 +210,7 @@ function load(p){
   D=(Array.isArray(p)?p:p.D||[]).map(ensure);
 }
 function ensure(b){
-  b.items??=[];b.adv??=[];b.kosten??=[];b.taken??=[];b.vragen??={};b.auto??={};
+  b.gear??=[];b.crew??=[];b.muziek??={must:"",nogo:"",momenten:[]};b.items??=[];b.adv??=[];b.kosten??=[];b.taken??=[];b.vragen??={};b.auto??={};
   if(!b.betalingen){b.betalingen=[];const t=num(b.prijs),v=num(b.voorschot);
     if(v)b.betalingen.push({id:uid(),label:"Voorschot",bedrag:v,due:"",betaald:b.voorschotBetaald?(b.datum||today()):""});
     if(t-v>0)b.betalingen.push({id:uid(),label:"Saldo",bedrag:t-v,due:b.datum?addDays(b.datum,-7):"",betaald:b.saldoBetaald?(b.datum||today()):""})}
@@ -225,7 +225,13 @@ const owed=b=>Math.max(0,r2(tot(b)-paid(b)));
 const open=b=>["geboekt","afgerond"].includes(b.status)?owed(b):0;
 const overdue=b=>b.betalingen.filter(p=>!p.betaald&&p.due&&p.due<today()&&["geboekt","afgerond"].includes(b.status));
 const conflicts=b=>D.filter(o=>o.id!==b.id&&o.datum&&o.datum===b.datum&&["geboekt","offerte","optie"].includes(o.status)&&["geboekt","offerte","optie"].includes(b.status));
-const kosten=b=>r2(b.kosten.reduce((s,k)=>s+num(k.bedrag),0)),winst=b=>r2(net(b)-kosten(b));
+const crewKost=b=>r2(b.crew.reduce((s,c)=>s+num(c.fee),0)),kosten=b=>r2(b.kosten.reduce((s,k)=>s+num(k.bedrag),0)+crewKost(b)),winst=b=>r2(net(b)-kosten(b));
+const teamName=id=>S.team.find(t=>t.id===id)?.naam||"?",gearName=id=>S.materiaal.find(m=>m.id===id)?.naam||"?";
+const busy=(b,d)=>D.filter(o=>o.id!==b.id&&o.datum===d&&["geboekt","optie"].includes(o.status));
+function issues(b){const out=[];if(!b.datum)return out;
+  b.gear.forEach(g=>{const m=S.materiaal.find(x=>x.id===g.id);if(!m)return;const used=busy(b,b.datum).reduce((s,o)=>s+o.gear.filter(x=>x.id===g.id).reduce((a,x)=>a+num(x.aantal),0),0);
+    if(used+num(g.aantal)>num(m.aantal))out.push(`${m.naam}: ${used+num(g.aantal)} nodig, maar ${num(m.aantal)} beschikbaar`)});
+  b.crew.forEach(c=>{const o=busy(b,b.datum).find(x=>x.crew.some(y=>y.id===c.id));if(o)out.push(`${teamName(c.id)} staat die dag ook bij ${o.klant}`)});return out}
 const blocked=d=>S.block.find(x=>x.d===d);
 function ogm(nr){const n=+(nr.replace(/\D/g,"")||0),c=n%97||97,s=String(n).padStart(10,"0")+String(c).padStart(2,"0");return `+++${s.slice(0,3)}/${s.slice(3,7)}/${s.slice(7)}+++`}
 function nextNr(){const y=new Date().getFullYear();if(S.teller.jaar!==y)S.teller={jaar:y,n:0};S.teller.n++;return `${y}-${String(S.teller.n).padStart(3,"0")}`}
@@ -267,11 +273,13 @@ const DOC={
     `<table><tr><th>Betaling</th><th>Vervaldatum</th><th class="n">Bedrag</th><th>Status</th></tr>${b.betalingen.map(p=>`<tr><td>${esc(p.label)}</td><td>${p.due?fmt(p.due):""}</td><td class="n">${eur(p.bedrag)}</td><td>${p.betaald?"Betaald "+fmt(p.betaald):"Open"}</td></tr>`).join("")}</table>
     <div class="box"><b>Nog te betalen: ${eur(owed(b))}</b><br>IBAN: ${esc(f.iban)||"(vul in bij Instellingen)"}<br>Mededeling: ${ogm(b.factuurnr)}${f.betaallink?`<br>Online: ${esc(f.betaallink)}`:""}</div>`)},
   dagplanning(b){const v=S.contacten.find(c=>c.id===b.venueId),T=(l,x)=>x?`<tr><td><b>${l}</b></td><td>${esc(x)}</td></tr>`:"";
-    docWin("Dagplanning "+b.klant,head(b,"Dagplanning",`<div>${fmt(b.datum)}</div>`)+`<table>${T("Opbouw / laden",b.laden)}${T("Soundcheck",b.soundcheck)}${T("Set",(b.van||"?")+" – "+(b.tot||"?"))}${T("Afbouw",b.afbouw)}${T("Locatie",(v?v.naam+", ":"")+(b.locatie||""))}${T("Adres",b.adres)}${T("Contact ter plaatse",(b.ctNaam||"")+" "+(b.ctTel||""))}${T("Parkeren / laden",b.parkeren)}${T("Reis",b.reis)}${T("Overnachting",b.hotel)}</table>
+    docWin("Dagplanning "+b.klant,head(b,"Dagplanning",`<div>${fmt(b.datum)}</div>`)+`<table>${T("Opbouw / laden",b.laden)}${T("Soundcheck",b.soundcheck)}${T("Set",(b.van||"?")+" – "+(b.tot||"?"))}${T("Afbouw",b.afbouw)}${T("Locatie",(v?v.naam+", ":"")+(b.locatie||""))}${T("Adres",b.adres)}${T("Contact ter plaatse",(b.ctNaam||"")+" "+(b.ctTel||""))}${T("Parkeren / laden",b.parkeren)}${T("Reis",b.reis)}${T("Overnachting",b.hotel)}${T("Team",b.crew.map(c=>teamName(c.id)).join(", "))}${T("Materiaal",b.gear.map(g=>g.aantal+"× "+gearName(g.id)).join(", "))}</table>
     <h3>Advancing</h3><table>${b.adv.map(a=>`<tr><td style="width:30px">${a.done?"✓":"☐"}</td><td>${esc(a.t)}</td></tr>`).join("")}</table>${b.notities?`<p>${esc(b.notities).replace(/\n/g,"<br>")}</p>`:""}`)},
   afrekening(b){docWin("Afrekening "+b.klant,head(b,"Afrekening show",`<div>${fmt(b.datum)}${b.settled?" · afgerekend "+fmt(b.settled):""}</div>`)+lines(b)+
-    `<table><tr><th>Kosten</th><th class="n">Bedrag</th></tr>${b.kosten.map(k=>`<tr><td>${esc(k.omschr)}</td><td class="n">${eur(k.bedrag)}</td></tr>`).join("")||'<tr><td colspan="2">Geen kosten</td></tr>'}<tr><td><b>Totaal kosten</b></td><td class="n"><b>${eur(kosten(b))}</b></td></tr></table>
-    <div class="box">Ontvangen: <b>${eur(paid(b))}</b> · Nog open: <b>${eur(owed(b))}</b><br>Netto resultaat (excl. btw − kosten): <b>${eur(winst(b))}</b></div>`)}
+    `<table><tr><th>Kosten</th><th class="n">Bedrag</th></tr>${b.crew.map(c=>`<tr><td>Team: ${esc(teamName(c.id))}</td><td class="n">${eur(c.fee)}</td></tr>`).join("")}${b.kosten.map(k=>`<tr><td>${esc(k.omschr)}</td><td class="n">${eur(k.bedrag)}</td></tr>`).join("")||'<tr><td colspan="2">Geen kosten</td></tr>'}<tr><td><b>Totaal kosten</b></td><td class="n"><b>${eur(kosten(b))}</b></td></tr></table>
+    <div class="box">Ontvangen: <b>${eur(paid(b))}</b> · Nog open: <b>${eur(owed(b))}</b><br>Netto resultaat (excl. btw − kosten): <b>${eur(winst(b))}</b></div>`)},
+  muziek(b){const L=t=>String(t||"").split("\n").filter(x=>x.trim()).map(x=>`<li>${esc(x)}</li>`).join("");
+    docWin("Muziekplanner "+b.klant,head(b,"Muziekplanner",`<div>${fmt(b.datum)}</div>`)+`<h3>Zeker draaien</h3><ul>${L(b.muziek.must)||"<li>–</li>"}</ul><h3>Niet draaien</h3><ul>${L(b.muziek.nogo)||"<li>–</li>"}</ul><h3>Momenten</h3><table><tr><th>Tijd</th><th>Moment</th><th>Nummer</th></tr>${b.muziek.momenten.map(m=>`<tr><td>${esc(m.tijd)}</td><td>${esc(m.omschr)}</td><td>${esc(m.nummer)}</td></tr>`).join("")||'<tr><td colspan="3">–</td></tr>'}</table>`)}
 };
 function ics(b){const d=b.datum.replace(/-/g,""),t=x=>(x||"20:00").replace(":","")+"00";
   dl(`dj-${b.datum}.ics`,`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SB//Boekingen//NL\r\nBEGIN:VEVENT\r\nUID:${b.id}@sbmusic.be\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]|\.\d+/g,"")}\r\nDTSTART:${d}T${t(b.van)}\r\nDTEND:${d}T${t(b.tot||"23:59")}\r\nSUMMARY:DJ SB — ${b.klant}\r\nLOCATION:${(b.locatie||"").replace(/[,;]/g," ")}\r\nEND:VEVENT\r\nEND:VCALENDAR`,"text/calendar")}
@@ -280,7 +288,7 @@ function dl(name,txt,type){const a=document.createElement("a");a.href=URL.create
 /* ---------- weergaven ---------- */
 function render(){
   $("#nav").innerHTML=NAV.map(([g,vs])=>(g?`<h4>${g}</h4>`:"")+vs.map(k=>`<button data-v="${k}" aria-pressed="${k===view}"><span class="i">${ICON[k]}</span>${VIEWS[k]}</button>`).join("")).join("");
-  $("#main").innerHTML=({overzicht,crm,offertes,agenda,contracten,facturen,betalingen,rapporten,instellingen,zoek})[view]();
+  $("#main").innerHTML=({overzicht,crm,offertes,agenda,contracten,facturen,betalingen,rapporten,instellingen,zoek,materiaal,team})[view]();
   if(view==="crm"&&crmTab==="pijplijn")dnd();
 }
 const rowHtml=b=>`<div class="row c" data-id="${b.id}"><div class="date"><b>${new Date(b.datum+"T12:00").getDate()}</b><small>${new Date(b.datum+"T12:00").toLocaleDateString("nl-BE",{month:"short"})}</small></div>
@@ -356,6 +364,22 @@ function venues(){
   ${S.contacten.map((c,i)=>`<tr><td><input data-r="S" data-p="contacten.${i}.naam" value="${esc(c.naam)}"></td><td><select data-r="S" data-p="contacten.${i}.type">${CTYPES.map(t=>`<option ${c.type===t?"selected":""}>${t}</option>`).join("")}</select></td>
   <td><input type="email" data-r="S" data-p="contacten.${i}.email" value="${esc(c.email)}"></td><td><input data-r="S" data-p="contacten.${i}.tel" value="${esc(c.tel)}"></td><td><input data-r="S" data-p="contacten.${i}.stad" value="${esc(c.stad)}"></td>
   <td>${D.filter(b=>b.venueId===c.id).length}</td><td><button class="x" data-act="delContact" data-i="${i}" aria-label="Verwijder">×</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">Nog geen contacten. Voeg je vaste venues en promotors toe, dan kies je ze snel bij een boeking.</td></tr>`}</table><button class="btn sm" data-act="addContact">+ Contact</button></div>`}
+function materiaal(){
+  const day=gearDay||today(),used=id=>busy({id:""},day).reduce((s,o)=>s+o.gear.filter(g=>g.id===id).reduce((a,g)=>a+num(g.aantal),0),0);
+  return `<h2>Materiaal</h2><div class="tools"><label class="chk">Beschikbaarheid op <input type="date" id="gday" value="${day}" style="border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--panel)"></label></div>
+  <div class="card tw"><table><tr><th>Naam</th><th>Categorie</th><th class="n">In bezit</th><th class="n">In gebruik</th><th class="n">Vrij</th><th></th></tr>
+  ${S.materiaal.map((m,i)=>{const u=used(m.id),v=num(m.aantal)-u;return `<tr><td><input data-r="S" data-p="materiaal.${i}.naam" value="${esc(m.naam)}"></td><td><input data-r="S" data-p="materiaal.${i}.cat" value="${esc(m.cat)}"></td>
+  <td style="width:90px"><input type="number" min="0" data-r="S" data-p="materiaal.${i}.aantal" value="${esc(m.aantal)}"></td><td class="n">${u}</td><td class="n"><span class="pill ${v<0?"warn":"ok"}">${v}</span></td><td><button class="x" data-act="delGear" data-i="${i}" aria-label="Verwijder">×</button></td></tr>`}).join("")||'<tr><td colspan="6" class="empty">Nog geen materiaal.</td></tr>'}</table>
+  <button class="btn sm" data-act="addGear">+ Materiaal</button></div><p class="hint">Koppel materiaal aan een boeking via de tab Team &amp; materiaal. Geboekte en optie-shows tellen mee; je krijgt een waarschuwing bij een tekort.</p>`}
+function team(){
+  const rows=[];D.filter(b=>b.status!=="verloren").forEach(b=>b.crew.forEach((c,i)=>rows.push({b,c,i})));rows.sort((a,c)=>c.b.datum.localeCompare(a.b.datum));
+  const due=rows.filter(r=>!r.c.betaald).reduce((s,r)=>s+num(r.c.fee),0);
+  return `<h2>Team</h2><div class="stats">${stat(S.team.length,"Teamleden")}${stat(eur(due),"Nog uit te betalen")}</div>
+  <div class="card tw"><table><tr><th>Naam</th><th>Rol</th><th>Standaardtarief (€)</th><th>E-mail</th><th>Telefoon</th><th></th></tr>
+  ${S.team.map((t,i)=>`<tr><td><input data-r="S" data-p="team.${i}.naam" value="${esc(t.naam)}"></td><td><input data-r="S" data-p="team.${i}.rol" value="${esc(t.rol)}" placeholder="DJ, geluid, chauffeur…"></td><td><input type="number" data-r="S" data-p="team.${i}.tarief" value="${esc(t.tarief)}"></td>
+  <td><input type="email" data-r="S" data-p="team.${i}.email" value="${esc(t.email)}"></td><td><input data-r="S" data-p="team.${i}.tel" value="${esc(t.tel)}"></td><td><button class="x" data-act="delTeam" data-i="${i}" aria-label="Verwijder">×</button></td></tr>`).join("")||'<tr><td colspan="6" class="empty">Nog geen teamleden. Voeg bijvoorbeeld een tweede DJ of een geluidstechnieker toe.</td></tr>'}</table><button class="btn sm" data-act="addTeam">+ Teamlid</button></div>
+  <div class="card tw"><h3>Inplanningen &amp; uitbetalingen</h3><table><tr><th>Datum</th><th>Klant</th><th>Teamlid</th><th class="n">Vergoeding</th><th>Status</th></tr>
+  ${rows.map(({b,c})=>`<tr><td>${fmt(b.datum)}</td><td>${nm(b)}</td><td>${esc(teamName(c.id))}</td><td class="n">${eur(c.fee)}</td><td>${c.betaald?`<span class="pill ok">Uitbetaald ${fmt(c.betaald)}</span> <button class="btn sm" data-act="unpayCrew" data-b="${b.id}" data-c="${c.id}">Ongedaan</button>`:`<button class="btn sm" data-act="payCrew" data-b="${b.id}" data-c="${c.id}">✓ Uitbetaald</button>`}</td></tr>`).join("")||'<tr><td colspan="5" class="empty">Nog niemand ingepland.</td></tr>'}</table></div>`}
 function offertes(){
   const rows=D.filter(b=>b.items.length||num(b.prijs)).sort((a,c)=>c.datum.localeCompare(a.datum)),won=rows.filter(b=>["geboekt","afgerond"].includes(b.status)),openO=rows.filter(b=>["aanvraag","offerte","optie"].includes(b.status));
   return `<h2>Offertes</h2><div class="stats">${stat(openO.length,"Openstaande offertes")}${stat(eur(openO.reduce((s,b)=>s+tot(b),0)),"Waarde open offertes")}${stat(won.length,"Geaccepteerd")}${stat(rows.length?Math.round(won.length/rows.length*100)+"%":"–","Acceptatie")}</div>
@@ -419,7 +443,7 @@ function instellingen(){
   return `<h2>Instellingen</h2>
   <div class="card"><h3>Bedrijfsgegevens &amp; facturatie</h3><div class="fg">${fld("S","firma.naam","Naam")}${fld("S","firma.email","E-mail","email")}${area("S","firma.adres","Adres",2)}${fld("S","firma.btw","Ondernemingsnummer / btw")}${fld("S","firma.tel","Telefoon")}${fld("S","firma.iban","IBAN")}
   ${fld("S","firma.btwPct","Btw % (0 = vrijgesteld)","number",'min="0" max="30" step="1"')}${fld("S","firma.btwNota","Vermelding bij 0% btw")}${fld("S","firma.termijn","Betalingstermijn (dagen)","number",'min="0"')}${fld("S","firma.voorschotPct","Standaard voorschot (%)","number",'min="0" max="100"')}
-  ${fld("S","firma.betaallink","Betaallink (Payconiq/Stripe/Mollie/PayPal.me)","url")}${area("S","firma.handtekening","Handtekening onder mails",3)}</div></div>
+  ${fld("S","firma.betaallink","Betaallink (Payconiq/Stripe/Mollie/PayPal.me)","url")}${fld("S","firma.kmTarief","Reiskosten per km (€)","number",'min="0" step="0.01"')}${area("S","firma.handtekening","Handtekening onder mails",3)}</div></div>
   <div class="card tw"><h3>Diensten &amp; pakketten</h3><table><tr><th>Naam</th><th>Omschrijving</th><th class="n">Prijs</th><th></th></tr>${S.diensten.map((d,i)=>`<tr><td><input data-r="S" data-p="diensten.${i}.naam" value="${esc(d.naam)}"></td><td><input data-r="S" data-p="diensten.${i}.omschr" value="${esc(d.omschr)}"></td><td><input type="number" step="1" data-r="S" data-p="diensten.${i}.prijs" value="${esc(d.prijs)}"></td><td><button class="x" data-act="delDienst" data-i="${i}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table><button class="btn sm" data-act="addDienst">+ Dienst</button><p class="hint">De prijzen zijn voorbeelden: vul je eigen tarieven in.</p></div>
   <div class="card"><h3>E-mailsjablonen</h3><p class="hint">Velden: {{voornaam}} {{klant}} {{datum}} {{type}} {{locatie}} {{van}} {{einde}} {{totaal}} {{voorschot}} {{open}} {{geldigtot}} {{factuurnr}} {{ogm}} {{betaallink}} {{vragen}} {{advancing}} {{handtekening}}</p>
   ${Object.entries(MK).map(([k,v])=>`<details><summary>${v}</summary><div class="fg" style="margin-top:8px">${fld("S",`mails.${k}.o`,"Onderwerp")}<span></span>${area("S",`mails.${k}.b`,"Bericht",7)}</div></details>`).join("")}</div>
@@ -432,7 +456,7 @@ function instellingen(){
 }
 
 /* ---------- boeking-dialog ---------- */
-const TABS={gegevens:"Gegevens",offerte:"Offerte",contract:"Contract",betalingen:"Betalingen",planning:"Planning",show:"Show",afrekening:"Afrekening"};
+const TABS={gegevens:"Gegevens",offerte:"Offerte",contract:"Contract",betalingen:"Betalingen",planning:"Planning",team:"Team & materiaal",muziek:"Muziek",show:"Show",afrekening:"Afrekening"};
 function modal(h){$("#dlg2").innerHTML=h;$("#dlg2").showModal()}
 function parseLead(t){const m={};t.split(/\r?\n/).forEach(l=>{const x=l.match(/^\s*([^:]{2,30}):\s*(.+)$/);if(x)m[x[1].trim().toLowerCase()]=x[2].trim()});
   const g=(...k)=>{for(const key of k){const f=Object.keys(m).find(z=>z.includes(key));if(f)return m[f]}return ""};
@@ -467,6 +491,14 @@ function drawDlg(){
     <h3 style="margin-top:16px">Taken</h3><div class="tw"><table>${b.taken.map((t,n)=>`<tr><td style="width:36px"><input type="checkbox" data-r="E" data-p="taken.${n}.done" ${t.done?"checked":""}></td><td><input data-r="E" data-p="taken.${n}.t" value="${esc(t.t)}"></td><td style="width:150px"><input type="date" data-r="E" data-p="taken.${n}.due" value="${esc(t.due)}"></td><td><button class="x" data-act="delTask" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div><button class="btn sm" data-act="addTask">+ Taak</button>
     <h3 style="margin-top:16px">Vragenlijst muziek &amp; praktisch</h3><div class="fg">${Q.map(([k,v])=>area("E","vragen."+k,esc(v),2)).join("")}</div>
     <div class="df" style="border:0;padding:8px 0 0"><a class="btn sm" href="${mail("vragenlijst",b)}" data-act="mailnote">✉ Stuur vragenlijst</a><a class="btn sm" href="${mail("bevestiging",b)}">✉ Bevestiging</a><a class="btn sm" href="${mail("bedankt",b)}">✉ Bedankt + review</a></div>`,
+  team:()=>`<h3>Team</h3><div class="tw"><table>${b.crew.map((c,n)=>`<tr><td>${esc(teamName(c.id))}</td><td style="width:110px"><input type="number" step="1" data-r="E" data-p="crew.${n}.fee" value="${esc(c.fee)}" aria-label="Vergoeding"></td><td style="width:150px"><input type="date" data-r="E" data-p="crew.${n}.betaald" value="${esc(c.betaald)}" title="Uitbetaald op"></td><td><button class="x" data-act="delCrew" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div>
+    <div class="tools"><select id="crsel" aria-label="Teamlid"><option value="">+ Teamlid inplannen…</option>${S.team.map(t=>`<option value="${esc(t.id)}">${esc(t.naam)}${t.rol?" ("+esc(t.rol)+")":""}</option>`).join("")}</select></div>${S.team.length?"":'<p class="hint">Voeg eerst teamleden toe onder Team.</p>'}
+    <h3 style="margin-top:14px">Materiaal</h3><div class="tw"><table>${b.gear.map((g,n)=>`<tr><td>${esc(gearName(g.id))}</td><td style="width:90px"><input type="number" min="1" data-r="E" data-p="gear.${n}.aantal" value="${esc(g.aantal)}" aria-label="Aantal"></td><td><button class="x" data-act="delGearB" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div>
+    <div class="tools"><select id="gesel" aria-label="Materiaal"><option value="">+ Materiaal toevoegen…</option>${S.materiaal.map(m=>`<option value="${esc(m.id)}">${esc(m.naam)}</option>`).join("")}</select></div><div id="gwarn" class="warn"></div>
+    <h3 style="margin-top:14px">Reiskosten</h3><div class="fg">${fld("E","km","Afstand (km, heen en terug)","number",'min="0"')}<label>&nbsp;<button class="btn" data-act="km" style="display:block;margin-top:4px">+ Reistoeslag (${eur(S.firma.kmTarief)}/km) op offerte</button></label></div>`,
+  muziek:()=>`<div class="fg">${area("E","muziek.must","Zeker draaien (1 per regel)",6)}${area("E","muziek.nogo","Niet draaien (1 per regel)",6)}</div><h3 style="margin-top:14px">Momenten</h3>
+    <div class="tw"><table>${b.muziek.momenten.map((m,n)=>`<tr><td style="width:110px"><input type="time" data-r="E" data-p="muziek.momenten.${n}.tijd" value="${esc(m.tijd)}"></td><td><input data-r="E" data-p="muziek.momenten.${n}.omschr" placeholder="Openingsdans, taart…" value="${esc(m.omschr)}"></td><td><input data-r="E" data-p="muziek.momenten.${n}.nummer" placeholder="Nummer / link" value="${esc(m.nummer)}"></td><td><button class="x" data-act="delMom" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div>
+    <div class="df" style="border:0;padding:8px 0 0"><button class="btn sm" data-act="addMom">+ Moment</button><button class="btn sm" data-act="doc" data-k="muziek">📄 Muziekplanner (PDF)</button></div>`,
   show:()=>`<div class="fg">${fld("E","laden","Opbouw / laden vanaf","time")}${fld("E","soundcheck","Soundcheck","time")}${fld("E","afbouw","Afbouw","time")}${fld("E","adres","Adres locatie")}${fld("E","ctNaam","Contact ter plaatse")}${fld("E","ctTel","Gsm contact","tel")}${fld("E","parkeren","Parkeren / laadroute")}${fld("E","reis","Reis (vertrek, km)")}${fld("E","hotel","Overnachting")}</div>
     <p class="hint">Set-uren vul je in op tab Gegevens (start/einde).</p><h3 style="margin-top:14px">Advancing-checklist</h3>
     <div class="tw"><table>${b.adv.map((a,n)=>`<tr><td style="width:36px"><input type="checkbox" data-r="E" data-p="adv.${n}.done" ${a.done?"checked":""}></td><td><input data-r="E" data-p="adv.${n}.t" value="${esc(a.t)}"></td><td><button class="x" data-act="delAdv" data-i="${n}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table></div>
@@ -488,7 +520,8 @@ function drawDlg(){
 function recalc(){
   const t=$("#totbox");if(t)t.innerHTML=`Subtotaal ${eur(net(E)+num(E.korting)*(E.items.length?1:0))}${num(E.korting)&&E.items.length?`<br>Korting − ${eur(E.korting)}`:""}${num(S.firma.btwPct)?`<br>Btw ${num(S.firma.btwPct)}% ${eur(btw(E))}`:""}<br><b>Totaal ${eur(tot(E))}</b> · ontvangen ${eur(paid(E))} · openstaand ${eur(owed(E))}`;
   const wb=$("#wbox");if(wb)wb.innerHTML=`Kosten ${eur(kosten(E))}<br><b>Netto resultaat ${eur(winst(E))}</b>`;
-  const w=$("#warn");if(w){const c=E.datum?conflicts(E):[],bl=E.datum&&blocked(E.datum);w.textContent=bl?`⚠ Deze dag is geblokkeerd (${bl.r||"geblokkeerd"}).`:c.length?`⚠ Op deze datum staat al: ${c.map(x=>x.klant).join(", ")}.`:""}
+  const gw=$("#gwarn");if(gw)gw.textContent=issues(E).map(x=>"⚠ "+x).join(" · ");
+  const w=$("#warn");if(w){const is=issues(E);const c=E.datum?conflicts(E):[],bl=E.datum&&blocked(E.datum);w.textContent=bl?`⚠ Deze dag is geblokkeerd (${bl.r||"geblokkeerd"}).`:c.length?`⚠ Op deze datum staat al: ${c.map(x=>x.klant).join(", ")}.`:is.length?"⚠ "+is.join(" · "):""}
 }
 function pad(c,key){
   const r=c.getBoundingClientRect(),k=2;c.width=r.width*k;c.height=r.height*k;
@@ -505,6 +538,13 @@ const reDlg=()=>{const y=$(".db")?.scrollTop;drawDlg();if(y)$(".db").scrollTop=y
 const ACT={
   tab:a=>{tab=a.dataset.k;drawDlg()},
   newB:()=>openForm(),
+  addGear:()=>{S.materiaal.push({id:uid(),naam:"",cat:"",aantal:1});save();render()},delGear:a=>{S.materiaal.splice(+a.dataset.i,1);save();render()},
+  addTeam:()=>{S.team.push({id:uid(),naam:"",rol:"",tarief:"",email:"",tel:""});save();render()},delTeam:a=>{S.team.splice(+a.dataset.i,1);save();render()},
+  delCrew:a=>{E.crew.splice(+a.dataset.i,1);reDlg()},delGearB:a=>{E.gear.splice(+a.dataset.i,1);reDlg()},
+  addMom:()=>{E.muziek.momenten.push({tijd:"",omschr:"",nummer:""});reDlg()},delMom:a=>{E.muziek.momenten.splice(+a.dataset.i,1);reDlg()},
+  km:()=>{if(!num(E.km)){toast("Vul eerst de afstand in");return}E.items.push({omschr:`Verplaatsing (${num(E.km)} km)`,aantal:1,prijs:r2(num(E.km)*num(S.firma.kmTarief))});toast("Toegevoegd aan de offerte");reDlg()},
+  payCrew:a=>{const c=D.find(x=>x.id===a.dataset.b)?.crew.find(x=>x.id===a.dataset.c);if(c){c.betaald=today();save();render()}},
+  unpayCrew:a=>{const c=D.find(x=>x.id===a.dataset.b)?.crew.find(x=>x.id===a.dataset.c);if(c){c.betaald="";save();render()}},
   addAdv:()=>{E.adv.push({t:"",done:false});reDlg()},delAdv:a=>{E.adv.splice(+a.dataset.i,1);reDlg()},
   addKost:()=>{E.kosten.push({omschr:"",bedrag:""});reDlg()},delKost:a=>{E.kosten.splice(+a.dataset.i,1);reDlg()},
   addContact:()=>{S.contacten.push({id:uid(),naam:"",type:"Venue",email:"",tel:"",stad:""});save();render()},delContact:a=>{S.contacten.splice(+a.dataset.i,1);save();render()},
@@ -580,6 +620,9 @@ document.addEventListener("change",e=>{
   const el=e.target;
   if(el.id==="fs"){fs=el.value;render();return}
   if(el.id==="chk"){const d=el.value,b=D.filter(x=>x.datum===d&&x.status!=="verloren"),bl=blocked(d);$("#chkr").textContent=!d?"":bl?"⛔ Geblokkeerd":b.length?"❌ Bezet: "+b.map(x=>x.klant+" ("+STATUS[x.status]+")").join(", "):"✅ Vrij";return}
+  if(el.id==="crsel"){const t=S.team.find(x=>x.id===el.value);el.value="";if(t){E.crew.push({id:t.id,fee:num(t.tarief),betaald:""});reDlg()}return}
+  if(el.id==="gesel"){const m=S.materiaal.find(x=>x.id===el.value);el.value="";if(m){const g=E.gear.find(x=>x.id===m.id);if(g)g.aantal=num(g.aantal)+1;else E.gear.push({id:m.id,aantal:1});reDlg()}return}
+  if(el.id==="gday"){gearDay=el.value;render();return}
   if(el.id==="dsel"){const v=el.value;el.value="";if(v==="_")E.items.push({omschr:"",aantal:1,prijs:0});else{const d=S.diensten.find(x=>x.id===v);if(d)E.items.push({omschr:d.naam+(d.omschr?" — "+d.omschr:""),aantal:1,prijs:num(d.prijs)})}reDlg();return}
   if(el.id==="advs"){S.advancing=el.value.split("\n").map(x=>x.trim()).filter(Boolean);save();return}
   if(el.dataset.p==="venueId"){const c=S.contacten.find(x=>x.id===el.value);if(c&&!E.locatie){E.locatie=c.naam+(c.stad?", "+c.stad:"");E.venueId=c.id;reDlg()}}
