@@ -11,12 +11,13 @@ Een app waarmee gasten nummers aanvragen, zoals requestbox.app. Ze draait volled
 | `sbmusic.be/requests/beheer.html` | Jij (wachtwoord) |
 | `sbmusic.be/requests/poster.html?e=<event-code>` | Afdrukbare A4-poster met QR-code |
 
-De app ziet eruit zoals sbmusic.be ("Noir / Catalogue No.": licht op donker, één groen accent) en gebruikt dezelfde bouwstenen:
-- lettertypes: Archivo Black voor koppen, Schibsted Grotesk voor tekst, Martian Mono voor labels en catalogusnummers;
-- pilknoppen en de navigatiebalk;
-- de vierkante foto met verschoven kader en groene sticker;
-- tracklists (A1, A2 …) voor de wachtrij;
-- formulieren zoals het boekingsformulier, en dezelfde voet.
+De app ziet eruit zoals sbmusic.be en gebruikt dezelfde bouwstenen:
+- lichte pagina's in Onest, met een donkergroen accent;
+- de donkere hero met de foto in grijswaarden en het "SB"-watermerk. Zonder event-foto staat daar de presspic;
+- pilknoppen met pijl, en genummerde rijen;
+- de wachtrij in een zwart paneel;
+- het aanvraagformulier en de zwarte voet;
+- de logo's uit `assets/`.
 
 De stijl staat in `style.css`.
 
@@ -71,10 +72,12 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
   De foto wordt in je browser automatisch verkleind (± 150 KB) en als reactie bij het event-issue bewaard.
   Een Issues-token kan namelijk geen bestanden uploaden.
 - **QR & link**: toont de link en de QR-code, met knoppen om de QR-code als PNG te downloaden en de poster te openen.
-- **Poster (PDF)**: A4 in de huisstijl van sbmusic.be, met het SB-logo, de foto van het event en de QR-code.
-  Pas bovenaan de titel aan en kies een zwarte achtergrond (zoals de site) of een witte (spaart inkt).
-  Klik **Download PDF** voor een A4-bestand om te mailen of te laten drukken, of **Afdrukken** om meteen te printen.
-  De poster wordt in je browser getekend; de PDF- en QR-code-bibliotheken staan in `vendor/` (MIT-licentie).
+- **Poster (PDF)**: A4 in de huisstijl van sbmusic.be.
+  - Bovenaan staat een donker vlak met de foto van het event (of je presspic) en de eventnaam.
+  - Daaronder de titel, drie stappen en de QR-code, en onderaan een zwarte voet.
+  - De titel pas je bovenaan aan.
+  - Klik **Download PDF** voor een A4-bestand, of **Afdrukken**.
+  - De PDF- en QR-code-bibliotheken staan in `vendor/` (MIT-licentie).
 - **Open/Gesloten**: schakel per event in of gasten iets kunnen aanvragen. Een groen bolletje op het tabblad betekent open.
 - **Wachtrij**: hetzelfde nummer wordt gegroepeerd, met een teller (×3) en de namen en boodschappen.
   Sorteer op *meest gevraagd*, *oudste* of *nieuwste*.
