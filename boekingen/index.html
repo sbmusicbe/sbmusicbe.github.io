@@ -142,7 +142,7 @@ body.locked main,body.locked header{visibility:hidden}
 
 <script>
 const STATUS={aanvraag:"Aanvraag",offerte:"Offerte verstuurd",geboekt:"Geboekt",afgerond:"Afgerond",verloren:"Verloren"};
-const VIEWS={overzicht:"Overzicht",pijplijn:"Pijplijn",agenda:"Agenda",klanten:"Klanten",financien:"Financiën",rapporten:"Rapporten",instellingen:"Instellingen"};
+const VIEWS={overzicht:"Overzicht",crm:"CRM",offertes:"Offertes",agenda:"Planning",contracten:"Contracten",facturen:"Facturen",betalingen:"Betalingen",rapporten:"Rapporten",instellingen:"Instellingen"};
 const TYPES=["Privéfeest","Bruiloft","Club","Festival","Bedrijfsfeest","Andere"],BRON=["Website","Instagram","TikTok","Doorverwezen","Eerdere klant","Andere"];
 const Q=[["aankomst","Hoe laat kan ik opbouwen en waar kan ik laden/parkeren?"],["gasten","Hoeveel gasten verwacht je?"],["genres","Welke muziek/artiesten wil je zeker horen?"],["nogo","Wat mag ik absoluut niet draaien?"],["momenten","Speciale momenten (openingsdans, speeches, taart…) en hoe laat?"],["mc","Mag ik af en toe de micro nemen (aankondigingen)?"],["tech","Is er stroom, ruimte en geluid? Contactpersoon ter plaatse + gsm?"]];
 const KEY="sb.boekingen.v1";
@@ -168,7 +168,7 @@ const defaults=()=>({
   },
   uitgaven:[],block:[],teller:{jaar:0,n:0}
 });
-let D=[],S=defaults(),E=null,editing=null,tab="gegevens",view="overzicht",cal=new Date(),q="",fs="";
+let D=[],S=defaults(),E=null,editing=null,tab="gegevens",view="overzicht",crmTab="pijplijn",cal=new Date(),q="",fs="";
 try{view=localStorage.getItem(KEY+".view")||view;if(!VIEWS[view])view="overzicht"}catch(e){}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -261,8 +261,8 @@ function dl(name,txt,type){const a=document.createElement("a");a.href=URL.create
 /* ---------- weergaven ---------- */
 function render(){
   $("#nav").innerHTML=Object.entries(VIEWS).map(([k,v])=>`<button data-v="${k}" aria-pressed="${k===view}">${v}</button>`).join("");
-  $("#main").innerHTML=({overzicht,pijplijn,agenda,klanten,financien,rapporten,instellingen})[view]();
-  if(view==="pijplijn")dnd();
+  $("#main").innerHTML=({overzicht,crm,offertes,agenda,contracten,facturen,betalingen,rapporten,instellingen})[view]();
+  if(view==="crm"&&crmTab==="pijplijn")dnd();
 }
 const rowHtml=b=>`<div class="row c" data-id="${b.id}"><div class="date"><b>${new Date(b.datum+"T12:00").getDate()}</b><small>${new Date(b.datum+"T12:00").toLocaleDateString("nl-BE",{month:"short"})}</small></div>
 <div class="grow"><div class="t">${esc(b.klant)}</div><div class="sub">${esc(b.type)}${b.locatie?" · "+esc(b.locatie):""}${b.van?" · "+esc(b.van):""}</div></div>
@@ -289,7 +289,7 @@ function overzicht(){
 }
 function pijplijn(){
   const cols=Object.keys(STATUS);
-  return `<h2>Pijplijn</h2><div class="board">${cols.map(s=>{
+  return `<div class="board">${cols.map(s=>{
     const items=D.filter(b=>b.status===s).sort((a,b)=>a.datum.localeCompare(b.datum));
     return `<div class="col" data-s="${s}"><h3>${STATUS[s]}<span>${items.length}</span></h3>${items.map(b=>{const ot=b.taken.filter(x=>!x.done).length;return `<div class="k" draggable="true" data-id="${b.id}">
       <div class="t">${esc(b.klant)}</div><div class="sub">${fmt(b.datum)} · ${esc(b.type)}</div>
@@ -312,26 +312,57 @@ function agenda(){
     ${bl?`<button class="e blok" data-act="unblock" data-d="${iso}" title="Klik om te deblokkeren">⛔ ${esc(bl.r||"geblokkeerd")}</button>`:""}
     ${D.filter(b=>b.datum===iso&&b.status!=="verloren").map(b=>`<button class="e ${b.status}" data-id="${b.id}">${esc(b.van||"")} ${esc(b.klant)}</button>`).join("")}
     ${D.filter(b=>b.afspraak?.slice(0,10)===iso&&b.status!=="verloren").map(b=>`<button class="e aanvraag" data-id="${b.id}">☎ ${esc(b.afspraak.slice(11))} ${esc(b.klant)}</button>`).join("")}</div>`}
-  return `<h2>Agenda</h2><div class="cal-nav"><button class="btn sm" data-cal="-1">←</button><b>${cal.toLocaleDateString("nl-BE",{month:"long",year:"numeric"})}</b><button class="btn sm" data-cal="1">→</button><button class="btn sm" data-cal="0">Vandaag</button><span class="sp"></span>
+  return `<h2>Planning</h2><div class="cal-nav"><button class="btn sm" data-cal="-1">←</button><b>${cal.toLocaleDateString("nl-BE",{month:"long",year:"numeric"})}</b><button class="btn sm" data-cal="1">→</button><button class="btn sm" data-cal="0">Vandaag</button><span class="sp"></span>
   <input type="date" id="chk" aria-label="Check datum" style="border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--panel)"><span id="chkr" class="sub"></span><button class="btn sm" data-act="block">⛔ Blokkeer dag</button></div>
   <div class="cal">${["ma","di","wo","do","vr","za","zo"].map(x=>`<div class="h">${x}</div>`).join("")}${cells}</div>`;
 }
 function klanten(){
   const map={};D.forEach(b=>{const k=(b.email||b.klant).toLowerCase();(map[k]??={naam:b.klant,email:b.email,tel:b.tel,b:[]}).b.push(b)});
   const list=Object.values(map).filter(c=>(c.naam+c.email).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.naam.localeCompare(b.naam));
-  return `<h2>Klanten</h2><div class="tools"><input id="q" placeholder="Zoek klant…" value="${esc(q)}"></div><div class="card tw"><table>
+  return `<div class="tools"><input id="q" placeholder="Zoek klant…" value="${esc(q)}"></div><div class="card tw"><table>
   <tr><th>Naam</th><th>Contact</th><th>Boekingen</th><th class="n">Omzet</th></tr>
   ${list.map(c=>`<tr><td><b>${esc(c.naam)}</b></td><td>${c.email?`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:""}<div class="sub">${esc(c.tel||"")}</div></td>
   <td>${c.b.map(b=>`<a href="#" data-id="${b.id}">${fmt(b.datum).replace(/^\S+ /,"")}</a>`).join(", ")}</td><td class="n">${eur(c.b.filter(b=>["geboekt","afgerond"].includes(b.status)).reduce((s,b)=>s+tot(b),0))}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">Geen klanten.</td></tr>`}</table></div>`;
 }
-function financien(){
-  const rows=D.filter(b=>["geboekt","afgerond"].includes(b.status)).filter(b=>!fs||(fs==="open"?owed(b)>0:owed(b)===0)).sort((a,b)=>b.datum.localeCompare(a.datum));
-  const T=rows.reduce((s,b)=>s+tot(b),0),O=rows.reduce((s,b)=>s+paid(b),0),U=S.uitgaven.reduce((s,u)=>s+num(u.bedrag),0);
-  return `<h2>Financiën</h2><div class="stats"><div class="card stat"><b>${eur(T)}</b><span>Gefactureerd</span></div><div class="card stat"><b>${eur(O)}</b><span>Ontvangen</span></div><div class="card stat"><b>${eur(T-O)}</b><span>Openstaand</span></div><div class="card stat"><b>${eur(U)}</b><span>Uitgaven</span></div><div class="card stat"><b>${eur(O-U)}</b><span>Winst (ontvangen − uitgaven)</span></div></div>
-  <div class="tools"><select id="fs" aria-label="Filter"><option value="">Alles</option><option value="open" ${fs==="open"?"selected":""}>Openstaand</option><option value="betaald" ${fs==="betaald"?"selected":""}>Volledig betaald</option></select></div>
-  <div class="card tw"><table><tr><th>Datum</th><th>Klant</th><th>Factuur</th><th class="n">Totaal</th><th class="n">Ontvangen</th><th class="n">Open</th><th></th></tr>
-  ${rows.map(b=>`<tr><td>${fmt(b.datum)}</td><td><a href="#" data-id="${b.id}">${esc(b.klant)}</a></td><td>${esc(b.factuurnr||"")}</td><td class="n">${eur(tot(b))}</td><td class="n">${eur(paid(b))}</td><td class="n"><b>${eur(owed(b))}</b>${overdue(b).length?' <span class="pill warn">te laat</span>':""}</td>
-  <td>${owed(b)>0&&b.email?`<a class="btn sm" href="${mail("herinnering",b)}">Herinnering</a>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">Geen boekingen.</td></tr>`}</table></div>
+const bt=(act,b,l,x="")=>`<button class="btn sm" data-act="${act}" data-b="${b.id}" ${x}>${l}</button>`;
+const nm=b=>`<a href="#" data-id="${b.id}"><b>${esc(b.klant)}</b></a>`;
+const stat=(v,l)=>`<div class="card stat"><b>${v}</b><span>${l}</span></div>`;
+function crm(){
+  return `<h2>CRM</h2><div class="tools"><button class="btn sm ${crmTab==="pijplijn"?"pri":""}" data-act="crmtab" data-k="pijplijn">Pijplijn</button><button class="btn sm ${crmTab==="klanten"?"pri":""}" data-act="crmtab" data-k="klanten">Klanten &amp; contacten</button></div>`+(crmTab==="pijplijn"?pijplijn():klanten());
+}
+function offertes(){
+  const rows=D.filter(b=>b.items.length||num(b.prijs)).sort((a,c)=>c.datum.localeCompare(a.datum)),won=rows.filter(b=>["geboekt","afgerond"].includes(b.status)),openO=rows.filter(b=>["aanvraag","offerte"].includes(b.status));
+  return `<h2>Offertes</h2><div class="stats">${stat(openO.length,"Openstaande offertes")}${stat(eur(openO.reduce((s,b)=>s+tot(b),0)),"Waarde open offertes")}${stat(won.length,"Geaccepteerd")}${stat(rows.length?Math.round(won.length/rows.length*100)+"%":"–","Acceptatie")}</div>
+  <div class="card tw"><table><tr><th>Klant</th><th>Event</th><th class="n">Bedrag</th><th>Geldig tot</th><th>Status</th><th></th></tr>
+  ${rows.map(b=>`<tr><td>${nm(b)}</td><td>${fmt(b.datum)}</td><td class="n">${eur(tot(b))}</td><td>${b.geldigTot?fmt(b.geldigTot):""}${b.geldigTot&&b.geldigTot<today()&&b.status==="offerte"?' <span class="pill warn">verlopen</span>':""}</td><td><span class="pill ${b.status}">${STATUS[b.status]}</span></td>
+  <td>${bt("ldoc",b,"📄 PDF",'data-k="offerte"')} ${b.email?`<a class="btn sm" href="${mail("offerte",b)}">✉ Mail</a>`:""} ${["aanvraag","offerte"].includes(b.status)?bt("laccept",b,"✓ Geaccepteerd"):""}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">Nog geen offertes. Maak er een via “+ Nieuwe boeking” → tab Offerte.</td></tr>`}</table></div>`;
+}
+function contracten(){
+  const rows=D.filter(b=>["offerte","geboekt","afgerond"].includes(b.status)).sort((a,c)=>c.datum.localeCompare(a.datum));
+  return `<h2>Contracten</h2><div class="stats">${stat(rows.filter(b=>b.contract).length,"Ondertekend")}${stat(rows.filter(b=>!b.contract&&b.status==="geboekt").length,"Geboekt, nog niet ondertekend")}</div>
+  <div class="card tw"><table><tr><th>Klant</th><th>Event</th><th>Status</th><th></th></tr>
+  ${rows.map(b=>`<tr><td>${nm(b)}</td><td>${fmt(b.datum)}</td><td>${b.contract?`<span class="pill ok">Ondertekend ${fmt(b.sigDatum)}</span>`:`<span class="pill ${b.status==="geboekt"?"warn":""}">Niet ondertekend</span>`}</td>
+  <td>${bt("lopen",b,b.contract?"Bekijken":"✍ Laten tekenen",'data-k="contract"')} ${bt("ldoc",b,"📄 PDF",'data-k="contract"')} ${b.email?`<a class="btn sm" href="${mail("contract",b)}">✉ Mail</a>`:""}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">Nog geen contracten.</td></tr>`}</table></div>`;
+}
+function facturen(){
+  const rows=D.filter(b=>["geboekt","afgerond"].includes(b.status)).sort((a,c)=>c.datum.localeCompare(a.datum));
+  const T=rows.reduce((s,b)=>s+tot(b),0),O=rows.reduce((s,b)=>s+paid(b),0);
+  return `<h2>Facturen</h2><div class="stats">${stat(eur(T),"Gefactureerd")}${stat(eur(O),"Betaald")}${stat(eur(T-O),"Openstaand")}${stat(rows.filter(b=>overdue(b).length).length,"Te laat")}</div>
+  <div class="card tw"><table><tr><th>Nr.</th><th>Klant</th><th>Event</th><th class="n">Totaal</th><th class="n">Open</th><th>Status</th><th></th></tr>
+  ${rows.map(b=>`<tr><td>${esc(b.factuurnr||"–")}</td><td>${nm(b)}</td><td>${fmt(b.datum)}</td><td class="n">${eur(tot(b))}</td><td class="n">${eur(owed(b))}</td>
+  <td>${owed(b)===0?'<span class="pill ok">Betaald</span>':overdue(b).length?'<span class="pill warn">Te laat</span>':'<span class="pill">Open</span>'}</td>
+  <td>${bt("ldoc",b,b.factuurnr?"🧾 PDF":"🧾 Factuur maken",'data-k="factuur"')} ${b.email&&b.factuurnr?`<a class="btn sm" href="${mail("factuur",b)}">✉ Mail</a>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">Geen facturen. Zodra een boeking op “Geboekt” staat, kan je ze hier maken.</td></tr>`}</table></div>`;
+}
+function betalingen(){
+  const rows=[];D.filter(b=>["geboekt","afgerond"].includes(b.status)).forEach(b=>b.betalingen.forEach(p=>rows.push({b,p})));
+  rows.sort((x,y)=>(x.p.betaald?1:0)-(y.p.betaald?1:0)||(x.p.due||"9").localeCompare(y.p.due||"9"));
+  const t=today(),ont=rows.filter(r=>r.p.betaald),opn=rows.filter(r=>!r.p.betaald),U=S.uitgaven.reduce((s,u)=>s+num(u.bedrag),0),O=ont.reduce((s,r)=>s+num(r.p.bedrag),0);
+  return `<h2>Betalingen</h2><div class="stats">${stat(eur(O),"Ontvangen")}${stat(eur(opn.reduce((s,r)=>s+num(r.p.bedrag),0)),"Nog te ontvangen")}${stat(opn.filter(r=>r.p.due&&r.p.due<t).length,"Achterstallig")}${stat(eur(U),"Uitgaven")}${stat(eur(O-U),"Winst")}</div>
+  ${S.firma.betaallink?"":`<p class="hint">Tip: voeg je betaallink (Payconiq, Stripe, Mollie…) toe onder Instellingen, dan staat die in je facturen en herinneringen.</p>`}
+  <div class="card tw"><table><tr><th>Vervalt</th><th>Klant</th><th>Omschrijving</th><th class="n">Bedrag</th><th>Status</th><th></th></tr>
+  ${rows.map(({b,p})=>`<tr><td>${p.due?fmt(p.due):""}</td><td>${nm(b)}</td><td>${esc(p.label)}</td><td class="n">${eur(p.bedrag)}</td>
+  <td>${p.betaald?`<span class="pill ok">Ontvangen ${fmt(p.betaald)}</span>`:p.due&&p.due<t?'<span class="pill warn">Te laat</span>':'<span class="pill">Open</span>'}</td>
+  <td>${p.betaald?`<button class="btn sm" data-act="unpay" data-b="${b.id}" data-p="${p.id}">Ongedaan</button>`:`<button class="btn sm" data-act="pay" data-b="${b.id}" data-p="${p.id}">✓ Ontvangen</button> ${b.email?`<a class="btn sm" href="${mail("herinnering",b)}">✉ Herinnering</a>`:""}`}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">Nog geen betalingen. Maak een betalingsschema in een boeking (tab Betalingen).</td></tr>`}</table></div>
   <div class="card tw"><h3>Uitgaven (materiaal, benzine, licenties…)</h3><table><tr><th>Datum</th><th>Omschrijving</th><th>Categorie</th><th class="n">Bedrag</th><th></th></tr>
   ${S.uitgaven.map((u,i)=>`<tr><td><input type="date" data-r="S" data-p="uitgaven.${i}.datum" value="${esc(u.datum)}"></td><td><input data-r="S" data-p="uitgaven.${i}.omschr" value="${esc(u.omschr)}"></td>
   <td><input data-r="S" data-p="uitgaven.${i}.cat" value="${esc(u.cat)}" list="cats"></td><td><input type="number" step="0.01" data-r="S" data-p="uitgaven.${i}.bedrag" value="${esc(u.bedrag)}"></td><td><button class="x" data-act="delUitg" data-i="${i}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table>
@@ -427,6 +458,12 @@ function pad(c,key){
 const reDlg=()=>{const y=$(".db")?.scrollTop;drawDlg();if(y)$(".db").scrollTop=y};
 const ACT={
   tab:a=>{tab=a.dataset.k;drawDlg()},
+  crmtab:a=>{crmTab=a.dataset.k;render()},
+  lopen:a=>{const b=D.find(x=>x.id===a.dataset.b);if(b){openForm(b);tab=a.dataset.k||"gegevens";drawDlg()}},
+  ldoc:a=>{const b=D.find(x=>x.id===a.dataset.b);if(!b)return;if(a.dataset.k==="factuur"&&!b.factuurnr){b.factuurnr=nextNr();b.factuurdatum=today();save();render()}DOC[a.dataset.k](b)},
+  laccept:a=>{const b=D.find(x=>x.id===a.dataset.b);if(!b)return;setStatus(b,"geboekt");if(!b.betalingen.length){const t=tot(b),v=r2(t*num(S.firma.voorschotPct)/100);b.betalingen=[{id:uid(),label:"Voorschot",bedrag:v,due:addDays(today(),7),betaald:""},{id:uid(),label:"Saldo",bedrag:r2(t-v),due:b.datum?addDays(b.datum,-7):"",betaald:""}]}save();render();toast("Geboekt. Betalingsschema en taken staan klaar.")},
+  pay:a=>{const p=D.find(x=>x.id===a.dataset.b)?.betalingen.find(x=>x.id===a.dataset.p);if(p){p.betaald=today();save();render()}},
+  unpay:a=>{const p=D.find(x=>x.id===a.dataset.b)?.betalingen.find(x=>x.id===a.dataset.p);if(p){p.betaald="";save();render()}},
   closeE:()=>$("#dlg").close(),
   saveE:()=>{
     if(!E.klant.trim()||!E.datum){toast("Klant en datum zijn verplicht");return}
@@ -468,6 +505,7 @@ document.addEventListener("click",e=>{
   if(c){cal=c.dataset.cal==="0"?new Date():new Date(cal.getFullYear(),cal.getMonth()+ +c.dataset.cal,1);render();return}
   const v=e.target.closest("[data-v]");if(v){view=v.dataset.v;try{localStorage.setItem(KEY+".view",view)}catch(x){}render();return}
   const t=e.target.closest("[data-id]");
+  const al=e.target.closest("a");if(al&&!al.dataset.id)return;
   if(t&&!e.target.closest("dialog")&&!e.target.closest("input")){e.preventDefault();const b=D.find(x=>x.id===t.dataset.id);if(b)openForm(b)}
 });
 document.addEventListener("input",e=>{
