@@ -141,6 +141,7 @@ body.locked .app{visibility:hidden}
   <h2 id="lt">Boekingen</h2><p class="sub" id="ls" style="margin:0"></p>
   <label>Wachtwoord<input id="pw" type="password" autocomplete="current-password" required></label>
   <label id="pw2l" hidden>Herhaal wachtwoord<input id="pw2" type="password" autocomplete="new-password"></label>
+  <label class="chk" id="fetchl" hidden><input type="checkbox" id="fetchv"> Ik heb al een kluis op een ander toestel (ophalen)</label>
   <div class="err" id="le" role="alert"></div>
   <button class="btn pri" id="lb">Ontgrendel</button>
   <button class="btn sm danger" type="button" id="reset" hidden>Wachtwoord vergeten? Alles wissen</button>
@@ -150,6 +151,7 @@ body.locked .app{visibility:hidden}
   <button class="btn pri wide" id="add">+ Nieuwe boeking</button>
   <input id="gs" type="search" placeholder="Zoek klant, locatie…" aria-label="Zoeken">
   <nav id="nav"></nav><span class="sp"></span>
+  <div class="sub" id="syncb" style="padding:0 8px"></div>
   <button class="btn wide" id="lockbtn">🔒 Vergrendel</button>
 </aside><main id="main"></main></div>
 <dialog id="dlg"></dialog><dialog id="dlg2"></dialog>
@@ -207,15 +209,53 @@ const VK=KEY+".vault",enc=new TextEncoder();let CK=null,SALT=null,fails=0,idle=n
 const b64=u=>btoa(String.fromCharCode(...new Uint8Array(u))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function derive(pw,salt){const m=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);
   return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
-async function persist(){if(!CK)return;const iv=crypto.getRandomValues(new Uint8Array(12));
+async function seal(){const iv=crypto.getRandomValues(new Uint8Array(12));
   const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},CK,enc.encode(JSON.stringify({v:2,D,S})));
-  localStorage.setItem(VK,JSON.stringify({s:b64(SALT),i:b64(iv),d:b64(ct)}))}
-const save=()=>{persist().catch(()=>toast("Opslaan mislukt"))};
-function load(p){
-  const d=defaults(),s=Array.isArray(p)?{}:(p.S||{});
-  S={...d,...s,firma:{...d.firma,...s.firma},mails:{...d.mails,...s.mails},taken:{...d.taken,...s.taken},teller:s.teller||d.teller};
-  D=(Array.isArray(p)?p:p.D||[]).map(ensure);
+  return {s:b64(SALT),i:b64(iv),d:b64(ct)}}
+async function persist(){if(!CK)return;localStorage.setItem(VK,JSON.stringify(await seal()))}
+const save=()=>{stampAll();persist().catch(()=>toast("Opslaan mislukt"));queueSync()};
+function normS(s){const d=defaults();return {...d,...s,firma:{...d.firma,...s.firma},mails:{...d.mails,...s.mails},taken:{...d.taken,...s.taken},teller:s.teller||d.teller,deleted:s.deleted||[]}}
+function load(p){S=normS(Array.isArray(p)?{}:(p.S||{}));D=(Array.isArray(p)?p:p.D||[]).map(ensure)}
+/* ---- synchronisatie tussen toestellen (versleutelde kluis op de server) ---- */
+const SYF=KEY+".sync";let SYNC=null,syncing=false,syncT=null,lastSync=0;
+const SYc=window.SB_SYNC||{},CLOUD=!!(SYc.url&&SYc.key);
+const sigOf=o=>JSON.stringify(o,(k,v)=>k==="mod"||k==="sig"?undefined:v);
+function stampAll(){const t=Date.now();D.forEach(b=>{const g=sigOf(b);if(b.sig!==g){b.sig=g;b.mod=t}});const g=sigOf(S);if(S.sig!==g){S.sig=g;S.mod=t}}
+async function deriveSync(pw){const m=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveBits"]);
+  const h=async l=>[...new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2",salt:enc.encode("sbm-vault-"+l),iterations:200000,hash:"SHA-256"},m,256))].map(x=>x.toString(16).padStart(2,"0")).join("");
+  return {id:await h("id"),wt:await h("wt")}}
+async function openBlob(k,bl){return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(bl.i)},k,unb64(bl.d))))}
+function mergeAll(R){
+  const dels=new Map();[...(S.deleted||[]),...(R.S?.deleted||[])].forEach(x=>{const o=dels.get(x.id);if(!o||x.ts>o.ts)dels.set(x.id,x)});
+  const m=new Map();(R.D||[]).forEach(b=>m.set(b.id,b));D.forEach(b=>{const o=m.get(b.id);if(!o||(b.mod||0)>=(o.mod||0))m.set(b.id,b)});
+  const nd=[...m.values()].filter(b=>{const t=dels.get(b.id);return !t||(b.mod||0)>t.ts}).map(ensure);
+  const sn=R.S&&(R.S.mod||0)>(S.mod||0)?normS(R.S):S;sn.deleted=[...dels.values()].slice(-500);
+  const changed=JSON.stringify([nd,sn])!==JSON.stringify([D,S]);D=nd;S=sn;return changed}
+const queueSync=()=>{if(SYNC){clearTimeout(syncT);syncT=setTimeout(syncNow,2500)}};
+const badge=(t,c)=>{const e=$("#syncb");if(e){e.textContent=t;e.style.color=c||""}};
+async function syncNow(manual){
+  if(!SYNC||!CK||syncing)return;syncing=true;badge("☁ Synchroniseren…");
+  try{
+    for(let att=0;att<3;att++){
+      const r=await rpc("vault_get",{p_id:SYNC.id});let ver=0,changed=false;
+      if(r&&r.blob){if(r.blob.s!==b64(SALT))throw new Error("salt");changed=mergeAll(await openBlob(CK,r.blob));ver=r.ver}
+      const n=await pullLeads();stampAll();const blob=await seal();localStorage.setItem(VK,JSON.stringify(blob));
+      try{await rpc("vault_put",{p_id:SYNC.id,p_wt:SYNC.wt,p_blob:blob,p_ver:ver});if((changed||n)&&!$("#dlg").open&&!$("#dlg2").open)render();lastSync=Date.now();badge("☁ Gesynchroniseerd "+new Date().toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"}));if(manual)toast("☁ Gesynchroniseerd");return}
+      catch(e){if(att===2)throw e}
+    }
+  }catch(e){badge(e.message==="salt"?"⚠ Andere kluis op de server":"⚠ Offline, later opnieuw","var(--red)");if(manual)toast("Synchroniseren mislukt")}
+  finally{syncing=false}
 }
+async function pullLeads(){
+  const L=await rpc("lead_list",{p_id:SYNC.id,p_wt:SYNC.wt}).catch(()=>null);if(!Array.isArray(L)||!L.length)return 0;
+  const c=(x,n=200)=>String(x??"").slice(0,n);let n=0;
+  for(const x of L){if(D.some(b=>b.leadId===x.id))continue;const d=x.data||{};
+    const b=ensure({id:uid(),created:Date.now(),status:"aanvraag",type:TYPES.includes(d.type)?d.type:"Andere",bron:"Website",klant:c(d.naam,80)||"Onbekend",email:c(d.email,120),tel:c(d.tel,40),datum:/^\d{4}-\d{2}-\d{2}$/.test(d.datum||"")?d.datum:"",locatie:c(d.locatie),gasten:num(d.gasten)||"",notities:c(d.bericht,2000),leadId:x.id});
+    setStatus(b,"aanvraag");D.push(b);n++}
+  await rpc("lead_done",{p_id:SYNC.id,p_wt:SYNC.wt,p_ids:L.map(x=>x.id)}).catch(()=>{});
+  if(n)toast(`${n} nieuwe aanvra${n>1?"gen":"ag"} binnengekomen`);return n}
+setInterval(()=>{if(SYNC&&!document.hidden&&Date.now()-lastSync>60000)syncNow()},15000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&SYNC)syncNow()});
 function ensure(b){
   b.gear??=[];b.crew??=[];b.muziek??={must:"",nogo:"",momenten:[]};b.muziek.verzoeken??=[];b.muziek.playlist??="";b.muziek.gone??=[];b.muziek.synced??={must:[],nogo:[]};b.tok??=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");b.items??=[];b.adv??=[];b.kosten??=[];b.taken??=[];b.vragen??={};b.auto??={};
   if(!b.betalingen){b.betalingen=[];const t=num(b.prijs),v=num(b.voorschot);
@@ -236,7 +276,7 @@ const crewKost=b=>r2(b.crew.reduce((s,c)=>s+num(c.fee),0)),kosten=b=>r2(b.kosten
 const b64u=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 const unb64u=t=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0))));
 const musicLink=b=>location.href.replace(/[?#].*$/,"").replace(/[^/]*$/,"")+"muziek.html?d="+b64u({id:b.id.slice(0,10),k:b.klant.split(" ")[0],dat:b.datum,ev:b.type,dj:S.firma.naam,m:(b.muziek.momenten||[]).slice(0,30),...(CLOUD?{tok:b.tok}:{})});
-const SY=window.SB_SYNC||{},CLOUD=!!(SY.url&&SY.key);
+const SY=SYc;
 const rpc=(fn,args)=>fetch(SY.url.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SY.key,Authorization:"Bearer "+SY.key,"Content-Type":"application/json"},body:JSON.stringify(args)}).then(r=>{if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()});
 const mergeL=(a=[],b=[])=>{const m=new Map();[...a,...b].forEach(x=>{if(!x||!x.id)return;const o=m.get(x.id);if(!o||(x.ts||0)>(o.ts||0))m.set(x.id,x)});return[...m.values()].slice(0,400)};
 const nrm=t=>String(t||"").toLowerCase().replace(/\s+/g," ").trim();
@@ -271,6 +311,7 @@ async function syncMusic(b){
   for(const k of["must","nogo"]){const arr=lists[k].filter(x=>!x.del).sort((a,c)=>(a.ts||0)-(c.ts||0));M[k]=[...new Set(arr.map(lineOf).filter(Boolean))].join("\n");M.synced[k]=arr.map(x=>x.id)}
   M.playlist=pl.v;M.plSig=pl.v;M.plTs=pl.ts;M.gone=[];
 }
+const formLink=()=>location.href.replace(/[?#].*$/,"").replace(/[^/]*$/,"")+"aanvraag.html";
 const q1=t=>encodeURIComponent(t);
 const teamName=id=>S.team.find(t=>t.id===id)?.naam||"?",gearName=id=>S.materiaal.find(m=>m.id===id)?.naam||"?";
 const busy=(b,d)=>D.filter(o=>o.id!==b.id&&o.datum===d&&["geboekt","optie"].includes(o.status));
@@ -497,6 +538,11 @@ function instellingen(){
   <div class="card"><h3>Contractsjabloon</h3><p class="hint">Zelfde velden als bij de mails. Laat dit sjabloon nakijken door een jurist vooraleer je het gebruikt.</p><div class="fg">${area("S","contract","Tekst",14)}</div></div>
   <div class="card"><h3>Automatische taken (workflows)</h3><p class="hint">Verschijnen automatisch bij een boeking zodra die in die fase komt. "Dagen" is ten opzichte van vandaag of van de eventdatum (negatief = ervoor).</p>
   ${Object.keys(STATUS).filter(s=>s!=="verloren").map(s=>`<details><summary>Bij “${STATUS[s]}”</summary><table>${(S.taken[s]||[]).map((a,i)=>`<tr><td><input data-r="S" data-p="taken.${s}.${i}.t" value="${esc(a.t)}"></td><td style="width:80px"><input type="number" data-r="S" data-p="taken.${s}.${i}.dagen" value="${esc(a.dagen)}"></td><td style="width:130px"><select data-r="S" data-p="taken.${s}.${i}.rel"><option value="nu" ${a.rel==="nu"?"selected":""}>na vandaag</option><option value="event" ${a.rel==="event"?"selected":""}>t.o.v. event</option></select></td><td><button class="x" data-act="delAuto" data-s="${s}" data-i="${i}" aria-label="Verwijder">×</button></td></tr>`).join("")}</table><button class="btn sm" data-act="addAuto" data-s="${s}">+ Taak</button></details>`).join("")}</div>
+  <div class="card"><h3>Synchronisatie &amp; aanvragen</h3>${!CLOUD?'<p class="hint">Niet geconfigureerd. Zie <code>boekingen/LEESMIJ.md</code> om Supabase in te stellen. Daarna kan je je boekingen tussen toestellen synchroniseren en aanvragen van je formulier rechtstreeks in de pijplijn ontvangen.</p>':`
+  <p class="hint">${SYNC?"✓ Ingeschakeld. Je gegevens staan versleuteld op de server (de server kan ze niet lezen). Op een ander toestel kies je bij het opstarten “Ik heb al een kluis… (ophalen)” en voer je hetzelfde wachtwoord in.":"Uit. Schakel in om je boekingen versleuteld te delen tussen je gsm en pc en om aanvragen van je formulier automatisch te ontvangen."}</p>
+  <div class="tools">${SYNC?'<button class="btn" data-act="syncNowBtn">☁ Nu synchroniseren</button><button class="btn" data-act="syncOff">Uitschakelen</button>':'<button class="btn pri" data-act="syncOn">Synchronisatie inschakelen</button>'}</div>
+  <h3 style="margin-top:14px">Aanvraagformulier voor klanten</h3><p class="hint">Aanvragen komen na synchroniseren als “Aanvraag” in je pijplijn (en nog steeds per mail). Zet de link op je site of in je bio.</p>
+  <div class="tools"><input readonly value="${esc(formLink())}" onclick="this.select()" style="flex:1;min-width:220px"><button class="btn" data-act="copyForm">🔗 Kopieer</button><a class="btn" href="${esc(formLink())}" target="_blank" rel="noopener">Openen</a></div>`}</div>
   <div class="card"><h3>Gegevens &amp; beveiliging</h3><div class="tools"><button class="btn" data-act="exJson">Export JSON</button><button class="btn" data-act="exCsv">Export CSV</button><button class="btn" data-act="imJson">Import JSON</button><button class="btn" data-act="pw">Wachtwoord wijzigen</button></div>
   <p class="hint">Exports zijn niet versleuteld: bewaar ze veilig. Gegevens staan alleen in deze browser.</p></div>`;
 }
@@ -598,6 +644,15 @@ const reDlg=()=>{const y=$(".db")?.scrollTop;drawDlg();if(y)$(".db").scrollTop=y
 const ACT={
   tab:a=>{tab=a.dataset.k;drawDlg();if(tab==="muziek"&&CLOUD&&syncedFor!==E.id){syncedFor=E.id;doSync(false)}},
   newB:()=>openForm(),
+  copyForm:()=>{const l=formLink();navigator.clipboard?.writeText(l).then(()=>toast("Link gekopieerd")).catch(()=>prompt("Kopieer de link:",l))||prompt("Kopieer de link:",l)},
+  syncNowBtn:()=>syncNow(true),
+  syncOff:()=>{SYNC=null;localStorage.removeItem(SYF);badge("");toast("Synchronisatie uitgeschakeld. De kluis op de server blijft bestaan.");render()},
+  syncOn:()=>modal(`<div class="dh"><h2>Synchronisatie inschakelen</h2></div><div class="db"><p class="hint">Bevestig met je wachtwoord. Daarmee wordt een sleutel afgeleid; het wachtwoord zelf verlaat je toestel nooit.</p><label>Wachtwoord<input id="synpw" type="password" autocomplete="current-password"></label><div class="err" id="synerr" style="color:var(--red);font-size:13px;min-height:18px"></div></div><div class="df"><button class="btn pri" data-act="doSyncOn">Inschakelen</button><button class="btn" data-act="close2">Annuleren</button></div>`),
+  doSyncOn:async()=>{const pw=$("#synpw").value,er=$("#synerr");er.textContent="";
+    try{const bl=JSON.parse(localStorage.getItem(VK));await openBlob(await derive(pw,unb64(bl.s)),bl)}catch(e){er.textContent="Verkeerd wachtwoord.";return}
+    try{SYNC=await deriveSync(pw);const r=await rpc("vault_get",{p_id:SYNC.id});if(r&&r.blob&&r.blob.s!==b64(SALT)){SYNC=null;er.textContent="Er staat al een kluis met dit wachtwoord op de server. Haal die op via een nieuw toestel (of wis eerst de lokale gegevens).";return}}
+    catch(e){SYNC=null;er.textContent="Geen verbinding met de server.";return}
+    localStorage.setItem(SYF,"1");$("#dlg2").close();await syncNow(true);render()},
   syncMusic:()=>doSync(true),
   addReq:()=>{E.muziek.verzoeken.push({id:uid(),t:"",a:"",status:"Nieuw",door:"DJ"});reDlg()},delReq:a=>{const r=E.muziek.verzoeken.splice(+a.dataset.i,1)[0];if(r?.id)E.muziek.gone.push(r.id);reDlg()},
   copyLink:()=>{const l=musicLink(E);navigator.clipboard?.writeText(l).then(()=>toast("Link gekopieerd")).catch(()=>prompt("Kopieer de link:",l))||prompt("Kopieer de link:",l)},
@@ -646,7 +701,7 @@ const ACT={
     if(!editing||old!==E.status){const s=E.status;setStatus(E,s)}
     save();$("#dlg").close();render();
   },
-  delB:()=>{if(confirm("Deze boeking verwijderen?")){D=D.filter(x=>x!==editing);save();$("#dlg").close();render()}},
+  delB:()=>{if(confirm("Deze boeking verwijderen?")){S.deleted.push({id:editing.id,ts:Date.now()});D=D.filter(x=>x!==editing);save();$("#dlg").close();render()}},
   ics:()=>ics(E),
   accept:()=>{E.status="geboekt";toast("Status: geboekt. Maak nu het betalingsschema en contract.");tab="betalingen";if(!E.betalingen.length)ACT.schema();drawDlg()},
   doc:a=>{const k=a.dataset.k;if(k==="factuur"&&!E.factuurnr){E.factuurnr=nextNr();E.factuurdatum=today();if(editing){editing.factuurnr=E.factuurnr;editing.factuurdatum=E.factuurdatum}save();drawDlg()}DOC[k](E)},
@@ -667,7 +722,7 @@ const ACT={
   exCsv:()=>{const h=["klant","email","tel","type","bron","status","datum","van","tot","locatie","factuurnr","notities"];
     dl(`boekingen-${today()}.csv`,"﻿"+[[...h,"totaal","ontvangen","open"],...D.map(b=>[...h.map(k=>b[k]??""),tot(b),paid(b),owed(b)])].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\n"),"text/csv")},
   imJson:()=>{const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=async()=>{try{const j=JSON.parse(await i.files[0].text());if(typeof j!=="object"||!j)throw 0;if(!confirm("Alle huidige gegevens vervangen?"))return;load(j);save();render();toast("Geïmporteerd")}catch(e){toast("Ongeldig bestand")}};i.click()},
-  pw:()=>{const n=prompt("Nieuw wachtwoord (minstens 10 tekens):");if(n&&n.length>=10){SALT=crypto.getRandomValues(new Uint8Array(16));derive(n,SALT).then(k=>{CK=k;return persist()}).then(()=>toast("Wachtwoord gewijzigd")).catch(()=>toast("Mislukt"))}else if(n!==null)toast("Te kort")}
+  pw:()=>{const n=prompt("Nieuw wachtwoord (minstens 10 tekens):");if(n&&n.length>=10){SALT=crypto.getRandomValues(new Uint8Array(16));derive(n,SALT).then(k=>{CK=k;if(SYNC){SYNC=null;localStorage.removeItem(SYF);badge("")}return persist()}).then(()=>toast("Wachtwoord gewijzigd"+(CLOUD?". Synchronisatie staat uit: schakel ze opnieuw in onder Instellingen.":""))).catch(()=>toast("Mislukt"))}else if(n!==null)toast("Te kort")}
 };
 document.addEventListener("click",e=>{
   const a=e.target.closest("[data-act]");
@@ -713,12 +768,20 @@ function showLock(){
   $("#ls").textContent=setup?"Je gegevens worden versleuteld in deze browser bewaard. Vergeet je dit wachtwoord, dan zijn ze niet te herstellen. Minstens 10 tekens.":"Voer je wachtwoord in om verder te gaan.";
   $("#pw2l").hidden=!setup;$("#pw2").required=setup;$("#pw").autocomplete=setup?"new-password":"current-password";
   $("#lb").textContent=setup?"Wachtwoord instellen":"Ontgrendel";$("#reset").hidden=setup;
+  $("#fetchl").hidden=!(setup&&CLOUD);$("#fetchv").checked=false;$("#pw2l").hidden=!setup;
   $("#pw").value=$("#pw2").value="";$("#le").textContent="";$("#pw").focus();
 }
+$("#fetchv").onchange=()=>{const f=$("#fetchv").checked;$("#pw2l").hidden=f;$("#pw2").required=!f};
 $("#lf").onsubmit=async e=>{
   e.preventDefault();const pw=$("#pw").value,err=$("#le"),btn=$("#lb");btn.disabled=true;err.textContent="";
   try{
     let v=null;try{v=JSON.parse(localStorage.getItem(VK))}catch(x){}
+    let fetched=false;
+    if(!v&&CLOUD&&$("#fetchv").checked){
+      let r=null;try{const sy=await deriveSync(pw);r=await rpc("vault_get",{p_id:sy.id})}catch(x){err.textContent="Geen verbinding met de server.";return}
+      if(!r||!r.blob){err.textContent="Geen kluis gevonden voor dit wachtwoord.";return}
+      v=r.blob;fetched=true;localStorage.setItem(VK,JSON.stringify(v));
+    }
     if(!v){
       if(pw.length<10){err.textContent="Gebruik minstens 10 tekens.";return}
       if(pw!==$("#pw2").value){err.textContent="De wachtwoorden komen niet overeen.";return}
@@ -729,12 +792,13 @@ $("#lf").onsubmit=async e=>{
       if(fails)await sleep(Math.min(fails*1000,10000));
       try{SALT=unb64(v.s);const k=await derive(pw,SALT);
         load(JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(v.i)},k,unb64(v.d)))));CK=k;
-      }catch(x){fails++;err.textContent="Verkeerd wachtwoord.";return}
+      }catch(x){fails++;err.textContent="Verkeerd wachtwoord.";if(fetched){localStorage.removeItem(VK)}return}
     }
     fails=0;L.hidden=true;document.body.classList.remove("locked");render();arm();
+    if(CLOUD&&(fetched||localStorage.getItem(SYF)==="1")){try{SYNC=await deriveSync(pw);localStorage.setItem(SYF,"1");syncNow()}catch(x){}}
   }finally{btn.disabled=false;$("#pw").value=$("#pw2").value=""}
 };
-function lock(){CK=null;D=[];S=defaults();E=editing=null;q="";gsq="";$("#gs").value="";syncedFor="";if($("#dlg").open)$("#dlg").close();if($("#dlg2").open)$("#dlg2").close();$("#dlg2").innerHTML="";$("#dlg").innerHTML="";$("#main").innerHTML="";clearTimeout(idle);showLock()}
+function lock(){CK=null;D=[];S=defaults();E=editing=null;q="";gsq="";$("#gs").value="";syncedFor="";if($("#dlg").open)$("#dlg").close();if($("#dlg2").open)$("#dlg2").close();$("#dlg2").innerHTML="";$("#dlg").innerHTML="";$("#main").innerHTML="";clearTimeout(idle);clearTimeout(syncT);SYNC=null;badge("");showLock()}
 function arm(){clearTimeout(idle);if(CK)idle=setTimeout(lock,10*60*1000)}
 ["pointerdown","keydown"].forEach(t=>addEventListener(t,arm,{passive:true}));
 $("#lockbtn").onclick=lock;
