@@ -4631,6 +4631,8 @@ function addSalesRow() {
     const last = salesRows(pg.id).map(x => x.values[dateCol.id]).filter(Boolean).sort().pop();
     r.values[dateCol.id] = pg.month && today().startsWith(pg.month) ? today() : last || '';
   }
+  const qtyCol = salesCols().find(c => c.type === 'number' && /aantal|stuks|#/i.test(c.name));   // een nieuwe verkoop is standaard 1 stuk
+  if (qtyCol) r.values[qtyCol.id] = 1;
   data.sales.push(r);
   save(); renderNav(); renderSales(true);
   const first = $(`tr[data-row="${r.id}"] input:not([type=date])`) || $(`tr[data-row="${r.id}"] input`);
