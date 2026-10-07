@@ -5,108 +5,110 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Verzoekjes · Beheer</title>
-<meta name="theme-color" content="#0A0A0A">
-<link rel="icon" href="icon.png" type="image/png">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/logo-sb-black.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="vendor/qrcode.js"></script>
 <style>
+body{background:#fff}
 /* login / instellen */
-.lock{min-height:100vh;display:grid;place-items:center;padding:24px 16px;background:radial-gradient(50% 40% at 50% 0%,rgba(34,160,109,.07),transparent 72%)}
-.lock .card{width:100%;max-width:460px;padding:40px 36px 36px;border:0;box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}
-.lock .logo{width:56px;margin-bottom:32px}
-.lock .idx{color:var(--accent);font-weight:600}
-.lock h1{font-size:34px;margin-bottom:14px}
-.lock p{color:var(--text-secondary);font-size:15px}
-.lock .btn.primary{margin-top:28px}
-code.uid{display:block;padding:12px;font-size:12px;word-break:break-all;margin:14px 0}
+.lock{min-height:100vh;display:grid;place-items:center;padding:1.5rem 1rem;background:#f1f0ee}
+.lock .card{width:100%;max-width:32rem;padding:2rem}
+.lock .logo{height:2rem;margin-bottom:2rem}
+.lock h1{font-size:1.875rem;letter-spacing:-.01em;margin:.5rem 0 .5rem}
+.lock p{color:rgba(17,17,17,.6);font-size:.9375rem}
+.lock .btn.primary{margin-top:1.5rem;padding:.875rem 1.75rem}
+code.uid{display:block;padding:.75rem;font-size:.8125rem;word-break:break-all;margin:.75rem 0}
 
-/* navigatie zoals de site + tabbladen */
-.top{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--hairline)}
-.bar{max-width:1180px;margin:0 auto;padding:0 22px;height:76px;display:flex;align-items:center;gap:8px}
-.brand{display:flex;align-items:center;gap:18px;margin-right:auto}
-.brand .logo{width:32px}
-.tabs{max-width:1180px;margin:0 auto;padding:0 22px 16px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+/* bovenbalk + tabbladen */
+.top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e6e5e2}
+.bar{max-width:88rem;margin:0 auto;padding:0 1.25rem;height:4.5rem;display:flex;align-items:center;gap:.5rem}
+.brand{display:flex;align-items:center;gap:1rem;margin-right:auto}
+.brand .logo{height:1.75rem}
+.tabs{max-width:88rem;margin:0 auto;padding:0 1.25rem 1rem;display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;white-space:nowrap;
-  color:var(--text-secondary);background:var(--bg);border:1px solid var(--hairline);transition:border-color .2s,color .2s}
-.tab:hover{color:var(--text);border-color:var(--accent)}
-.tab.on{color:var(--text);background:var(--bg-elevated);border-color:var(--accent)}
-.tab .badge{background:var(--accent);color:var(--accent-text);font-family:var(--mono);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:var(--r-pill);min-width:20px;text-align:center}
-.tab .st{width:6px;height:6px;border-radius:50%;background:var(--text-tertiary)}
-.tab .st.open{background:var(--accent)}
-.tab.add{border-style:dashed}
-.tab.add svg{width:13px;height:13px}
+@media (min-width:640px){.bar,.tabs{padding-inline:2rem}}
+.tab{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:9999px;font-size:.875rem;font-weight:500;white-space:nowrap;background:#f1f0ee;color:rgba(17,17,17,.7);transition:transform .35s var(--e3),background .2s}
+.tab:hover{background:#e3e2df;color:#111}
+.tab.on{background:#0a0a0a;color:#fff}
+.tab .badge{width:auto;height:auto;min-width:1.375rem;padding:.125rem .45rem;font-size:.75rem;font-weight:600;background:linear-gradient(to bottom right,#3f7a5c,#1f3d2d);color:#fff}
+.tab .st{width:.4rem;height:.4rem;border-radius:50%;background:rgba(17,17,17,.3)}
+.tab .st.open{background:#2e5a43}
+.tab.on .st{background:rgba(255,255,255,.4)} .tab.on .st.open{background:#6fa88a}
+.tab.add{background:transparent;border:1px dashed #e6e5e2}
+.tab.add svg{width:.875rem;height:.875rem}
 
 /* event */
-.main{max-width:1180px;margin:0 auto;padding:64px 22px 96px}
-.ev-head{display:flex;flex-wrap:wrap;gap:28px;align-items:center;margin-bottom:44px}
-.ev-thumb{width:80px;height:80px;object-fit:cover;flex:none;background:var(--bg-elevated);border-radius:var(--r-sm);border:1px solid var(--hairline);box-shadow:18px 18px 0 -17px var(--hairline)}
-.ev-head h2{font-size:clamp(32px,5vw,52px);margin-bottom:14px;min-width:0;overflow-wrap:anywhere}
+.main{max-width:88rem;margin:0 auto;padding:3.5rem 1.25rem 6rem}
+@media (min-width:640px){.main{padding-inline:2rem}}
+.ev-head{display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center;margin-bottom:2.5rem}
+.ev-thumb{width:5rem;height:5rem;object-fit:cover;flex:none;background:#f1f0ee;border-radius:1.25rem;filter:grayscale(1) contrast(1.08)}
+.ev-head h2{font-size:2.25rem;margin-bottom:.5rem;min-width:0;overflow-wrap:anywhere}
+@media (min-width:640px){.ev-head h2{font-size:3rem}}
 .ev-head .code{overflow-wrap:anywhere}
-.ev-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
-.ev-tools .btn{padding:11px 20px;font-size:14px}
-.photo-pick{display:flex;gap:16px;align-items:center}
-.photo-prev{width:100px;height:100px;background:var(--bg) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--text-tertiary);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-align:center;border-radius:var(--r-sm);border:1px solid var(--hairline)}
-.photo-pick .row{flex-wrap:wrap;gap:8px}
+.ev-tools{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-left:auto}
+.photo-pick{display:flex;gap:1rem;align-items:center}
+.photo-prev{width:6rem;height:6rem;background:#f1f0ee center/cover no-repeat;flex:none;display:grid;place-items:center;color:rgba(17,17,17,.45);font-size:.75rem;text-align:center;border-radius:.875rem}
+.photo-pick .row{flex-wrap:wrap;gap:.5rem}
 
-.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:14px;font-weight:600;padding:8px 18px 8px 8px;margin:0;color:var(--text);
-  background:var(--bg);border:1px solid var(--hairline);border-radius:var(--r-pill)}
-.switch input{appearance:none;width:40px;height:24px;border-radius:12px;background:var(--hairline);position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
-.switch input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--text);transition:left .2s var(--ease)}
-.switch input:checked{background:var(--accent)}
-.switch input:checked::after{left:19px;background:var(--accent-text)}
+.switch{display:inline-flex;align-items:center;gap:.625rem;cursor:pointer;user-select:none;font-size:.875rem;font-weight:500;padding:.375rem 1rem .375rem .375rem;margin:0;color:#111;background:#f1f0ee;border-radius:9999px;text-transform:none;letter-spacing:0}
+.switch input{appearance:none;width:2.5rem;height:1.5rem;border-radius:9999px;background:#d8d7d3;position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:1.125rem;height:1.125rem;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .25s var(--e3)}
+.switch input:checked{background:#2e5a43}
+.switch input:checked::after{left:calc(100% - 1.125rem - 3px)}
 
-.np{display:flex;gap:16px;align-items:center;padding:20px 22px;margin-bottom:44px}
+.np{display:flex;gap:1rem;align-items:center;padding:1.25rem 1.5rem;margin-bottom:2.5rem;border-radius:1.25rem}
 
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
-.seg{display:inline-flex;gap:6px}
-.seg button{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;color:var(--text-secondary);background:var(--bg);border:1px solid var(--hairline);transition:border-color .2s,color .2s}
-.seg button:hover{color:var(--text);border-color:var(--accent)}
-.seg button.on{color:var(--text);background:var(--bg-elevated);border-color:var(--accent)}
-.seg .n{font-family:var(--mono);font-size:11px;color:var(--accent)}
-.filters select,.filters input{width:auto;padding:10px 18px;font-size:14px;border-radius:var(--r-pill)}
-.filters input{flex:1;min-width:140px}
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.seg{display:inline-flex;gap:.375rem}
+.seg button{display:inline-flex;align-items:center;gap:.375rem;padding:.5rem 1rem;border-radius:9999px;font-size:.875rem;font-weight:500;background:#f1f0ee;color:rgba(17,17,17,.7)}
+.seg button:hover{background:#e3e2df;color:#111}
+.seg button.on{background:#0a0a0a;color:#fff}
+.seg .n{opacity:.55;font-size:.75rem;font-variant-numeric:tabular-nums}
+.filters select,.filters input{width:auto;padding:.625rem 1rem;font-size:.875rem;border-radius:9999px}
+.filters input{flex:1;min-width:9rem}
 
-ul.list{list-style:none;counter-reset:trk}
-.req{display:flex;gap:20px;align-items:flex-start;padding:22px 0;border-top:1px solid var(--hairline);counter-increment:trk}
-.req:last-child{border-bottom:1px solid var(--hairline)}
-.req::before{content:"A" counter(trk);font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);width:32px;flex:none;padding-top:2px}
-.req .art{width:56px;height:56px}
+/* verzoekjes als genummerde rijen, zoals "Eén DJ, elke avond" */
+ul.list{counter-reset:trk}
+.req{display:flex;gap:1rem;align-items:flex-start;padding:1.5rem 1rem;border-top:1px solid #e6e5e2;border-radius:1.25rem;counter-increment:trk;transition:background .5s var(--e1)}
+.req:first-child{border-top:none}
+.req:hover{background:#f1f0ee}
+.req::before{content:counter(trk,decimal-leading-zero);width:1.75rem;font-size:.875rem;font-weight:500;color:rgba(17,17,17,.4);flex:none;padding-top:.25rem}
+.req .art{width:3.5rem;height:3.5rem}
 .req .body{flex:1;min-width:0}
-.req .t{font-weight:700;font-size:17px;overflow-wrap:anywhere}
-.req .a{color:var(--text-secondary);font-size:14px}
-.req .cnt{display:inline-block;margin-left:10px;padding:2px 9px;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-text);font-family:var(--mono);font-size:11px;font-weight:700;vertical-align:2px}
-.req .who{margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:14px}
-.req .who div{color:var(--text-secondary)}
-.req .who b{color:var(--text);font-weight:700}
-.req .who q{font-style:normal;color:var(--text)}
-.req .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center;flex:none;max-width:50%}
-.req .acts .btn{padding:9px 14px}
-.empty{text-align:center;color:var(--text-secondary);padding:96px 12px}
-.empty h2{color:var(--text);font-size:clamp(32px,5vw,52px);margin-bottom:16px}
-.empty p{margin:0 auto 32px;max-width:38ch}
+.req .t{font-size:1.25rem;font-weight:500;letter-spacing:-.01em;overflow-wrap:anywhere}
+.req .a{color:rgba(17,17,17,.55);font-size:.875rem}
+.req .cnt{display:inline-block;margin-left:.625rem;padding:.125rem .5rem;border-radius:9999px;background:#0a0a0a;color:#fff;font-size:.75rem;font-weight:600;vertical-align:.2em;font-variant-numeric:tabular-nums}
+.req .who{margin-top:.625rem;display:flex;flex-direction:column;gap:.25rem;font-size:.875rem}
+.req .who div{color:rgba(17,17,17,.55)}
+.req .who b{color:#111;font-weight:500}
+.req .who q{font-style:normal;color:#111}
+.req .acts{display:flex;gap:.375rem;flex-wrap:wrap;justify-content:flex-end;align-items:center;flex:none;max-width:50%}
+.req:hover .acts .btn:not(.dark):not(.primary){background:#fff}
+.empty{text-align:center;color:rgba(17,17,17,.55);padding:6rem 1rem}
+.empty h2{color:#111;font-size:2.25rem;margin:1rem 0}
+.empty p{margin:0 auto 2rem;max-width:36ch}
 
-.qr{display:grid;place-items:center;margin:24px 0}
-.qr img{width:232px;height:232px;background:var(--white);padding:16px;border-radius:var(--r-lg);image-rendering:pixelated}
-.linkbox{display:flex;gap:8px;align-items:center}
-.linkbox input{font-size:14px;border-radius:var(--r-pill)}
-.linkbox .btn{padding:13px 22px}
-.arch li{display:flex;align-items:center;gap:8px;padding:14px 0;border-top:1px solid var(--hairline)}
-.arch ul{list-style:none;margin-top:18px}
+.qr{display:grid;place-items:center;margin:1.5rem 0}
+.qr img{width:14.5rem;height:14.5rem;background:#fff;padding:1rem;border-radius:1.25rem;box-shadow:0 0 0 1px #e6e5e2;image-rendering:pixelated}
+.linkbox{display:flex;gap:.5rem;align-items:center}
+.linkbox input{font-size:.875rem;border-radius:9999px}
+.arch li{display:flex;align-items:center;gap:.5rem;padding:.875rem 0;border-top:1px solid #e6e5e2}
+.arch ul{margin-top:1rem}
 .menu{position:relative}
-.menu-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:10;min-width:240px;padding:8px;border-radius:var(--r-lg);border:1px solid var(--hairline);box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}
-.menu-pop button{display:flex;width:100%;padding:11px 14px;border-radius:var(--r-sm);text-align:left;gap:8px;font-size:14px;color:var(--text)}
-.menu-pop button:hover{background:var(--hover)}
+.menu-pop{position:absolute;right:0;top:calc(100% + .5rem);z-index:10;min-width:15rem;padding:.5rem;border-radius:1.25rem}
+.menu-pop button{display:flex;width:100%;padding:.625rem .875rem;border-radius:.875rem;text-align:left;gap:.5rem;font-size:.875rem;color:#111}
+.menu-pop button:hover{background:#f1f0ee}
 .menu-pop button.danger{color:var(--danger)}
-.menu-pop hr{border:0;border-top:1px solid var(--hairline);margin:6px 0}
+.menu-pop hr{border:0;border-top:1px solid #e6e5e2;margin:.375rem 0}
 
 @media (max-width:640px){
   .req{flex-wrap:wrap}
-  .req .acts{max-width:none;width:100%;justify-content:flex-start;padding-left:128px}
+  .req .acts{max-width:none;width:100%;justify-content:flex-start;padding-left:5.75rem}
   .ev-tools{margin-left:0;width:100%}
   .brand .mono{display:none}
 }
@@ -119,7 +121,7 @@ ul.list{list-style:none;counter-reset:trk}
 <!-- Eerste keer instellen -->
 <div id="setup" class="lock" hidden>
   <form class="card" id="setupForm" style="max-width:520px">
-    <span class="logo" role="img" aria-label="SB"></span>
+    <img class="logo" src="../assets/logo-sb-black.png" alt="SB logo">
     <span class="idx accent">Eenmalig</span>
     <h1>Verzoekjes instellen.</h1>
     <p class="muted">Eenmalig: koppel de privé-repo waarin de verzoekjes als issues terechtkomen, en kies je beheerwachtwoord. Zie <code>requests/LEESMIJ.md</code>.</p>
@@ -145,7 +147,7 @@ ul.list{list-style:none;counter-reset:trk}
 <!-- Login -->
 <div id="login" class="lock" hidden>
   <form class="card" id="loginForm">
-    <span class="logo" role="img" aria-label="SB"></span>
+    <img class="logo" src="../assets/logo-sb-black.png" alt="SB logo">
     <span class="idx accent">Verzoekjes</span>
     <h1>Beheer.</h1>
     <p class="muted">Log in om je verzoekjes te beheren.</p>
@@ -175,7 +177,7 @@ ul.list{list-style:none;counter-reset:trk}
 <div id="app" hidden>
   <div class="top">
     <div class="bar">
-      <div class="brand"><span class="logo" role="img" aria-label="SB"></span><span class="mono">Verzoekjes · Beheer</span></div>
+      <div class="brand"><img class="logo" src="../assets/logo-sb-black.png" alt="SB logo"><span class="mono">Verzoekjes · Beheer</span></div>
       <button class="icon-btn" id="soundBtn" title="Geluid bij nieuw verzoekje" aria-pressed="false"></button>
       <button class="icon-btn" id="archBtn" title="Archief"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></svg></button>
       <button class="icon-btn" id="logout" title="Uitloggen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
@@ -497,7 +499,7 @@ function renderMain() {
       </div>
     </div>
     ${np && np.title ? `<div class="card np"><div class="art" style="${artStyle(np.artwork)}">${safeArt(np.artwork) ? '' : NOTE}</div>
-      <div class="grow" style="min-width:0"><span class="pill live"><span class="dot"></span>Nu te horen</span> <span class="mono" style="margin-left:8px">Zichtbaar voor gasten</span><div style="margin-top:6px"></div><b>${esc(np.title)}</b> <span class="muted">${esc(np.artist || '')}</span></div>
+      <div class="grow" style="min-width:0"><span class="tagp live"><span class="dot"></span>Nu te horen</span> <span class="mono" style="margin-left:8px">Zichtbaar voor gasten</span><div style="margin-top:6px"></div><b>${esc(np.title)}</b> <span class="muted">${esc(np.artist || '')}</span></div>
       <button class="btn sm" id="npClear">Wissen</button></div>` : ''}
     <div class="filters">
       <div class="seg" role="tablist">
@@ -524,7 +526,7 @@ function groupHtml(g) {
   const who = g.items.filter(i => i.name || i.message).map(i =>
     `<div>${i.name ? `<b>${esc(i.name)}</b>` : 'Anoniem'}${i.message ? `: <q>${esc(i.message)}</q>` : ''} · ${ago(i.createdAt)}</div>`).join('');
   const acts = view === 'new'
-    ? `<button class="btn sm light" data-act="play" title="Nu draaien: tonen aan gasten en als gespeeld markeren">${I.play} Nu</button>
+    ? `<button class="btn sm dark" data-act="play" title="Nu draaien: tonen aan gasten en als gespeeld markeren">${I.play} Nu</button>
        <button class="btn sm ok" data-act="played" title="Gespeeld">${I.check}</button>
        <button class="btn sm danger" data-act="rejected" title="Afwijzen">${I.x}</button>`
     : `<button class="btn sm" data-act="new" title="Terug naar wachtrij">${I.undo} Terugzetten</button>`;
@@ -710,7 +712,7 @@ function qrPng(url, size, pad = 0.06) {
   const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
   const n = qr.getModuleCount(), c = document.createElement('canvas'); c.width = c.height = size;
   const x = c.getContext('2d'), p = Math.round(size * pad), cell = (size - 2 * p) / n;
-  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, size, size); x.fillStyle = '#0A0A0A';
+  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, size, size); x.fillStyle = '#0a0a0a';
   for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) x.fillRect(Math.floor(p + k * cell), Math.floor(p + r * cell), Math.ceil(cell), Math.ceil(cell));
   return c.toDataURL('image/png');
 }

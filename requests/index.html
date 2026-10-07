@@ -5,117 +5,154 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Verzoekjes</title>
 <meta name="description" content="Vraag je nummer aan bij de DJ.">
-<meta name="theme-color" content="#0A0A0A">
-<link rel="icon" href="icon.png" type="image/png">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="../assets/logo-sb-black.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.aurora{position:absolute;left:0;right:0;top:-80px;height:560px;z-index:0;pointer-events:none;background:radial-gradient(50% 50% at 50% 10%,rgba(34,160,109,.07),transparent 72%)}
-.wrap{max-width:720px;margin:0 auto;padding:0 22px}
+/* header zoals de site: los boven de hero */
+.header{position:absolute;inset-inline:0;top:0;z-index:50;color:#fff}
+.header-in{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding-block:1.25rem}
+@media (min-width:640px){.header-in{padding-block:1.5rem}}
+.brand img{height:1.75rem}
+.header .chip{color:rgba(17,17,17,.75)}
 
-/* hero zoals de startpagina: vierkante foto met verschoven kader en sticker, titel eronder, gecentreerd */
-.hero{position:relative;max-width:1180px;margin:0 auto;padding:88px 22px 0}
-.hero-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
-.photo-wrap{position:relative;width:240px;max-width:100%;margin-bottom:40px}
-.photo-frame{position:absolute;inset:18px -18px -18px 18px;border:1px solid var(--hairline);z-index:0}
-.photo{position:relative;z-index:1;width:100%;aspect-ratio:1/1;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--hairline)}
-.photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
-.sleeve-sticker{position:absolute;z-index:2;top:-16px;right:-16px;width:62px;height:62px;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-text);
-  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;transform:rotate(-8deg);box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
-.hero.nophoto .photo-wrap{display:none}
-.hero-logo{width:60px}
-.hero:not(.nophoto) .hero-logo{display:none}
-.hero h1{margin-top:26px;font-size:clamp(40px,9vw,76px);overflow-wrap:anywhere;max-width:14ch}
-.hero:not(.nophoto) h1{margin-top:0}
-.hero .tagline{margin-top:22px}
-.lede{margin-top:22px;font-size:17px;line-height:1.65;color:var(--text-secondary);max-width:38ch;white-space:pre-line}
-.cta-row{margin-top:40px;display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
-@media (min-width:700px){.hero{padding-top:120px}.photo-wrap{width:280px}}
+/* hero zoals de site: donker, afgeronde onderkant, foto in grijswaarden, watermerk, statusregel */
+.hero{position:relative;isolation:isolate;overflow:hidden;border-radius:0 0 2rem 2rem;background:#0a0a0a;color:#fff}
+.liquid{position:absolute;inset:0;z-index:0}
+.liquid img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 25%;filter:grayscale(1) contrast(1.08) brightness(.92)}
+.vig{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(10,10,10,.55),rgba(10,10,10,.1) 40%,rgba(10,10,10,.7))}
+.hero.nophoto .liquid{background:url("../assets/presspic.jpg") 50% 22%/cover no-repeat;filter:grayscale(1) contrast(1.08) brightness(.92)}
+.hero .wm{position:absolute;inset-inline:0;bottom:5rem;z-index:1;color:rgba(255,255,255,.12);font-size:clamp(9rem,30vw,16rem)}
+.hero-g{position:relative;z-index:20;display:flex;flex-direction:column;gap:2rem;padding-block:7rem 3.5rem;min-height:min(46rem,92svh);justify-content:flex-end}
+@media (min-width:1024px){.hero-g{display:grid;grid-template-columns:repeat(12,1fr);align-items:end;gap:2.5rem;padding-block:9rem 4.5rem}}
+.hl{display:flex;flex-direction:column;gap:1.5rem}
+@media (min-width:1024px){.hl{grid-column:span 7}}
+.hr{display:flex;flex-direction:column;align-items:flex-start;gap:2rem}
+@media (min-width:1024px){.hr{grid-column:span 5;align-items:flex-end}}
+.hero h1{max-width:16ch;font-size:2.5rem;overflow-wrap:anywhere}
+@media (min-width:640px){.hero h1{font-size:3.25rem}}
+@media (min-width:768px){.hero h1{font-size:3.75rem}}
+.lede{max-width:40ch;font-size:1rem;color:rgba(255,255,255,.8);white-space:pre-line}
+.ctas{display:flex;flex-wrap:wrap;gap:.75rem}
+.status{position:relative;z-index:20}
+.status-in{display:flex;align-items:center;justify-content:space-between;gap:.75rem;border-top:1px solid rgba(255,255,255,.15);padding-block:1.25rem;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.025em;color:rgba(255,255,255,.7)}
+.status-in .mid{display:none}
+@media (min-width:640px){.status-in .mid{display:block}}
+.status-in .on{display:inline-flex;align-items:center;gap:.5rem}
+.status-in .on::before{content:"";width:.5rem;height:.5rem;border-radius:9999px;background:#6fa88a}
+.status-in .on.closed::before{background:rgba(255,255,255,.4)}
 
-.now{display:flex;gap:18px;align-items:center;padding:20px 22px;margin:56px 0 0;text-align:left}
-.now .t{font-weight:700;margin-top:8px}
-.block{padding:96px 0;border-top:1px solid var(--hairline);scroll-margin-top:76px}
-.block.alt{background:var(--cord)}
-.block .note{margin-top:18px;font-size:17px;line-height:1.65;color:var(--text-secondary);max-width:44ch}
-.first{margin-top:88px}
-@media (min-width:700px){.block{padding:128px 0}}
+/* "Nu te horen"-kaart zoals de kaart rechts in de hero van de site */
+.hc{width:100%;max-width:24rem;border-radius:1.25rem;background:rgba(255,255,255,.7);padding:.5rem;box-shadow:0 10px 30px -10px rgba(0,0,0,.35),0 0 0 1px rgba(230,229,226,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#111}
+@media (min-width:1024px){.hc{width:19rem}}
+.hc-row{display:flex;gap:.5rem}
+.hc-tile{aspect-ratio:1;width:6rem;display:grid;place-items:center;border-radius:.875rem;background:#0a0a0a center/cover no-repeat;color:rgba(255,255,255,.5);flex:none}
+.hc-tile svg{width:1.5rem;height:1.5rem}
+.hc-pan{flex:1;border-radius:.875rem;background:rgba(241,240,238,.7);padding:.75rem;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.hc-cap{display:inline-flex;align-items:center;gap:.375rem;font-size:.65rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.hc-ttl{font-size:.9375rem;font-weight:500;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hc-sub{font-size:.8125rem;color:rgba(17,17,17,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.search{position:relative;margin-top:36px}
-.search svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-secondary);pointer-events:none}
-.search input{padding:16px 20px 16px 48px;border-radius:var(--r-pill)}
-#results{list-style:none;margin-top:24px}
-#results li{border-top:1px solid var(--hairline)}
-#results li:last-child{border-bottom:1px solid var(--hairline)}
-.song{display:flex;gap:16px;align-items:center;padding:16px 0;width:100%;text-align:left;color:var(--text)}
-.song .meta{min-width:0;flex:1}
-.song .t,.song .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.song .t{font-weight:700}
-.song .a{color:var(--text-secondary);font-size:14px}
-.song .plus{color:var(--text-tertiary);flex:none;transition:color .2s,transform .2s}
-.song:hover .plus,.song:focus-visible .plus{color:var(--accent);transform:translateX(3px)}
-.hint{text-align:center;color:var(--text-secondary);font-size:15px;padding:32px 8px;line-height:2}
-.formcard{padding:40px 36px 36px;margin-top:36px}
-#form .picked{display:flex;gap:16px;align-items:center;padding-bottom:4px}
-#form .picked .t{font-weight:700;font-size:17px}
-#form .submit{margin-top:30px}
-.closed{padding:40px 36px;margin:56px 0 0;text-align:center}
-.closed h2{font-size:28px;margin-bottom:14px}
-.done-card{padding:44px 36px;margin-top:36px;text-align:center}
-.done-card h2{font-size:clamp(32px,6vw,48px);margin-bottom:16px}
-.done-card p{color:var(--text-secondary);margin:0 auto 28px;max-width:34ch}
+/* inhoud */
+.content{max-width:48rem;margin-inline:auto;padding-inline:1.25rem}
+@media (min-width:640px){.content{padding-inline:2rem}}
+.sec{padding-top:5rem;scroll-margin-top:1rem}
+@media (min-width:1024px){.sec{padding-top:6rem}}
+.sec h2.h{margin:1.25rem 0 2rem}
+.search{position:relative}
+.search svg{position:absolute;left:1.125rem;top:50%;transform:translateY(-50%);width:1.125rem;height:1.125rem;color:#8d8d8d;pointer-events:none}
+.search input{padding:1rem 1.25rem 1rem 3rem;border-radius:9999px}
+#results{margin-top:1.25rem}
+.song .meta,.qrow .meta,.mine .meta{flex:1;min-width:0}
+.song .t,.qrow .t,.mine .t{font-size:1.125rem;font-weight:500;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song .a,.qrow .a,.mine .a{font-size:.875rem;color:rgba(17,17,17,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint{text-align:center;color:#8d8d8d;font-size:.9375rem;padding:2rem .5rem;line-height:2}
+.formcard{padding:1.5rem}
+@media (min-width:640px){.formcard{padding:2rem}}
+.picked{display:flex;gap:1rem;align-items:center;padding-bottom:.5rem}
+.picked .t{font-weight:500;font-size:1.125rem}
+.f-bot{margin-top:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.f-bot small{font-size:.75rem;color:rgba(17,17,17,.45)}
+.closed{padding:2rem;margin-top:3rem;text-align:center}
+.closed h2{font-size:1.875rem;margin-bottom:.75rem}
+.done-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;padding:3rem 1.5rem}
+.done-card .bd{width:3.5rem;height:3.5rem;display:grid;place-items:center;border-radius:9999px;background:#0a0a0a}
+.done-card .bd img{height:1.5rem}
+.done-card h2{font-size:1.875rem}
+.done-card p{max-width:32ch;font-size:.9375rem;color:rgba(17,17,17,.6)}
 
-.queue ul,.mine ul{list-style:none;margin-top:36px}
-.queue li,.mine li{display:flex;gap:18px;align-items:center;padding:18px 0;border-top:1px solid var(--hairline)}
-.queue li:last-child,.mine li:last-child{border-bottom:1px solid var(--hairline)}
-.queue .meta,.mine .meta{flex:1;min-width:0}
-.queue .t,.mine .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .a,.mine .a{font-size:14px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.queue .rank{width:30px;flex:none}
-.vote{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:70px;padding:10px 16px;border-radius:var(--r-pill);font-family:var(--mono);font-size:13px;font-weight:600;
-  background:var(--bg);border:1px solid var(--hairline);color:var(--text);flex:none;transition:background .2s,border-color .2s,transform .15s,box-shadow .25s}
-.vote:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(0,0,0,.5)}
-.vote:active{transform:scale(.97)}
-.vote svg{width:9px;height:9px}
-.vote.on{background:var(--accent);color:var(--accent-text);border-color:transparent;font-weight:700}
-.vote:disabled{cursor:default;transform:none;box-shadow:none}
-.vote.own{color:var(--text-tertiary);border-style:dashed}
-.queue .more{margin-top:28px}
+/* wachtrij in een zwart paneel, zoals "In cijfers" */
+.queue .panel{padding:3rem 1.25rem}
+@media (min-width:640px){.queue .panel{padding:3.5rem 2.5rem}}
+.queue h2.h{color:#fff}
+.queue .note{max-width:40ch;color:rgba(255,255,255,.6)}
+.queue ul{margin-top:2.25rem}
+.queue li{border-top:1px solid rgba(255,255,255,.1)}
+.queue li:first-child{border-top:none}
+.qrow{display:flex;align-items:center;gap:1rem;padding:1.125rem .25rem}
+.qrow .n{width:1.75rem;font-size:.875rem;font-weight:500;color:rgba(255,255,255,.4);flex:none}
+.qrow .t{color:#fff}
+.qrow .a{color:rgba(255,255,255,.55)}
+.vote{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .375rem .375rem 1rem;border-radius:9999px;border:1px solid rgba(255,255,255,.25);color:#fff;font-size:.875rem;font-weight:500;flex:none;transition:transform .35s var(--e3),background .2s}
+.vote .c{width:2rem;height:2rem;display:grid;place-items:center;border-radius:9999px;background:#fff;color:#0a0a0a;font-variant-numeric:tabular-nums;font-size:.8125rem;font-weight:600}
+@media (hover:hover){.vote:not(:disabled):hover{transform:scale(1.04)}}
+.vote.on{background:linear-gradient(to bottom right,#3f7a5c,#1f3d2d);border-color:transparent}
+.vote:disabled{cursor:default}
+.vote.own{border-style:dashed;color:rgba(255,255,255,.5)}
+.vote.own .c{background:rgba(255,255,255,.15);color:#fff}
+.queue .hint{color:rgba(255,255,255,.5)}
+@media (max-width:520px){.vote{padding:.25rem}.vote > span:first-child{display:none}.qrow{gap:.75rem}.qrow .art{width:2.5rem;height:2.5rem}.qrow .n{width:1.25rem}}
+.queue .more{margin-top:1.75rem}
+.mine li{display:flex;align-items:center;gap:1rem;padding:1rem 0;border-top:1px solid #e6e5e2}
+.mine li:first-child{border-top:none}
+.mine ul{margin-top:1.75rem}
 </style>
 </head>
 <body>
-<header class="site-nav">
-  <div class="site-nav-inner">
-    <a href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"><span class="logo" role="img" aria-label="SB"></span></a>
-    <div class="site-nav-right">
-      <span class="mono">Verzoekjes</span>
-    </div>
+<header class="header">
+  <div class="shell header-in">
+    <a class="brand" href="https://sbmusic.be/" aria-label="SB, naar sbmusic.be"><img src="../assets/logo-sb-white.png" alt="SB logo"></a>
+    <span class="chip">Verzoekjes</span>
   </div>
 </header>
 
 <main>
-  <section class="hero nophoto" id="hero">
-    <div class="aurora" aria-hidden="true"></div>
-    <div class="hero-inner reveal">
-      <div class="photo-wrap">
-        <div class="photo-frame" aria-hidden="true"></div>
-        <div class="photo"><img id="evPhoto" alt="" hidden></div>
-        <span class="sleeve-sticker" id="sticker" aria-hidden="true" hidden>LIVE</span>
+  <section class="hero on-dark nophoto" id="hero">
+    <div class="liquid"><img id="evPhoto" alt="" hidden></div>
+    <div class="vig"></div>
+    <div class="wm" aria-hidden="true">SB</div>
+    <div class="shell hero-g">
+      <div class="hl rv">
+        <span class="eyebrow eyebrow--light">Verzoekjes · Muziek op aanvraag</span>
+        <h1 id="evName">Verzoekjes</h1>
+        <p class="lede" id="evWelcome" hidden></p>
+        <div class="ctas" id="ctaRow" hidden>
+          <a class="pill pill--white" href="#searchBox"><span class="pill-in">Vraag een nummer aan<span class="pill-ar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span></a>
+          <a class="pill pill--outlineLight no-ar" href="#queue" id="ctaVote"><span class="pill-in">Stem mee</span></a>
+        </div>
       </div>
-      <span class="logo hero-logo" role="img" aria-label="SB"></span>
-      <h1 id="evName">Verzoekjes</h1>
-      <p class="mono tagline">Muziek op aanvraag</p>
-      <p class="lede" id="evWelcome" hidden></p>
-      <div class="cta-row" id="ctaRow" hidden>
-        <a class="btn krijt" href="#searchBox">Vraag een nummer aan</a>
-        <a class="btn" href="#queue" id="ctaVote">Stem mee</a>
+      <div class="hr">
+        <div class="hc rv" id="nowPlaying" hidden>
+          <div class="hc-row">
+            <div class="hc-tile" id="npArt"></div>
+            <div class="hc-pan">
+              <span class="hc-cap live"><span class="dot"></span>Nu te horen</span>
+              <div><div class="hc-ttl" id="npTitle"></div><div class="hc-sub" id="npArtist"></div></div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="status">
+      <div class="shell status-in"><span class="on" id="stLeft">Verzoekjes open</span><span class="mid">sbmusic.be/requests</span><span>Scroll ↓</span></div>
     </div>
   </section>
 
-  <div class="wrap">
+  <div class="content">
     <div id="loading" class="spinner" aria-label="Laden"></div>
 
     <div id="setup" class="card setup" hidden>
@@ -123,37 +160,26 @@
       <p class="muted">Deze pagina is nog niet gekoppeld aan een GitHub-repo. Volg de stappen in <code>requests/LEESMIJ.md</code>.</p>
     </div>
 
-    <div id="nowPlaying" class="card now" hidden>
-      <div class="art" id="npArt"></div>
-      <div class="grow" style="min-width:0">
-        <span class="pill live"><span class="dot"></span>Nu te horen</span>
-        <div class="t" id="npTitle"></div>
-        <div class="muted small" id="npArtist"></div>
-      </div>
-    </div>
-
     <div id="closed" class="card closed" hidden>
       <h2>Verzoekjes zijn dicht.</h2>
       <p class="muted" id="closedMsg" style="white-space:pre-line"></p>
     </div>
-  </div>
 
-  <div id="open" class="first" hidden>
-    <section class="block" id="searchBox">
-      <div class="wrap">
-        <div class="section-head"><h2>Wat wil jij horen?</h2><span class="cat-no" aria-hidden="true">REQ-01</span></div>
+    <div id="open" hidden>
+      <section class="sec" id="searchBox">
+        <span class="eyebrow eyebrow--accent">Zoek</span>
+        <h2 class="h">Wat wil jij horen?</h2>
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="q" type="search" placeholder="Titel of artiest" autocomplete="off" enterkeyhint="search" aria-label="Zoek een nummer">
         </div>
-        <ul id="results"></ul>
+        <ul id="results" class="rows"></ul>
         <div id="searchHint" class="hint">Typ een titel of artiest.<br><button class="link" id="manualBtn" type="button">Niet te vinden? Typ het zelf in.</button></div>
-      </div>
-    </section>
+      </section>
 
-    <form id="form" class="block" hidden autocomplete="on">
-      <div class="wrap">
-        <div class="section-head"><h2>Jouw nummer.</h2><span class="cat-no" aria-hidden="true">REQ-02</span></div>
+      <form id="form" class="sec" hidden autocomplete="on">
+        <span class="eyebrow eyebrow--accent">Verstuur</span>
+        <h2 class="h">Jouw nummer.</h2>
         <div class="card formcard">
           <div class="picked">
             <div class="art" id="fArt"></div>
@@ -161,59 +187,65 @@
               <div class="t" id="fTitle"></div>
               <div class="muted small" id="fArtist"></div>
             </div>
-            <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            <button class="icon-btn" type="button" id="fBack" aria-label="Ander nummer kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l16 16M20 4 4 20"/></svg></button>
           </div>
           <div id="manualFields" hidden>
             <label for="mTitle">Titel</label>
-            <input id="mTitle" type="text" maxlength="200">
+            <input id="mTitle" type="text" maxlength="200" placeholder="Titel van het nummer">
             <label for="mArtist">Artiest</label>
-            <input id="mArtist" type="text" maxlength="200">
+            <input id="mArtist" type="text" maxlength="200" placeholder="Artiest">
           </div>
           <label for="fName">Je naam <span class="opt">(optioneel)</span></label>
-          <input id="fName" type="text" maxlength="60" autocomplete="given-name">
+          <input id="fName" type="text" maxlength="60" autocomplete="given-name" placeholder="Je naam">
           <div id="msgField">
             <label for="fMsg">Boodschap voor de DJ <span class="opt">(optioneel)</span></label>
             <textarea id="fMsg" maxlength="300" placeholder="Bv. voor de jarige Sarah"></textarea>
           </div>
-          <button class="btn primary submit" id="fSubmit" type="submit">Verstuur naar de DJ →</button>
+          <div class="f-bot">
+            <small>De DJ ziet je aanvraag meteen.</small>
+            <button class="pill pill--dark" data-ar="up" id="fSubmit" type="submit"><span class="pill-in"><b id="fSend" style="font-weight:500">Verstuur naar de DJ</b><span class="pill-ar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button>
+          </div>
           <p class="err" id="fErr"></p>
         </div>
-      </div>
-    </form>
+      </form>
 
-    <div id="done" class="block" hidden>
-      <div class="wrap">
+      <div id="done" class="sec" hidden>
         <div class="card done-card">
-          <span class="cat-no">Verstuurd</span>
-          <h2 style="margin-top:14px">Ontvangen.</h2>
+          <div class="bd"><img src="../assets/logo-sb-white.png" alt="SB logo"></div>
+          <h2>Ontvangen.</h2>
           <p>De DJ ziet je nummer nu. Hou deze pagina open om te zien wanneer het speelt.</p>
-          <button class="btn" id="again" type="button">Nog een nummer</button>
+          <button class="pill pill--dark no-ar" id="again" type="button"><span class="pill-in">Nog een nummer</span></button>
         </div>
       </div>
     </div>
-  </div>
 
-  <section class="queue block alt" id="queue" hidden>
-    <div class="wrap">
-      <div class="section-head"><h2>De wachtrij.</h2><span class="cat-no" aria-hidden="true">REQ-03</span></div>
-      <p class="note">Wil jij een nummer ook horen? Geef het een stem.</p>
-      <ul id="queueList"></ul>
-      <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
-      <button class="btn more" id="queueMore" type="button" hidden>Toon alles</button>
-    </div>
-  </section>
+    <section class="queue sec" id="queue" hidden>
+      <div class="panel on-dark">
+        <span class="eyebrow eyebrow--light">Stem mee</span>
+        <h2 class="h" style="margin:1rem 0 .75rem">De wachtrij.</h2>
+        <p class="note">Wil jij een nummer ook horen? Geef het een stem.</p>
+        <ul id="queueList"></ul>
+        <p class="hint" id="queueEmpty" hidden>Nog niets in de wachtrij. Vraag als eerste een nummer aan.</p>
+        <button class="pill pill--outlineLight no-ar more" id="queueMore" type="button" hidden><span class="pill-in">Toon alles</span></button>
+      </div>
+    </section>
 
-  <section class="mine block" id="mine" hidden>
-    <div class="wrap">
-      <div class="section-head"><h2>Mijn verzoekjes.</h2><span class="cat-no" aria-hidden="true">REQ-04</span></div>
+    <section class="mine sec" id="mine" hidden>
+      <span class="eyebrow">Mijn verzoekjes</span>
       <ul id="mineList"></ul>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
 
-<footer class="foot">
-  <div class="copy mono">© 2026 SB — Allround DJ</div>
-  <a class="mono" href="https://sbmusic.be/">sbmusic.be</a>
+<footer class="site-foot on-dark">
+  <div class="shell f-in">
+    <div class="f-cta">
+      <h2>Een feest of event op til? Laat SB draaien.</h2>
+      <a class="pill pill--light" data-ar="up" href="https://sbmusic.be/"><span class="pill-in">Boek SB<span class="pill-ar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></a>
+    </div>
+    <div class="legal"><span>© 2026 SB. Alle rechten voorbehouden.</span><div><a href="../privacyverklaring.html">Privacy</a><a href="../voorwaarden.html">Voorwaarden</a></div></div>
+  </div>
+  <div class="wm" aria-hidden="true">SB</div>
 </footer>
 
 <script type="module">
@@ -294,7 +326,8 @@ function render() {
   if (np && np.title) { $('#npTitle').textContent = np.title; $('#npArtist').textContent = np.artist || ''; artEl($('#npArt'), np.artwork); }
 
   $('#open').hidden = !s.open;
-  $('#sticker').hidden = !s.open;
+  $('#stLeft').textContent = s.open ? 'Verzoekjes open' : 'Verzoekjes dicht';
+  $('#stLeft').classList.toggle('closed', !s.open);
   $('#ctaRow').hidden = !s.open;
   $('#ctaVote').hidden = s.allowVotes === false;
   $('#closed').hidden = !!s.open;
@@ -341,10 +374,10 @@ async function doSearch(q) {
     const res = await searchSongs(q);
     if (my !== searchSeq) return;
     lastResults = res;
-    $('#results').innerHTML = res.map((r, i) => `<li><button class="song" type="button" data-i="${i}">
+    $('#results').innerHTML = res.map((r, i) => `<li><button class="rowx hov song" type="button" data-i="${i}">
       <div class="art" style="${safeArt(r.artwork) ? `background-image:url('${esc(safeArt(r.artwork))}')` : ''}">${safeArt(r.artwork) ? '' : NOTE}</div>
       <div class="meta"><div class="t">${esc(r.title)}</div><div class="a">${esc(r.artist)}${r.year ? ' · ' + esc(r.year) : ''}</div></div>
-      <svg class="plus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="badge"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </button></li>`).join('');
     hint(res.length ? '' : 'Niets gevonden voor “' + q + '”.');
   } catch {
@@ -394,7 +427,7 @@ $('#form').addEventListener('submit', async e => {
   const key = songKey(title, artist);
   if (mine.find(m => isMine(m) && m.key === key && (m.status || 'new') === 'new')) { err.textContent = 'Dit nummer heb je al aangevraagd.'; return; }
 
-  const btn = $('#fSubmit'); btn.disabled = true; btn.textContent = 'Versturen…';
+  const btn = $('#fSubmit'); btn.disabled = true; $('#fSend').textContent = 'Versturen…';
   try {
     // Laatste check of het event nog open staat.
     await refreshEvent().catch(() => {});
@@ -414,7 +447,7 @@ $('#form').addEventListener('submit', async e => {
       ? 'Het is erg druk. Probeer over een minuutje opnieuw.'
       : 'Versturen mislukt. Controleer je verbinding en probeer opnieuw.';
   } finally {
-    btn.disabled = false; btn.textContent = 'Verstuur naar de DJ →';
+    btn.disabled = false; $('#fSend').textContent = 'Verstuur naar de DJ';
   }
 });
 
@@ -430,7 +463,7 @@ function renderMine() {
   $('#mineList').innerHTML = mine.map(m => `<li>
     <div class="art" style="${safeArt(m.artwork) ? `background-image:url('${esc(safeArt(m.artwork))}')` : ''}">${safeArt(m.artwork) ? '' : NOTE}</div>
     <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(m.artist)}</div></div>
-    <span class="pill ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
+    <span class="tagp ${esc(m.status || 'new')}">${LABEL[m.status] || LABEL.new}</span></li>`).join('');
 }
 async function refreshMine() {
   if (!settings) return;
@@ -489,13 +522,13 @@ function renderQueue() {
   $('#queueMore').hidden = queueAll || queue.length <= 15;
   $('#queueList').innerHTML = list.map((g, i) => {
     const mineSong = own.has(g.key), voted = !!votes[voteKey(g.key)];
-    return `<li>
-      <span class="rank cat-no">A${i + 1}</span>
+    return `<li><div class="qrow">
+      <span class="n tab">${String(i + 1).padStart(2, '0')}</span>
       <div class="art" style="${safeArt(g.artwork) ? `background-image:url('${esc(safeArt(g.artwork))}')` : ''}">${safeArt(g.artwork) ? '' : NOTE}</div>
       <div class="meta"><div class="t">${esc(g.title)}</div><div class="a">${esc(g.artist)}</div></div>
       <button class="vote ${voted ? 'on' : ''} ${mineSong ? 'own' : ''}" type="button" data-key="${esc(g.key)}" ${mineSong ? 'disabled title="Jouw nummer"' : ''}
-        aria-pressed="${voted}" aria-label="${mineSong ? 'Jouw nummer' : voted ? 'Stem intrekken' : 'Stem op dit nummer'}, ${g.score} ${g.score === 1 ? 'stem' : 'stemmen'}">${UP}<span>${g.score}</span></button>
-    </li>`;
+        aria-pressed="${voted}" aria-label="${mineSong ? 'Jouw nummer' : voted ? 'Stem intrekken' : 'Stem op dit nummer'}, ${g.score} ${g.score === 1 ? 'stem' : 'stemmen'}"><span>${mineSong ? 'Jouw nummer' : voted ? 'Gestemd' : 'Stem'}</span><span class="c tab">${g.score}</span></button>
+    </div></li>`;
   }).join('');
 }
 $('#queueMore').addEventListener('click', () => { queueAll = true; renderQueue(); });
