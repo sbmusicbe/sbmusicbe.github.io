@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Jullie muziek</title>
+<meta name="theme-color" content="#faf6ef">
+<link rel="icon" href="../assets/logo-sb-black.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf6ef;--panel:#fffdf9;--text:#2a2118;--muted:#7a6f63;--line:#ece3d4;--honey:#f2b233;--honey-soft:#fdf0cf;--red:#b42318;--green:#2f6b4f;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#16120d;--panel:#1f1a14;--text:#f5ede0;--muted:#a39785;--line:#332b21;--honey-soft:#3a2d12;--red:#f27a6e;--green:#6fcf9f;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Onest,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:24px 16px 120px}
+h1,h2{font-family:Fraunces,Georgia,serif;font-weight:600;letter-spacing:-.01em}
+h1{font-size:30px;margin:6px 0 4px}h2{font-size:21px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 1px 2px rgba(80,60,30,.04)}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0}
+input,textarea{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:14px;padding:11px 13px;font:inherit}
+input:focus,textarea:focus{outline:2px solid var(--honey);outline-offset:-1px}
+button,.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 16px;border-radius:999px;font:inherit;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block;white-space:nowrap}
+.pri{background:var(--honey);border-color:var(--honey);color:#2a2118;font-weight:600}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.item .t{flex:1;min-width:0}.item b{display:block;overflow:hidden;text-overflow:ellipsis}.item span{color:var(--muted);font-size:13px}
+.sm{padding:4px 10px;font-size:13px}.x{border:0;background:none;color:var(--red);font-size:20px;padding:4px 8px}
+.add{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+@media(max-width:480px){.add{grid-template-columns:1fr 1fr}.add button{grid-column:1/-1}}
+.mom{display:grid;grid-template-columns:90px 1fr 1fr auto;gap:6px;margin:8px 0;align-items:center}
+@media(max-width:480px){.mom{grid-template-columns:1fr 1fr}.mom .x{justify-self:end}}
+.bar{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.bar div{max-width:640px;margin:0 auto;display:flex;gap:10px}.bar .pri{flex:1}
+.ok{background:var(--honey-soft);border-radius:16px;padding:14px;margin:14px 0}
+.err{color:var(--red);font-size:14px}
+label{font-size:13px;color:var(--muted);display:block;margin:6px 0 2px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+</style>
+</head>
+<body>
+<main>
+  <p class="sub" id="dj" style="margin:0"></p>
+  <h1 id="h">Jullie muziek</h1>
+  <p class="sub" id="intro">Vul hier de muziek in voor jullie feest. Alles wordt op dit toestel bewaard tot je op “Verstuur” drukt. Je mag het later nog aanpassen en opnieuw versturen.</p>
+  <div id="sections"></div>
+
+  <div class="card"><h2>Momenten van de dag</h2><p class="sub">Openingsdans, speeches, taart, laatste nummer… met een uur en eventueel een nummer.</p><div id="mom"></div><button id="addMom">+ Moment</button></div>
+  <div class="card"><h2>Playlist</h2><p class="sub">Plak hier een link naar een Spotify-, Apple Music- of Beatsource-playlist met jullie favorieten.</p><input id="pl" type="url" placeholder="https://open.spotify.com/playlist/…" inputmode="url"></div>
+  <div class="card"><h2>Samen invullen</h2><p class="sub">Stuur deze pagina door naar je partner, familie of vrienden. Iedereen vult op zijn eigen gsm in en deelt daarna een code; plak die hieronder om lijsten samen te voegen.</p>
+    <div class="row"><button id="copy">📋 Kopieer mijn code</button></div><label for="paste">Code van iemand anders</label><div class="row"><input id="paste" placeholder="SBM1:…"><button id="merge">Voeg samen</button></div><div id="mmsg" class="sub"></div></div>
+  <div class="card"><h2>Versturen</h2><label for="naam">Jouw naam</label><input id="naam" autocomplete="name"><label for="mail">E-mail (optioneel, voor een antwoord)</label><input id="mail" type="email" autocomplete="email">
+    <p class="sub" style="margin-top:10px">Je lijst wordt per e-mail naar de DJ gestuurd (via FormSubmit). Zie de <a href="../privacyverklaring.html">privacyverklaring</a>.</p></div>
+  <div id="done" class="ok" hidden>✓ Verstuurd! De DJ heeft je lijst ontvangen. Je kan nog aanpassen en opnieuw versturen.</div>
+  <div id="fail" class="err" hidden>Versturen lukt niet. <a id="fallback" href="#">Verstuur via je mailprogramma</a></div>
+</main>
+<div class="bar"><div><button class="pri" id="send">Verstuur naar de DJ</button></div></div>
+
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const b64=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const unb=s=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0))));
+let P={};try{P=unb(new URLSearchParams(location.search).get("d")||"")||{}}catch(e){}
+const ID=String(P.id||"algemeen").replace(/\W/g,"").slice(0,24),SK="sbm.muziek."+ID;
+const cap=(s,n=120)=>String(s??"").slice(0,n);
+let M={req:[],must:[],nogo:[],mom:[],pl:"",naam:"",mail:""};
+try{M={...M,...JSON.parse(localStorage.getItem(SK)||"{}")}}catch(e){}
+if(!M.mom.length&&Array.isArray(P.m))M.mom=P.m.slice(0,30).map(m=>({tijd:cap(m.tijd,5),omschr:cap(m.omschr),nummer:cap(m.nummer)}));
+const save=()=>{try{localStorage.setItem(SK,JSON.stringify(M))}catch(e){}};
+$("#dj").textContent=P.dj||"SB — Allround DJ";
+if(P.k||P.dat){const d=P.dat?new Date(P.dat+"T12:00").toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"";$("#h").textContent=(P.k?`Hoi ${cap(P.k,40)}! `:"")+"Jullie muziek";$("#intro").textContent=`${P.ev?cap(P.ev,40)+" ":""}${d?"op "+d+". ":""}`+$("#intro").textContent}
+const SEC=[["req","Verzoeknummers","Nummers die je graag hoort. Ik probeer ze op het juiste moment te draaien."],["must","Must-plays","Deze nummers mogen niet ontbreken."],["nogo","Do-not-plays","Deze nummers of artiesten wil je absoluut niet horen."]];
+const links=s=>{const q=encodeURIComponent(((s.t||"")+" "+(s.a||"")).trim());return `<a class="btn sm" target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}" title="Zoek op Spotify">Spotify</a> <a class="btn sm" target="_blank" rel="noopener" href="https://music.apple.com/search?term=${q}" title="Zoek op Apple Music">Apple</a>`};
+function draw(){
+  $("#sections").innerHTML=SEC.map(([k,t,h])=>`<div class="card"><h2>${t}</h2><p class="sub">${h}</p>
+  <div class="add"><input data-k="${k}" data-f="t" placeholder="Titel" aria-label="Titel"><input data-k="${k}" data-f="a" placeholder="Artiest" aria-label="Artiest"><button class="pri" data-add="${k}">Toevoegen</button></div>
+  ${M[k].map((s,i)=>`<div class="item"><div class="t"><b>${esc(s.t)}</b><span>${esc(s.a)}</span></div>${links(s)}<button class="x" data-del="${k}" data-i="${i}" aria-label="Verwijder">×</button></div>`).join("")||'<div class="empty">Nog niets toegevoegd.</div>'}</div>`).join("");
+  $("#mom").innerHTML=M.mom.map((m,i)=>`<div class="mom"><input type="time" data-m="${i}" data-f="tijd" value="${esc(m.tijd)}" aria-label="Uur"><input data-m="${i}" data-f="omschr" value="${esc(m.omschr)}" placeholder="Moment" aria-label="Moment"><input data-m="${i}" data-f="nummer" value="${esc(m.nummer)}" placeholder="Nummer" aria-label="Nummer"><button class="x" data-delm="${i}" aria-label="Verwijder">×</button></div>`).join("")||'<div class="empty">Nog geen momenten.</div>';
+  $("#pl").value=M.pl;$("#naam").value=M.naam;$("#mail").value=M.mail;
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-add]");
+  if(a){const k=a.dataset.add,t=$(`input[data-k=${k}][data-f=t]`),ar=$(`input[data-k=${k}][data-f=a]`);if(!t.value.trim()){t.focus();return}
+    if(M[k].length<200)M[k].push({t:cap(t.value.trim()),a:cap(ar.value.trim())});save();draw();$(`input[data-k=${k}][data-f=t]`).focus();return}
+  const d=e.target.closest("[data-del]");if(d){M[d.dataset.del].splice(+d.dataset.i,1);save();draw();return}
+  const dm=e.target.closest("[data-delm]");if(dm){M.mom.splice(+dm.dataset.delm,1);save();draw()}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset.k){e.preventDefault();$(`[data-add=${e.target.dataset.k}]`).click()}});
+document.addEventListener("input",e=>{const el=e.target;
+  if(el.dataset.m!==undefined){M.mom[+el.dataset.m][el.dataset.f]=cap(el.value);save()}
+  else if(el.id==="pl"){M.pl=cap(el.value,300);save()}else if(el.id==="naam"){M.naam=cap(el.value,80);save()}else if(el.id==="mail"){M.mail=cap(el.value,120);save()}});
+$("#addMom").onclick=()=>{if(M.mom.length<30)M.mom.push({tijd:"",omschr:"",nummer:""});save();draw()};
+const code=()=>"SBM1:"+b64({v:1,id:ID,n:M.naam,req:M.req,must:M.must,nogo:M.nogo,mom:M.mom,pl:M.pl});
+$("#copy").onclick=()=>{navigator.clipboard?.writeText(code()).then(()=>$("#mmsg").textContent="Code gekopieerd. Stuur ze door via WhatsApp of mail.").catch(()=>prompt("Kopieer deze code:",code()))||prompt("Kopieer deze code:",code())};
+$("#merge").onclick=()=>{
+  const m=$("#paste").value.match(/SBM1:([A-Za-z0-9_-]+)/);if(!m){$("#mmsg").textContent="Geen geldige code gevonden.";return}
+  let o;try{o=unb(m[1])}catch(e){$("#mmsg").textContent="Code onleesbaar.";return}if(o.v!==1){$("#mmsg").textContent="Onbekende code.";return}
+  let n=0;const has=(k,s)=>M[k].some(x=>x.t.toLowerCase()===s.t.toLowerCase()&&x.a.toLowerCase()===s.a.toLowerCase());
+  for(const k of["req","must","nogo"])(o[k]||[]).slice(0,200).forEach(s=>{const c={t:cap(s.t),a:cap(s.a)};if(c.t&&!has(k,c)&&M[k].length<200){M[k].push(c);n++}});
+  (o.mom||[]).slice(0,30).forEach(x=>{const c={tijd:cap(x.tijd,5),omschr:cap(x.omschr),nummer:cap(x.nummer)};if((c.omschr||c.nummer)&&!M.mom.some(y=>y.tijd===c.tijd&&y.omschr===c.omschr)){M.mom.push(c);n++}});
+  if(!M.pl&&o.pl)M.pl=cap(o.pl,300);save();draw();$("#paste").value="";$("#mmsg").textContent=`${n} item(s) toegevoegd.`};
+function summary(){const L=(t,a)=>a.length?`\n${t}:\n`+a.map(s=>`- ${s.t}${s.a?" — "+s.a:""}`).join("\n"):"";
+  return `Muziek van ${M.naam||P.k||"klant"} (${P.dat||"datum onbekend"}${P.ev?", "+P.ev:""})\n`+L("Verzoeknummers",M.req)+L("Must-plays",M.must)+L("Do-not-plays",M.nogo)+(M.mom.length?"\nMomenten:\n"+M.mom.map(m=>`- ${m.tijd||"?"} ${m.omschr}${m.nummer?" ("+m.nummer+")":""}`).join("\n"):"")+(M.pl?`\n\nPlaylist: ${M.pl}`:"")}
+$("#send").onclick=()=>{
+  const btn=$("#send");$("#fail").hidden=true;$("#done").hidden=true;
+  if(!M.req.length&&!M.must.length&&!M.nogo.length&&!M.mom.length&&!M.pl){alert("Voeg eerst iets toe.");return}
+  const payload={naam:M.naam||P.k||"Klant",email:M.mail||"",event:`${P.dat||""} ${P.ev||""}`.trim(),bericht:summary(),code:code(),_subject:`Muziek ingevuld: ${M.naam||P.k||"klant"} ${P.dat||""}`,_template:"table",_captcha:"false"};
+  if(M.mail)payload._replyto=M.mail;
+  btn.disabled=true;btn.textContent="Versturen…";
+  fetch("https://formsubmit.co/ajax/hey@sbmusic.be",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)})
+    .then(r=>{if(!r.ok)throw 0;return r.json()}).then(()=>{$("#done").hidden=false;$("#done").scrollIntoView({behavior:"smooth",block:"center"})})
+    .catch(()=>{$("#fallback").href="mailto:hey@sbmusic.be?subject="+encodeURIComponent(payload._subject)+"&body="+encodeURIComponent(payload.bericht+"\n\n"+payload.code);$("#fail").hidden=false})
+    .finally(()=>{btn.disabled=false;btn.textContent="Verstuur naar de DJ"});
+};
+draw();
+</script>
+</body>
+</html>
