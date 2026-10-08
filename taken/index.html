@@ -1059,8 +1059,6 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .col>header .col-plus{width:26px;height:26px;margin-left:0;color:var(--muted);border-radius:8px}
 .col>header .col-plus svg{width:17px;height:17px}
 .col>header .col-plus:hover{color:var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 14%,transparent)}
-.col-add-top{margin:0 0 8px}
-.col-add-top input{background:var(--card,var(--panel))!important;color:var(--text)!important;border:1px solid color-mix(in srgb,var(--c,var(--accent)) 45%,var(--line))!important;border-radius:12px;box-shadow:var(--shadow-card);animation:qaIn .3s var(--spring)}
 @media (max-width:860px){ .col>header .col-plus{width:34px;height:34px} .col>header .col-plus svg{width:20px;height:20px} }
 
 .col-right{display:flex;align-items:center;gap:4px;flex:none}
@@ -1483,7 +1481,8 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,v
 .card:hover{border-color:color-mix(in srgb,var(--text) 22%,transparent)!important;box-shadow:var(--shadow-lift)!important}
 .card.sel{background:var(--accent-soft)!important;border-color:var(--accent-line)!important}
 .card-ph,.ghost{border-radius:12px!important}
-.col-add input,.col-add-top input{border-radius:10px!important}
+.col-add input{border-radius:10px!important}
+
 .col-add input{border:1px dashed var(--line)!important;background:transparent!important}
 
 /* ---- panelen, tabellen, kaarten met cijfers ---- */
@@ -1744,21 +1743,25 @@ table.sales tbody tr,.cl-table tbody tr{content-visibility:auto;contain-intrinsi
 }
 html,body{background:var(--bg)!important;color:var(--text)}
 body,button,input,select,textarea{font-family:'Onest',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-/* koppen: Onest semibold, krappe regelafstand */
-h1,h2,h3,.main-head h2,#dTitle,.lock-card h1,.lock-card h2,dialog h3,.sales-stat b,.pg-title{font-family:'Onest',system-ui,sans-serif!important;font-weight:600!important;letter-spacing:-.02em}
+/* koppen: Onest semibold,krappe regelafstand */
+h1,h2,h3,.main-head h2,#dTitle,.lock-card h1,.lock-card h2,dialog h3,.sales-stat b{font-family:'Onest',system-ui,sans-serif!important;font-weight:600!important;letter-spacing:-.02em}
+
 .main-head h2{font-size:clamp(28px,3.4vw,44px);line-height:.98}
 .main-head h2 .muted,.main-head .sub{font-weight:500;letter-spacing:0}
 dialog h3{font-size:24px;line-height:1.05}
 #dTitle{font-size:24px;line-height:1.15}
 .sales-stat b{font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
 /* eyebrow: klein bolletje + tekst (zoals "Over SB" op de site) */
-.side-section>span,.d-sec>span,.eyebrow,.kbd-title,.shortcuts h4{display:inline-flex;align-items:center;gap:8px;font-size:13px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important;color:var(--muted)!important;font-family:inherit!important}
+.side-section>span,.d-sec>span,.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important;color:var(--muted)!important;font-family:inherit!important}
+
 .side-section>span::before,.d-sec>span::before,.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;flex:none}
-/* formulierlabels: klein, hoofdletters */
-.prop>span,.pg-table th,table.sales th,.nc-grid .fl,.fl,label.fl,.tb-label{font-family:inherit!important;font-size:11.5px!important;font-weight:500!important;letter-spacing:.025em!important;text-transform:uppercase!important;color:var(--muted)!important}
+/* formulierlabels: klein,hoofdletters */
+.prop>span,.pg-table th,table.sales th,.nc-grid .fl,.fl,label.fl{font-family:inherit!important;font-size:11.5px!important;font-weight:500!important;letter-spacing:.025em!important;text-transform:uppercase!important;color:var(--muted)!important}
+
 .nav-item .count,.nav-item .n,.c-count,.col>header .count{font-variant-numeric:tabular-nums;font-size:12px;font-weight:500}
-/* vlakken: grote afronding, 1px lijn, geen schaduw */
-.card,.sales-stat,.pace,.pg-card,.box,.table-wrap,.props,#dNotes,ul.comments li,.top-search,.side-foot,#banner,.note-box,.ev-card{border-radius:var(--r-card)!important;box-shadow:none!important}
+/* vlakken: grote afronding,1px lijn,geen schaduw */
+.card,.sales-stat,.pace,.pg-card,.box,.table-wrap,.props,#dNotes,ul.comments li,.top-search,.side-foot,#banner{border-radius:var(--r-card)!important;box-shadow:none!important}
+
 .card{border-radius:14px!important}
 .col{border-radius:var(--r-card)!important;box-shadow:none!important;background:var(--col)!important;border:1px solid transparent!important}
 .card{background:var(--panel)}
@@ -1793,7 +1796,8 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--tex
 .foot-btn{width:40px;height:40px}
 .foot-btn:hover{background:var(--hover);color:var(--text)}
 .side-foot{background:transparent!important;border:1px solid var(--line)!important}
-.pill-tag,.badge{border-radius:9999px}
+.badge{border-radius:9999px}
+
 a,.link{color:var(--accent)}
 .link:hover{text-decoration:underline}
 /* logo: SB-monogram uit de site */
@@ -2948,7 +2952,7 @@ function renderBoard() {
     ${vis.length > 1 ? `<div class="col-tabs" role="tablist">${vis.map(st => `<button type="button" data-jump="${st.id}" style="--c:${st.color}"><span class="dot"></span>${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
     ${hid.length ? `<div class="hidden-cols"><span>Verborgen:</span>${hid.map(st => `<button type="button" data-showcol="${st.id}" style="--c:${st.color}" title="${esc(st.label)} weer tonen">${I.eye}${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
   </div>`;
-  $('#list').innerHTML = bar + (vis.length ? '' : '<div class="empty">Alle kolommen zijn verborgen in deze weergave.</div>') + `<div class="board" style="--ncols:${vis.length}">${vis.map(st => {
+  const colHtml = st => {
     let ts = all.filter(t => t.stage === st.id).sort(st.done ? (p.sort === 'manual' ? byDoneAt : plainSorter) : sorter);
     const total = ts.length;
     let more = '';
@@ -2963,7 +2967,26 @@ function renderBoard() {
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep kaarten hierheen</div>'}</div>
       ${more}
     </section>`;
-  }).join('')}</div>`;
+  };
+  // alleen de kolommen die echt veranderd zijn opnieuw tekenen: minder opmaak- en tekenwerk, en ingetypte tekst in andere kolommen blijft staan
+  const cols = vis.map(colHtml), key = vis.map(st => st.id).join(',') + '|' + vis.length;
+  const cur = $('.board');
+  if (cur && cur.__key === key && cur.children.length === cols.length && cur.parentNode === $('#list')) {
+    const barEl = $('.board-bar'); if (barEl) { const t = document.createElement('template'); t.innerHTML = bar.trim(); if (barEl.outerHTML !== t.content.firstElementChild.outerHTML) barEl.replaceWith(t.content.firstElementChild); }
+    cols.forEach((h, i) => {
+      const el = cur.children[i], rec = cur.__cols[i];
+      if (rec && rec.h === h && el.outerHTML === rec.out) return;
+      const keepScroll = el.querySelector('.cards')?.scrollTop || 0;
+      const t = document.createElement('template'); t.innerHTML = h.trim();
+      const nu = t.content.firstElementChild; el.replaceWith(nu);
+      const c2 = nu.querySelector('.cards'); if (c2) c2.scrollTop = keepScroll;
+      cur.__cols[i] = {h, out:nu.outerHTML};
+    });
+    cur.scrollLeft = scroll; cur.dispatchEvent(new Event('scroll'));
+    return;
+  }
+  $('#list').innerHTML = bar + (vis.length ? '' : '<div class="empty">Alle kolommen zijn verborgen in deze weergave.</div>') + `<div class="board" style="--ncols:${vis.length}">${cols.join('')}</div>`;
+  { const bd = $('.board'); bd.__key = key; bd.__cols = cols.map((h, i) => ({h, out:bd.children[i].outerHTML})); }
   const boardEl = $('.board');
   boardEl.scrollLeft = scroll;
   const markTab = () => {
