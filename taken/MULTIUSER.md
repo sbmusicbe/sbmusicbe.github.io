@@ -1,6 +1,6 @@
 # Multi-user voor HardSales CRM: uitwerking
 
-> **Status:** fase 1 is gebouwd en staat aan zodra `taken/cloud.json` bestaat: accounts met e-mail en wachtwoord, een versleutelde kluis per account, synchronisatie met versiecontrole, wachtwoord wijzigen en bestaande gegevens meenemen. **Nog niet gebouwd:** de herstelsleutel (de kolom `wrapped` blijft voorlopig leeg) en snelle wachtwoordwijziging zonder alles opnieuw te versleutelen; ook het splitsen van zeer grote kluizen in Storage staat nog open.
+> **Status:** alles uit dit plan is gebouwd en staat aan zodra `taken/cloud.json` bestaat: accounts met e-mail en wachtwoord, een versleutelde kluis per account met datasleutel en **herstelsleutel**, **snelle wachtwoordwijziging**, **wachtwoord vergeten** via een herstelmail, synchronisatie met versiecontrole, het **splitsen van zeer grote kluizen** (klanten apart) en het meenemen van bestaande gegevens. Het SQL-script staat nu in [`supabase.sql`](supabase.sql). Opmerking: in de praktijk staan de ingepakte datasleutels in de kluis zelf (`blob.w`); de kolom `wrapped` blijft leeg en ongebruikt.
 
 Doel: **aparte accounts**. Iedereen logt in met een eigen e-mailadres en wachtwoord en ziet alleen zijn eigen gegevens. Zonder GitHub-token, zonder sleutelbestand, zonder zelf een gist aan te maken. Het wachtwoord blijft de sleutel van de versleuteling: de dienst bewaart alleen versleutelde gegevens (*zero-knowledge*).
 
@@ -47,20 +47,7 @@ Een vergeten wachtwoord betekent nu: gegevens kwijt. Dat verandert:
 
 Een tabel met één rij per gebruiker:
 
-```sql
-create table vaults (
-  user_id    uuid primary key references auth.users(id) on delete cascade,
-  blob       text not null,            -- versleutelde kluis (zelfde formaat als nu)
-  wrapped    jsonb not null,           -- ingepakte datasleutel (wachtwoord + herstelsleutel)
-  rev        bigint not null default 1,
-  updated_at timestamptz not null default now()
-);
-alter table vaults enable row level security;
-create policy "eigen kluis lezen"      on vaults for select using (user_id = auth.uid());
-create policy "eigen kluis maken"      on vaults for insert with check (user_id = auth.uid());
-create policy "eigen kluis bijwerken"  on vaults for update using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "eigen kluis wissen"      on vaults for delete using (user_id = auth.uid());
-```
+Het volledige, herhaalbare script staat in [`supabase.sql`](supabase.sql). Het maakt de tabel `vaults` (kolommen `blob`, `rev`, en voor grote kluizen `clients` en `clients_rev`) met Row Level Security: iedereen leest en schrijft enkel de eigen rij.
 
 De app slaat bij elke wijziging op met een controle op `rev` (alleen bijwerken als de versie nog klopt). Is die verouderd, dan haalt de app de nieuwste op, voegt samen met de bestaande samenvoegregels (nieuwste wijziging per item wint, verwijderingen blijven bewaard) en probeert opnieuw. Dat werkt nu al zo met de gist.
 
