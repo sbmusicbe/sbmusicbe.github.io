@@ -2058,6 +2058,7 @@ input.nb-title{font-size:28px!important}
     <div id="lockFields"></div>
     <p id="lockErr" class="err"></p>
     <button class="btn primary" id="lockBtn" type="submit">Ontgrendelen</button>
+    <button class="link" id="lockLocal" type="button" hidden></button>
     <button class="btn" id="lockBio" type="button" hidden>Ontgrendelen met Face ID</button>
     <button type="button" class="link" id="lockAlt"></button>
   </form>
@@ -2780,6 +2781,9 @@ function renderLock() {
   const f = $('#lockFields'), sub = $('#lockSub'), btn = $('#lockBtn'), alt = $('#lockAlt');
   $('#lockErr').textContent = '';
   btn.hidden = false; alt.hidden = false; $('#lockBio').hidden = true;
+  // met een accountdienst blijft er altijd een uitweg naar de lokale kluis op dit toestel (bv. als de dienst even niet werkt)
+  const loc = $('#lockLocal'); loc.hidden = !CLOUD || lockMode === 'loading' || lockMode === 'restore';
+  loc.textContent = lockMode.startsWith('cloud') ? 'Zonder account (enkel op dit toestel)' : 'Inloggen met een account';
   if (!window.crypto?.subtle) {
     sub.textContent = 'Deze pagina moet via https geopend worden (versleuteling is anders niet beschikbaar).';
     f.innerHTML = ''; btn.hidden = true; alt.hidden = true; return;
@@ -2826,6 +2830,11 @@ function renderLock() {
   setTimeout(() => { if (!$('#lockFields').contains(document.activeElement)) $('#lockFields input')?.focus(); }, 30);
 }
 let lockModeChosen = false;
+$('#lockLocal').addEventListener('click', () => {
+  lockModeChosen = true;
+  lockMode = lockMode.startsWith('cloud') ? (vaultBlob() ? 'unlock' : 'setup') : 'cloud-in';
+  renderLock();
+});
 $('#lockAlt').addEventListener('click', () => {
   lockModeChosen = true;
   if (CLOUD && lockMode.startsWith('cloud')) { lockMode = lockMode === 'cloud-up' ? 'cloud-in' : 'cloud-up'; renderLock(); return; }
