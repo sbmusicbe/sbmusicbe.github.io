@@ -2108,7 +2108,16 @@ const ITER = 310000;
 const GIST_FILE = 'taken.vault.json';
 const CONFIG_URL = 'config.json';
 const CFG_CACHE = 'taken.config.v1';
-const REPO = 'sbmusicbe/sbmusicbe.github.io', BRANCH = 'main', CONFIG_PATH = 'taken/config.json';
+// Waar staat deze app op GitHub? Op *.github.io leiden we repo en map uit het adres af (/map/ = gebruikerssite, /repo/map/ = projectsite);
+// op een eigen domein gelden de vaste waarden hieronder. Pas die aan als je de app daar zelf host.
+function ghTarget(host, path) {
+  const m = /^([^.]+)\.github\.io$/i.exec(host); if (!m) return null;
+  const seg = path.split('/').filter(x => x && !/\.html?$/i.test(x));
+  if (!seg.length) return null;
+  return seg.length === 1 ? {repo:m[1] + '/' + m[1] + '.github.io', dir:seg[0]} : {repo:m[1] + '/' + seg[0], dir:seg.slice(1).join('/')};
+}
+const GH_AUTO = ghTarget(location.hostname, location.pathname);
+const REPO = GH_AUTO?.repo || 'sbmusicbe/sbmusicbe.github.io', BRANCH = 'main', CONFIG_PATH = GH_AUTO ? GH_AUTO.dir + '/config.json' : 'taken/config.json';
 const COLORS = ['#c8262d','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
 const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',multiselect:'Meerdere keuzes',checkbox:'Vinkje',url:'Link'};
 const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
