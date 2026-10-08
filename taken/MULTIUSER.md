@@ -56,7 +56,8 @@ create table vaults (
 alter table vaults enable row level security;
 create policy "eigen kluis lezen"      on vaults for select using (user_id = auth.uid());
 create policy "eigen kluis maken"      on vaults for insert with check (user_id = auth.uid());
-create policy "eigen kluis bijwerken"  on vaults for update using (user_id = auth.uid());
+create policy "eigen kluis bijwerken"  on vaults for update using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "eigen kluis wissen"      on vaults for delete using (user_id = auth.uid());
 ```
 
 De app slaat bij elke wijziging op met een controle op `rev` (alleen bijwerken als de versie nog klopt). Is die verouderd, dan haalt de app de nieuwste op, voegt samen met de bestaande samenvoegregels (nieuwste wijziging per item wint, verwijderingen blijven bewaard) en probeert opnieuw. Dat werkt nu al zo met de gist.
