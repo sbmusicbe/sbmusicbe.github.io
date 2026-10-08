@@ -46,6 +46,28 @@ Zonder synchronisatie werk je op één toestel. Wil je op meerdere toestellen de
 
 De gist bevat alleen versleutelde tekst. Bij het samenvoegen wint per item de nieuwste wijziging; verwijderde items worden bijgehouden, zodat ze niet terugkomen. Een back-up download je altijd via **Instellingen** (versleuteld of leesbaar).
 
+## Meerdere gebruikers (accounts)
+
+Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-mailadres en wachtwoord** en ziet alleen zijn eigen gegevens. Je hoeft geen GitHub-token, gist of sleutelbestand meer te regelen: een nieuw toestel is gewoon inloggen. De dienst (Supabase, gratis plan) bewaart per account één **versleutelde** kluis; uit je wachtwoord worden een login-geheim (naar de dienst) en de sleutel van de kluis (blijft op je toestel) afgeleid, dus de dienst kan je gegevens niet lezen.
+
+**Aanzetten (eenmalig, door de beheerder):**
+
+1. Maak op [supabase.com](https://supabase.com) een gratis project (regio Frankfurt).
+2. Voer in de **SQL Editor** het script uit [`MULTIUSER.md`](MULTIUSER.md) uit. Het maakt de tabel `vaults` met regels zodat iedereen alleen zijn eigen rij ziet.
+3. Zet onder **Authentication** de bevestigingsmail uit (of stel een eigen mailserver in) en bepaal of iedereen zich mag aanmelden of alleen via uitnodiging.
+4. Zet de **Project URL** en de **publishable (anon) key** in `taken/cloud.json`:
+   ```json
+   { "url": "https://JOUWPROJECT.supabase.co", "key": "sb_publishable_…" }
+   ```
+   Die sleutel is bedoeld om publiek te zijn; de beveiliging zit in de regels uit stap 2. Gebruik nooit de *service role key*.
+5. Publiceer de wijziging. Wie de pagina opent, krijgt nu een inlogscherm met **Inloggen** en **Account aanmaken**.
+
+**Bestaande gegevens meenemen.** Maak je een account aan op een toestel waar al een kluis staat, dan gaan die gegevens mee naar het account (met hetzelfde wachtwoord; met een ander wachtwoord vraagt de app naar het oude). Een gist of back-up blijft ongemoeid.
+
+**Let op:** wachtwoord vergeten betekent gegevens kwijt. Bewaar af en toe een versleutelde back-up (**Instellingen → Back-up**). Een herstelsleutel staat op de planning. Een gratis Supabase-project kan na een periode zonder gebruik gepauzeerd worden; de repository bevat een geplande wekelijkse ping die dat voorkomt.
+
+Verwijder je `taken/cloud.json`, dan werkt de app weer volledig lokaal, optioneel met een gist.
+
 ## Installeren: stap voor stap
 
 Je hebt alleen een gratis [GitHub-account](https://github.com/signup) nodig. Geen server, geen programmeerkennis. Reken op ongeveer tien minuten.
@@ -56,7 +78,11 @@ Je hebt alleen een gratis [GitHub-account](https://github.com/signup) nodig. Gee
 2. Klik rechtsboven op **Fork** (of **Use this template** als dat er staat) en bevestig. Je hebt nu je eigen kopie onder je eigen account.
 3. Heb je liever een nieuwe, lege repository? Maak er een met **New repository**, kies **Public** en upload de map `taken/` (zie stap 2).
 
-> **Belangrijk:** verwijder het bestand `taken/config.json` uit je kopie. Daarin staat het versleutelde sleutelbestand van de oorspronkelijke eigenaar; zolang het er staat, vraagt de app naar zijn wachtwoord en kun je zelf geen account aanmaken. Open het bestand op GitHub, klik op de prullenbak en bevestig met **Commit changes**.
+> **Belangrijk:** verwijder de bestanden `taken/config.json` en `taken/cloud.json` uit je kopie.
+> - `config.json` bevat het versleutelde sleutelbestand van de oorspronkelijke eigenaar; zolang het er staat, vraagt de app naar zijn wachtwoord en kun je zelf geen account aanmaken.
+> - `cloud.json` wijst naar het accountproject van de oorspronkelijke eigenaar. Laat je het staan, dan maken jouw gebruikers een account in zijn project. Wil je zelf accounts, maak dan je eigen project en zet je eigen gegevens erin (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)).
+>
+> Open elk bestand op GitHub, klik op de prullenbak en bevestig met **Commit changes**.
 
 ### 2. (Alleen bij een nieuwe, lege repository) De bestanden uploaden
 
@@ -114,7 +140,7 @@ Haal in je fork de nieuwste wijzigingen binnen (**Sync fork → Update branch**)
 
 | Probleem | Oplossing |
 |---|---|
-| De app vraagt een wachtwoord dat ik niet ken | `taken/config.json` van de oorspronkelijke eigenaar staat nog in je kopie. Verwijder dat bestand (stap 1). |
+| De app vraagt een wachtwoord dat ik niet ken, of een e-mailadres en wachtwoord | `taken/config.json` of `taken/cloud.json` van de oorspronkelijke eigenaar staat nog in je kopie. Verwijder die bestanden (stap 1). |
 | De pagina geeft een 404 | Controleer bij **Settings → Pages** of de site aan staat en of je het juiste adres (met `/taken/`) gebruikt. Wacht een paar minuten na de eerste keer aanzetten. |
 | "Publiceren op GitHub" opent de verkeerde repository | Je gebruikt een eigen domein. Pas `REPO` en `CONFIG_PATH` aan (zie hierboven). |
 | Een tweede toestel toont niet dezelfde gegevens | Open **Instellingen** en bekijk of beide stappen een vinkje hebben. Klik op **Controleren** en wacht even op GitHub Pages. |
@@ -143,7 +169,7 @@ python3 -m http.server 8000
 
 ## Beperkingen
 
-- **Eén gebruiker per kluis.** Er zijn geen aparte accounts: één wachtwoord opent één gegevensset. Meerdere gebruikers met aparte accounts vraagt een centrale opslag en staat op de planning; zie [MULTIUSER.md](MULTIUSER.md) voor de uitwerking.
+- **Zonder account is het één gebruiker per kluis:** één wachtwoord opent één gegevensset. Voor meerdere gebruikers met aparte accounts zet je de optionele accountdienst aan, zie [Meerdere gebruikers](#meerdere-gebruikers-accounts).
 - Synchronisatie loopt via een GitHub-token; wie dat token heeft, kan de versleutelde gist overschrijven of verwijderen (lezen kan niet zonder wachtwoord).
 - Een vergeten wachtwoord kan niet hersteld worden. Bewaar een versleutelde back-up.
 

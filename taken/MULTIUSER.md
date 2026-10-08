@@ -1,5 +1,7 @@
 # Multi-user voor HardSales CRM: uitwerking
 
+> **Status:** fase 1 is gebouwd en staat aan zodra `taken/cloud.json` bestaat: accounts met e-mail en wachtwoord, een versleutelde kluis per account, synchronisatie met versiecontrole, wachtwoord wijzigen en bestaande gegevens meenemen. **Nog niet gebouwd:** de herstelsleutel (de kolom `wrapped` blijft voorlopig leeg) en snelle wachtwoordwijziging zonder alles opnieuw te versleutelen; ook het splitsen van zeer grote kluizen in Storage staat nog open.
+
 Doel: **aparte accounts**. Iedereen logt in met een eigen e-mailadres en wachtwoord en ziet alleen zijn eigen gegevens. Zonder GitHub-token, zonder sleutelbestand, zonder zelf een gist aan te maken. Het wachtwoord blijft de sleutel van de versleuteling: de dienst bewaart alleen versleutelde gegevens (*zero-knowledge*).
 
 ## Waarom nu niet mogelijk
