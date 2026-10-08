@@ -143,7 +143,7 @@ python3 -m http.server 8000
 
 ## Beperkingen
 
-- **Eén gebruiker per kluis.** Er zijn geen aparte accounts: één wachtwoord opent één gegevensset. Meerdere gebruikers met aparte accounts vraagt een centrale opslag en staat op de planning.
+- **Eén gebruiker per kluis.** Er zijn geen aparte accounts: één wachtwoord opent één gegevensset. Meerdere gebruikers met aparte accounts vraagt een centrale opslag en staat op de planning; zie [MULTIUSER.md](MULTIUSER.md) voor de uitwerking.
 - Synchronisatie loopt via een GitHub-token; wie dat token heeft, kan de versleutelde gist overschrijven of verwijderen (lezen kan niet zonder wachtwoord).
 - Een vergeten wachtwoord kan niet hersteld worden. Bewaar een versleutelde back-up.
 
