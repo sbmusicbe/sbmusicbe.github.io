@@ -1860,6 +1860,12 @@ a,.link{color:var(--accent)}
 .btw-res .tot{padding-top:16px;border-top:1px solid color-mix(in srgb,currentColor 18%,transparent)}
 .btw-res .tot dt{opacity:1;font-weight:600}
 .btw-res .tot dd{font-size:32px;letter-spacing:-.02em}
+/* projecten rangschikken in de zijbalk */
+#projNav .nav-item[data-project]{-webkit-touch-callout:none}
+body.nav-sorting{cursor:grabbing;-webkit-user-select:none;user-select:none}
+.nav-item.nav-dragging{opacity:.45;background:var(--fill)}
+.nav-item.drop-before{box-shadow:0 -2px 0 var(--accent)!important;border-radius:0}
+.nav-item.drop-after{box-shadow:0 2px 0 var(--accent)!important;border-radius:0}
 </style>
 </head>
 <body>
@@ -5086,7 +5092,7 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
   const a = e.target.closest('[data-navarch]'); if (!a) return;
   e.stopPropagation(); navArchOpen[a.dataset.navarch] = !navArchOpen[a.dataset.navarch]; renderNav();
 });
-$('#projNav').addEventListener('click', e => { const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
+$('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
 $('#banner').addEventListener('click', e => {
   if (e.target.id === 'bnGo') openSettings();
   if (e.target.id === 'bnLater') { try { localStorage.setItem('taken.banner.later', String(now() + 7 * 864e5)); } catch {} renderBanner(); }
@@ -5500,9 +5506,72 @@ $('#projCalc').addEventListener('click', e => {
   if (!e.target.closest('#pcCopy')) return;
   const p = data.projects.find(x => x.id === view.id); if (p?.calc) copyText(calcText(p.calc), 'Prijzen');
 });
+/* ---- Projecten in de zijbalk handmatig rangschikken: slepen (muis: gewoon slepen, aanraken: even ingedrukt houden), Alt+↑/↓ of via het menu ---- */
+const navActiveIds = () => sortedProjects().filter(p => p.id !== 'inbox' && !p.archived && !p.finished).map(p => p.id);
+function moveProject(id, to) {
+  const ids = navActiveIds(), from = ids.indexOf(id); if (from < 0) return false;
+  to = Math.max(0, Math.min(ids.length - 1, to)); if (to === from) return false;
+  ids.splice(from, 1); ids.splice(to, 0, id);
+  ids.forEach((pid, i) => { const p = data.projects.find(x => x.id === pid); if (p && p.order !== (i + 1) * 10) { p.order = (i + 1) * 10; touch(p); } });
+  save(); renderNav(); return true;
+}
+let navDrag = null, navDragged = 0;
+const navItems = () => $$('#projNav .nav-item[data-project]:not(.is-arch):not(.is-fin)');
+function navDragEnd() {
+  const d = navDrag; navDrag = null; if (!d) return;
+  clearTimeout(d.timer); document.body.classList.remove('nav-sorting');
+  navItems().forEach(i => i.classList.remove('nav-dragging', 'drop-before', 'drop-after'));
+}
+function navDragStart() {
+  const d = navDrag; if (!d) return;
+  d.active = true; d.it.classList.add('nav-dragging'); document.body.classList.add('nav-sorting');
+  try { navigator.vibrate?.(8); } catch {}
+}
+function navDragOver(y) {
+  const items = navItems(); let idx = items.length;
+  for (let i = 0; i < items.length; i++) { const r = items[i].getBoundingClientRect(); if (y < r.top + r.height / 2) { idx = i; break; } }
+  items.forEach(i => i.classList.remove('drop-before', 'drop-after'));
+  if (idx < items.length) items[idx].classList.add('drop-before'); else items.at(-1)?.classList.add('drop-after');
+  navDrag.idx = idx;
+}
+$('#projNav').addEventListener('pointerdown', e => {
+  const it = e.target.closest('.nav-item[data-project]');
+  if (!it || it.classList.contains('is-arch') || it.classList.contains('is-fin') || e.button > 0 || navItems().length < 2) return;
+  navDrag = {it, id:it.dataset.project, x:e.clientX, y:e.clientY, active:false, touch:e.pointerType !== 'mouse', pid:e.pointerId, idx:null};
+  if (navDrag.touch) navDrag.timer = setTimeout(navDragStart, 350);
+});
+document.addEventListener('pointermove', e => {
+  const d = navDrag; if (!d || e.pointerId !== d.pid) return;
+  if (!d.active) {
+    const moved = Math.hypot(e.clientX - d.x, e.clientY - d.y);
+    if (d.touch) { if (moved > 8) navDragEnd(); return; }
+    if (moved < 5) return;
+    navDragStart();
+  }
+  e.preventDefault(); navDragOver(e.clientY);
+});
+document.addEventListener('touchmove', e => { if (navDrag?.active) e.preventDefault(); }, {passive:false});
+document.addEventListener('pointerup', e => {
+  const d = navDrag; if (!d || e.pointerId !== d.pid) return;
+  if (d.active && d.idx != null) {
+    const from = navActiveIds().indexOf(d.id); navDragged = Date.now();
+    const to = d.idx > from ? d.idx - 1 : d.idx;
+    navDragEnd(); moveProject(d.id, to);
+  } else { if (d.active) navDragged = Date.now(); navDragEnd(); }
+});
+document.addEventListener('pointercancel', () => navDragEnd());
+$('#projNav').addEventListener('keydown', e => {
+  const it = e.target.closest?.('.nav-item[data-project]'); if (!it || !e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+  e.preventDefault();
+  const id = it.dataset.project, from = navActiveIds().indexOf(id);
+  if (moveProject(id, from + (e.key === 'ArrowUp' ? -1 : 1))) $(`#projNav [data-project="${id}"]`)?.focus();
+});
 function projectMenuItems(p) {
+  const ids = navActiveIds(), pos = ids.indexOf(p.id);
   return [{label:'Bewerken…', attrs:'data-act="editproj"', run:() => openProjectDialog(p)},
     p.id === 'inbox' ? null : {label:p.calc ? 'Prijsberekening verbergen' : 'Prijsberekening tonen', attrs:'data-act="pcalc"', run:() => toggleCalc(p)},
+    pos > 0 ? {label:'Hoger in de lijst', run:() => moveProject(p.id, pos - 1)} : null,
+    pos >= 0 && pos < ids.length - 1 ? {label:'Lager in de lijst', run:() => moveProject(p.id, pos + 1)} : null,
     p.id === 'inbox' ? null : '-',
     p.id === 'inbox' ? null : {label:p.finished ? 'Heropenen' : 'Afwerken', attrs:'data-act="finish"', run:() => finishProject(p, !p.finished)},
     p.id === 'inbox' ? null : {label:p.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveProject(p, !p.archived)},
