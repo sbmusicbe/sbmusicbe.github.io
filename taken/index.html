@@ -2060,6 +2060,7 @@ input.nb-title{font-size:28px!important}
     <button class="btn primary" id="lockBtn" type="submit">Ontgrendelen</button>
     <button class="link" id="lockLocal" type="button" hidden></button>
     <button class="btn" id="lockBio" type="button" hidden>Ontgrendelen met Face ID</button>
+    <button type="button" class="link" id="lockForgot" hidden>Wachtwoord vergeten?</button>
     <button type="button" class="link" id="lockAlt"></button>
   </form>
 </div>
@@ -2358,7 +2359,7 @@ async function sealBytes(k, parts) {
     let pt = concatBytes(parts); if (zip) pt = await gzipBytes(pt);
     ct = b64(await crypto.subtle.encrypt({name:'AES-GCM', iv}, k.key, pt));
   }
-  return {v:1, kdf:'PBKDF2-SHA256', iter:k.iter, salt:b64(k.salt), iv:b64(iv), ct, ...(zip ? {z:'gzip'} : {})};
+  return {v:1, kdf:'PBKDF2-SHA256', iter:k.iter, salt:b64(k.salt), iv:b64(iv), ct, ...(zip ? {z:'gzip'} : {}), ...(k.w ? {w:k.w} : {})};
 }
 const seal = (k, obj, full) => sealBytes(k, encodeParts(obj, full));
 async function unsealText(key, blob) {
@@ -2371,6 +2372,39 @@ async function unsealText(key, blob) {
   }
 }
 async function unseal(key, blob) { return JSON.parse(await unsealText(key, blob)); }
+/* ---- Datasleutel en herstelsleutel (accounts) ----
+   De kluis van een account is versleuteld met een willekeurige datasleutel. Die zit twee keer ingepakt in de kluis (blob.w):
+   met een sleutel uit het wachtwoord (w.pw) en met een herstelsleutel (w.rec). Een wachtwoord wijzigen pakt enkel de datasleutel
+   opnieuw in; met de herstelsleutel kies je een nieuw wachtwoord als je het vergeten bent. Lokale kluizen en gists blijven zoals vroeger. */
+const REC_ITER = 10000, B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function newRecoveryKey() {
+  const u = crypto.getRandomValues(new Uint8Array(20)); let bits = '', s = '';
+  for (const b of u) bits += b.toString(2).padStart(8, '0');
+  for (let i = 0; i < 160; i += 5) s += B32[parseInt(bits.slice(i, i + 5), 2)];
+  return s.match(/.{4}/g).join('-');
+}
+const recNorm = s => String(s || '').toUpperCase().replace(/[^A-Z2-7]/g, '');
+async function wrapRaw(raw, secret, iter) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const kek = await deriveKey(secret, salt, iter);
+  return {s:b64(salt), iv:b64(iv), i:iter, ct:b64(await crypto.subtle.encrypt({name:'AES-GCM', iv}, kek, raw))};
+}
+async function unwrapRaw(w, secret) {
+  const kek = await deriveKey(secret, unb64(w.s), w.i);
+  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(w.iv)}, kek, unb64(w.ct)));
+}
+const envelopeK = async (raw, w, id) => ({key:await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']), raw, w, salt:id, iter:ITER});
+async function newEnvelope(pw, raw) {
+  raw = raw || crypto.getRandomValues(new Uint8Array(32));
+  const rec = newRecoveryKey();
+  return {K:await envelopeK(raw, {pw:await wrapRaw(raw, pw, ITER), rec:await wrapRaw(raw, recNorm(rec), REC_ITER)}, crypto.getRandomValues(new Uint8Array(16))), rec};
+}
+// sleutel van een kluis openen met het wachtwoord (of met de herstelsleutel); een fout wachtwoord geeft een uitzondering
+async function openKey(pw, blob, viaRec) {
+  if (!blob.w) return {key:await deriveKey(pw, unb64(blob.salt), blob.iter), salt:unb64(blob.salt), iter:blob.iter};
+  const raw = await unwrapRaw(viaRec ? blob.w.rec : blob.w.pw, viaRec ? recNorm(pw) : pw);
+  return envelopeK(raw, blob.w, unb64(blob.salt));
+}
 /* Kluis op het toestel: localStorage (klein en snel), IndexedDB als ze daar te groot voor wordt (> ± 3 MB). */
 let vaultCache = null;
 function idbOpen() {
@@ -2640,31 +2674,80 @@ async function cloudToken() {
   throw new Error('Sessie verlopen. Vergrendel en log opnieuw in.');
 }
 const conflictError = () => Object.assign(new Error('De online kluis is intussen gewijzigd.'), {conflict:true});
+// Zeer grote kluizen staan in twee delen: de kern in kolom blob, de klanten apart in kolom clients (zie supabase.sql).
+// Ontbreken die kolommen (script nog niet uitgevoerd), dan blijft alles in één stuk in blob zitten.
+let cloudSplit = null, cloudClientsRev = null, cloudClientsBlob = null;
+const missingCol = e => e.status === 400 && /clients|42703|PGRST204|PGRST/i.test((e.code || '') + e.message);
 // kluis ophalen: null = nog geen kluis, NOT_MODIFIED = niets veranderd sinds meta.ifNoneMatch (de versie dient als etag)
 async function cloudGet(s, meta) {
   const ss = await cloudToken(), q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
-  const head = await sb(q + '&select=rev', {token:ss.token});
-  if (!head.length) { cloudRev = null; if (meta) meta.etag = null; return null; }
-  cloudRev = head[0].rev; if (meta) meta.etag = String(cloudRev);
+  let head;
+  try { head = await sb(q + '&select=rev,clients_rev', {token:ss.token}); cloudSplit = true; }
+  catch (e) { if (!/42703|clients_rev|does not exist/i.test((e.code || '') + e.message) || e.status !== 400) throw e; cloudSplit = false; head = await sb(q + '&select=rev', {token:ss.token}); }
+  if (!head.length) { cloudRev = null; cloudClientsRev = null; if (meta) meta.etag = null; return null; }
+  cloudRev = head[0].rev; cloudClientsRev = head[0].clients_rev || null; if (meta) meta.etag = String(cloudRev);
   if (meta?.ifNoneMatch && meta.ifNoneMatch === String(cloudRev)) return NOT_MODIFIED;
   const full = await sb(q + '&select=blob,rev', {token:ss.token});
   if (!full.length) { cloudRev = null; return null; }
   cloudRev = full[0].rev; if (meta) meta.etag = String(cloudRev);
-  return JSON.parse(full[0].blob);
+  const blob = JSON.parse(full[0].blob);
+  if (blob.split) {   // de klanten staan apart; enkel opnieuw downloaden als ze veranderd zijn
+    if (!cloudClientsBlob || cloudClientsBlob.rev !== blob.clv) {
+      const c = await sb(q + '&select=clients', {token:ss.token});
+      if (!c[0]?.clients) throw new Error('De klanten ontbreken in de online kluis.');
+      cloudClientsBlob = JSON.parse(c[0].clients);
+    }
+    blob.clientsBlob = cloudClientsBlob;
+  }
+  return blob;
 }
 // opslaan met versiecontrole: alleen als niemand anders intussen opsloeg (anders volgt samenvoegen)
 async function cloudPut(s, blob, meta) {
-  const ss = await cloudToken(), text = JSON.stringify(blob), q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
+  const ss = await cloudToken(), {clientsBlob, ...core} = blob, q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
+  const extra = {};
+  if (cloudSplit) {
+    if (clientsBlob) { extra.clients = JSON.stringify(clientsBlob); extra.clients_rev = core.clv; }
+    else if (!core.split) { extra.clients = null; extra.clients_rev = null; }
+  }
+  const body = {blob:JSON.stringify(core), ...extra};
   let rows;
   if (cloudRev == null) {
-    try { rows = await sb('/rest/v1/vaults', {method:'POST', token:ss.token, headers:{Prefer:'return=representation'}, body:{user_id:ss.userId, blob:text, wrapped:{}, rev:1}}); }
+    try { rows = await sb('/rest/v1/vaults', {method:'POST', token:ss.token, headers:{Prefer:'return=representation'}, body:{user_id:ss.userId, wrapped:{}, rev:1, ...body}}); }
     catch (e) { if (e.status === 409) throw conflictError(); throw e; }
   } else {
-    rows = await sb(q + '&rev=eq.' + cloudRev, {method:'PATCH', token:ss.token, headers:{Prefer:'return=representation'}, body:{blob:text, rev:cloudRev + 1, updated_at:new Date().toISOString()}});
+    rows = await sb(q + '&rev=eq.' + cloudRev, {method:'PATCH', token:ss.token, headers:{Prefer:'return=representation'}, body:{...body, rev:cloudRev + 1, updated_at:new Date().toISOString()}});
     if (!rows?.length) throw conflictError();
   }
   cloudRev = rows[0].rev; if (meta) meta.etag = String(cloudRev);
+  if (cloudSplit) {
+    if (clientsBlob) { cloudClientsRev = core.clv; cloudClientsBlob = clientsBlob; }
+    else if (!core.split) { cloudClientsRev = null; cloudClientsBlob = null; }
+  }
 }
+// de online kluis volledig ontsleutelen (kern + eventueel apart bewaarde klanten)
+async function unsealRemote(key, blob) {
+  const core = await unseal(key, blob);
+  if (blob.split) {
+    if (!blob.clientsBlob) throw new Error('De klanten ontbreken in de online kluis.');
+    core.clients = await readClients(blob.clientsBlob, key);
+  }
+  return core;
+}
+// wat naar de dienst gaat: een volledige kluis, of (grote kluis, dienst klaar voor splitsen) kern + klanten apart
+async function persistCloud() {
+  if (!cloudSplit) return persistFull();
+  const core = await persist(); await clReadyP;
+  if (clPending) throw new Error('de klanten zijn nog niet geladen');
+  if (!core) return persistFull();
+  if (!core.split) return core;   // klein: één volledige kluis
+  if (clRev) {
+    const out = {...core};
+    if (cloudClientsRev !== clRev) { out.clientsBlob = await idbKV('get', CL_KEY + clRev); if (!out.clientsBlob) return persistFull(); }
+    return out;
+  }
+  return persistFull();
+}
+const persistRemote = s => s?.cloud ? persistCloud() : persistFull();
 const remoteGet = (s, meta) => s.cloud ? cloudGet(s, meta) : gistGet(s, meta);
 const remotePut = (s, blob, meta) => s.cloud ? cloudPut(s, blob, meta) : gistPut(s, blob, meta);
 
@@ -2688,30 +2771,33 @@ async function syncNow(pw) {
     const remoteBlob = await remoteGet(s, gmeta);
     if (remoteBlob === NOT_MODIFIED) {
       // online is niets veranderd sinds de vorige keer: enkel eigen wijzigingen doorsturen, niets downloaden of samenvoegen
-      if (dirtyAtStart || syncDirty) { const pm = {}; await remotePut(s, await persistFull(), pm); syncEtag = pm.etag; }
+      if (dirtyAtStart || syncDirty) { const pm = {}; await remotePut(s, await persistRemote(s), pm); syncEtag = pm.etag; }
     } else if (remoteBlob) {
-      let rkey = K.key;
+      let rkey = K.key, rK = null;
       const differentSalt = remoteBlob.salt !== b64(K.salt);
       if (differentSalt) {
         if (!pw) throw new Error('Het wachtwoord werd op een ander toestel gewijzigd. Vergrendel en log opnieuw in met je nieuwe wachtwoord.');
-        rkey = await deriveKey(pw, unb64(remoteBlob.salt), remoteBlob.iter);
+        try { rK = await openKey(pw, remoteBlob); } catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+        rkey = rK.key;
       }
       let remote;
-      try { remote = normalize(await unseal(rkey, remoteBlob)); }
-      catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
-      if (differentSalt) K = {key:rkey, salt:unb64(remoteBlob.salt), iter:remoteBlob.iter};
+      try { remote = normalize(await unsealRemote(rkey, remoteBlob)); }
+      catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+      let wNew = false;
+      if (differentSalt) K = rK;
+      else if (remoteBlob.w && JSON.stringify(remoteBlob.w) !== JSON.stringify(K.w)) { K = {...K, w:remoteBlob.w}; wNew = true; }   // wachtwoord of herstelsleutel op een ander toestel gewijzigd
       const merged = merge(data, remote);
       merged.settings.sync = s;
-      if (sig(merged) !== sig(data) || differentSalt) {
+      if (sig(merged) !== sig(data) || differentSalt || wNew) {
         data = merged;
         if (clPending && merged.clients.length) { clPending = false; clFailed = false; clSigSaved = null; }   // klanten ontbraken op dit toestel: die komen nu uit de gist
         await persist();
         renderAll();
       }
-      if (sig(merged) !== sig(remote) || differentSalt) { const pm = {}; await remotePut(s, await persistFull(), pm); syncEtag = pm.etag; }
+      if (sig(merged) !== sig(remote) || differentSalt) { const pm = {}; await remotePut(s, await persistRemote(s), pm); syncEtag = pm.etag; }
       else syncEtag = gmeta.etag;
     } else {
-      const pm = {}; await remotePut(s, await persistFull(), pm); syncEtag = pm.etag;
+      const pm = {}; await remotePut(s, await persistRemote(s), pm); syncEtag = pm.etag;
     }
     setSync('ok');
   } catch (e) {
@@ -2780,7 +2866,7 @@ let lockMode = 'loading';
 function renderLock() {
   const f = $('#lockFields'), sub = $('#lockSub'), btn = $('#lockBtn'), alt = $('#lockAlt');
   $('#lockErr').textContent = '';
-  btn.hidden = false; alt.hidden = false; $('#lockBio').hidden = true;
+  btn.hidden = false; alt.hidden = false; $('#lockBio').hidden = true; $('#lockForgot').hidden = true;
   // met een accountdienst blijft er altijd een uitweg naar de lokale kluis op dit toestel (bv. als de dienst even niet werkt)
   const loc = $('#lockLocal'); loc.hidden = !CLOUD || lockMode === 'loading' || lockMode === 'restore';
   loc.textContent = lockMode.startsWith('cloud') ? 'Zonder account (enkel op dit toestel)' : 'Inloggen met een account';
@@ -2798,11 +2884,24 @@ function renderLock() {
     let last = ''; try { last = localStorage.getItem(CLOUD_USER) || ''; } catch {}
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required value="${esc(last)}" ${last ? '' : 'autofocus'}>
       <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required ${last ? 'autofocus' : ''}>`;
-    btn.textContent = 'Inloggen'; alt.textContent = 'Account aanmaken';
+    btn.textContent = 'Inloggen'; alt.textContent = 'Account aanmaken'; $('#lockForgot').hidden = false;
     if (bioGet() && bioSupported() && last) { $('#lockBio').hidden = false; $('#lockBio').textContent = 'Inloggen met ' + bioName(); }
+  } else if (CLOUD && lockMode === 'cloud-forgot') {
+    $('#lockTitle').textContent = 'Wachtwoord vergeten';
+    sub.textContent = 'Vul je e-mailadres in. Je krijgt een mail met een link. Daarna heb je je herstelsleutel nodig om een nieuw wachtwoord te kiezen.';
+    let last = ''; try { last = localStorage.getItem(CLOUD_USER) || ''; } catch {}
+    f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required value="${esc(last)}" autofocus>`;
+    btn.textContent = 'Mail versturen'; alt.textContent = 'Terug naar inloggen';
+  } else if (CLOUD && lockMode === 'cloud-reset') {
+    $('#lockTitle').textContent = 'Nieuw wachtwoord';
+    sub.textContent = `Kies een nieuw wachtwoord voor ${resetEmail}. Vul hiervoor de herstelsleutel in die je bij het aanmaken van je account bewaarde.`;
+    f.innerHTML = `<label for="rk">Herstelsleutel</label><input id="rk" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-…" autofocus>
+      <label for="pw1">Nieuw wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="${CLOUD_MINPW}" required>
+      <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
+    btn.textContent = 'Nieuw wachtwoord instellen'; alt.textContent = 'Ik heb geen herstelsleutel: begin met een lege kluis';
   } else if (CLOUD && lockMode === 'cloud-up') {
     $('#lockTitle').textContent = 'Account aanmaken';
-    sub.textContent = `Kies een e-mailadres en een wachtwoord van minstens ${CLOUD_MINPW} tekens. Daarmee worden je gegevens versleuteld; zonder dit wachtwoord kan niemand ze lezen (ook wij niet) en er is geen herstel. Onthoud het goed.`;
+    sub.textContent = `Kies een e-mailadres en een wachtwoord van minstens ${CLOUD_MINPW} tekens. Daarmee worden je gegevens versleuteld; zonder dit wachtwoord kan niemand ze lezen (ook wij niet). Je krijgt straks een herstelsleutel die je veilig moet bewaren.`;
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required autofocus>
       <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="${CLOUD_MINPW}" required>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
@@ -2835,8 +2934,18 @@ $('#lockLocal').addEventListener('click', () => {
   lockMode = lockMode.startsWith('cloud') ? (vaultBlob() ? 'unlock' : 'setup') : 'cloud-in';
   renderLock();
 });
-$('#lockAlt').addEventListener('click', () => {
+$('#lockForgot').addEventListener('click', () => { lockModeChosen = true; lockMode = 'cloud-forgot'; renderLock(); });
+$('#lockAlt').addEventListener('click', async () => {
   lockModeChosen = true;
+  if (CLOUD && lockMode === 'cloud-reset') {   // zonder herstelsleutel: de online kluis vervangen door een lege
+    const pw = $('#pw1').value, err = $('#lockErr'); err.textContent = '';
+    if (pw.length < CLOUD_MINPW) { err.textContent = `Kies eerst een nieuw wachtwoord van minstens ${CLOUD_MINPW} tekens.`; return; }
+    if (!confirm('Alle gegevens in je account worden vervangen door een lege kluis. Dit kan niet ongedaan gemaakt worden. Doorgaan?')) return;
+    const btn = $('#lockBtn'); btn.disabled = true;
+    try { await resetCloud('', pw, $('#pw2').value, true); } catch (ex) { err.textContent = ex.message; btn.disabled = false; }
+    return;
+  }
+  if (CLOUD && lockMode === 'cloud-forgot') { lockMode = 'cloud-in'; renderLock(); return; }
   if (CLOUD && lockMode.startsWith('cloud')) { lockMode = lockMode === 'cloud-up' ? 'cloud-in' : 'cloud-up'; renderLock(); return; }
   lockMode = lockMode === 'restore' ? (vaultBlob() ? 'unlock' : 'setup') : 'restore';
   renderLock();
@@ -2923,9 +3032,15 @@ function askLegacyPassword(blob, wrong) {
     });
   }).then(v => { if (dlg.open) dlg.close(); return v; });
 }
+// kluis van dit toestel volledig openen (bij gesplitste opslag ook de klanten uit IndexedDB)
+async function openLocalFull(local, key) {
+  const d = await unseal(key, local);
+  if (local.split) { const b = await idbKV('get', CL_KEY + local.clv); if (b) d.clients = await readClients(b, key); }
+  return normalize(d);
+}
 async function legacyData(local, pw) {
   // eerst met het ingetypte wachtwoord, dan met het oude wachtwoord dat de gebruiker opgeeft
-  const open = async p => { const key = await deriveKey(p, unb64(local.salt), local.iter); return normalize(await unseal(key, local)); };
+  const open = async p => openLocalFull(local, (await openKey(p, local)).key);
   try { return await open(pw); } catch {}
   let wrong = false;
   for (;;) {
@@ -2943,41 +3058,116 @@ async function unlockCloud(emailRaw, pw) {
   const local = vaultBlob();
   let owner = ''; try { owner = localStorage.getItem(CLOUD_USER) || ''; } catch {}
   const secretP = authSecret(email, pw);
-  // 1. kluis van dit account staat al op dit toestel
-  if (local && owner === email) {
+  // 1. kluis van dit account staat al op dit toestel (snel, ook offline)
+  const fast = async () => {
     try {
-      const key = await deriveKey(pw, unb64(local.salt), local.iter), ld = normalize(await unseal(key, local));
-      K = {key, salt:unb64(local.salt), iter:local.iter}; data = ld; data.settings.sync = cloudSettings(email);
+      const kk = await openKey(pw, local), ld = normalize(await unseal(kk.key, local));
+      K = kk; data = ld; data.settings.sync = cloudSettings(email);
       cloudAuth = {email, secret:await secretP};
       if (local.split) startClientLoad(local, K.key);
       enterApp(); syncNow(pw);
-      return;
-    } catch {}   // ander wachtwoord of elders gewijzigd: online verder
-  }
+      return true;
+    } catch { return false; }   // ander wachtwoord of elders gewijzigd: online verder
+  };
+  const mine = local && owner === email;
+  if (mine && local.w && await fast()) return;
   // 2. online inloggen en de kluis ophalen
   const secret = await secretP;
-  await cloudSignIn(email, secret);
+  try { await cloudSignIn(email, secret); }
+  catch (e) { if (e.offline && mine && await fast()) return; throw e; }
   cloudAuth = {email, secret};
   const rblob = await cloudGet(cloudSettings(email));
-  // gegevens op dit toestel die bij een ander (of geen) account horen
-  let localData = null;
-  if (local && owner !== email) localData = await legacyData(local, pw);
+  // gegevens op dit toestel die bij een ander (of geen) account horen, of een oude kluis van dit account zonder datasleutel
+  let localData = null, ask = false;
+  if (local && !mine) { localData = await legacyData(local, pw); ask = true; }
+  else if (mine && !local.w) { try { localData = await openLocalFull(local, (await openKey(pw, local)).key); } catch {} }
+  let newRec = null;
   if (rblob) {
-    const rkey = await deriveKey(pw, unb64(rblob.salt), rblob.iter);
-    let remote; try { remote = normalize(await unseal(rkey, rblob)); } catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
-    K = {key:rkey, salt:unb64(rblob.salt), iter:rblob.iter};
-    data = remote;
-    if (localData && confirm('Er staan ook gegevens op dit toestel. Samenvoegen met je account? (Annuleren = enkel de gegevens van je account gebruiken.)')) data = merge(localData, remote);
+    let rK; try { rK = await openKey(pw, rblob); } catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+    let remote; try { remote = normalize(await unsealRemote(rK.key, rblob)); } catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+    K = rK; data = remote;
+    if (localData && (!ask || confirm('Er staan ook gegevens op dit toestel. Samenvoegen met je account? (Annuleren = enkel de gegevens van je account gebruiken.)'))) data = merge(localData, remote);
   } else {
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    K = {key:await deriveKey(pw, salt, ITER), salt, iter:ITER};
+    const env = await newEnvelope(pw); K = env.K; newRec = env.rec;
     data = localData || newData();   // eerste keer: bestaande gegevens van dit toestel verhuizen mee naar het account
   }
   data.settings.sync = cloudSettings(email);
   try { localStorage.setItem(CLOUD_USER, email); } catch {}
-  syncDirty = true;
+  syncDirty = true; clSigSaved = null;
   await persist();
+  if (rblob && !K.w) newRec = await upgradeEnvelope(pw);   // oudere accountkluis: voeg datasleutel en herstelsleutel toe
   enterApp(); syncNow(pw);
+  if (newRec) showRecoveryKey(newRec);
+}
+// Kluis zonder datasleutel (eerste versie) omzetten: nieuwe datasleutel, opnieuw versleutelen en meteen online zetten
+async function upgradeEnvelope(pw) {
+  const old = K, env = await newEnvelope(pw);
+  try {
+    K = env.K; clSigSaved = null; forceFull = true; await persist();
+    await remotePut(data.settings.sync, await persistRemote(data.settings.sync));
+    return env.rec;
+  } catch (e) { console.warn('Herstelsleutel nog niet toegevoegd', e); K = old; clSigSaved = null; await persist(); return null; }
+}
+// De herstelsleutel tonen: kopiëren of downloaden, en pas sluiten na bevestiging
+function showRecoveryKey(rec, again) {
+  showDialog(`<h3>${again ? 'Nieuwe herstelsleutel' : 'Bewaar je herstelsleutel'}</h3>
+    <p class="muted small">Vergeet je ooit je wachtwoord, dan kun je met deze sleutel opnieuw toegang krijgen tot je gegevens. Niemand anders kan dat, ook wij niet. Bewaar de sleutel op een veilige plek (bv. in een wachtwoordbeheerder of op papier).${again ? ' De vorige herstelsleutel werkt niet meer.' : ''}</p>
+    <div class="box"><code id="rkVal" style="font-size:18px;letter-spacing:1px;word-break:break-all;user-select:all">${esc(rec)}</code></div>
+    <div class="dlg-actions" style="margin-top:6px"><button type="button" class="btn" id="rkCopy">Kopiëren</button><button type="button" class="btn" id="rkDl">Downloaden</button></div>
+    <label class="chk" style="margin-top:10px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="rkOk"> Ik heb de herstelsleutel veilig bewaard</label>
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="rkDone" disabled>Klaar</button></div>`, d => {
+    $('#rkCopy', d).onclick = async () => { try { await navigator.clipboard.writeText(rec); toast('Gekopieerd'); } catch { toast('Kopiëren mislukt: selecteer de sleutel en kopieer zelf'); } };
+    $('#rkDl', d).onclick = () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([`Taken: herstelsleutel\n${data?.settings.sync?.email || ''}\n\n${rec}\n\nBewaar dit bestand veilig. Met deze sleutel kun je een vergeten wachtwoord vervangen.\n`], {type:'text/plain'}));
+      a.download = 'taken-herstelsleutel.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    };
+    $('#rkOk', d).onchange = e => { $('#rkDone', d).disabled = !e.target.checked; };
+    $('#rkDone', d).onclick = () => d.close();
+    d.addEventListener('cancel', e => { if (!$('#rkOk', d).checked) e.preventDefault(); }, {once:true});
+  });
+}
+// Wachtwoord vergeten: de herstelmail (via de dienst) brengt je hier terug met een tijdelijke sessie; met de herstelsleutel kies je een nieuw wachtwoord
+async function sendRecoveryMail(emailRaw) {
+  const email = normEmail(emailRaw);
+  if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('Vul een geldig e-mailadres in.');
+  await sb('/auth/v1/recover?redirect_to=' + encodeURIComponent(location.origin + location.pathname), {method:'POST', body:{email}});
+}
+let resetEmail = '';
+async function takeRecoveryLink() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  if (h.get('type') !== 'recovery' || !h.get('access_token')) return false;
+  history.replaceState(null, '', location.pathname + location.search);
+  cloudSess = {token:h.get('access_token'), refresh:h.get('refresh_token'), exp:now() + Math.max(60, (+h.get('expires_in') || 3600) - 60) * 1000, userId:null};
+  try { const u = await sb('/auth/v1/user', {token:cloudSess.token}); cloudSess.userId = u.id; resetEmail = normEmail(u.email); } catch { cloudSess = null; return false; }
+  return true;
+}
+async function resetCloud(rk, pw, pw2, fresh) {
+  if (pw.length < CLOUD_MINPW) throw new Error(`Gebruik minstens ${CLOUD_MINPW} tekens.`);
+  if (pw !== pw2) throw new Error('De wachtwoorden komen niet overeen.');
+  const email = resetEmail, ss = cloudSess, st = cloudSettings(email);
+  const rblob = await cloudGet(st);
+  let nK, nData, rec = null;
+  if (fresh || !rblob) { const env = await newEnvelope(pw); nK = env.K; rec = env.rec; nData = newData(); }
+  else {
+    if (!rblob.w) throw new Error('Deze kluis heeft geen herstelsleutel. Je kunt enkel een nieuwe, lege kluis starten.');
+    let rK; try { rK = await openKey(rk, rblob, true); } catch { throw new Error('Deze herstelsleutel klopt niet.'); }
+    nData = normalize(await unsealRemote(rK.key, rblob));
+    nK = {...rK, w:{pw:await wrapRaw(rK.raw, pw, ITER), rec:rblob.w.rec}};
+  }
+  const local = vaultBlob(); let owner = ''; try { owner = localStorage.getItem(CLOUD_USER) || ''; } catch {}
+  if (local && owner !== email && !confirm('De gegevens van een ander account op dit toestel worden vervangen. Doorgaan?')) throw new Error('Geannuleerd.');
+  const nsec = await authSecret(email, pw);
+  await sb('/auth/v1/user', {method:'PUT', token:ss.token, body:{password:nsec}});
+  cloudAuth = {email, secret:nsec};
+  try { await cloudSignIn(email, nsec); } catch {}
+  K = nK; data = nData; data.settings.sync = st;
+  try { localStorage.setItem(CLOUD_USER, email); localStorage.removeItem(BIO_KEY); } catch {}
+  syncDirty = true; clSigSaved = null; forceFull = true;
+  await persist();
+  try { await remotePut(st, await persistRemote(st)); syncDirty = false; } catch (e) { if (!e.conflict) throw e; }
+  enterApp(); syncNow(pw);
+  if (rec) showRecoveryKey(rec);
 }
 // Account: aanmaken, daarna meteen ingelogd (of eerst het e-mailadres bevestigen als de beheerder dat vraagt).
 async function signupCloud(emailRaw, pw, pw2) {
@@ -2998,12 +3188,18 @@ async function signupCloud(emailRaw, pw, pw2) {
 $('#lockForm').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#lockErr'), btn = $('#lockBtn');
-  const pw = $('#pw1').value;
+  const pw = $('#pw1')?.value || '';
   err.textContent = ''; btn.disabled = true;
   const old = btn.textContent; btn.textContent = 'Even geduld…';
   try {
     if (CLOUD && lockMode === 'cloud-in') {
       await unlockCloud($('#lkEmail').value, pw);
+    } else if (CLOUD && lockMode === 'cloud-forgot') {
+      await sendRecoveryMail($('#lkEmail').value);
+      lockMode = 'cloud-in'; renderLock(); $('#lockErr').textContent = 'Als dit e-mailadres een account heeft, is er een mail onderweg. Open de link in die mail op dit toestel.';
+    } else if (CLOUD && lockMode === 'cloud-reset') {
+      if (!recNorm($('#rk').value)) throw new Error('Vul je herstelsleutel in.');
+      await resetCloud($('#rk').value, pw, $('#pw2').value);
     } else if (CLOUD && lockMode === 'cloud-up') {
       await signupCloud($('#lkEmail').value, pw, $('#pw2').value);
     } else if (lockMode === 'setup') {
@@ -4697,8 +4893,8 @@ function openSettings() {
     <h4>${s?.cloud ? 'Account' : 'Synchroniseren tussen al je browsers'}</h4>
     ${s?.cloud ? `<div class="box">
         <p><b>Ingelogd als</b> ${esc(s.email || '')}</p>
-        <p class="muted small">Je gegevens staan versleuteld in je account en synchroniseren automatisch op al je toestellen. Een vergeten wachtwoord kan niemand herstellen: bewaar daarom af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
-        <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button><span class="grow"></span><button type="button" class="btn" id="stLogout">Uitloggen</button></div>
+        <p class="muted small">Je gegevens staan versleuteld in je account en synchroniseren automatisch op al je toestellen. Vergeet je je wachtwoord, dan heb je je herstelsleutel nodig; bewaar ook af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
+        <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button>${K?.w ? '<button type="button" class="btn" id="stRecNew">Nieuwe herstelsleutel</button>' : ''}<span class="grow"></span><button type="button" class="btn" id="stLogout">Uitloggen</button></div>
       </div>`
     : s ? `<div class="box">
         <p><b>Stap 1 ✓</b> Gekoppeld aan geheime gist <code>${esc(s.gistId)}</code>. ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
@@ -4747,6 +4943,23 @@ function openSettings() {
     bindBioBox(d);
     $('#stSync', d)?.addEventListener('click', () => syncNow());
     $('#stLogout', d)?.addEventListener('click', () => lock());
+    $('#stRecNew', d)?.addEventListener('click', () => {
+      showDialog(`<h3>Nieuwe herstelsleutel</h3>
+        <p class="muted small">Je huidige herstelsleutel werkt daarna niet meer. Vul je wachtwoord in om door te gaan.</p>
+        <label class="fl">Wachtwoord<input id="rnPw" type="password" autocomplete="current-password" autofocus></label>
+        <p class="err" id="rnErr"></p>
+        <div class="dlg-actions"><button type="button" class="btn" id="rnNo">Annuleren</button><span class="grow"></span><button type="button" class="btn primary" id="rnOk">Maken</button></div>`, dd => {
+        $('#rnNo', dd).onclick = () => dd.close();
+        $('#rnOk', dd).onclick = async e => {
+          const pw = $('#rnPw', dd).value, err = $('#rnErr', dd); err.textContent = ''; e.target.disabled = true;
+          try { await unwrapRaw(K.w.pw, pw); } catch { err.textContent = 'Wachtwoord klopt niet.'; e.target.disabled = false; return; }
+          const rec = newRecoveryKey();
+          K = {...K, w:{...K.w, rec:await wrapRaw(K.raw, recNorm(rec), REC_ITER)}};
+          try { await persist(); syncDirty = true; await syncNow(pw); } catch {}
+          showRecoveryKey(rec, true);
+        };
+      });
+    });
     $('#stUnlink', d)?.addEventListener('click', () => {
       if (!confirm('Synchronisatie in deze browser ontkoppelen? De gist en het sleutelbestand op je site blijven bestaan.')) return;
       data.settings.sync = null; setSync('idle'); save(); checkConfig(); openSettings();
@@ -4785,7 +4998,7 @@ function openSettings() {
       if (n1.length < (cl ? CLOUD_MINPW : 8)) { err.textContent = `Gebruik minstens ${cl ? CLOUD_MINPW : 8} tekens.`; return; }
       if (n1 !== n2) { err.textContent = 'De nieuwe wachtwoorden komen niet overeen.'; return; }
       await clReadyP; if (clPending) { err.textContent = 'De klanten zijn nog niet geladen. Probeer zo meteen opnieuw.'; return; }
-      try { await persist(); await unseal(await deriveKey(o, K.salt, K.iter), vaultBlob()); }
+      try { await persist(); const kk = await openKey(o, vaultBlob()); await unseal(kk.key, vaultBlob()); }
       catch { err.textContent = 'Huidig wachtwoord klopt niet.'; return; }
       if (cl) {   // eerst het login-geheim bij de dienst vervangen; lukt dat niet, dan blijft alles zoals het was
         try {
@@ -4794,9 +5007,9 @@ function openSettings() {
           cloudAuth = {email:data.settings.sync.email, secret:nsec};
         } catch (ex) { err.textContent = 'Wachtwoord niet gewijzigd: ' + ex.message; return; }
       }
-      const salt = crypto.getRandomValues(new Uint8Array(16));
-      K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER};
-      await persist(); const blob = await persistFull();
+      if (K.w) K = {...K, w:{...K.w, pw:await wrapRaw(K.raw, n1, ITER)}};   // snel: enkel de datasleutel opnieuw inpakken
+      else { const salt = crypto.getRandomValues(new Uint8Array(16)); K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER}; }
+      await persist(); const blob = await persistRemote(data.settings.sync);
       if (bioGet()) { localStorage.removeItem(BIO_KEY); toast('Wachtwoord gewijzigd; zet ' + bioName() + ' opnieuw aan'); }
       if (data.settings.sync) {
         try { await remotePut(data.settings.sync, blob); setSync('ok'); }
@@ -4827,7 +5040,7 @@ function openSettings() {
         let incoming;
         if (obj.ct && obj.salt) {
           const pw = prompt('Wachtwoord van deze back-up:'); if (pw === null) return;
-          try { incoming = await unseal(await deriveKey(pw, unb64(obj.salt), obj.iter), obj); }
+          try { incoming = await unseal((await openKey(pw, obj)).key, obj); }
           catch { throw new Error('Onjuist wachtwoord voor deze back-up.'); }
         } else if (Array.isArray(obj.tasks)) incoming = obj;
         else throw new Error('Onbekend bestandsformaat.');
@@ -7014,8 +7227,12 @@ function startTimers() {
 // Snel starten: heeft dit toestel al een kluis of sleutelbestand, dan meteen het wachtwoord vragen.
 try { CFG = JSON.parse(localStorage.getItem(CFG_CACHE)); } catch {}
 const cloudDefaultMode = () => 'cloud-in';   // de meeste bezoekers hebben al een account (nieuw toestel); "Account aanmaken" staat eronder
-loadVault().finally(() => {
+loadVault().finally(async () => {
 if (CLOUD) lockMode = cloudDefaultMode(); else if (CFG || vaultBlob()) lockMode = 'unlock';
+if (/type=recovery/.test(location.hash)) {   // link uit de herstelmail
+  if (!CLOUD) await loadCloudCfg();
+  if (CLOUD && await takeRecoveryLink()) { lockMode = 'cloud-reset'; lockModeChosen = true; }
+}
 renderLock();
 loadCloudCfg().then(c => {
   if (!c || lockModeChosen || $('#lock').hidden) return;
@@ -7093,7 +7310,7 @@ function bindBioBox(d) {
     if (!pw) { err.textContent = 'Vul je wachtwoord in.'; return; }
     e.target.disabled = true;
     try {
-      try { await unseal(await deriveKey(pw, K.salt, K.iter), vaultBlob()); } catch { throw new Error('Wachtwoord klopt niet.'); }
+      try { await unseal((await openKey(pw, vaultBlob())).key, vaultBlob()); } catch { throw new Error('Wachtwoord klopt niet.'); }
       await bioEnable(pw);
       toast(bioName() + ' staat aan');
       redraw();

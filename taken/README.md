@@ -53,8 +53,8 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 **Aanzetten (eenmalig, door de beheerder):**
 
 1. Maak op [supabase.com](https://supabase.com) een gratis project (regio Frankfurt).
-2. Voer in de **SQL Editor** het script uit [`MULTIUSER.md`](MULTIUSER.md) uit. Het maakt de tabel `vaults` met regels zodat iedereen alleen zijn eigen rij ziet.
-3. Zet onder **Authentication** de bevestigingsmail uit (of stel een eigen mailserver in) en bepaal of iedereen zich mag aanmelden of alleen via uitnodiging.
+2. Voer in de **SQL Editor** het script [`supabase.sql`](supabase.sql) uit. Het maakt de tabel `vaults` met regels zodat iedereen alleen zijn eigen rij ziet, en is herhaalbaar: heb je een eerdere versie al uitgevoerd, voer het dan gerust opnieuw uit (het voegt de kolommen voor grote kluizen toe).
+3. Zet onder **Authentication** de bevestigingsmail uit (of stel een eigen mailserver in) en bepaal of iedereen zich mag aanmelden of alleen via uitnodiging. Voor **Wachtwoord vergeten** verstuurt de dienst een mail: zet onder **Authentication → URL Configuration** de *Site URL* op het adres van je app (bv. `https://sbmusic.be/taken/`) en voeg dat adres toe aan de *Redirect URLs*. De ingebouwde mailserver van het gratis plan verstuurt maar weinig mails per uur; een eigen SMTP-server (Authentication → SMTP) is stabieler.
 4. Zet de **Project URL** en de **publishable (anon) key** in `taken/cloud.json`:
    ```json
    { "url": "https://JOUWPROJECT.supabase.co", "key": "sb_publishable_…" }
@@ -64,7 +64,16 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 
 **Bestaande gegevens meenemen.** Maak je een account aan op een toestel waar al een kluis staat, dan gaan die gegevens mee naar het account (met hetzelfde wachtwoord; met een ander wachtwoord vraagt de app naar het oude). Een gist of back-up blijft ongemoeid.
 
-**Let op:** wachtwoord vergeten betekent gegevens kwijt. Bewaar af en toe een versleutelde back-up (**Instellingen → Back-up**). Een herstelsleutel staat op de planning. Een gratis Supabase-project kan na een periode zonder gebruik gepauzeerd worden; de repository bevat een geplande wekelijkse ping die dat voorkomt.
+**Herstelsleutel.** Bij het aanmaken van je account toont de app een **herstelsleutel** (32 tekens). Bewaar die op een veilige plek: zonder wachtwoord én zonder herstelsleutel zijn je gegevens echt weg, want niemand anders kan ze lezen. De kluis is versleuteld met een willekeurige datasleutel die twee keer is ingepakt: met je wachtwoord en met de herstelsleutel. Gevolgen:
+
+- **Wachtwoord wijzigen** (Instellingen → Beveiliging) is snel, ook met tienduizenden klanten: enkel de datasleutel wordt opnieuw ingepakt.
+- **Wachtwoord vergeten?** Kies op het inlogscherm *Wachtwoord vergeten?*, vul je e-mailadres in en open de link in de mail. Vul daarna je herstelsleutel in en kies een nieuw wachtwoord; al je gegevens blijven behouden. Heb je de sleutel niet meer, dan kun je alleen met een lege kluis opnieuw beginnen.
+- **Nieuwe herstelsleutel** maken kan in de instellingen (de oude werkt dan niet meer).
+- Accounts van de eerste versie krijgen bij de eerstvolgende login automatisch een herstelsleutel.
+
+**Zeer grote kluizen.** Staat het script `supabase.sql` in je project, dan bewaart de dienst de klanten apart van de rest. Een gewone wijziging (een taak afvinken) uploadt dan enkel de kleine kern; de klantenlijst gaat alleen mee als die veranderd is. Zonder dat script blijft alles gewoon in één stuk werken.
+
+**Let op:** bewaar ook af en toe een versleutelde back-up (**Instellingen → Back-up**). Een gratis Supabase-project kan na een periode zonder gebruik gepauzeerd worden; de repository bevat een geplande wekelijkse ping die dat voorkomt.
 
 Verwijder je `taken/cloud.json`, dan werkt de app weer volledig lokaal, optioneel met een gist.
 
@@ -145,7 +154,7 @@ Haal in je fork de nieuwste wijzigingen binnen (**Sync fork → Update branch**)
 | "Publiceren op GitHub" opent de verkeerde repository | Je gebruikt een eigen domein. Pas `REPO` en `CONFIG_PATH` aan (zie hierboven). |
 | Een tweede toestel toont niet dezelfde gegevens | Open **Instellingen** en bekijk of beide stappen een vinkje hebben. Klik op **Controleren** en wacht even op GitHub Pages. |
 | Wachtwoord gewijzigd en nu synchroniseert het niet meer | Werk het sleutelbestand bij via **Instellingen → Stap 2**. |
-| Wachtwoord vergeten | Er is geen herstel. Heb je een versleutelde back-up, dan heb je nog altijd het oude wachtwoord nodig. |
+| Wachtwoord vergeten | Met een account: *Wachtwoord vergeten?* op het inlogscherm en je herstelsleutel. Zonder account (lokaal of gist) is er geen herstel; een versleutelde back-up heeft nog altijd het oude wachtwoord nodig. |
 
 ### Lokaal uitproberen
 
