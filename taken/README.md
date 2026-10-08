@@ -69,6 +69,7 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 - **Wachtwoord wijzigen** (Instellingen → Beveiliging) is snel, ook met tienduizenden klanten: enkel de datasleutel wordt opnieuw ingepakt.
 - **Wachtwoord vergeten?** Kies op het inlogscherm *Wachtwoord vergeten?*, vul je e-mailadres in en open de link in de mail. Vul daarna je herstelsleutel in en kies een nieuw wachtwoord; al je gegevens blijven behouden. Heb je de sleutel niet meer, dan kun je alleen met een lege kluis opnieuw beginnen.
 - **Nieuwe herstelsleutel** maken kan in de instellingen (de oude werkt dan niet meer).
+- **Account verwijderen** (Instellingen → Account) wist je account en je online kluis definitief. Dit werkt na het (opnieuw) uitvoeren van `supabase.sql`, dat de functie `delete_my_account` toevoegt.
 - Accounts van de eerste versie krijgen bij de eerstvolgende login automatisch een herstelsleutel.
 
 **Zeer grote kluizen.** Staat het script `supabase.sql` in je project, dan bewaart de dienst de klanten apart van de rest. Een gewone wijziging (een taak afvinken) uploadt dan enkel de kleine kern; de klantenlijst gaat alleen mee als die veranderd is. Zonder dat script blijft alles gewoon in één stuk werken.

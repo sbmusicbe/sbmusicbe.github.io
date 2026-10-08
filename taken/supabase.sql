@@ -21,3 +21,13 @@ create policy "eigen kluis lezen"     on vaults for select using (user_id = auth
 create policy "eigen kluis maken"     on vaults for insert with check (user_id = auth.uid());
 create policy "eigen kluis bijwerken" on vaults for update using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "eigen kluis wissen"    on vaults for delete using (user_id = auth.uid());
+
+-- Account verwijderen vanuit de app (Instellingen → Account verwijderen): wist de eigen gebruiker; de kluis verdwijnt via cascade mee.
+create or replace function public.delete_my_account() returns void
+language plpgsql security definer set search_path = public, auth as $$
+begin
+  if auth.uid() is null then raise exception 'niet ingelogd'; end if;
+  delete from auth.users where id = auth.uid();
+end $$;
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
