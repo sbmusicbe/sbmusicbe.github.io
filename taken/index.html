@@ -2005,6 +2005,13 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
   #viewSub{flex-basis:100%;order:3;margin:2px 0 0}
 }
 textarea.proj-notes{border:0!important;background:none!important;box-shadow:none!important}
+/* op telefoon schuift de zijbalk over de pagina: dan moet ze een dichte achtergrond hebben */
+@media (max-width:860px){
+  #side{background:var(--panel)!important;box-shadow:0 0 0 1px var(--line),24px 0 60px -20px rgba(20,30,40,.35)!important;border-radius:0 28px 28px 0}
+  #side .side-foot{background:var(--fill)!important;box-shadow:none!important}
+  #side .nav-item.on{background:var(--fill)!important;box-shadow:none!important}
+  #scrim{background:rgba(14,19,23,.45)}
+}
 </style>
 </head>
 <body>
