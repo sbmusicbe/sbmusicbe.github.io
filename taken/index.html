@@ -1803,18 +1803,11 @@ a,.link{color:var(--accent)}
 /* logo: SB-monogram uit de site */
 .brand i,.lock-logo{background:none!important;width:auto!important;height:auto!important;border-radius:0!important;box-shadow:none!important;display:block!important;color:var(--text)}
 .brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:1000/429;width:38px;background:var(--text);-webkit-mask:url("/images/logo-mask.png") center/contain no-repeat;mask:url("/images/logo-mask.png") center/contain no-repeat}
-.lock-logo::before{width:84px;background:#fff}
+.lock-logo::before{width:84px}
 .brand i img,.brand i svg,.lock-logo img,.lock-logo svg{display:none!important}
 .brand{font-weight:600;font-size:17px;letter-spacing:-.01em}
 /* inlogscherm = het laadscherm van de site: zwart, wit logo, dun voortgangsstreepje, groot "SB"-watermerk */
-.lock{--bg:#0A0A0A;--panel:#111111;--text:#FFFFFF;--muted:#9A9A97;--faint:#6B6B69;--line:rgba(255,255,255,.14);--accent:#6FA88A;--on-accent:#0A0A0A;--fill:rgba(255,255,255,.06);position:relative;overflow:hidden;background:#0A0A0A!important;color:#fff;color-scheme:dark}
-.lock::after{content:"SB";position:absolute;inset-inline:0;bottom:-.18em;text-align:center;font-weight:700;line-height:1;font-size:min(46vw,30rem);color:rgba(255,255,255,.05);pointer-events:none;user-select:none}
-.lock-card{position:relative;z-index:1;background:transparent!important;border:0!important;box-shadow:none!important;color:#fff}
-.lock-card h1{font-size:30px;line-height:1}
-.lock-card p,.lock-card label{color:rgba(255,255,255,.6)}
-.lock-card input{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#fff}
-.lock-card .btn.primary{background:#fff!important;color:#0A0A0A!important}
-.lock-card .link{color:#6FA88A}
+
 #fab,#fab:hover{background:var(--text)!important;color:var(--bg)!important;border-color:transparent!important;box-shadow:var(--shadow-lift)!important}
 /* themaknop onderaan de zijbalk */
 #themeBtn svg{width:20px;height:20px}
@@ -1995,7 +1988,6 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
 .top-avatar{width:46px;height:46px;border-radius:50%;border:0;background:var(--text);padding:0;place-items:center;box-shadow:var(--shadow-card)}
 .top-avatar::before{content:"";display:block;width:26px;aspect-ratio:1000/429;background:var(--bg);-webkit-mask:url("/images/logo-mask.png") center/contain no-repeat;mask:url("/images/logo-mask.png") center/contain no-repeat}
 .brand i::before,.lock-logo::before{background:var(--text)}
-.lock-logo::before{background:#fff}
 .group{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 18px!important}
 .proj-notes,#banner{background:none!important;box-shadow:none!important}
 .proj-notes:hover{background:none!important}
@@ -2040,6 +2032,18 @@ textarea.nb-body{flex:1;min-height:50vh;border:0!important;background:none!impor
 }
 input.nb-title{font-size:28px!important}
 @media (max-width:860px){ #nbStamp{display:none} input.nb-title{font-size:26px!important} }
+/* inlogscherm: licht, tenzij je zelf voor donker koos; invoer en wachtwoordbolletjes altijd goed leesbaar */
+.lock{--bg:#ECEEF2;--panel:#FFFFFF;--card:#FFFFFF;--text:#12171C;--muted:#6B747D;--faint:#A6AEB6;--line:rgba(18,23,28,.1);--fill:#F1F3F6;--accent:#234250;--accent-2:#1A3440;--on-accent:#FFFFFF;color-scheme:light}
+:root[data-theme="dark"] .lock{--bg:#0E1317;--panel:#171E24;--card:#1A232A;--text:#EEF2F5;--muted:#8D99A3;--faint:#5F6B75;--line:rgba(255,255,255,.12);--fill:rgba(255,255,255,.06);--accent:#8FC3D4;--accent-2:#A9D3E0;--on-accent:#0B1A20;color-scheme:dark}
+.lock{position:relative;overflow:hidden;background:var(--bg)!important;color:var(--text)}
+.lock::after{content:"SB";position:absolute;inset-inline:0;bottom:-.18em;text-align:center;font-weight:700;line-height:1;font-size:min(46vw,30rem);color:color-mix(in srgb,var(--text) 5%,transparent);pointer-events:none;user-select:none}
+.lock-card{position:relative;z-index:1;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--text)}
+.lock-card p,.lock-card label{color:var(--muted)}
+.lock-card input{background:var(--card)!important;border:1px solid var(--line)!important;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;caret-color:var(--text)}
+.lock-card input::placeholder{color:var(--faint)}
+.lock-card .btn.primary{background:var(--accent)!important;color:var(--on-accent)!important}
+.lock-card .link{color:var(--accent)}
+.lock-logo::before{background:var(--text)}
 </style>
 </head>
 <body>
@@ -2731,7 +2735,8 @@ async function unlockWith(pw) {
   // Snel inloggen: staat de kluis al op dit toestel, dan wachten we niet op het netwerk. Het sleutelbestand wordt
   // op de achtergrond ververst en de online kluis wordt na het openen samengevoegd (syncNow).
   let cached = null; try { cached = JSON.parse(localStorage.getItem(CFG_CACHE)); } catch {}
-  if (local && cached) { CFG = cached; fetchConfig().then(c => { CFG = c; if (data) checkConfig(); }).catch(() => {}); }
+  const usedCache = !!(local && cached);
+  if (usedCache) { CFG = cached; fetchConfig().then(c => { CFG = c; if (data) checkConfig(); }).catch(() => {}); }
   else CFG = await fetchConfig();
   let localData = null, creds = null;
   if (local) try { localData = normalize(await unseal((await keyObj(local)).key, local)); } catch {}
@@ -2745,6 +2750,8 @@ async function unlockWith(pw) {
     syncNow(pw);
     return;
   }
+  // past het wachtwoord niet op de lokale kluis, dan kan het wachtwoord op een ander toestel gewijzigd zijn: haal het verse sleutelbestand op
+  if (usedCache) CFG = await fetchConfig();
   if (CFG) try { creds = await unseal((await keyObj(CFG)).key, CFG); } catch {}
   if (!localData && !creds) throw new Error('Onjuist wachtwoord.');
 
