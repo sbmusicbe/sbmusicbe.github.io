@@ -2,7 +2,7 @@
    Bewaart de app zelf (HTML, iconen, logo) op het toestel, zodat Taken meteen
    opent, ook zonder internet. Je gegevens staan al versleuteld in de browser;
    config.json en GitHub worden nooit gecachet en gaan altijd naar het netwerk. */
-const CACHE = 'taken-app-v13';
+const CACHE = 'taken-app-v14';
 const ASSETS = ['./', '../images/logo-mask.png', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
   'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 const PAGE = new URL('./', self.registration.scope).href;

@@ -3108,6 +3108,16 @@ async function upgradeEnvelope(pw) {
     return env.rec;
   } catch (e) { console.warn('Herstelsleutel nog niet toegevoegd', e); K = old; clSigSaved = null; await persist(); return null; }
 }
+// Account wissen: de databasefunctie delete_my_account (zie supabase.sql) verwijdert de gebruiker en via cascade de kluis
+async function deleteAccount() {
+  const ss = await cloudToken();
+  try { await sb('/rest/v1/rpc/delete_my_account', {method:'POST', token:ss.token, body:{}}); }
+  catch (e) {
+    if (e.status !== 404) throw e;
+    try { await sb('/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId), {method:'DELETE', token:ss.token}); } catch {}
+    throw new Error('Het account zelf kan pas gewist worden nadat de beheerder het bijgewerkte supabase.sql heeft uitgevoerd. Je online kluis is wel gewist; probeer het daarna opnieuw.');
+  }
+}
 // De herstelsleutel tonen: kopiëren of downloaden, en pas sluiten na bevestiging
 function showRecoveryKey(rec, again) {
   showDialog(`<h3>${again ? 'Nieuwe herstelsleutel' : 'Bewaar je herstelsleutel'}</h3>
@@ -4895,6 +4905,7 @@ function openSettings() {
         <p><b>Ingelogd als</b> ${esc(s.email || '')}</p>
         <p class="muted small">Je gegevens staan versleuteld in je account en synchroniseren automatisch op al je toestellen. Vergeet je je wachtwoord, dan heb je je herstelsleutel nodig; bewaar ook af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
         <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button>${K?.w ? '<button type="button" class="btn" id="stRecNew">Nieuwe herstelsleutel</button>' : ''}<span class="grow"></span><button type="button" class="btn" id="stLogout">Uitloggen</button></div>
+        <div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn danger" id="stDelAcc">Account verwijderen</button></div>
       </div>`
     : s ? `<div class="box">
         <p><b>Stap 1 ✓</b> Gekoppeld aan geheime gist <code>${esc(s.gistId)}</code>. ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
@@ -4943,6 +4954,28 @@ function openSettings() {
     bindBioBox(d);
     $('#stSync', d)?.addEventListener('click', () => syncNow());
     $('#stLogout', d)?.addEventListener('click', () => lock());
+    $('#stDelAcc', d)?.addEventListener('click', () => {
+      showDialog(`<h3>Account verwijderen</h3>
+        <p class="muted small">Je account en de versleutelde kluis in de dienst worden <b>definitief gewist</b>, ook op je andere toestellen. Dit kan niet ongedaan gemaakt worden en je herstelsleutel helpt dan niet meer. Download eerst een back-up als je je gegevens wilt houden (Instellingen → Back-up).</p>
+        <label class="fl">Wachtwoord<input id="daPw" type="password" autocomplete="current-password" autofocus></label>
+        <label class="fl">Typ VERWIJDEREN om te bevestigen<input id="daTxt" type="text" autocomplete="off"></label>
+        <p class="err" id="daErr"></p>
+        <div class="dlg-actions"><button type="button" class="btn" id="daNo">Annuleren</button><span class="grow"></span><button type="button" class="btn danger" id="daOk">Account definitief verwijderen</button></div>`, dd => {
+        $('#daNo', dd).onclick = () => dd.close();
+        $('#daOk', dd).onclick = async e => {
+          const err = $('#daErr', dd); err.textContent = '';
+          if ($('#daTxt', dd).value.trim() !== 'VERWIJDEREN') { err.textContent = 'Typ VERWIJDEREN om te bevestigen.'; return; }
+          e.target.disabled = true;
+          try { const b = vaultBlob(); await unseal((await openKey($('#daPw', dd).value, b)).key, b); }
+          catch { err.textContent = 'Wachtwoord klopt niet.'; e.target.disabled = false; return; }
+          try { await deleteAccount(); }
+          catch (ex) { err.textContent = ex.message; e.target.disabled = false; return; }
+          if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
+          try { localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); } catch {}
+          idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
+        };
+      });
+    });
     $('#stRecNew', d)?.addEventListener('click', () => {
       showDialog(`<h3>Nieuwe herstelsleutel</h3>
         <p class="muted small">Je huidige herstelsleutel werkt daarna niet meer. Vul je wachtwoord in om door te gaan.</p>
