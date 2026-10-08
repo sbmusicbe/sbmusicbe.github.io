@@ -5420,7 +5420,7 @@ function taskMenuItems(t) {
     {label:'Verwijderen', danger:true, attrs:'data-act="delete"', run:() => deleteTask(t.id)}];
 }
 /* ---- Prijsberekening bovenaan een project: nog te verkopen bedrag ("To go") en aantal 1/8-ruimtes ("PK") → prijs per formaat ---- */
-const CALC_FORMATS = [['1/1', 8], ['1/2', 4], ['1/4', 2], ['1/8', 1], ['1/16', .5], ['1/32', .25]];
+const CALC_FORMATS = [['1/1', 8], ['1/2', 4], ['1/4', 2], ['1/8', 1], ['1/12', 2 / 3], ['1/16', .5], ['1/32', .25]];
 // 1.514 = duizendtal, 4,5 en 4.5 = decimaal
 function parseNl(v) {
   let t = String(v ?? '').replace(/[€\s]/g, '');
