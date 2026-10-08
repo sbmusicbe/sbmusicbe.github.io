@@ -1834,6 +1834,32 @@ a,.link{color:var(--accent)}
 .pc-out li.base{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
 .pc-out li span{font-size:11.5px;font-weight:500;letter-spacing:.025em;color:var(--muted)}
 .pc-out li b{font-size:17px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.btw{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:960px;margin:6px 0 24px}
+@media (max-width:760px){ .btw{grid-template-columns:1fr} }
+.btw-card{padding:28px;border-radius:28px;border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:16px}
+.btw-card.ink{background:var(--text);color:var(--bg);border-color:transparent}
+.btw-card .eyebrow{color:inherit!important;opacity:.6}
+.btw-card h3{margin:0;font-size:30px;line-height:1}
+.btw-card .fl{display:flex!important;flex-direction:column;gap:8px;color:inherit!important;opacity:.85;margin-top:8px}
+.btw-field{display:flex;align-items:center;gap:10px;height:54px;padding:0 16px;border-radius:14px;background:var(--fill);border:1px solid var(--line);text-transform:none;letter-spacing:0;font-size:20px;font-weight:500;color:var(--text)}
+.btw-card.ink .btw-field{background:color-mix(in srgb,var(--bg) 14%,transparent);border-color:color-mix(in srgb,var(--bg) 22%,transparent);color:var(--bg)}
+.btw-field i{font-style:normal;opacity:.5}
+.btw-field input{flex:1;min-width:0;border:0!important;background:transparent!important;padding:0;height:100%;font-size:20px;font-variant-numeric:tabular-nums;color:inherit;box-shadow:none!important}
+.btw-field:focus-within{border-color:var(--accent)}
+.btw-sub{font-size:13px;opacity:.7;margin-top:6px}
+.btw-rates{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.btw-rates button{height:46px;border-radius:9999px;border:1px solid var(--line);background:transparent;font-weight:600;color:inherit;transition:transform .2s}
+.btw-rates button:hover{transform:scale(1.04)}
+.btw-rates button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.btw-card.ink .btw-rates button{border-color:color-mix(in srgb,var(--bg) 30%,transparent)}
+.btw-card.ink .btw-rates button.on{background:var(--bg);color:var(--text);border-color:var(--bg)}
+.btw-res{margin:8px 0 0;display:flex;flex-direction:column;gap:14px}
+.btw-res div{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.btw-res dt{opacity:.75;font-size:15px}
+.btw-res dd{margin:0;font-weight:600;font-size:17px;font-variant-numeric:tabular-nums}
+.btw-res .tot{padding-top:16px;border-top:1px solid color-mix(in srgb,currentColor 18%,transparent)}
+.btw-res .tot dt{opacity:1;font-weight:600}
+.btw-res .tot dd{font-size:32px;letter-spacing:-.02em}
 </style>
 </head>
 <body>
@@ -2010,6 +2036,7 @@ const I = {
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
   clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.1 4 1.6 4.5 4.3"/></svg>',
+ btw:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>',
  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12.5 13.5h3.5v3.5h-3.5z" fill="currentColor" stroke="none"/></svg>',
   phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></svg>',
   copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg>',
@@ -2679,6 +2706,7 @@ function viewTitle() {
   if (view.type === 'clients') return 'Klanten';
   if (view.type === 'client') { const c = clientById(view.id); return c ? clientLabel(c) : 'Klant'; }
   if (view.type === 'agenda') return 'Agenda';
+  if (view.type === 'btw') return 'BTW';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
 }
@@ -3001,7 +3029,7 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
     + archList('sales', pages.filter(p => p.archived), salesItem);
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || '']]
+  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['btw', 'BTW', I.btw, '']]
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   renderSync();
 }
@@ -3013,6 +3041,7 @@ function viewSubtitle() {
     return `${open.length} open ${open.length === 1 ? 'taak' : 'taken'}${late ? ` · ${late} te laat` : ''}`;
   }
   if (t === 'clients') return `${data.clients.length.toLocaleString('nl-BE')} klanten`;
+  if (t === 'btw') return 'Reken een bedrag om van of naar inclusief btw.';
   if (t === 'agenda') { const n = eventsSoon(); return n ? `${n} ${n === 1 ? 'datum' : 'data'} de komende 7 dagen` : 'Niets gepland de komende 7 dagen.'; }
   return '';
 }
@@ -5116,6 +5145,7 @@ $('#fab').addEventListener('click', () => {
   if (view.type === 'clients') { newClient(); return; }
   if (view.type === 'client') { addTaskForClient(view.id); return; }
   if (view.type === 'agenda') { openEventDialog(null, agendaSel || today()); return; }
+  if (view.type === 'btw') { $('#btwEx')?.focus(); return; }
   const open = document.body.classList.toggle('qa-open');
   if (open) setTimeout(() => $('#qaInput').focus(), 30); else $('#qaInput').blur();
 });
@@ -5510,7 +5540,7 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['clients', 'client', 'agenda'];
+const PAGE_VIEWS = ['clients', 'client', 'agenda', 'btw'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
 const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const clientById = id => data.clients.find(c => c.id === id);
@@ -5706,9 +5736,10 @@ function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : agendaHtml();
+  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'btw' ? btwHtml() : agendaHtml();
   if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
   if (view.type === 'clients') applyClientFilter();
+  if (view.type === 'btw') btwOut();
 }
 
 function clientsFromSales() {
@@ -6274,6 +6305,44 @@ function openEventDialog(ev, date) {
 }
 
 /* ---- Events op de pagina's ---- */
+/* ---- BTW-calculator: van exclusief naar inclusief btw en omgekeerd ---- */
+const BTW_RATES = [6, 9, 12, 21];
+const btwState = {ex:'', exRate:21, inc:'', incRate:21};
+const btwMoney = n => n == null ? '—' : eur(n);
+function btwCalc() {
+  const ex = parseNl(btwState.ex), inc = parseNl(btwState.inc), a = btwState.exRate / 100, b = btwState.incRate / 100;
+  const exVat = ex == null ? null : ex * a, incExcl = inc == null ? null : inc / (1 + b);
+  return {exVat, exTotal:ex == null ? null : ex + exVat, incVat:inc == null ? null : inc - incExcl, incExcl};
+}
+function btwOut() {
+  const c = btwCalc();
+  $('#btwExVat').textContent = btwMoney(c.exVat); $('#btwExTot').textContent = btwMoney(c.exTotal);
+  $('#btwIncVat').textContent = btwMoney(c.incVat); $('#btwIncEx').textContent = btwMoney(c.incExcl);
+  $('#btwExRate').textContent = btwState.exRate; $('#btwIncRate').textContent = btwState.incRate;
+  $$('[data-btw-rate]').forEach(b => b.classList.toggle('on', +b.dataset.btwRate === btwState[b.dataset.btwFor + 'Rate']));
+}
+function btwHtml() {
+  const rates = k => `<div class="btw-rates" role="group" aria-label="Btw-percentage">${BTW_RATES.map(r => `<button type="button" data-btw-for="${k}" data-btw-rate="${r}" class="${btwState[k + 'Rate'] === r ? 'on' : ''}" aria-pressed="${btwState[k + 'Rate'] === r}">${r}%</button>`).join('')}</div>`;
+  return `<div class="btw">
+    <section class="btw-card"><span class="eyebrow">Mijn bedrag is</span><h3>Exclusief btw</h3>
+      <label class="fl">Bedrag (excl. btw)<span class="btw-field"><i>€</i><input id="btwEx" class="btw-in" data-btw="ex" type="text" inputmode="decimal" value="${esc(btwState.ex)}" placeholder="0,00" autocomplete="off"></span></label>
+      <div class="btw-sub">Kies je btw-percentage</div>${rates('ex')}
+      <dl class="btw-res"><div><dt>Btw (<span id="btwExRate"></span>%)</dt><dd id="btwExVat"></dd></div><div class="tot"><dt>Totaal (incl. btw)</dt><dd id="btwExTot"></dd></div></dl>
+    </section>
+    <section class="btw-card ink"><span class="eyebrow">Mijn bedrag is</span><h3>Inclusief btw</h3>
+      <label class="fl">Bedrag (incl. btw)<span class="btw-field"><i>€</i><input id="btwInc" class="btw-in" data-btw="inc" type="text" inputmode="decimal" value="${esc(btwState.inc)}" placeholder="0,00" autocomplete="off"></span></label>
+      <div class="btw-sub">Kies je btw-percentage</div>${rates('inc')}
+      <dl class="btw-res"><div><dt>Btw (<span id="btwIncRate"></span>%)</dt><dd id="btwIncVat"></dd></div><div class="tot"><dt>Bedrag (excl. btw)</dt><dd id="btwIncEx"></dd></div></dl>
+    </section></div>`;
+}
+$('#pageView').addEventListener('input', e => {
+  const k = e.target.dataset?.btw; if (!k) return;
+  btwState[k] = e.target.value; btwOut();
+});
+$('#pageView').addEventListener('click', e => {
+  const b = e.target.closest('[data-btw-rate]'); if (!b) return;
+  btwState[b.dataset.btwFor + 'Rate'] = +b.dataset.btwRate; btwOut();
+});
 const pv = $('#pageView');
 pv.addEventListener('click', e => {
   { const b = e.target.closest('[data-clsort]'); if (b) { setClientSort(b.dataset.clsort); return; } }
