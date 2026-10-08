@@ -2012,6 +2012,34 @@ textarea.proj-notes{border:0!important;background:none!important;box-shadow:none
   #side .nav-item.on{background:var(--fill)!important;box-shadow:none!important}
   #scrim{background:rgba(14,19,23,.45)}
 }
+.nb{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start;max-width:1100px}
+.nb-list{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow-card);padding:12px;position:sticky;top:12px;max-height:calc(100vh - 120px);display:flex;flex-direction:column;gap:10px}
+.nb-tools{display:flex;gap:8px}
+.nb-tools input{flex:1;min-width:0;height:38px}
+.nb-tools .btn{white-space:nowrap}
+#nbItems{list-style:none;margin:0;padding:0;overflow:auto;display:flex;flex-direction:column;gap:2px}
+#nbItems button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:14px;background:none;color:var(--text)}
+#nbItems button:hover{background:var(--hover)}
+#nbItems button.on{background:var(--fill)}
+#nbItems b{font-weight:600;font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nbItems span{font-size:13px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nbItems time{font-size:11.5px;color:var(--faint)}
+.nb-none{padding:14px 12px;color:var(--muted);font-size:14px}
+.nb-page{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow-card);padding:18px 22px 22px;min-height:60vh;display:flex;flex-direction:column;gap:6px}
+.nb-bar{display:flex;align-items:center;gap:8px;min-height:36px}
+.nb-back{display:none}
+input.nb-title{border:0!important;background:none!important;box-shadow:none!important;font-size:30px;font-weight:700;letter-spacing:-.015em;padding:4px 0!important;border-radius:0!important}
+textarea.nb-body{flex:1;min-height:50vh;border:0!important;background:none!important;box-shadow:none!important;resize:none;font-size:16px;line-height:1.65;padding:4px 0!important;border-radius:0!important}
+@media (max-width:860px){
+  .nb{grid-template-columns:1fr}
+  .nb-list{position:static;max-height:none}
+  .nb .nb-page{display:none}
+  .nb.nb-open .nb-list{display:none}
+  .nb.nb-open .nb-page{display:flex}
+  .nb-back{display:inline-flex}
+}
+input.nb-title{font-size:28px!important}
+@media (max-width:860px){ #nbStamp{display:none} input.nb-title{font-size:26px!important} }
 </style>
 </head>
 <body>
@@ -2199,6 +2227,7 @@ const I = {
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
   clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.1 4 1.6 4.5 4.3"/></svg>',
+ notes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14A1.5 1.5 0 0 1 17 20.5H6z"/><path d="M6 3.5v17M10 8h5M10 12h5"/><path d="M4 7.5h4M4 12h4M4 16.5h4"/></svg>',
  btw:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>',
  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12.5 13.5h3.5v3.5h-3.5z" fill="currentColor" stroke="none"/></svg>',
   phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></svg>',
@@ -2382,7 +2411,7 @@ function normalize(d) {
   if (d.settings.autolock === undefined) d.settings.autolock = 30;
   if (d.settings.sync === undefined) d.settings.sync = null;
   if (!d.stages?.length) d.stages = DEFAULT_STAGES.map(x => ({...x, u:0}));
-  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.clients ||= []; d.events ||= [];
+  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.clients ||= []; d.events ||= []; d.notes ||= [];
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
   for (const r of d.sales) r.values ||= {};
   // eenmalig: een tekstkolom "Formaat" wordt een keuzekolom
@@ -2404,7 +2433,7 @@ function merge(a, b) {
   const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
   const del = {...a.deleted};
   for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
-  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients', 'events']) {
+  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients', 'events', 'notes']) {
     const m = new Map();
     for (const it of [...a[col], ...b[col]]) {
       const cur = m.get(it.id);
@@ -2423,7 +2452,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + JSON.stringify(Object.keys(d.deleted).sort());
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + s(d.notes || []) + JSON.stringify(Object.keys(d.deleted).sort());
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -2870,6 +2899,7 @@ function viewTitle() {
   if (view.type === 'client') { const c = clientById(view.id); return c ? clientLabel(c) : 'Klant'; }
   if (view.type === 'agenda') return 'Agenda';
   if (view.type === 'btw') return 'BTW';
+  if (view.type === 'notes') return 'Notities';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
 }
@@ -3216,7 +3246,7 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
     + archList('sales', pages.filter(p => p.archived), salesItem);
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['btw', 'BTW', I.btw, '']]
+  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['notes', 'Notities', I.notes, data.notes.length || ''], ['btw', 'BTW', I.btw, '']]
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   renderSync();
 }
@@ -3228,6 +3258,7 @@ function viewSubtitle() {
     return `${open.length} open ${open.length === 1 ? 'taak' : 'taken'}${late ? ` · ${late} te laat` : ''}`;
   }
   if (t === 'clients') return `${data.clients.length.toLocaleString('nl-BE')} klanten`;
+  if (t === 'notes') return `${data.notes.length} ${data.notes.length === 1 ? 'pagina' : 'pagina’s'}`;
   if (t === 'btw') return 'Reken een bedrag om van of naar inclusief btw.';
   if (t === 'agenda') { const n = eventsSoon(); return n ? `${n} ${n === 1 ? 'datum' : 'data'} de komende 7 dagen` : 'Niets gepland de komende 7 dagen.'; }
   return '';
@@ -5333,6 +5364,7 @@ $('#fab').addEventListener('click', () => {
   if (view.type === 'client') { addTaskForClient(view.id); return; }
   if (view.type === 'agenda') { openEventDialog(null, agendaSel || today()); return; }
   if (view.type === 'btw') { $('#btwEx')?.focus(); return; }
+  if (view.type === 'notes') { newNote(); return; }
   const open = document.body.classList.toggle('qa-open');
   if (open) setTimeout(() => $('#qaInput').focus(), 30); else $('#qaInput').blur();
 });
@@ -5790,7 +5822,7 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['clients', 'client', 'agenda', 'btw'];
+const PAGE_VIEWS = ['clients', 'client', 'agenda', 'btw', 'notes'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
 const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const clientById = id => data.clients.find(c => c.id === id);
@@ -5986,7 +6018,7 @@ function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'btw' ? btwHtml() : agendaHtml();
+  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'btw' ? btwHtml() : view.type === 'notes' ? notesHtml() : agendaHtml();
   if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
   if (view.type === 'clients') applyClientFilter();
   if (view.type === 'btw') btwOut();
@@ -6593,6 +6625,75 @@ $('#pageView').addEventListener('click', e => {
   const b = e.target.closest('[data-btw-rate]'); if (!b) return;
   btwState[b.dataset.btwFor + 'Rate'] = +b.dataset.btwRate; btwOut();
 });
+/* ---- Notitieblok: pagina's met een titel en vrije tekst ---- */
+let noteSel = null, noteOpen = false, noteQ = '';
+const notesSorted = () => [...data.notes].sort((a, b) => (b.order || 0) - (a.order || 0));
+const noteTitle = n => (n.title || '').trim() || 'Naamloze pagina';
+const notePreview = n => (n.body || '').replace(/\s+/g, ' ').trim().slice(0, 90);
+function notesFiltered() {
+  const q = normName(noteQ); if (!q) return notesSorted();
+  return notesSorted().filter(n => normName(n.title + ' ' + n.body).includes(q));
+}
+function noteItemHtml(n) {
+  return `<li><button type="button" data-note="${n.id}" class="${n.id === noteSel ? 'on' : ''}"><b>${esc(noteTitle(n))}</b><span>${esc(notePreview(n)) || '<i>Leeg</i>'}</span><time>${esc(stamp(n.u || n.createdAt || now()))}</time></button></li>`;
+}
+function notesHtml() {
+  const list = notesFiltered();
+  if (!data.notes.some(n => n.id === noteSel)) noteSel = list[0]?.id || null;
+  const n = data.notes.find(x => x.id === noteSel);
+  return `<div class="nb ${noteOpen && n ? 'nb-open' : ''}">
+    <aside class="nb-list" aria-label="Pagina’s">
+      <div class="nb-tools"><input id="nbSearch" type="search" value="${esc(noteQ)}" placeholder="Zoek in notities…" aria-label="Zoek in notities" autocomplete="off"><button type="button" class="btn primary" id="nbNew">+ Pagina</button></div>
+      <ul id="nbItems">${list.map(noteItemHtml).join('') || `<li class="nb-none">${data.notes.length ? 'Niets gevonden.' : 'Nog geen pagina’s.'}</li>`}</ul>
+    </aside>
+    <section class="nb-page">${n ? `
+      <div class="nb-bar"><button type="button" class="btn nb-back" id="nbBack">← Alle pagina’s</button><span class="grow"></span><span class="muted small" id="nbStamp">Bewerkt ${esc(stamp(n.u || n.createdAt || now()))}</span><button type="button" class="icon-btn" id="nbDel" title="Pagina verwijderen" aria-label="Pagina verwijderen">${I.trash}</button></div>
+      <input id="nbTitle" class="nb-title" type="text" value="${esc(n.title || '')}" placeholder="Titel" aria-label="Titel van de pagina" autocomplete="off">
+      <textarea id="nbBody" class="nb-body" placeholder="Begin te typen…" aria-label="Tekst van de pagina">${esc(n.body || '')}</textarea>`
+      : `<div class="pg-empty"><b>Een leeg notitieblok</b><p class="muted">Maak je eerste pagina voor ideeën, afspraken of gespreksnotities.</p><button type="button" class="btn primary" id="nbNew2">+ Nieuwe pagina</button></div>`}
+    </section></div>`;
+}
+function newNote() {
+  const n = touch({id:uid(), title:'', body:'', order:now(), createdAt:now()});
+  data.notes.push(n); noteSel = n.id; noteOpen = true; noteQ = '';
+  save(); renderNav();
+  if (view.type !== 'notes') setView({type:'notes'}); else renderPage(true);
+  renderHead();
+  $('#nbTitle')?.focus();
+  setTimeout(() => { if (view.type === 'notes' && !$('#pageView').contains(document.activeElement)) $('#nbTitle')?.focus(); }, 60);
+}
+function deleteNote(id) {
+  const n = data.notes.find(x => x.id === id); if (!n) return;
+  const copy = {...n}, list = notesSorted(), i = list.findIndex(x => x.id === id);
+  data.notes = data.notes.filter(x => x.id !== id); tombstone(id);
+  noteSel = (list[i + 1] || list[i - 1])?.id || null; noteOpen = false;
+  save(); renderNav(); renderPage(true); renderHead();
+  toast('Pagina verwijderd', () => { delete data.deleted[id]; data.notes.push(touch(copy)); noteSel = id; save(); renderNav(); renderPage(true); renderHead(); });
+}
+{
+  const pvn = $('#pageView');
+  pvn.addEventListener('click', e => {
+    if (view.type !== 'notes') return;
+    const it = e.target.closest('[data-note]');
+    if (it) { noteSel = it.dataset.note; noteOpen = true; renderPage(true); return; }
+    if (e.target.closest('#nbNew, #nbNew2')) { newNote(); return; }
+    if (e.target.closest('#nbBack')) { noteOpen = false; renderPage(true); return; }
+    if (e.target.closest('#nbDel')) deleteNote(noteSel);
+  });
+  pvn.addEventListener('input', e => {
+    if (view.type !== 'notes') return;
+    if (e.target.id === 'nbSearch') {
+      noteQ = e.target.value; const list = notesFiltered();
+      $('#nbItems').innerHTML = list.map(noteItemHtml).join('') || '<li class="nb-none">Niets gevonden.</li>'; return;
+    }
+    const n = data.notes.find(x => x.id === noteSel); if (!n) return;
+    if (e.target.id === 'nbTitle') n.title = e.target.value; else if (e.target.id === 'nbBody') n.body = e.target.value; else return;
+    touch(n); save(true);
+    const row = $(`#nbItems [data-note="${n.id}"]`); if (row) row.parentNode.outerHTML = noteItemHtml(n);
+    const st = $('#nbStamp'); if (st) st.textContent = 'Bewerkt ' + stamp(n.u);
+    $('#toolNav [data-view="notes"] .cnt') && ($('#toolNav [data-view="notes"] .cnt').textContent = data.notes.length);
+  });
+}
 const pv = $('#pageView');
 pv.addEventListener('click', e => {
   { const b = e.target.closest('[data-clsort]'); if (b) { setClientSort(b.dataset.clsort); return; } }
