@@ -62,3 +62,10 @@ test('Markdown-bestanden en 404.md zijn niet leeg en 404.md bevat links', () => 
 test('homepage verwijst naar Markdown-alternatief', () => {
   assert.match(home, /<link rel="alternate" type="text\/markdown" href="\/index\.md"/);
 });
+
+test('/yt bestaat, is een viewer en wordt niet geïndexeerd', () => {
+  const y = read('yt/index.html');
+  assert.match(y, /<html lang="nl">/);
+  assert.match(y, /name="robots" content="noindex"/);
+  assert.match(y, /\/api\/v1/);
+});
