@@ -1979,7 +1979,7 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
   #tabBar .tb-ind{display:none!important}
   #tabBar button{background:none!important;box-shadow:none!important;color:var(--faint)!important;font-size:10.5px;font-weight:500;gap:3px}
   #tabBar button.on{color:var(--text)!important}
-  #tabBar button[data-tab="sales"]{margin-right:84px}
+  #tabBar button[data-tab="sales"],#tabBar #tabSlot{margin-right:84px}
   #fab{left:50%!important;right:auto!important;margin-left:-33px;bottom:calc(36px + env(safe-area-inset-bottom))!important;width:66px!important;height:66px!important;box-shadow:0 0 0 9px var(--bg),0 14px 26px -6px color-mix(in srgb,var(--accent) 60%,transparent)!important}
   #fab svg{width:28px;height:28px}
   #quickAdd{bottom:calc(112px + env(safe-area-inset-bottom))!important}
@@ -2201,6 +2201,13 @@ table.sales .grp-day td{text-transform:none;font-size:13px}
 .card .t-ico{margin-bottom:6px!important}
 .pcalc{border-radius:8px!important}
 
+.feat-list{display:grid;gap:8px;margin:10px 0}
+.feat{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer}
+.feat input{width:20px;height:20px;margin-top:2px;flex:none}
+.feat b{display:block;font-size:15px;font-weight:600}
+.feat small{display:block;color:var(--muted);font-size:13.5px;line-height:1.4}
+.feat:has(input:checked){border-color:var(--bronze-9);background:color-mix(in srgb,var(--bronze-9) 7%,var(--panel))}
+.feat:has(input:disabled){cursor:default;opacity:.8}
 /* rondleiding */
 #tour{position:fixed;inset:0;z-index:100}
 #tour .tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none;transition:all .2s ease}
@@ -2379,7 +2386,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
   <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
   <nav id="tabBar" aria-label="Hoofdnavigatie"><i class="tb-ind" aria-hidden="true"></i>
     <button type="button" data-tab="all"><span class="ti"></span><span>Taken</span></button>
-    <button type="button" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
+    <button type="button" id="tabSlot" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
     <button type="button" data-tab="agenda"><span class="ti"></span><span>Agenda</span></button>
     <button type="button" data-tab="more"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Meer</span></button>
   </nav>
@@ -2757,6 +2764,15 @@ const sortedFields = () => [...data.fields].sort((a, b) => (a.order || 0) - (b.o
 const fieldsFor = pid => sortedFields().filter(f => f.all || f.projectIds.includes(pid));
 const touch = o => { o.u = now(); return o; };
 function tombstone(id) { data.deleted[id] = now(); }
+/* Functies die je kunt aan- of uitzetten (zonder keuze staat alles aan, zoals bij bestaande gebruikers) */
+const FEATURES = [
+  ['clients', 'Klanten', 'Klantenlijst met telefoon, e-mail en omzet'],
+  ['agenda', 'Agenda', 'Afspraken en deadlines op een kalender'],
+  ['sales', 'Verkopen', 'Maandpagina’s met omzet, doel, commissie en bonus'],
+  ['btw', 'BTW-rekenmachine', 'Een bedrag omrekenen van of naar inclusief btw'],
+];
+const feat = k => { const f = data?.settings.features; return !f || f[k] !== false; };
+const VIEW_FEATURE = {clients:'clients', client:'clients', agenda:'agenda', btw:'btw', sales:'sales'};
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
@@ -3296,7 +3312,7 @@ function showRecoveryKey(rec, again) {
       a.download = 'taken-herstelsleutel.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#rkOk', d).onchange = e => { $('#rkDone', d).disabled = !e.target.checked; };
-    $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeTour, 400); };
+    $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeStart, 400); };
     d.addEventListener('cancel', e => { if (!$('#rkOk', d).checked) e.preventDefault(); }, {once:true});
   });
 }
@@ -3403,8 +3419,8 @@ function tourSteps() {
     {title:'Welkom bij Taken', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
     {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een taak maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
     {el:() => q('.board .col') || q('#list'), title:'Kolommen zijn stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
-    ...(mob ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
-    {el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'},
+    ...(mob || !feat('clients') ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
+    ...(!feat('sales') ? [] : [{el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'}]),
     ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je eigen velden en de instellingen.'}] : [
       {el:() => q('#openFields'), title:'Eigen velden', text:'Voeg extra gegevens toe aan je taken, zoals formaat, telefoonnummer of kortingsprijs.'},
       {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe herstelsleutel.'}]),
@@ -3454,7 +3470,46 @@ function startTour() {
   addEventListener('keydown', onKey); addEventListener('resize', place);
   show();
 }
+/* ---------------- Beginkeuze voor nieuwe gebruikers ---------------- */
+function featureChecks(cur) {
+  return FEATURES.map(([k, label, hint]) => `<label class="feat"><input type="checkbox" data-feat="${k}" ${cur[k] ? 'checked' : ''}><span><b>${label}</b><small>${hint}</small></span></label>`).join('');
+}
+function askFeatures() {
+  return new Promise(resolve => {
+    showDialog(`<h3>Waarvoor gebruik je Taken?</h3>
+      <p class="muted small">Kies wat je nodig hebt. De rest blijft verborgen zodat het overzichtelijk blijft. Je kunt dit altijd aanpassen onder Instellingen.</p>
+      <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Taken</b><small>Je to-do’s met deadline, notities en opmerkingen</small></span></label>${featureChecks({})}</div>
+      <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="ftOk">Verder</button></div>`, d => {
+      dlg.dataset.sticky = '1';
+      d.addEventListener('cancel', e => e.preventDefault(), {once:true});
+      $('#ftOk', d).onclick = () => {
+        const f = {}; for (const [k] of FEATURES) f[k] = !!$(`[data-feat="${k}"]`, d).checked;
+        delete dlg.dataset.sticky; dlg.close(); resolve(f);
+      };
+    });
+  });
+}
+// Alleen taken: rustige stappen in plaats van het verkoopproces (enkel zolang er nog geen taken zijn)
+function neutralStages() {
+  if (data.tasks.length) return;
+  const set = {callback:['Te doen', '#eb8909', false], mail:['Bezig', '#246fe0', false], positive:['Klaar', '#3aa655', true]};
+  for (const st of data.stages) { const n = set[st.id]; if (n) { st.label = n[0]; st.color = n[1]; st.done = n[2]; touch(st); } }
+  const neg = data.stages.find(x => x.id === 'negative'); if (neg) { data.stages = data.stages.filter(x => x !== neg); tombstone(neg.id); }
+}
+async function firstRun() {
+  if (data.settings.features || data.tasks.length || data.clients.length) return;
+  const f = await askFeatures();
+  data.settings.features = f;
+  if (!f.clients && !f.sales) neutralStages();
+  save(); renderAll();
+}
 // alleen voor wie nieuw is: nog geen taken of klanten en de rondleiding nog niet gezien
+async function maybeStart() {
+  if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
+  if (!data || tourOn || dlg.open || !$('#lock').hidden) return;
+  await firstRun();
+  maybeTour();
+}
 function maybeTour() {
   if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
   if (!data || tourOn || data.settings.tourDone || dlg.open || !$('#lock').hidden) return;
@@ -3469,7 +3524,7 @@ function enterApp() {
   renderAll();
   startTimers();
   warmClients();
-  setTimeout(maybeTour, 900);
+  setTimeout(maybeStart, 900);
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
 // Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
@@ -3881,7 +3936,10 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
   $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['btw', 'BTW', I.btw, '']]
+    .filter(([k]) => feat(k))
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
+  const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
+  const tOn = [...$('#toolNav').children].length > 0; $('#toolNav').previousElementSibling.hidden = !tOn;
   renderSync();
 }
 function viewSubtitle() {
@@ -3975,6 +4033,9 @@ function placeTabIndicator() {
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
   const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : 'all';
+  const slot = $('#tabSlot'), sOn = feat('sales');
+  slot.dataset.tab = sOn ? 'sales' : 'today'; slot.querySelector('.ti').innerHTML = sOn ? I.sales : I.today; slot.lastElementChild.textContent = sOn ? 'Verkopen' : 'Vandaag';
+  $('#tabBar [data-tab="agenda"]').hidden = !feat('agenda');
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
@@ -3984,6 +4045,7 @@ function renderAll() {
   if (!data) return;
   renderTabBar();
   if (view.type === 'sales' && !salesPageById(view.id)) view = {type:'all'};
+  if (VIEW_FEATURE[view.type] && !feat(VIEW_FEATURE[view.type])) view = {type:'all'};
   const sales = view.type === 'sales';
   if (sales) selectedId = null;
   renderNav(); renderHead();
@@ -4710,7 +4772,7 @@ function showDialog(html, bind) {
   // eerst het veld met autofocus (bv. de naam), anders het eerste invoerveld
   setTimeout(() => (dlg.querySelector('[autofocus]:not([disabled])') || dlg.querySelector('input:not([type=checkbox]):not([disabled]),select'))?.focus(), 20);
 }
-dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener('click', e => { if (e.target === dlg && !dlg.dataset.sticky) dlg.close(); });
 dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
 
 // Nieuwe klant vanuit een taak: telefoon en e-mail die in de titel of notities staan worden meteen ingevuld
@@ -5068,6 +5130,10 @@ function openSettings() {
         ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
 
+    <h4>Functies</h4>
+    <p class="muted small" style="margin-top:0">Zet aan wat je gebruikt. Wat uit staat, verdwijnt uit het menu; je gegevens blijven bewaard.</p>
+    <div class="feat-list" id="stFeats">${featureChecks(Object.fromEntries(FEATURES.map(([k]) => [k, feat(k)])))}</div>
+
     <h4>Hulp</h4>
     <button type="button" class="btn" id="stTour">Rondleiding bekijken</button>
 
@@ -5138,6 +5204,11 @@ function openSettings() {
           showRecoveryKey(rec, true);
         };
       });
+    });
+    $('#stFeats', d).addEventListener('change', e => {
+      const k = e.target.dataset.feat; if (!k) return;
+      data.settings.features = {...Object.fromEntries(FEATURES.map(([x]) => [x, feat(x)])), [k]:e.target.checked};
+      commit();
     });
     $('#stTour', d).addEventListener('click', () => { dlg.close(); setTimeout(startTour, 250); });
     $('#stToAccount', d)?.addEventListener('click', async () => {
