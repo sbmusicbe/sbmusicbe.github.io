@@ -1979,7 +1979,7 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
   #tabBar .tb-ind{display:none!important}
   #tabBar button{background:none!important;box-shadow:none!important;color:var(--faint)!important;font-size:10.5px;font-weight:500;gap:3px}
   #tabBar button.on{color:var(--text)!important}
-  #tabBar button[data-tab="sales"]{margin-right:84px}
+  #tabBar button[data-tab="sales"],#tabBar #tabSlot{margin-right:84px}
   #fab{left:50%!important;right:auto!important;margin-left:-33px;bottom:calc(36px + env(safe-area-inset-bottom))!important;width:66px!important;height:66px!important;box-shadow:0 0 0 9px var(--bg),0 14px 26px -6px color-mix(in srgb,var(--accent) 60%,transparent)!important}
   #fab svg{width:28px;height:28px}
   #quickAdd{bottom:calc(112px + env(safe-area-inset-bottom))!important}
@@ -2201,6 +2201,30 @@ table.sales .grp-day td{text-transform:none;font-size:13px}
 .card .t-ico{margin-bottom:6px!important}
 .pcalc{border-radius:8px!important}
 
+.feat-list{display:grid;gap:8px;margin:10px 0}
+.feat{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer}
+.feat input{width:20px;height:20px;margin-top:2px;flex:none}
+.feat b{display:block;font-size:15px;font-weight:600}
+.feat small{display:block;color:var(--muted);font-size:13.5px;line-height:1.4}
+.feat:has(input:checked){border-color:var(--bronze-9);background:color-mix(in srgb,var(--bronze-9) 7%,var(--panel))}
+.feat:has(input:disabled){cursor:default;opacity:.8}
+.d-more{margin:14px 0 0}
+.d-more>summary{cursor:pointer;font-size:14.5px;font-weight:600;color:var(--muted);padding:8px 0;list-style:none}
+.d-more>summary::before{content:"+";display:inline-block;width:18px;font-weight:500}
+.d-more[open]>summary::before{content:"–"}
+.d-more>summary::-webkit-details-marker{display:none}
+.lock-card #lockAlt.btn{width:100%;margin-top:12px;min-height:50px;font-size:16px}
+.lock-small{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:14px}
+.lock-small .link{margin:0!important;font-size:14px!important;color:var(--muted)!important;font-weight:500}
+.lock-small .link:hover{color:var(--text)!important}
+.st-sec{margin:14px 0 0;border-top:1px solid var(--hairline);padding-top:6px}
+.st-sec>summary{cursor:pointer;font-size:16px;font-weight:650;padding:10px 0;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.st-sec>summary::after{content:"+";font-weight:500;color:var(--muted);font-size:20px}
+.st-sec[open]>summary::after{content:"–"}
+.st-sec>summary::-webkit-details-marker{display:none}
+.help-list{list-style:none;margin:10px 0 16px;padding:0;display:grid;gap:12px}
+.help-list li b{display:block;font-size:15px}
+.help-list li span{display:block;color:var(--muted);font-size:14.5px;line-height:1.45}
 /* rondleiding */
 #tour{position:fixed;inset:0;z-index:100}
 #tour .tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none;transition:all .2s ease}
@@ -2313,10 +2337,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
     <div id="lockFields"></div>
     <p id="lockErr" class="err"></p>
     <button class="btn primary" id="lockBtn" type="submit">Ontgrendelen</button>
-    <button class="link" id="lockLocal" type="button" hidden></button>
     <button class="btn" id="lockBio" type="button" hidden>Ontgrendelen met Face ID</button>
-    <button type="button" class="link" id="lockForgot" hidden>Wachtwoord vergeten?</button>
     <button type="button" class="link" id="lockAlt"></button>
+    <div class="lock-small"><button type="button" class="link" id="lockForgot" hidden>Wachtwoord vergeten?</button><button class="link" id="lockLocal" type="button" hidden></button></div>
   </form>
 </div>
 
@@ -2337,7 +2360,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
     <div class="side-section"><span>Verkopen</span><button id="addSales" class="icon-btn" title="Nieuwe maandpagina" aria-label="Nieuwe maandpagina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
     <nav id="salesNav"></nav>
     <div class="side-foot">
-      <div class="foot-row"><button type="button" class="icon-btn foot-btn" id="openFields" title="Velden" aria-label="Velden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg><span class="foot-lbl">Velden</span></button><button type="button" class="icon-btn foot-btn" id="openSettings" title="Instellingen" aria-label="Instellingen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span class="foot-lbl">Instellingen</span></button><button type="button" class="icon-btn foot-btn" id="themeBtn" title="Licht of donker" aria-label="Wissel tussen lichte en donkere modus"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg><span class="foot-lbl">Licht of donker</span></button><button type="button" class="icon-btn foot-btn" id="lockNow" title="Vergrendelen" aria-label="Vergrendelen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span class="foot-lbl">Vergrendelen</span></button></div>
+      <div class="foot-row"><button type="button" class="icon-btn foot-btn" id="openFields" title="Extra gegevens" aria-label="Extra gegevens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg><span class="foot-lbl">Extra gegevens</span></button><button type="button" class="icon-btn foot-btn" id="openSettings" title="Instellingen" aria-label="Instellingen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span class="foot-lbl">Instellingen</span></button><button type="button" class="icon-btn foot-btn" id="themeBtn" title="Licht of donker" aria-label="Wissel tussen lichte en donkere modus"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg><span class="foot-lbl">Licht of donker</span></button><button type="button" class="icon-btn foot-btn" id="lockNow" title="Vergrendelen" aria-label="Vergrendelen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span class="foot-lbl">Vergrendelen</span></button></div>
       <button id="syncStatus" type="button"></button>
     </div>
   </aside>
@@ -2349,7 +2372,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
       <span class="tb-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span id="topDate"></span></span>
       <span class="grow"></span>
       <button type="button" class="top-search" id="topSearch" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><span>Zoeken…</span><kbd>/</kbd></button>
-      <button type="button" class="top-btn" id="topHelp" title="Sneltoetsen (?)" aria-label="Sneltoetsen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 16.6v.01"/></svg></button>
+      <button type="button" class="top-btn" id="topHelp" title="Hulp (?)" aria-label="Hulp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 16.6v.01"/></svg></button>
     </div>
     <div class="main-inner">
       <header class="main-head">
@@ -2364,7 +2387,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
       <div id="banner" hidden></div>
       <div class="toolbar" id="toolbar"></div>
       <form id="quickAdd" autocomplete="off">
-        <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Offerte sturen morgen #Werk”" enterkeyhint="done">
+        <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Jan bellen morgen 14u”" enterkeyhint="done">
         <button class="btn primary" type="submit">Toevoegen</button>
       </form>
       <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
@@ -2379,7 +2402,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
   <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
   <nav id="tabBar" aria-label="Hoofdnavigatie"><i class="tb-ind" aria-hidden="true"></i>
     <button type="button" data-tab="all"><span class="ti"></span><span>Taken</span></button>
-    <button type="button" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
+    <button type="button" id="tabSlot" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
     <button type="button" data-tab="agenda"><span class="ti"></span><span>Agenda</span></button>
     <button type="button" data-tab="more"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Meer</span></button>
   </nav>
@@ -2613,10 +2636,10 @@ async function unsealText(key, blob) {
   }
 }
 async function unseal(key, blob) { return JSON.parse(await unsealText(key, blob)); }
-/* ---- Datasleutel en herstelsleutel (accounts) ----
+/* ---- Datasleutel en noodcode (accounts) ----
    De kluis van een account is versleuteld met een willekeurige datasleutel. Die zit twee keer ingepakt in de kluis (blob.w):
-   met een sleutel uit het wachtwoord (w.pw) en met een herstelsleutel (w.rec). Een wachtwoord wijzigen pakt enkel de datasleutel
-   opnieuw in; met de herstelsleutel kies je een nieuw wachtwoord als je het vergeten bent. Lokale kluizen blijven zoals vroeger. */
+   met een sleutel uit het wachtwoord (w.pw) en met een noodcode (w.rec). Een wachtwoord wijzigen pakt enkel de datasleutel
+   opnieuw in; met de noodcode kies je een nieuw wachtwoord als je het vergeten bent. Lokale kluizen blijven zoals vroeger. */
 const REC_ITER = 10000, B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 function newRecoveryKey() {
   const u = crypto.getRandomValues(new Uint8Array(20)); let bits = '', s = '';
@@ -2640,7 +2663,7 @@ async function newEnvelope(pw, raw) {
   const rec = newRecoveryKey();
   return {K:await envelopeK(raw, {pw:await wrapRaw(raw, pw, ITER), rec:await wrapRaw(raw, recNorm(rec), REC_ITER)}, crypto.getRandomValues(new Uint8Array(16))), rec};
 }
-// sleutel van een kluis openen met het wachtwoord (of met de herstelsleutel); een fout wachtwoord geeft een uitzondering
+// sleutel van een kluis openen met het wachtwoord (of met de noodcode); een fout wachtwoord geeft een uitzondering
 async function openKey(pw, blob, viaRec) {
   if (!blob.w) return {key:await deriveKey(pw, unb64(blob.salt), blob.iter), salt:unb64(blob.salt), iter:blob.iter};
   const raw = await unwrapRaw(viaRec ? blob.w.rec : blob.w.pw, viaRec ? recNorm(pw) : pw);
@@ -2757,6 +2780,15 @@ const sortedFields = () => [...data.fields].sort((a, b) => (a.order || 0) - (b.o
 const fieldsFor = pid => sortedFields().filter(f => f.all || f.projectIds.includes(pid));
 const touch = o => { o.u = now(); return o; };
 function tombstone(id) { data.deleted[id] = now(); }
+/* Functies die je kunt aan- of uitzetten (zonder keuze staat alles aan, zoals bij bestaande gebruikers) */
+const FEATURES = [
+  ['clients', 'Klanten', 'Klantenlijst met telefoon, e-mail en omzet'],
+  ['agenda', 'Agenda', 'Afspraken en deadlines op een kalender'],
+  ['sales', 'Verkopen', 'Maandpagina’s met omzet, doel, commissie en bonus'],
+  ['btw', 'BTW-rekenmachine', 'Een bedrag omrekenen van of naar inclusief btw'],
+];
+const feat = k => { const f = data?.settings.features; return !f || f[k] !== false; };
+const VIEW_FEATURE = {clients:'clients', client:'clients', agenda:'agenda', btw:'btw', sales:'sales'};
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
@@ -2922,7 +2954,7 @@ async function cloudGet(s, meta) {
   if (blob.split) {   // de klanten staan apart; enkel opnieuw downloaden als ze veranderd zijn
     if (!cloudClientsBlob || cloudClientsBlob.rev !== blob.clv) {
       const c = await sb(q + '&select=clients', {token:ss.token});
-      if (!c[0]?.clients) throw new Error('De klanten ontbreken in de online kluis.');
+      if (!c[0]?.clients) throw new Error('De klanten ontbreken online.');
       cloudClientsBlob = JSON.parse(c[0].clients);
     }
     blob.clientsBlob = cloudClientsBlob;
@@ -2956,7 +2988,7 @@ async function cloudPut(s, blob, meta) {
 async function unsealRemote(key, blob) {
   const core = await unseal(key, blob);
   if (blob.split) {
-    if (!blob.clientsBlob) throw new Error('De klanten ontbreken in de online kluis.');
+    if (!blob.clientsBlob) throw new Error('De klanten ontbreken online.');
     core.clients = await readClients(blob.clientsBlob, key);
   }
   return core;
@@ -3004,15 +3036,15 @@ async function syncNow(pw) {
       const differentSalt = remoteBlob.salt !== b64(K.salt);
       if (differentSalt) {
         if (!pw) throw new Error('Het wachtwoord werd op een ander toestel gewijzigd. Vergrendel en log opnieuw in met je nieuwe wachtwoord.');
-        try { rK = await openKey(pw, remoteBlob); } catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+        try { rK = await openKey(pw, remoteBlob); } catch { throw new Error('Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
         rkey = rK.key;
       }
       let remote;
       try { remote = normalize(await unsealRemote(rkey, remoteBlob)); }
-      catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+      catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
       let wNew = false;
       if (differentSalt) K = rK;
-      else if (remoteBlob.w && JSON.stringify(remoteBlob.w) !== JSON.stringify(K.w)) { K = {...K, w:remoteBlob.w}; wNew = true; }   // wachtwoord of herstelsleutel op een ander toestel gewijzigd
+      else if (remoteBlob.w && JSON.stringify(remoteBlob.w) !== JSON.stringify(K.w)) { K = {...K, w:remoteBlob.w}; wNew = true; }   // wachtwoord of noodcode op een ander toestel gewijzigd
       const merged = merge(data, remote);
       merged.settings.sync = s;
       if (sig(merged) !== sig(data) || differentSalt || wNew) {
@@ -3056,6 +3088,7 @@ function renderLock() {
   const f = $('#lockFields'), sub = $('#lockSub'), btn = $('#lockBtn'), alt = $('#lockAlt');
   $('#lockErr').textContent = '';
   btn.hidden = false; alt.hidden = false; $('#lockBio').hidden = true; $('#lockForgot').hidden = true;
+  alt.className = lockMode === 'cloud-in' || lockMode === 'cloud-up' ? 'btn' : 'link';
   // met een accountdienst blijft er altijd een uitweg naar de lokale kluis op dit toestel (bv. als de dienst even niet werkt)
   const loc = $('#lockLocal'); loc.hidden = !CLOUD || lockMode === 'loading';
   loc.textContent = lockMode.startsWith('cloud') ? 'Gebruik zonder account' : 'Inloggen met een account';
@@ -3077,20 +3110,20 @@ function renderLock() {
     if (bioGet() && bioSupported() && last) { $('#lockBio').hidden = false; $('#lockBio').textContent = 'Inloggen met ' + bioName(); }
   } else if (CLOUD && lockMode === 'cloud-forgot') {
     $('#lockTitle').textContent = 'Wachtwoord vergeten';
-    sub.textContent = 'Vul je e-mailadres in. Je krijgt een mail met een link. Daarna kies je een nieuw wachtwoord met je herstelsleutel.';
+    sub.textContent = 'Vul je e-mailadres in. Je krijgt een mail met een link. Daarna kies je een nieuw wachtwoord met je noodcode.';
     let last = ''; try { last = localStorage.getItem(CLOUD_USER) || ''; } catch {}
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required value="${esc(last)}" autofocus>`;
     btn.textContent = 'Mail versturen'; alt.textContent = 'Terug naar inloggen';
   } else if (CLOUD && lockMode === 'cloud-reset') {
     $('#lockTitle').textContent = 'Nieuw wachtwoord';
-    sub.textContent = `Nieuw wachtwoord voor ${resetEmail}. Vul de herstelsleutel in die je bij het aanmaken van je account bewaarde.`;
-    f.innerHTML = `<label for="rk">Herstelsleutel</label><input id="rk" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-…" autofocus>
+    sub.textContent = `Nieuw wachtwoord voor ${resetEmail}. Vul de noodcode in die je bij het aanmaken van je account bewaarde.`;
+    f.innerHTML = `<label for="rk">Noodcode</label><input id="rk" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-…" autofocus>
       <label for="pw1">Nieuw wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="${CLOUD_MINPW}" required>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
-    btn.textContent = 'Nieuw wachtwoord instellen'; alt.textContent = 'Ik heb geen herstelsleutel';
+    btn.textContent = 'Nieuw wachtwoord instellen'; alt.textContent = 'Ik heb geen noodcode: opnieuw beginnen';
   } else if (CLOUD && lockMode === 'cloud-up') {
     $('#lockTitle').textContent = 'Account aanmaken';
-    sub.textContent = `Kies je e-mailadres en een wachtwoord van minstens ${CLOUD_MINPW} tekens. Daarna krijg je een herstelsleutel om te bewaren, voor als je je wachtwoord vergeet.`;
+    sub.textContent = `Kies je e-mailadres en een wachtwoord van minstens ${CLOUD_MINPW} tekens. Daarna krijg je een noodcode om te bewaren, voor als je je wachtwoord vergeet.`;
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required autofocus>
       <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="${CLOUD_MINPW}" required>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
@@ -3157,10 +3190,10 @@ $('#lockLocal').addEventListener('click', () => {
 $('#lockForgot').addEventListener('click', () => { lockModeChosen = true; lockMode = 'cloud-forgot'; renderLock(); });
 $('#lockAlt').addEventListener('click', async () => {
   lockModeChosen = true;
-  if (CLOUD && lockMode === 'cloud-reset') {   // zonder herstelsleutel: de online kluis vervangen door een lege
+  if (CLOUD && lockMode === 'cloud-reset') {   // zonder noodcode: de online kluis vervangen door een lege
     const pw = $('#pw1').value, err = $('#lockErr'); err.textContent = '';
     if (pw.length < CLOUD_MINPW) { err.textContent = `Kies eerst een nieuw wachtwoord van minstens ${CLOUD_MINPW} tekens.`; return; }
-    if (!confirm('Alle gegevens in je account worden vervangen door een lege kluis. Dit kan niet ongedaan gemaakt worden. Doorgaan?')) return;
+    if (!confirm('Al je gegevens in dit account worden gewist en je begint opnieuw met een leeg account. Dit kan niet ongedaan gemaakt worden. Doorgaan?')) return;
     const btn = $('#lockBtn'); btn.disabled = true;
     try { await resetCloud('', pw, $('#pw2').value, true); } catch (ex) { err.textContent = ex.message; btn.disabled = false; }
     return;
@@ -3176,7 +3209,7 @@ async function unlockWith(pw) {
   try { kk = await openKey(pw, local); ld = await openLocalFull(local, kk.key); } catch { throw new Error('Onjuist wachtwoord.'); }
   K = kk; data = ld;
   if (data.settings.sync && !data.settings.sync.cloud) data.settings.sync = null;   // oude GitHub-koppeling (token) uit de kluis halen
-  if (data.settings.sync?.cloud) { lockMode = 'cloud-in'; renderLock(); throw new Error('Deze kluis hoort bij een account. Log in met je e-mailadres en wachtwoord.'); }
+  if (data.settings.sync?.cloud) { lockMode = 'cloud-in'; renderLock(); throw new Error('Deze gegevens horen bij een account. Log in met je e-mailadres en wachtwoord.'); }
   enterApp();
 }
 
@@ -3246,8 +3279,8 @@ async function unlockCloud(emailRaw, pw) {
   else if (mine && !local.w) { try { localData = await openLocalFull(local, (await openKey(pw, local)).key); } catch {} }
   let newRec = null;
   if (rblob) {
-    let rK; try { rK = await openKey(pw, rblob); } catch { throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
-    let remote; try { remote = normalize(await unsealRemote(rK.key, rblob)); } catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
+    let rK; try { rK = await openKey(pw, rblob); } catch { throw new Error('Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
+    let remote; try { remote = normalize(await unsealRemote(rK.key, rblob)); } catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
     K = rK; data = remote;
     if (localData && (!ask || confirm('Er staan ook gegevens op dit toestel. Samenvoegen met je account? (Annuleren = enkel de gegevens van je account gebruiken.)'))) data = merge(localData, remote);
   } else {
@@ -3258,7 +3291,7 @@ async function unlockCloud(emailRaw, pw) {
   try { localStorage.setItem(CLOUD_USER, email); } catch {}
   syncDirty = true; clSigSaved = null;
   await persist();
-  if (rblob && !K.w) newRec = await upgradeEnvelope(pw);   // oudere accountkluis: voeg datasleutel en herstelsleutel toe
+  if (rblob && !K.w) newRec = await upgradeEnvelope(pw);   // oudere accountkluis: voeg datasleutel en noodcode toe
   enterApp(); syncNow(pw);
   if (newRec) showRecoveryKey(newRec);
 }
@@ -3269,7 +3302,7 @@ async function upgradeEnvelope(pw) {
     K = env.K; clSigSaved = null; forceFull = true; await persist();
     await remotePut(data.settings.sync, await persistRemote(data.settings.sync));
     return env.rec;
-  } catch (e) { console.warn('Herstelsleutel nog niet toegevoegd', e); K = old; clSigSaved = null; await persist(); return null; }
+  } catch (e) { console.warn('Noodcode nog niet toegevoegd', e); K = old; clSigSaved = null; await persist(); return null; }
 }
 // Account wissen: de databasefunctie delete_my_account (zie supabase.sql) verwijdert de gebruiker en via cascade de kluis
 async function deleteAccount() {
@@ -3281,26 +3314,26 @@ async function deleteAccount() {
     throw new Error('Het account zelf kan pas gewist worden nadat de beheerder het bijgewerkte supabase.sql heeft uitgevoerd. Je online kluis is wel gewist; probeer het daarna opnieuw.');
   }
 }
-// De herstelsleutel tonen: kopiëren of downloaden, en pas sluiten na bevestiging
+// De noodcode tonen: kopiëren of downloaden, en pas sluiten na bevestiging
 function showRecoveryKey(rec, again) {
-  showDialog(`<h3>${again ? 'Nieuwe herstelsleutel' : 'Bewaar je herstelsleutel'}</h3>
-    <p class="muted small">Vergeet je ooit je wachtwoord, dan kun je met deze sleutel opnieuw toegang krijgen tot je gegevens. Niemand anders kan dat, ook wij niet. Bewaar de sleutel op een veilige plek (bv. in een wachtwoordbeheerder of op papier).${again ? ' De vorige herstelsleutel werkt niet meer.' : ''}</p>
+  showDialog(`<h3>${again ? 'Nieuwe noodcode' : 'Bewaar je noodcode'}</h3>
+    <p class="muted small">Vergeet je ooit je wachtwoord, dan kun je met deze sleutel opnieuw toegang krijgen tot je gegevens. Niemand anders kan dat, ook wij niet. Bewaar de sleutel op een veilige plek (bv. in een wachtwoordbeheerder of op papier).${again ? ' De vorige noodcode werkt niet meer.' : ''}</p>
     <div class="box"><code id="rkVal" style="font-size:15px;letter-spacing:.5px;word-break:keep-all;user-select:all">${esc(rec)}</code></div>
     <div class="dlg-actions" style="margin-top:6px"><button type="button" class="btn" id="rkCopy">Kopiëren</button><button type="button" class="btn" id="rkDl">Downloaden</button></div>
-    <label class="chk" style="margin-top:10px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="rkOk"> Ik heb de herstelsleutel veilig bewaard</label>
+    <label class="chk" style="margin-top:10px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="rkOk"> Ik heb de noodcode veilig bewaard</label>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="rkDone" disabled>Klaar</button></div>`, d => {
     $('#rkCopy', d).onclick = async () => { try { await navigator.clipboard.writeText(rec); toast('Gekopieerd'); } catch { toast('Kopiëren mislukt: selecteer de sleutel en kopieer zelf'); } };
     $('#rkDl', d).onclick = () => {
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([`Taken: herstelsleutel\n${data?.settings.sync?.email || ''}\n\n${rec}\n\nBewaar dit bestand veilig. Met deze sleutel kun je een vergeten wachtwoord vervangen.\n`], {type:'text/plain'}));
-      a.download = 'taken-herstelsleutel.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      a.href = URL.createObjectURL(new Blob([`Taken: noodcode\n${data?.settings.sync?.email || ''}\n\n${rec}\n\nBewaar dit bestand veilig. Met deze sleutel kun je een vergeten wachtwoord vervangen.\n`], {type:'text/plain'}));
+      a.download = 'taken-noodcode.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#rkOk', d).onchange = e => { $('#rkDone', d).disabled = !e.target.checked; };
-    $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeTour, 400); };
+    $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeStart, 400); };
     d.addEventListener('cancel', e => { if (!$('#rkOk', d).checked) e.preventDefault(); }, {once:true});
   });
 }
-// Wachtwoord vergeten: de herstelmail (via de dienst) brengt je hier terug met een tijdelijke sessie; met de herstelsleutel kies je een nieuw wachtwoord
+// Wachtwoord vergeten: de herstelmail (via de dienst) brengt je hier terug met een tijdelijke sessie; met de noodcode kies je een nieuw wachtwoord
 async function sendRecoveryMail(emailRaw) {
   const email = normEmail(emailRaw);
   if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('Vul een geldig e-mailadres in.');
@@ -3323,8 +3356,8 @@ async function resetCloud(rk, pw, pw2, fresh) {
   let nK, nData, rec = null;
   if (fresh || !rblob) { const env = await newEnvelope(pw); nK = env.K; rec = env.rec; nData = newData(); }
   else {
-    if (!rblob.w) throw new Error('Deze kluis heeft geen herstelsleutel. Je kunt enkel een nieuwe, lege kluis starten.');
-    let rK; try { rK = await openKey(rk, rblob, true); } catch { throw new Error('Deze herstelsleutel klopt niet.'); }
+    if (!rblob.w) throw new Error('Dit account heeft geen noodcode. Je kunt alleen opnieuw beginnen met een leeg account.');
+    let rK; try { rK = await openKey(rk, rblob, true); } catch { throw new Error('Deze noodcode klopt niet.'); }
     nData = normalize(await unsealRemote(rK.key, rblob));
     nK = {...rK, w:{pw:await wrapRaw(rK.raw, pw, ITER), rec:rblob.w.rec}};
   }
@@ -3372,7 +3405,7 @@ $('#lockForm').addEventListener('submit', async e => {
       await sendRecoveryMail($('#lkEmail').value);
       lockMode = 'cloud-in'; renderLock(); $('#lockErr').textContent = 'Als dit e-mailadres een account heeft, is er een mail onderweg. Open de link in die mail op dit toestel.';
     } else if (CLOUD && lockMode === 'cloud-reset') {
-      if (!recNorm($('#rk').value)) throw new Error('Vul je herstelsleutel in.');
+      if (!recNorm($('#rk').value)) throw new Error('Vul je noodcode in.');
       await resetCloud($('#rk').value, pw, $('#pw2').value);
     } else if (CLOUD && lockMode === 'cloud-up') {
       await signupCloud($('#lkEmail').value, pw, $('#pw2').value);
@@ -3389,7 +3422,7 @@ $('#lockForm').addEventListener('submit', async e => {
       if (rem) { if (remOn) rememberPw('', pw); else forgetPw(); }
     }
   } catch (ex) {
-    if (remOn && /onjuist|klopt niet|ontsleuteld/i.test(ex.message)) forgetPw();   // onthouden wachtwoord is niet meer geldig
+    if (remOn && /onjuist|klopt niet|geopend/i.test(ex.message)) forgetPw();   // onthouden wachtwoord is niet meer geldig
     err.textContent = ex.message;
     btn.disabled = false; btn.textContent = old;
   }
@@ -3402,12 +3435,12 @@ function tourSteps() {
   return [
     {title:'Welkom bij Taken', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
     {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een taak maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
-    {el:() => q('.board .col') || q('#list'), title:'Kolommen zijn stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
-    ...(mob ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
-    {el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'},
-    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je eigen velden en de instellingen.'}] : [
-      {el:() => q('#openFields'), title:'Eigen velden', text:'Voeg extra gegevens toe aan je taken, zoals formaat, telefoonnummer of kortingsprijs.'},
-      {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe herstelsleutel.'}]),
+    {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
+    ...(mob || !feat('clients') ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
+    ...(!feat('sales') ? [] : [{el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'}]),
+    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je extra gegevens en de instellingen.'}] : [
+      {el:() => q('#openFields'), title:'Extra gegevens', text:'Voeg extra gegevens toe aan je taken, zoals formaat, telefoonnummer of kortingsprijs.'},
+      {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe noodcode.'}]),
     {title:'Klaar om te beginnen', text:'Maak je eerste taak aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
   ];
 }
@@ -3454,7 +3487,46 @@ function startTour() {
   addEventListener('keydown', onKey); addEventListener('resize', place);
   show();
 }
+/* ---------------- Beginkeuze voor nieuwe gebruikers ---------------- */
+function featureChecks(cur) {
+  return FEATURES.map(([k, label, hint]) => `<label class="feat"><input type="checkbox" data-feat="${k}" ${cur[k] ? 'checked' : ''}><span><b>${label}</b><small>${hint}</small></span></label>`).join('');
+}
+function askFeatures() {
+  return new Promise(resolve => {
+    showDialog(`<h3>Waarvoor gebruik je Taken?</h3>
+      <p class="muted small">Kies wat je nodig hebt. De rest blijft verborgen zodat het overzichtelijk blijft. Je kunt dit altijd aanpassen onder Instellingen.</p>
+      <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Taken</b><small>Je to-do’s met deadline, notities en opmerkingen</small></span></label>${featureChecks({})}</div>
+      <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="ftOk">Verder</button></div>`, d => {
+      dlg.dataset.sticky = '1';
+      d.addEventListener('cancel', e => e.preventDefault(), {once:true});
+      $('#ftOk', d).onclick = () => {
+        const f = {}; for (const [k] of FEATURES) f[k] = !!$(`[data-feat="${k}"]`, d).checked;
+        delete dlg.dataset.sticky; dlg.close(); resolve(f);
+      };
+    });
+  });
+}
+// Alleen taken: rustige stappen in plaats van het verkoopproces (enkel zolang er nog geen taken zijn)
+function neutralStages() {
+  if (data.tasks.length) return;
+  const set = {callback:['Te doen', '#eb8909', false], mail:['Bezig', '#246fe0', false], positive:['Klaar', '#3aa655', true]};
+  for (const st of data.stages) { const n = set[st.id]; if (n) { st.label = n[0]; st.color = n[1]; st.done = n[2]; touch(st); } }
+  const neg = data.stages.find(x => x.id === 'negative'); if (neg) { data.stages = data.stages.filter(x => x !== neg); tombstone(neg.id); }
+}
+async function firstRun() {
+  if (data.settings.features || data.tasks.length || data.clients.length) return;
+  const f = await askFeatures();
+  data.settings.features = f;
+  if (!f.clients && !f.sales) neutralStages();
+  save(); renderAll();
+}
 // alleen voor wie nieuw is: nog geen taken of klanten en de rondleiding nog niet gezien
+async function maybeStart() {
+  if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
+  if (!data || tourOn || dlg.open || !$('#lock').hidden) return;
+  await firstRun();
+  maybeTour();
+}
 function maybeTour() {
   if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
   if (!data || tourOn || data.settings.tourDone || dlg.open || !$('#lock').hidden) return;
@@ -3469,7 +3541,7 @@ function enterApp() {
   renderAll();
   startTimers();
   warmClients();
-  setTimeout(maybeTour, 900);
+  setTimeout(maybeStart, 900);
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
 // Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
@@ -3836,7 +3908,7 @@ function renderMain() {
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
   $('#app').classList.toggle('board-mode', board);
-  $('#qaInput').placeholder = board ? `Nieuwe kaart in ${firstOpen().label}… bv. “Jan Peeters morgen 14u”` : 'Nieuwe taak… bv. “Offerte sturen morgen #Werk”';
+  $('#qaInput').placeholder = board ? `Nieuwe taak in ${firstOpen().label}… bv. “Jan bellen morgen 14u”` : 'Nieuwe taak… bv. “Jan bellen morgen 14u”';
   if (board) renderBoard(); else renderList();
 }
 
@@ -3881,7 +3953,10 @@ function renderNav() {
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
   $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['btw', 'BTW', I.btw, '']]
+    .filter(([k]) => feat(k))
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
+  const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
+  const tOn = [...$('#toolNav').children].length > 0; $('#toolNav').previousElementSibling.hidden = !tOn;
   renderSync();
 }
 function viewSubtitle() {
@@ -3953,16 +4028,16 @@ function renderToolbar() {
   $('#toolbar').classList.toggle('open', tbOpen);
   $('#toolbar').innerHTML = `
     <div class="seg" role="group" aria-label="Weergave"><button type="button" data-layout="board" class="${board ? 'on' : ''}">Bord</button><button type="button" data-layout="list" class="${board ? '' : 'on'}">Lijst</button></div>
-    <button type="button" class="btn tb-toggle ${active ? 'active' : ''}" data-tbmore aria-expanded="${tbOpen}">${I.filter}Filter${active ? '<i class="tb-dot"></i>' : ''}</button>
-    <button type="button" class="btn tb-add" data-qa title="Nieuwe taak (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Taak</button>
+    <button type="button" class="btn tb-toggle ${active ? 'active' : ''}" data-tbmore aria-expanded="${tbOpen}">${I.filter}Opties${active ? '<i class="tb-dot"></i>' : ''}</button>
+    <button type="button" class="btn tb-add" data-qa title="Nieuwe taak (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nieuwe taak</button>
     <div class="tb-more">
-    ${board ? '<button type="button" class="btn tb-cols" data-cols>Kolommen</button>' : ''}
+    ${board ? '<button type="button" class="btn tb-cols" data-cols>Stappen</button>' : ''}
     <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
     <select id="tbSort" aria-label="Sorteren" title="Sorteren">${sortOpts.map(([v, l]) => o(v, 'Sorteren: ' + l, p.sort)).join('')}</select>
     <select id="tbGroup" ${board ? 'hidden' : ''} aria-label="Groeperen" title="Groeperen">${groupOpts.map(([v, l]) => o(v, v ? 'Groeperen: ' + l : l, p.group)).join('')}</select>
     <select id="tbFf" aria-label="Filter" title="Filter">${filterOpts.map(([v, l]) => o(v, v ? 'Filter: ' + l : l, p.ff)).join('')}</select>
     ${fvHtml}
-    <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgewerkte tonen</label>
+    <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgeronde tonen</label>
     </div>`;
 }
 function placeTabIndicator() {
@@ -3975,6 +4050,9 @@ function placeTabIndicator() {
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
   const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : 'all';
+  const slot = $('#tabSlot'), sOn = feat('sales');
+  slot.dataset.tab = sOn ? 'sales' : 'today'; slot.querySelector('.ti').innerHTML = sOn ? I.sales : I.today; slot.lastElementChild.textContent = sOn ? 'Verkopen' : 'Vandaag';
+  $('#tabBar [data-tab="agenda"]').hidden = !feat('agenda');
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
@@ -3984,6 +4062,7 @@ function renderAll() {
   if (!data) return;
   renderTabBar();
   if (view.type === 'sales' && !salesPageById(view.id)) view = {type:'all'};
+  if (VIEW_FEATURE[view.type] && !feat(VIEW_FEATURE[view.type])) view = {type:'all'};
   const sales = view.type === 'sales';
   if (sales) selectedId = null;
   renderNav(); renderHead();
@@ -4248,14 +4327,19 @@ function renderDetail(force) {
       <textarea id="dNotes" placeholder="Notities…" aria-label="Notities">${esc(t.notes || '')}</textarea>
       <div class="props">
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
-        <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
-        ${(() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}${cl?.email ? `<a class="icon-btn" href="mailto:${esc(cl.email)}" title="${esc(cl.email)} mailen" aria-label="Mailen">${I.mail}</a>` : ''}</span></label>`; })()}
+        ${!feat('clients') && !t.clientId ? '' : (() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}${cl?.email ? `<a class="icon-btn" href="mailto:${esc(cl.email)}" title="${esc(cl.email)} mailen" aria-label="Mailen">${I.mail}</a>` : ''}</span></label>`; })()}
       </div>
-      <div class="d-sec"><span>Velden</span><button class="link" data-act="fields">Velden beheren</button></div>
-      <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
-        `<p class="muted small" style="margin:0">Nog geen eigen velden voor dit project. <button class="link" data-act="newfield">Veld toevoegen</button></p>`}</div>
+      <details class="d-more" id="dMore" ${moreOpen[t.id] || fs.some(f => !isEmpty(t.custom[f.id])) ? 'open' : ''}>
+        <summary>Meer gegevens</summary>
+        <div class="props">
+        <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+        </div>
+        <div class="d-sec"><span>Extra gegevens</span><button class="link" data-act="fields">Extra gegevens beheren</button></div>
+        <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
+          `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
+      </details>
       <div class="d-sec"><span>Opmerkingen${commentsOf(t.id).length ? ` <b class="c-count">${commentsOf(t.id).length}</b>` : ''}</span></div>
       <ul class="comments">${commentsOf(t.id).map(c => `
         <li data-cid="${c.id}"><div class="c-meta"><span>${esc(stamp(c.at))}</span><button type="button" class="icon-btn c-del" data-act="delcomment" title="Opmerking verwijderen" aria-label="Opmerking verwijderen">${I.trash}</button></div>
@@ -4264,9 +4348,11 @@ function renderDetail(force) {
         <textarea id="dComment" rows="2" placeholder="Schrijf een opmerking…" aria-label="Nieuwe opmerking">${esc(commentDrafts[t.id] || '')}</textarea>
         <button type="button" class="btn primary" data-act="addcomment">Plaatsen</button>
       </div>
-      <p class="muted small" style="margin-top:28px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
+      <div style="margin-top:22px"><button type="button" class="btn danger" data-act="deletetask">Taak verwijderen</button></div>
+      <p class="muted small" style="margin-top:16px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
     </div>`;
   autosize($('#dTitle'));
+  $('#dMore')?.addEventListener('toggle', e => { moreOpen[t.id] = e.target.open; });
   if (keep) restoreFocus(el, keep);
 }
 // Sleutel van het element met focus: id, veld of knop; zo vinden we het na het hertekenen terug
@@ -4283,7 +4369,7 @@ function restoreFocus(root, k) {
   n.focus({preventScroll:true});
   try { if (k.pos && n.setSelectionRange) n.setSelectionRange(k.pos[0], k.pos[1]); } catch {}
 }
-const commentDrafts = {};
+const commentDrafts = {}, moreOpen = {};
 function addComment(t) {
   const ta = $('#dComment'), text = ta?.value.trim();
   if (!text) { ta?.focus(); return; }
@@ -4696,6 +4782,7 @@ detail.addEventListener('click', e => {
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'more': menuAt(b, taskMenuItems(t)); break;
     case 'toggle': toggleTask(t.id); break;
+    case 'deletetask': deleteTask(t.id); break;
     case 'fields': openFieldsDialog(); break;
     case 'newfield': openFieldEditor(null, t.projectId === 'inbox' ? null : t.projectId); break;
   }
@@ -4710,7 +4797,7 @@ function showDialog(html, bind) {
   // eerst het veld met autofocus (bv. de naam), anders het eerste invoerveld
   setTimeout(() => (dlg.querySelector('[autofocus]:not([disabled])') || dlg.querySelector('input:not([type=checkbox]):not([disabled]),select'))?.focus(), 20);
 }
-dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener('click', e => { if (e.target === dlg && !dlg.dataset.sticky) dlg.close(); });
 dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
 
 // Nieuwe klant vanuit een taak: telefoon en e-mail die in de titel of notities staan worden meteen ingevuld
@@ -4785,9 +4872,9 @@ function openProjectDialog(p) {
     </div>
     <p class="muted small" style="margin:6px 0 0">Icoon is optioneel: plak of kies een emoji (Windows: <b>Win + .</b>, Mac: <b>Ctrl + Cmd + Spatie</b>).</p>
     <div class="fl">Kleur<div class="swatches">${COLORS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="--c:${c}" data-c="${c}" aria-label="Kleur ${c}"></button>`).join('')}</div></div>
-    <div class="fl">Velden in dit project
+    <div class="fl">Extra gegevens in dit project
       ${fs.length ? `<div class="checks">${fs.map(f => `<label class="chk"><input type="checkbox" data-f="${f.id}" ${f.all || (p && f.projectIds.includes(p.id)) ? 'checked' : ''} ${f.all ? 'disabled' : ''}> ${esc(f.name)} <span class="muted small">${TYPES[f.type]}${f.all ? ' · in alle projecten' : ''}</span></label>`).join('')}</div>` : ''}
-      <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Nieuw veld</button></div>
+      <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Extra gegeven toevoegen</button></div>
     </div>
     <div class="dlg-actions">
       ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjFin">${p.finished ? 'Heropenen' : 'Afwerken'}</button>` : ''}
@@ -4859,7 +4946,7 @@ function openStagesDialog() {
     draft[i].done = $('input[type=checkbox]', row).checked;
   });
   const draw = () => showDialog(`
-    <h3>Kolommen</h3>
+    <h3>Stappen</h3>
     <p class="muted small" style="margin:0">Hernoem, herschik, kleur of voeg kolommen toe. Kaarten in een kolom met <b>afgewerkt</b> aangevinkt tellen als afgewerkt.</p>
     <div id="stRows" style="margin-top:12px">${draft.map((x, i) => `
       <div class="st-row">
@@ -4868,9 +4955,9 @@ function openStagesDialog() {
         <label class="chk st-done" title="Kaarten in deze kolom tellen als afgewerkt"><input type="checkbox" ${x.done ? 'checked' : ''}> afgewerkt</label>
         <button type="button" class="icon-btn" data-sm="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Naar links">${I.up}</button>
         <button type="button" class="icon-btn" data-sm="${i}" data-dir="1" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Naar rechts">${I.down}</button>
-        <button type="button" class="icon-btn" data-sr="${i}" aria-label="Kolom verwijderen" title="${count(x.id) ? 'Verwijderen (' + count(x.id) + ' kaarten worden verplaatst)' : 'Verwijderen'}">${I.trash}</button>
+        <button type="button" class="icon-btn" data-sr="${i}" aria-label="Stap verwijderen" title="${count(x.id) ? 'Verwijderen (' + count(x.id) + ' kaarten worden verplaatst)' : 'Verwijderen'}">${I.trash}</button>
       </div>`).join('')}</div>
-    <button type="button" class="link" id="stAdd" style="margin-top:10px;font-weight:550">+ Kolom toevoegen</button>
+    <button type="button" class="link" id="stAdd" style="margin-top:10px;font-weight:550">+ Stap toevoegen</button>
     <p class="err" id="stErr"></p>
     <div class="dlg-actions"><button type="button" class="btn" id="stReset">Standaard herstellen</button><span class="grow"></span><button type="button" class="btn" id="stCancel">Annuleren</button><button type="button" class="btn primary" id="stSave">Opslaan</button></div>`, d => {
     $$('[data-sc]', d).forEach(b => b.onclick = () => {
@@ -4928,7 +5015,7 @@ function openStagesDialog() {
           t.done = done; touch(t);
         }
       }
-      dlg.close(); commit(); toast('Kolommen opgeslagen');
+      dlg.close(); commit(); toast('Stappen opgeslagen');
     };
   });
   draw();
@@ -4938,15 +5025,15 @@ function openFieldsDialog() {
   const fs = sortedFields();
   const scope = f => f.all ? 'Alle projecten' : (f.projectIds.map(id => data.projects.find(p => p.id === id)?.name).filter(Boolean).join(', ') || 'Geen projecten');
   showDialog(`
-    <h3>Eigen velden</h3>
+    <h3>Extra gegevens</h3>
     <p class="muted small" style="margin:0">Voeg extra eigenschappen toe aan je taken, zoals klant, locatie, status, budget of een link. Je kunt ze op alle projecten of enkel op bepaalde projecten gebruiken.</p>
     ${fs.length ? `<ul class="flist">${fs.map((f, i) => `<li>
         <div><b>${esc(f.name)}</b><span class="muted">${TYPES[f.type]} · ${esc(scope(f))}${f.showInList ? ' · zichtbaar in lijst' : ''}</span></div>
         <button class="icon-btn" data-mv="${f.id}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Omhoog">${I.up}</button>
         <button class="icon-btn" data-mv="${f.id}" data-dir="1" ${i === fs.length - 1 ? 'disabled' : ''} aria-label="Omlaag">${I.down}</button>
         <button class="btn" data-edit="${f.id}">Bewerken</button></li>`).join('')}</ul>`
-      : '<div class="box muted">Je hebt nog geen velden. Maak je eerste veld aan.</div>'}
-    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="fClose">Sluiten</button><button type="button" class="btn primary" id="fNew">Nieuw veld</button></div>`, d => {
+      : '<div class="box muted">Je hebt nog geen extra gegevens. Voeg de eerste toe.</div>'}
+    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="fClose">Sluiten</button><button type="button" class="btn primary" id="fNew">Toevoegen</button></div>`, d => {
     $('#fClose', d).onclick = () => dlg.close();
     $('#fNew', d).onclick = () => openFieldEditor(null, view.type === 'project' ? view.id : null, openFieldsDialog);
     $$('[data-edit]', d).forEach(b => b.onclick = () => openFieldEditor(fieldById(b.dataset.edit), null, openFieldsDialog));
@@ -4974,7 +5061,7 @@ function openFieldEditor(f, presetProject, back) {
     $$('.opt-row', d).forEach((row, i) => { draft.options[i].label = $('input', row).value; });
   };
   const draw = () => showDialog(`
-    <h3>${isNew ? 'Nieuw veld' : 'Veld bewerken'}</h3>
+    <h3>${isNew ? 'Extra gegeven toevoegen' : 'Extra gegeven bewerken'}</h3>
     <label class="fl">Naam<input id="feName" type="text" value="${esc(draft.name)}" placeholder="bv. Status, Klant, Locatie, Budget"></label>
     <label class="fl">Type<select id="feType">${Object.entries(TYPES).map(([k, l]) => `<option value="${k}" ${k === draft.type ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     ${!isNew && f.type !== draft.type ? '<p class="err">Let op: bestaande waarden passen mogelijk niet bij het nieuwe type.</p>' : ''}
@@ -5016,7 +5103,7 @@ function openFieldEditor(f, presetProject, back) {
       read(d);
       const err = $('#feErr', d);
       draft.name = draft.name.trim();
-      if (!draft.name) { err.textContent = 'Geef het veld een naam.'; return; }
+      if (!draft.name) { err.textContent = 'Geef het een naam.'; return; }
       draft.options = draft.options.map(o => ({...o, label:o.label.trim()})).filter(o => o.label);
       if ((draft.type === 'select' || draft.type === 'multiselect') && !draft.options.length) { err.textContent = 'Voeg minstens één optie toe.'; return; }
       if (isNew) { draft.order = Math.max(-1, ...data.fields.map(x => x.order || 0)) + 1; data.fields.push(touch(draft)); }
@@ -5024,7 +5111,7 @@ function openFieldEditor(f, presetProject, back) {
       commit(); done();
     };
     $('#feDel', d)?.addEventListener('click', () => {
-      if (!confirm(`Veld “${f.name}” verwijderen? De waarden in je taken verdwijnen ook.`)) return;
+      if (!confirm(`“${f.name}” verwijderen? De waarden in je taken verdwijnen ook.`)) return;
       data.fields = data.fields.filter(x => x.id !== f.id); tombstone(f.id);
       for (const t of data.tasks) if (f.id in t.custom) { delete t.custom[f.id]; touch(t); }
       for (const k of Object.keys(data.prefs)) {
@@ -5059,8 +5146,8 @@ function openSettings() {
     <h4>Account</h4>
     ${s?.cloud ? `<div class="box">
         <p><b>Ingelogd als</b> ${esc(s.email || '')}</p>
-        <p class="muted small">Je gegevens staan versleuteld in je account en synchroniseren automatisch op al je toestellen. Vergeet je je wachtwoord, dan heb je je herstelsleutel nodig; bewaar ook af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
-        <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button>${K?.w ? '<button type="button" class="btn" id="stRecNew">Nieuwe herstelsleutel</button>' : ''}<span class="grow"></span><button type="button" class="btn" id="stLogout">Uitloggen</button></div>
+        <p class="muted small">Je gegevens staan veilig online en zijn op al je toestellen hetzelfde. Vergeet je je wachtwoord, dan heb je je noodcode nodig. Maak ook af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
+        <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu bijwerken</button>${K?.w ? '<button type="button" class="btn" id="stRecNew">Nieuwe noodcode</button>' : ''}<span class="grow"></span><button type="button" class="btn" id="stLogout">Uitloggen</button></div>
         <div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn danger" id="stDelAcc">Account verwijderen</button></div>
       </div>`
     : `<div class="box">
@@ -5068,10 +5155,14 @@ function openSettings() {
         ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
 
+    <h4>Functies</h4>
+    <p class="muted small" style="margin-top:0">Zet aan wat je gebruikt. Wat uit staat, verdwijnt uit het menu; je gegevens blijven bewaard.</p>
+    <div class="feat-list" id="stFeats">${featureChecks(Object.fromEntries(FEATURES.map(([k]) => [k, feat(k)])))}</div>
+
     <h4>Hulp</h4>
     <button type="button" class="btn" id="stTour">Rondleiding bekijken</button>
 
-    <h4>Beveiliging</h4>
+    <details class="st-sec"><summary>Beveiliging</summary>
     <label class="fl">Automatisch vergrendelen na inactiviteit
       <select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <div style="margin-top:12px">${bioBox()}</div>
@@ -5082,18 +5173,21 @@ function openSettings() {
       <p class="err" id="stPwErr"></p>
       <button type="button" class="btn" id="stPwSave">Wachtwoord wijzigen</button>
     </details>
+    </details>
 
+    <details class="st-sec"><summary>Back-up en geavanceerd</summary>
     <h4>Back-up</h4>
     <div class="dlg-actions" style="margin-top:6px">
-      <button type="button" class="btn" id="stExpEnc">Versleutelde back-up</button>
-      <button type="button" class="btn" id="stExpPlain">Leesbare export (JSON)</button>
-      <button type="button" class="btn" id="stImp">Importeren…</button>
+      <button type="button" class="btn" id="stExpEnc">Back-up maken</button>
+      <button type="button" class="btn" id="stExpPlain">Back-up als leesbaar bestand</button>
+      <button type="button" class="btn" id="stImp">Back-up terugzetten…</button>
       <input type="file" id="stFile" accept=".json,application/json" hidden>
     </div>
-    <p class="muted small">Importeren voegt de taken samen met wat er al is.</p>
+    <p class="muted small">Een back-up terugzetten voegt de taken samen met wat er al is.</p>
 
     <h4>Dit toestel</h4>
     <button type="button" class="btn danger" id="stWipe">Alle gegevens van dit toestel wissen</button>
+    </details>
 
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="stClose">Klaar</button></div>`, d => {
     $('#stClose', d).onclick = () => dlg.close();
@@ -5103,7 +5197,7 @@ function openSettings() {
     $('#stLogout', d)?.addEventListener('click', () => lock());
     $('#stDelAcc', d)?.addEventListener('click', () => {
       showDialog(`<h3>Account verwijderen</h3>
-        <p class="muted small">Je account en de versleutelde kluis in de dienst worden <b>definitief gewist</b>, ook op je andere toestellen. Dit kan niet ongedaan gemaakt worden en je herstelsleutel helpt dan niet meer. Download eerst een back-up als je je gegevens wilt houden (Instellingen → Back-up).</p>
+        <p class="muted small">Je account en al je gegevens online worden <b>definitief gewist</b>, ook op je andere toestellen. Dit kan niet ongedaan gemaakt worden en je noodcode helpt dan niet meer. Download eerst een back-up als je je gegevens wilt houden (Instellingen → Back-up).</p>
         <label class="fl">Wachtwoord<input id="daPw" type="password" autocomplete="current-password" autofocus></label>
         <label class="fl">Typ VERWIJDEREN om te bevestigen<input id="daTxt" type="text" autocomplete="off"></label>
         <p class="err" id="daErr"></p>
@@ -5123,8 +5217,8 @@ function openSettings() {
       });
     });
     $('#stRecNew', d)?.addEventListener('click', () => {
-      showDialog(`<h3>Nieuwe herstelsleutel</h3>
-        <p class="muted small">Je huidige herstelsleutel werkt daarna niet meer. Vul je wachtwoord in om door te gaan.</p>
+      showDialog(`<h3>Nieuwe noodcode</h3>
+        <p class="muted small">Je huidige noodcode werkt daarna niet meer. Vul je wachtwoord in om door te gaan.</p>
         <label class="fl">Wachtwoord<input id="rnPw" type="password" autocomplete="current-password" autofocus></label>
         <p class="err" id="rnErr"></p>
         <div class="dlg-actions"><button type="button" class="btn" id="rnNo">Annuleren</button><span class="grow"></span><button type="button" class="btn primary" id="rnOk">Maken</button></div>`, dd => {
@@ -5138,6 +5232,11 @@ function openSettings() {
           showRecoveryKey(rec, true);
         };
       });
+    });
+    $('#stFeats', d).addEventListener('change', e => {
+      const k = e.target.dataset.feat; if (!k) return;
+      data.settings.features = {...Object.fromEntries(FEATURES.map(([x]) => [x, feat(x)])), [k]:e.target.checked};
+      commit();
     });
     $('#stTour', d).addEventListener('click', () => { dlg.close(); setTimeout(startTour, 250); });
     $('#stToAccount', d)?.addEventListener('click', async () => {
@@ -5783,7 +5882,7 @@ function openSalesColsDialog() {
         <button type="button" class="icon-btn" data-sm="${i}" data-dir="1" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Naar rechts">${I.down}</button>
         <button type="button" class="icon-btn" data-sr="${i}" aria-label="Kolom verwijderen">${I.trash}</button>
       </div>`).join('')}</div>
-    <button type="button" class="link" id="scAdd" style="margin-top:10px;font-weight:550">+ Kolom toevoegen</button>
+    <button type="button" class="link" id="scAdd" style="margin-top:10px;font-weight:550">+ Stap toevoegen</button>
     <p class="err" id="scErr"></p>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="scCancel">Annuleren</button><button type="button" class="btn primary" id="scSave">Opslaan</button></div>`, d => {
     $$('[data-sm]', d).forEach(b => b.onclick = () => { read(d); const i = +b.dataset.sm, j = i + +b.dataset.dir; [draft[i], draft[j]] = [draft[j], draft[i]]; draw(); });
@@ -5964,7 +6063,7 @@ $('#list').addEventListener('click', e => {
     menuAt(cm, [{label:'Nieuwe kaart', run:() => openTopAdd(id)},
       '-',
       {label:'Verbergen in deze weergave', attrs:`data-hidecol="${id}"`, run:() => hideColumn(id)},
-      {label:'Kolommen beheren…', attrs:'data-cols', run:() => openStagesDialog()}]);
+      {label:'Stappen beheren…', attrs:'data-cols', run:() => openStagesDialog()}]);
     return;
   }
   const showCol = e.target.closest('[data-showcol]');
@@ -6122,7 +6221,7 @@ document.addEventListener('keydown', e => {
     if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else openQuickAdd(); return; }
   }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === '?') { e.preventDefault(); openShortcutsDialog(); return; }
+  if (e.key === '?') { e.preventDefault(); openHelp(); return; }
   if (e.key === 'Delete' && selectedId && view.type !== 'sales') { e.preventDefault(); deleteTask(selectedId); return; }
   if (isPageView()) return;
   if (view.type === 'sales') { if (e.key === 'n') { e.preventDefault(); addSalesRow(); } return; }
@@ -6131,7 +6230,22 @@ document.addEventListener('keydown', e => {
 });
 
 $('#topSearch').onclick = () => { if (view.type === 'clients') $('#clSearch')?.focus(); else if (!isPageView() && view.type !== 'sales') openSearch(); else toast('Zoeken kan op de pagina zelf'); };
-$('#topHelp').onclick = () => openShortcutsDialog();
+$('#topHelp').onclick = () => openHelp();
+function openHelp() {
+  showDialog(`<h3>Hulp</h3>
+    <ul class="help-list">
+      <li><b>Een taak maken</b><span>Klik op “Nieuwe taak”, typ wat je wilt doen en druk op Enter.</span></li>
+      <li><b>Een deadline instellen</b><span>Typ het erbij: “Jan bellen morgen 14u” zet de taak op morgen om 14:00.</span></li>
+      <li><b>Verder in het proces</b><span>Sleep de taak naar de volgende stap, of kies de stap in het taakpaneel.</span></li>
+      <li><b>Een taak afronden</b><span>Klik op het rondje links van de taak.</span></li>
+      <li><b>Een klant koppelen</b><span>Open de taak en typ de naam bij “Klant”.</span></li>
+    </ul>
+    <div class="dlg-actions"><button type="button" class="btn" id="hpTour">Rondleiding bekijken</button><button type="button" class="btn" id="hpKeys">Sneltoetsen</button><span class="grow"></span><button type="button" class="btn primary" id="hpClose">Sluiten</button></div>`, d => {
+    $('#hpClose', d).onclick = () => dlg.close();
+    $('#hpTour', d).onclick = () => { dlg.close(); setTimeout(startTour, 250); };
+    $('#hpKeys', d).onclick = () => openShortcutsDialog();
+  });
+}
 // de uitklapper onder Filter (computer) sluit zodra je ernaast klikt
 document.addEventListener('pointerdown', e => {
   if (!tbOpen || matchMedia('(max-width:860px)').matches || e.target.closest('.toolbar')) return;

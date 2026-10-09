@@ -8,7 +8,7 @@
 
 | Onderdeel | Wat je ermee doet |
 |---|---|
-| **Taken** | Projecten met een bord (kolommen) of een lijst. Deadline en uur, eigen velden, opmerkingen, archief. Een taak zonder deadline staat altijd bovenaan. |
+| **Taken** | Projecten met een bord (kolommen) of een lijst. Deadline en uur, extra gegevens, opmerkingen, archief. Een taak zonder deadline staat altijd bovenaan. |
 | **Klanten** | Een klantenfiche per klant (firma, klantnummer, contact, telefoon, gsm, e-mail, gemeente, uitgaves, projectnummers). Import uit Excel (`.xlsx`), CSV of plakken uit Excel, ook met tienduizenden rijen. Taken koppel je aan een klant; maak je vanuit een taak een nieuwe klant, dan worden de gegevens uit de taak al ingevuld. |
 | **Verkopen** | Een pagina per maand met een tabel van verkopen (kolommen zelf in te stellen), doelstelling, bedrag per dag dat nog nodig is, commissie en bonus. Een nieuwe regel krijgt standaard aantal 1. |
 | **Prijsberekening** | Bovenaan een project: vul het bedrag in dat nog verkocht moet worden (*To go*) en het aantal 1/8-ruimtes (*PK*), en de app rekent de prijs per formaat uit: 1/1, 1/2, 1/4, 1/8, 1/12, 1/16 en 1/32 (naar boven afgerond). |
@@ -36,6 +36,10 @@ De hele app is één bestand (`index.html`) in gewone HTML, CSS en JavaScript, z
 - Lokaal staat een kleine kern (taken, projecten, verkopen) in `localStorage` en de grote klantenlijst apart in IndexedDB. Het versleutelen en ontsleutelen gebeurt in een achtergrondproces (Web Worker), zodat de pagina soepel blijft, ook met zeventigduizend klanten.
 - Na een tijd zonder activiteit (standaard 30 minuten) vergrendelt de app zichzelf.
 
+### Eenvoudig beginnen
+
+Bij het eerste gebruik vraagt de app **waarvoor je Taken gebruikt**: enkel taken, of ook Klanten, Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel taken, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
+
 ### Synchroniseren tussen toestellen
 
 Zonder account werk je op één toestel; een back-up maak je via **Instellingen** (versleuteld of leesbaar). Wil je dezelfde gegevens op meerdere toestellen, dan gebruik je een account (zie hieronder). Bij het samenvoegen wint per item de nieuwste wijziging; verwijderde items worden bijgehouden, zodat ze niet terugkomen.
@@ -58,13 +62,13 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 
 **Bestaande gegevens meenemen.** Maak je een account aan op een toestel waar al een kluis staat, dan gaan die gegevens mee naar het account (met hetzelfde wachtwoord; met een ander wachtwoord vraagt de app naar het oude). Een gist of back-up blijft ongemoeid.
 
-**Herstelsleutel.** Bij het aanmaken van je account toont de app een **herstelsleutel** (32 tekens). Bewaar die op een veilige plek: zonder wachtwoord én zonder herstelsleutel zijn je gegevens echt weg, want niemand anders kan ze lezen. De kluis is versleuteld met een willekeurige datasleutel die twee keer is ingepakt: met je wachtwoord en met de herstelsleutel. Gevolgen:
+**Noodcode.** Bij het aanmaken van je account toont de app een **noodcode** (32 tekens). Bewaar die op een veilige plek: zonder wachtwoord én zonder noodcode zijn je gegevens echt weg, want niemand anders kan ze lezen. De kluis is versleuteld met een willekeurige datasleutel die twee keer is ingepakt: met je wachtwoord en met de noodcode. Gevolgen:
 
 - **Wachtwoord wijzigen** (Instellingen → Beveiliging) is snel, ook met tienduizenden klanten: enkel de datasleutel wordt opnieuw ingepakt.
-- **Wachtwoord vergeten?** Kies op het inlogscherm *Wachtwoord vergeten?*, vul je e-mailadres in en open de link in de mail. Vul daarna je herstelsleutel in en kies een nieuw wachtwoord; al je gegevens blijven behouden. Heb je de sleutel niet meer, dan kun je alleen met een lege kluis opnieuw beginnen.
-- **Nieuwe herstelsleutel** maken kan in de instellingen (de oude werkt dan niet meer).
+- **Wachtwoord vergeten?** Kies op het inlogscherm *Wachtwoord vergeten?*, vul je e-mailadres in en open de link in de mail. Vul daarna je noodcode in en kies een nieuw wachtwoord; al je gegevens blijven behouden. Heb je de sleutel niet meer, dan kun je alleen met een lege kluis opnieuw beginnen.
+- **Nieuwe noodcode** maken kan in de instellingen (de oude werkt dan niet meer).
 - **Account verwijderen** (Instellingen → Account) wist je account en je online kluis definitief. Dit werkt na het (opnieuw) uitvoeren van `supabase.sql`, dat de functie `delete_my_account` toevoegt.
-- Accounts van de eerste versie krijgen bij de eerstvolgende login automatisch een herstelsleutel.
+- Accounts van de eerste versie krijgen bij de eerstvolgende login automatisch een noodcode.
 
 **Zeer grote kluizen.** Staat het script `supabase.sql` in je project, dan bewaart de dienst de klanten apart van de rest. Een gewone wijziging (een taak afvinken) uploadt dan enkel de kleine kern; de klantenlijst gaat alleen mee als die veranderd is. Zonder dat script blijft alles gewoon in één stuk werken.
 
@@ -137,7 +141,7 @@ Haal in je fork de nieuwste wijzigingen binnen (**Sync fork → Update branch**)
 | De app vraagt een e-mailadres en wachtwoord | `taken/cloud.json` van de oorspronkelijke eigenaar staat nog in je kopie. Verwijder dat bestand (stap 1). |
 | De pagina geeft een 404 | Controleer bij **Settings → Pages** of de site aan staat en of je het juiste adres (met `/taken/`) gebruikt. Wacht een paar minuten na de eerste keer aanzetten. |
 | Een tweede toestel toont niet dezelfde gegevens | Log op beide toestellen in met hetzelfde account en kijk bij **Instellingen → Account** of de synchronisatie een fout meldt. |
-| Wachtwoord vergeten | Met een account: *Wachtwoord vergeten?* op het inlogscherm en je herstelsleutel. Zonder account is er geen herstel; een versleutelde back-up heeft nog altijd het oude wachtwoord nodig. |
+| Wachtwoord vergeten | Met een account: *Wachtwoord vergeten?* op het inlogscherm en je noodcode. Zonder account is er geen herstel; een versleutelde back-up heeft nog altijd het oude wachtwoord nodig. |
 
 ### Lokaal uitproberen
 
