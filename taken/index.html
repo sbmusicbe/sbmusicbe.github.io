@@ -2359,7 +2359,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
         <span class="grow"></span>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
-      <textarea id="projNotes" class="proj-notes" rows="1" placeholder="Klik hier om notities toe te voegen…" aria-label="Notities bij dit project" hidden></textarea>
       <div id="projCalc" class="pcalc" hidden></div>
       <div id="archBar" hidden></div>
       <div id="banner" hidden></div>
@@ -2716,6 +2715,8 @@ function normalize(d) {
     if (!st.some(x => x.id === t.stage)) t.stage = t.done ? done.id : open.id;
     t.done = !!st.find(x => x.id === t.stage).done;
   }
+  // archiveren bestaat niet meer: wat ooit gearchiveerd was, staat weer gewoon op zijn plaats
+  for (const x of [...d.tasks, ...d.projects, ...d.salesPages]) if (x.archived) { x.archived = false; x.archivedAt = null; x.u = Date.now(); }
   for (const f of d.fields) { f.options ||= []; f.projectIds ||= []; if (f.all === undefined) f.all = true; }
   d.updatedAt ||= 0;
   return d;
@@ -3461,6 +3462,7 @@ function maybeTour() {
   startTour();
 }
 function enterApp() {
+  { const fp = sortedProjects().find(p => p.id !== 'inbox' && !p.finished); if (view.type === 'all' && fp) view = {type:'project', id:fp.id}; }
   $('#lock').hidden = true;
   $('#app').hidden = false;
   document.title = 'Taken';
@@ -3475,10 +3477,10 @@ let pendingLaunch = /[?&](view|new)=/.test(location.search) ? location.href : nu
 function applyLaunch(url) {
   const q = new URL(url, location.href).searchParams, v = q.get('view');
   if (location.search) history.replaceState(null, '', location.pathname);
-  if (v === 'sales') { const pg = sortedSalesPages().find(x => !x.archived) || sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); }
+  if (v === 'sales') { const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); }
   else if (['today', 'all', 'upcoming', 'inbox', 'clients'].includes(v)) setView({type:v});
   if (q.get('new')) {
-    if (view.type === 'sales' || view.type === 'archive') setView({type:'all'});
+    if (view.type === 'sales') setView({type:'all'});
     setTimeout(() => { document.body.classList.add('qa-open'); $('#qaInput').focus(); }, 60);
   }
 }
@@ -3501,8 +3503,8 @@ async function lock() {
 let view = {type:'all'};
 let selectedId = null;
 let searchQ = '';
-const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle taken'],['archive','Archief']];
-const SIDE_VIEWS = ['all', 'archive'];   // in de zijbalk; Vandaag blijft via de tabbalk op gsm
+const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle taken']];
+const SIDE_VIEWS = [];   // geen vaste weergaven meer in de zijbalk; Taken en Vandaag blijven via de tabbalk op gsm, het logo brengt je terug naar alle taken
 const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === 'sales' ? 's:' + view.id : view.type;
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
@@ -3518,7 +3520,7 @@ function setPref(k, v) {
 function setView(v) {
   const same = v.type === view.type && v.id === view.id;
   // de keuze geldt meteen (ook voor wat je intussen typt); enkel het tekenen gebeurt in de overgang
-  view = v; searchQ = ''; archQ = '';
+  view = v; searchQ = '';
   if (selectedId && !viewTasks(true).some(t => t.id === selectedId)) selectedId = null;
   const apply = () => {
     $('#list').innerHTML = '';
@@ -3579,12 +3581,10 @@ function safeUrl(v) {
 }
 
 /* ---------------- Task list ---------------- */
-const projArchived = id => { const p = data.projects.find(p => p.id === id); return !!(p?.archived || p?.finished); };
+const projArchived = id => { const p = data.projects.find(p => p.id === id); return !!p?.finished; };
 function viewTasks(includeDone) {
   const td = today(), wk = addDays(td, 6);
   return data.tasks.filter(t => {
-    // gearchiveerde kaarten zijn alleen zichtbaar in het Archief
-    if (t.archived || view.type === 'archive') return !!t.archived && view.type === 'archive';
     if (!includeDone && t.done) return false;
     if (view.type !== 'project' && projArchived(t.projectId)) return false;
     switch (view.type) {
@@ -3832,7 +3832,6 @@ function setHiddenCols(ids) {
   return before;
 }
 function renderMain() {
-  if (view.type === 'archive') { renderArchive(); return; }
   if (view.type === 'sales' || isPageView()) return;
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
@@ -3853,9 +3852,8 @@ function toggleSalesYear(y) {
   renderNav();
 }
 function renderNav() {
-  const open = data.tasks.filter(t => !t.done && !t.archived && !projArchived(t.projectId)), td = today(), wk = addDays(td, 6);
+  const open = data.tasks.filter(t => !t.done && !projArchived(t.projectId)), td = today(), wk = addDays(td, 6);
   const cnt = {
-    archive: data.tasks.filter(t => t.archived).length,
     inbox: open.filter(t => t.projectId === 'inbox' || !data.projects.some(p => p.id === t.projectId)).length,
     today: open.filter(t => t.due && t.due <= td).length,
     upcoming: open.filter(t => t.due && t.due <= wk).length,
@@ -3863,28 +3861,26 @@ function renderNav() {
   };
   $('#nav').innerHTML = SMART.filter(([k]) => SIDE_VIEWS.includes(k)).map(([k, label]) =>
     `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${I[k]}</span><span class="nm">${label}</span><span class="cnt">${cnt[k] || ''}</span></button>`).join('');
-  const allOpen = data.tasks.filter(t => !t.done && !t.archived);
+  const allOpen = data.tasks.filter(t => !t.done);
   const projItem = p => {
     const n = allOpen.filter(t => t.projectId === p.id).length;
-    return `<button class="nav-item ${p.archived ? 'is-arch ' : ''}${p.finished && !p.archived ? 'is-fin ' : ''}${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico">${p.emoji ? `<span class="emo">${esc(p.emoji)}</span>` : `<span class="dot" style="background:${p.color}"></span>`}</span><span class="nm">${esc(p.name)}</span><span class="cnt">${p.finished ? I.check : n || ''}</span></button>`;
+    return `<button class="nav-item ${p.finished ? 'is-fin ' : ''}${view.type === 'project' && view.id === p.id ? 'on' : ''}" data-project="${p.id}"><span class="ico">${p.emoji ? `<span class="emo">${esc(p.emoji)}</span>` : `<span class="dot" style="background:${p.color}"></span>`}</span><span class="nm">${esc(p.name)}</span><span class="cnt">${p.finished ? I.check : n || ''}</span></button>`;
   };
-  const salesItem = pg => `<button class="nav-item ${pg.archived ? 'is-arch ' : ''}${view.type === 'sales' && view.id === pg.id ? 'on' : ''}" data-sales="${pg.id}"><span class="ico">${I.sales}</span><span class="nm">${esc(pg.title)}</span><span class="cnt">${esc(eurShort(salesTotals(pg.id).money))}</span></button>`;
+  const salesItem = pg => `<button class="nav-item ${view.type === 'sales' && view.id === pg.id ? 'on' : ''}" data-sales="${pg.id}"><span class="ico">${I.sales}</span><span class="nm">${esc(pg.title)}</span><span class="cnt">${esc(eurShort(salesTotals(pg.id).money))}</span></button>`;
   const archList = (key, items, fn, label = 'Gearchiveerd') => !items.length ? '' :
     `<button type="button" class="nav-arch ${navArchOpen[key] ? 'open' : ''}" data-navarch="${key}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>${label} (${items.length})</button>${navArchOpen[key] ? items.map(fn).join('') : ''}`;
   const projs = sortedProjects().filter(p => p.id !== 'inbox'), pages = sortedSalesPages();
-  $('#projNav').innerHTML = (projs.filter(p => !p.archived && !p.finished).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen lopende projecten</div>')
-    + archList('fin', projs.filter(p => p.finished && !p.archived), projItem, 'Afgewerkt')
-    + archList('proj', projs.filter(p => p.archived), projItem);
+  $('#projNav').innerHTML = (projs.filter(p => !p.finished).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen lopende projecten</div>')
+    + archList('fin', projs.filter(p => p.finished), projItem, 'Afgewerkt');
   const years = new Map();
-  for (const pg of pages.filter(p => !p.archived)) { const y = (pg.month || '').slice(0, 4) || '—'; if (!years.has(y)) years.set(y, []); years.get(y).push(pg); }
+  for (const pg of pages) { const y = (pg.month || '').slice(0, 4) || '—'; if (!years.has(y)) years.set(y, []); years.get(y).push(pg); }
   const yearHtml = [...years].map(([y, list]) => {
     const open = salesYearOpen(y), sum = list.reduce((a, pg) => a + salesTotals(pg.id).money, 0);
     return `<button type="button" class="nav-year ${open ? 'open' : ''}" data-year="${esc(y)}" aria-expanded="${open}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg><span class="nm">${y === '—' ? 'Zonder maand' : esc(y)}</span><span class="cnt">${esc(eurShort(sum))}</span></button>`
       + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
   }).join('');
-  $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>')
-    + archList('sales', pages.filter(p => p.archived), salesItem);
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['notes', 'Notities', I.notes, data.notes.length || ''], ['btw', 'BTW', I.btw, '']]
+  $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
+  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['btw', 'BTW', I.btw, '']]
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   renderSync();
 }
@@ -3916,15 +3912,11 @@ function renderHead() {
   $('#viewTitle').innerHTML = `${pr?.emoji ? `<span class="emo">${esc(pr.emoji)}</span>` : color ? `<span class="dot" style="background:${color}"></span>` : ''}<span>${esc(viewTitle())}</span>`;
   $('#topDate').textContent = cap(new Date().toLocaleDateString('nl-BE', {weekday:'long', day:'numeric', month:'long'}));
   $('#viewSub').textContent = viewSubtitle();
-  const notes = $('#projNotes');
-  notes.hidden = !pr;
-  if (pr && document.activeElement !== notes) { notes.value = pr.notes || ''; notes.dataset.pid = pr.id; autosize(notes); }
   renderCalc();
   $('#editProject').hidden = !isP;
   const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
-  const ab = $('#archBar'); ab.hidden = !arch?.archived && !arch?.finished;
-  if (!arch?.archived && arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button><button type="button" class="btn" data-finarch>Archiveren</button>`;
-  if (arch?.archived) ab.innerHTML = `<span>${I.archive}${view.type === 'sales' ? 'Deze pagina' : 'Dit project'} is gearchiveerd.</span><span class="grow"></span><button type="button" class="btn" data-unarch>Terugzetten</button><button type="button" class="btn danger" data-archdel>Verwijderen</button>`;
+  const ab = $('#archBar'); ab.hidden = !arch?.finished;
+  if (arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button>`;
   $('#editProject').title = 'Meer';
   document.title = `${viewTitle()} · Taken`;
   $('#tbTitle').textContent = `${viewTitle()} — Taken`;
@@ -3985,9 +3977,8 @@ function renderTabBar() {
   const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : 'all';
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
-  $('#fab').hidden = view.type === 'archive';
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
-  if (view.type === 'sales' || view.type === 'archive' || isPageView()) document.body.classList.remove('qa-open');
+  if (view.type === 'sales' || isPageView()) document.body.classList.remove('qa-open');
 }
 function renderAll() {
   if (!data) return;
@@ -4013,15 +4004,6 @@ function renderAll() {
     $('.main-inner').classList.add('wide');
     $('#app').classList.remove('board-mode');
     renderSales();
-    renderDetail();
-    return;
-  }
-  const archive = view.type === 'archive';
-  for (const sel of ['#toolbar', '#quickAdd', '#qaPreview']) $(sel).hidden = archive;
-  if (archive) {
-    $('.main-inner').classList.remove('wide');
-    $('#app').classList.remove('board-mode');
-    renderArchive();
     renderDetail();
     return;
   }
@@ -4213,12 +4195,6 @@ function deleteTask(id) {
 }
 // de klik die een taak opent, mag het paneel niet meteen weer sluiten ('klik buiten = sluiten')
 let detailJustOpened = false;
-function archiveFromDetail(t) {
-  const on = !t.archived;
-  if (on && view.type !== 'archive') selectedId = null;
-  if (!on && view.type === 'archive') selectedId = null;
-  setArchived([t.id], on);
-}
 function openTask(id) { selectedId = id; detailJustOpened = true; setTimeout(() => detailJustOpened = false, 0); renderMain(); renderDetail(true); }
 function closeDetail() { selectedId = null; renderMain(); renderDetail(true); }
 
@@ -4718,7 +4694,6 @@ detail.addEventListener('click', e => {
     case 'copyno': { const c = t.clientId && clientById(t.clientId); if (c?.no) copyText(String(c.no), 'Klantnummer'); break; }
     case 'openclient': if (t.clientId) setView({type:'client', id:t.clientId}); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
-    case 'archive': archiveFromDetail(t); break;
     case 'more': menuAt(b, taskMenuItems(t)); break;
     case 'toggle': toggleTask(t.id); break;
     case 'fields': openFieldsDialog(); break;
@@ -4815,7 +4790,7 @@ function openProjectDialog(p) {
       <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Nieuw veld</button></div>
     </div>
     <div class="dlg-actions">
-      ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjArch">${p.archived ? 'Terugzetten' : 'Archiveren'}</button><button type="button" class="btn" id="pjFin">${p.finished ? 'Heropenen' : 'Afwerken'}</button>` : ''}
+      ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjFin">${p.finished ? 'Heropenen' : 'Afwerken'}</button>` : ''}
       <span class="grow"></span>
       <button type="button" class="btn" id="pjCancel">Annuleren</button>
       <button type="button" class="btn primary" id="pjSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
@@ -4851,25 +4826,17 @@ function openProjectDialog(p) {
       renderAll();
       openFieldEditor(null, target.id === 'inbox' ? null : target.id, () => openProjectDialog(target));
     };
-    $('#pjArch', d)?.addEventListener('click', () => { dlg.close(); archiveProject(p, !p.archived); });
     $('#pjFin', d)?.addEventListener('click', () => { dlg.close(); finishProject(p, !p.finished); });
     $('#pjDel', d)?.addEventListener('click', () => { if (deleteProject(p)) dlg.close(); });
   });
 }
 $('#archBar').addEventListener('click', e => {
   const pg = view.type === 'sales' ? salesPageById(view.id) : null, p = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
-  if (e.target.closest('[data-unarch]')) { if (pg) archiveSalesPage(pg, false); else if (p) archiveProject(p, false); }
   if (e.target.closest('[data-reopen]') && p) finishProject(p, false);
-  if (e.target.closest('[data-finarch]') && p) archiveProject(p, true);
-  if (e.target.closest('[data-archdel]')) { if (pg) deleteSalesPage(pg); else if (p) deleteProject(p); }
 });
 function finishProject(p, on) {
   p.finished = on; p.finishedAt = on ? now() : null; touch(p); commit();
   if (on) { navigator.vibrate?.(12); toast(`🎉 “${p.name}” afgewerkt`); } else toast(`“${p.name}” heropend`);
-}
-function archiveProject(p, on) {
-  p.archived = on; touch(p); commit();
-  toast(on ? `“${p.name}” gearchiveerd` : `“${p.name}” teruggezet`);
 }
 function deleteProject(p) {
       const n = data.tasks.filter(t => t.projectId === p.id).length;
@@ -5607,7 +5574,7 @@ function openSalesPageDialog(pg) {
     <label class="fl">Werkdagen <span class="muted" id="pgWorkHint">(leeg = automatisch${month ? ': ' + workdaysOf(month).length : ''})</span><input id="pgWork" type="number" inputmode="numeric" min="1" max="31" value="${esc(pg?.workdays || '')}" placeholder="automatisch"></label>
     <p class="muted small" style="margin:6px 0 0">Automatisch = maandag tot vrijdag, zonder Belgische feestdagen.</p>
     <div class="dlg-actions">
-      ${pg ? `<button type="button" class="btn danger" id="pgDel">Verwijderen</button><button type="button" class="btn" id="pgArch">${pg.archived ? 'Terugzetten' : 'Archiveren'}</button>` : ''}
+      ${pg ? `<button type="button" class="btn danger" id="pgDel">Verwijderen</button>` : ''}
       <span class="grow"></span>
       <button type="button" class="btn" id="pgCancel">Annuleren</button>
       <button type="button" class="btn primary" id="pgSave">${isNew ? 'Aanmaken' : 'Opslaan'}</button>
@@ -5628,13 +5595,8 @@ function openSalesPageDialog(pg) {
       } else Object.assign(pg, {title, month:m, target, workdays}, {u:now()});
       dlg.close(); commit();
     };
-    $('#pgArch', d)?.addEventListener('click', () => { dlg.close(); archiveSalesPage(pg, !pg.archived); });
     $('#pgDel', d)?.addEventListener('click', () => { if (deleteSalesPage(pg)) dlg.close(); });
   });
-}
-function archiveSalesPage(pg, on) {
-  pg.archived = on; touch(pg); commit();
-  toast(on ? `“${pg.title}” gearchiveerd` : `“${pg.title}” teruggezet`);
 }
 function deleteSalesPage(pg) {
   const n = salesRows(pg.id).length;
@@ -5855,65 +5817,6 @@ function openSalesColsDialog() {
   draw();
 }
 
-/* ---------------- Archief ---------------- */
-function setArchived(ids, on) {
-  const prev = ids.map(id => { const t = taskById(id); return t && [id, !!t.archived, t.archivedAt || null]; }).filter(Boolean);
-  for (const [id] of prev) {
-    const t = taskById(id);
-    t.archived = on; t.archivedAt = on ? now() : null; touch(t);
-  }
-  commit();
-  const n = prev.length;
-  toast(`${n} kaart${n === 1 ? '' : 'en'} ${on ? 'gearchiveerd' : 'teruggezet'}`, () => {
-    for (const [id, a, at] of prev) { const t = taskById(id); if (t) { t.archived = a; t.archivedAt = at; touch(t); } }
-    commit();
-  });
-}
-function archiveColumn(stageId) {
-  const st = stageById(stageId), p = prefs();
-  const ids = viewTasks(true).filter(t => t.stage === stageId && matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv)).map(t => t.id);
-  if (!ids.length) return;
-  if (!confirm(`${ids.length} kaart${ids.length === 1 ? '' : 'en'} uit “${st.label}” archiveren?\n\nJe vindt ze terug onder Archief in de zijbalk.`)) return;
-  if (ids.includes(selectedId)) selectedId = null;
-  setArchived(ids, true);
-}
-let archQ = '';
-const archiveMatches = () => data.tasks.filter(t => t.archived && matchSearch(t, archQ));
-function renderArchive() {
-  const list = $('#list');
-  if (!$('#archSearch', list)) {
-    list.innerHTML = `
-      <div class="arch-bar">
-        <input type="search" id="archSearch" class="search" placeholder="Zoeken in het archief…" aria-label="Zoeken in het archief">
-        <button type="button" class="btn" data-restore-all>Alles terugzetten</button>
-      </div>
-      <div id="archResults"></div>`;
-  }
-  $('#archSearch').value = archQ;
-  renderArchiveResults();
-}
-function renderArchiveResults() {
-  const tasks = archiveMatches().sort((a, b) => (b.archivedAt || 0) - (a.archivedAt || 0));
-  const el = $('#archResults'); if (!el) return;
-  $('[data-restore-all]').hidden = !tasks.length;
-  if (!tasks.length) {
-    el.innerHTML = `<div class="empty">${I.archive}<div>${archQ ? 'Niets gevonden in het archief.' : 'Het archief is leeg.<br><span class="small">Archiveer kaarten via de knop bovenaan een afgewerkte kolom, of via het detailpaneel van een kaart.</span>'}</div></div>`;
-    return;
-  }
-  el.innerHTML = groupTasks(tasks, 'stage').map(g => `
-    <section class="group"><h3><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${g.color};align-self:center"></span>${esc(g.label)} <span class="count">${g.tasks.length}</span></h3>
-    <ul class="tasks">${g.tasks.map(t => {
-      const p = proj(t.projectId), at = t.archivedAt ? new Date(t.archivedAt) : null;
-      return `<li class="task arch ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}">
-        <div class="t-body"><div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>
-        <div class="t-meta">${t.projectId !== 'inbox' ? `<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>` : ''}${at ? `<span class="chip">${I.archive} ${at.getDate()} ${MONTHS[at.getMonth()]}${at.getFullYear() !== new Date().getFullYear() ? ' ' + at.getFullYear() : ''}</span>` : ''}</div>${fieldLines(t)}</div>
-        <button type="button" class="btn restore" data-restore>Terugzetten</button></li>`;
-    }).join('')}</ul></section>`).join('');
-}
-$('#list').addEventListener('input', e => {
-  if (e.target.id === 'archSearch') { archQ = e.target.value; renderArchiveResults(); }
-});
-
 /* ---------------- Toast ---------------- */
 let toastTimer = null;
 function toast(msg, undo) {
@@ -5935,12 +5838,9 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
 });
 $('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
 
+$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Alle taken'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView({type:'all'}); });
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
-$('#projNotes').addEventListener('input', e => {
-  const p = data.projects.find(x => x.id === e.target.dataset.pid); if (!p) return;
-  p.notes = e.target.value; touch(p); autosize(e.target); save(true);
-});
 $('#salesNav').addEventListener('click', e => { const b = e.target.closest('[data-sales]'); if (b) setView({type:'sales', id:b.dataset.sales}); });
 $('#addSales').onclick = () => openSalesPageDialog(null);
 $('#openFields').onclick = () => { $('#app').classList.remove('side-open'); openFieldsDialog(); };
@@ -5972,7 +5872,7 @@ $('#tabBar').addEventListener('click', e => {
   const t = b.dataset.tab;
   if (t === 'more') { $('#app').classList.add('side-open'); return; }
   if (t === 'sales') {
-    const pg = sortedSalesPages().find(x => !x.archived) || sortedSalesPages()[0];
+    const pg = sortedSalesPages()[0];
     if (pg) setView({type:'sales', id:pg.id}); else { $('#app').classList.add('side-open'); toast('Maak eerst een maandpagina onder Verkopen'); }
     return;
   }
@@ -6062,7 +5962,7 @@ $('#list').addEventListener('click', e => {
   if (cm) {
     const id = cm.dataset.colmenu, st = stageById(id), n = +cm.dataset.total || 0;
     menuAt(cm, [{label:'Nieuwe kaart', run:() => openTopAdd(id)},
-      st?.done && n ? {label:n === 1 ? 'De kaart archiveren' : `Alle ${n} kaarten archiveren`, attrs:`data-archcol="${id}"`, run:() => archiveColumn(id)} : null, '-',
+      '-',
       {label:'Verbergen in deze weergave', attrs:`data-hidecol="${id}"`, run:() => hideColumn(id)},
       {label:'Kolommen beheren…', attrs:'data-cols', run:() => openStagesDialog()}]);
     return;
@@ -6071,15 +5971,6 @@ $('#list').addEventListener('click', e => {
   if (showCol) { setHiddenCols((prefs().hidden || []).filter(x => x !== showCol.dataset.showcol)); return; }
   const jump = e.target.closest('[data-jump]');
   if (jump) { $(`.col[data-stage="${jump.dataset.jump}"]`)?.scrollIntoView({behavior:'smooth', inline:'start', block:'nearest'}); return; }
-  const archCol = e.target.closest('[data-archcol]');
-  if (archCol) { archiveColumn(archCol.dataset.archcol); return; }
-  const restore = e.target.closest('[data-restore]');
-  if (restore) { setArchived([restore.closest('.task').dataset.id], false); return; }
-  if (e.target.closest('[data-restore-all]')) {
-    const ids = archiveMatches().map(t => t.id);
-    if (ids.length && confirm(`${ids.length} kaart(en) terugzetten op het bord?`)) setArchived(ids, false);
-    return;
-  }
   const more = e.target.closest('[data-more]');
   if (more) { boardExpanded[more.dataset.more] = true; renderMain(); return; }
   const lmore = e.target.closest('[data-lmore]');
@@ -6225,7 +6116,7 @@ document.addEventListener('keydown', e => {
   if (mod && !e.altKey && !e.shiftKey) {
     const views = {'1':'all', '2':'clients'};
     if (views[e.key]) { e.preventDefault(); setView({type:views[e.key]}); return; }
-    if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages().find(x => !x.archived); if (pg) setView({type:'sales', id:pg.id}); return; }
+    if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
     if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); openSearch(); return; }
     if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else openQuickAdd(); return; }
@@ -6291,8 +6182,7 @@ addEventListener('blur', closeCtx);
 addEventListener('resize', closeCtx);
 $('#main').addEventListener('scroll', closeCtx, {passive:true});
 function taskMenuItems(t) {
-  return [t.archived ? {label:'Terugzetten uit archief', attrs:'data-act="archive"', run:() => archiveFromDetail(t)} : {label:'Archiveren', attrs:'data-act="archive"', run:() => archiveFromDetail(t)},
-    {label:'Verwijderen', danger:true, attrs:'data-act="delete"', run:() => deleteTask(t.id)}];
+  return [{label:'Verwijderen', danger:true, attrs:'data-act="delete"', run:() => deleteTask(t.id)}];
 }
 /* ---- Prijsberekening bovenaan een project: nog te verkopen bedrag ("To go") en aantal 1/8-ruimtes ("PK") → prijs per formaat ---- */
 const CALC_FORMATS = [['1/1', 8], ['1/2', 4], ['1/4', 2], ['1/8', 1], ['1/12', 2 / 3], ['1/16', .5], ['1/32', .25]];
@@ -6346,7 +6236,7 @@ $('#projCalc').addEventListener('click', e => {
   const p = data.projects.find(x => x.id === view.id); if (p?.calc) copyText(calcText(p.calc), 'Prijzen');
 });
 /* ---- Projecten in de zijbalk handmatig rangschikken: slepen (muis: gewoon slepen, aanraken: even ingedrukt houden), Alt+↑/↓ of via het menu ---- */
-const navActiveIds = () => sortedProjects().filter(p => p.id !== 'inbox' && !p.archived && !p.finished).map(p => p.id);
+const navActiveIds = () => sortedProjects().filter(p => p.id !== 'inbox' && !p.finished).map(p => p.id);
 function moveProject(id, to) {
   const ids = navActiveIds(), from = ids.indexOf(id); if (from < 0) return false;
   to = Math.max(0, Math.min(ids.length - 1, to)); if (to === from) return false;
@@ -6413,14 +6303,13 @@ function projectMenuItems(p) {
     pos >= 0 && pos < ids.length - 1 ? {label:'Lager in de lijst', run:() => moveProject(p.id, pos + 1)} : null,
     p.id === 'inbox' ? null : '-',
     p.id === 'inbox' ? null : {label:p.finished ? 'Heropenen' : 'Afwerken', attrs:'data-act="finish"', run:() => finishProject(p, !p.finished)},
-    p.id === 'inbox' ? null : {label:p.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveProject(p, !p.archived)},
     p.id === 'inbox' ? null : '-',
     p.id === 'inbox' ? null : {label:'Verwijderen…', danger:true, run:() => deleteProject(p)}];
 }
 function salesPageMenuItems(pg, withTools) {
   return [...(withTools ? [{label:'Notities plakken…', attrs:'id="spImport"', run:() => openSalesImportDialog()}, {label:'Kolommen…', attrs:'id="spCols"', run:() => openSalesColsDialog()}, {label:'Exporteren als CSV', attrs:'id="spCsv"', run:() => exportSalesCsv()}, '-'] : []),
     {label:'Bewerken…', attrs:'data-act="editproj"', run:() => openSalesPageDialog(pg)},
-    {label:pg.archived ? 'Terugzetten' : 'Archiveren', run:() => archiveSalesPage(pg, !pg.archived)}, '-',
+    '-',
     {label:'Verwijderen…', danger:true, run:() => deleteSalesPage(pg)}];
 }
 document.addEventListener('contextmenu', e => {
@@ -6434,7 +6323,6 @@ document.addEventListener('contextmenu', e => {
   if (t) {
     items = [{label:'Openen', run:() => openTask(t.id)}, '-',
       ...stages().map(st => ({label:st.label, dot:st.color, on:t.stage === st.id, run:() => { const undo = undoFor(t); setStage(t, st.id); commit(); stageToast(t, null, undo); }})), '-',
-      t.archived ? {label:'Terugzetten uit archief', run:() => setArchived([t.id], false)} : {label:'Archiveren', disabled:!t.done, run:() => setArchived([t.id], true)},
       {label:'Verwijderen', danger:true, run:() => deleteTask(t.id)}];
   } else if (pEl) {
     const p = data.projects.find(x => x.id === pEl.dataset.project); if (!p) return;
@@ -6562,7 +6450,7 @@ function clientAgg(c, sales, maps) {
   for (const t of tasks) { seen(tsYmd(t.createdAt)); seen(tsYmd(t.doneAt)); if (!maps) for (const m of commentsOf(t.id)) seen(tsYmd(m.at)); }
   if (maps) for (const t of tasks) seen(maps.lastComment.get(t.id));
   for (const x of own) seen(x.date);
-  return {tasks, sales:own, open:tasks.filter(t => !t.done && !t.archived).length,
+  return {tasks, sales:own, open:tasks.filter(t => !t.done).length,
     total:own.reduce((a, x) => a + x.amount, 0), year:own.filter(x => x.date.startsWith(y)).reduce((a, x) => a + x.amount, 0),
     count:own.filter(x => x.amount > 0).length, last};
 }
@@ -7147,7 +7035,7 @@ function openEventDialog(ev, date) {
   const isNew = !ev;
   const st = {date:ev?.date || date || today(), month:(ev?.date || date || today()).slice(0, 7), type:ev?.type || 'druk'};
   const eds = [...new Set(data.clients.flatMap(editionsOf))].sort((a, b) => nlCollator.compare(a, b));
-  const projs = sortedProjects().filter(p => p.id !== 'inbox' && !p.archived);
+  const projs = sortedProjects().filter(p => p.id !== 'inbox');
   const mini = () => {
     const [y, mo] = st.month.split('-').map(Number), first = new Date(y, mo - 1, 1), start = new Date(first); start.setDate(1 - (first.getDay() + 6) % 7);
     let h = `<div class="dp-head"><button type="button" class="icon-btn" data-mnav="-1" aria-label="Vorige maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><b>${cap(MONTHS_LONG[mo - 1])} ${y}</b><button type="button" class="icon-btn" data-mnav="1" aria-label="Volgende maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="dp-grid">`;
@@ -7387,7 +7275,7 @@ function startTimers() {
     if (data && min !== lastMin) {
       lastMin = min;
       // alleen hertekenen als de kleur van een kaart met uur (bijna te laat / te laat) echt verandert
-      const dsig = data.tasks.filter(t => t.time && !t.done && !t.archived && t.due && t.due <= today()).map(t => t.id + dueState(t)).join('|');
+      const dsig = data.tasks.filter(t => t.time && !t.done && t.due && t.due <= today()).map(t => t.id + dueState(t)).join('|');
       if (dsig === lastDueSig) return;
       const busy = drag || document.activeElement?.closest?.('#list,#detail,#quickAdd,#toolbar');
       if (busy) lastMin = -1;   // bezig met typen of slepen: volgende ronde opnieuw proberen
