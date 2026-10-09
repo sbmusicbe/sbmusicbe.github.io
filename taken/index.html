@@ -22,6 +22,7 @@
 <script>try{var t=localStorage.getItem("taken.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
+  --logo:#c8262d;
   --bg:#fafaf9; --panel:#ffffff; --side:#f3f2ef; --text:#1c1917; --muted:#78716c; --faint:#a8a29e;
   --line:#e7e5e4; --hover:#ecebe7; --sel:#e6e4df; --accent:#dc4c3e; --accent-2:#c2402f; --on-accent:#fff;
   --p1:#d1453b; --p2:#eb8909; --p3:#246fe0; --p4:#a8a29e; --danger:#dc2626; --ok:#16a34a;
@@ -1800,13 +1801,13 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--tex
 
 a,.link{color:var(--accent)}
 .link:hover{text-decoration:underline}
-/* logo: SB-monogram uit de site */
+/* logo: de rode r (zelfde als het app-icoon) */
 .brand i,.lock-logo{background:none!important;width:auto!important;height:auto!important;border-radius:0!important;box-shadow:none!important;display:block!important;color:var(--text)}
-.brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:1000/429;width:38px;background:var(--text);-webkit-mask:url("/images/logo-mask.png") center/contain no-repeat;mask:url("/images/logo-mask.png") center/contain no-repeat}
-.lock-logo::before{width:84px}
+.brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:331/229;width:30px;background:var(--logo);-webkit-mask:url("logo-r.svg") center/contain no-repeat;mask:url("logo-r.svg") center/contain no-repeat}
+.lock-logo::before{width:64px}
 .brand i img,.brand i svg,.lock-logo img,.lock-logo svg{display:none!important}
 .brand{font-weight:600;font-size:17px;letter-spacing:-.01em}
-/* inlogscherm = het laadscherm van de site: zwart, wit logo, dun voortgangsstreepje, groot "SB"-watermerk */
+/* inlogscherm = het laadscherm van de site: zwart, wit logo, dun voortgangsstreepje */
 
 #fab,#fab:hover{background:var(--text)!important;color:var(--bg)!important;border-color:transparent!important;box-shadow:var(--shadow-lift)!important}
 /* themaknop onderaan de zijbalk */
@@ -1985,9 +1986,8 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
   .main-inner{padding-bottom:calc(120px + env(safe-area-inset-bottom))!important}
 }
 .top-avatar{display:none}
-.top-avatar{width:46px;height:46px;border-radius:50%;border:0;background:var(--text);padding:0;place-items:center;box-shadow:var(--shadow-card)}
-.top-avatar::before{content:"";display:block;width:26px;aspect-ratio:1000/429;background:var(--bg);-webkit-mask:url("/images/logo-mask.png") center/contain no-repeat;mask:url("/images/logo-mask.png") center/contain no-repeat}
-.brand i::before,.lock-logo::before{background:var(--text)}
+.top-avatar{width:46px;height:46px;border-radius:50%;border:0;background:var(--panel);padding:0;place-items:center;box-shadow:var(--shadow-card)}
+.top-avatar::before{content:"";display:block;width:24px;aspect-ratio:331/229;background:var(--logo);-webkit-mask:url("logo-r.svg") center/contain no-repeat;mask:url("logo-r.svg") center/contain no-repeat}
 .group{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 18px!important}
 .proj-notes,#banner{background:none!important;box-shadow:none!important}
 .proj-notes:hover{background:none!important}
@@ -2036,14 +2036,33 @@ input.nb-title{font-size:28px!important}
 .lock{--bg:#ECEEF2;--panel:#FFFFFF;--card:#FFFFFF;--text:#12171C;--muted:#6B747D;--faint:#A6AEB6;--line:rgba(18,23,28,.1);--fill:#F1F3F6;--accent:#234250;--accent-2:#1A3440;--on-accent:#FFFFFF;color-scheme:light}
 :root[data-theme="dark"] .lock{--bg:#0E1317;--panel:#171E24;--card:#1A232A;--text:#EEF2F5;--muted:#8D99A3;--faint:#5F6B75;--line:rgba(255,255,255,.12);--fill:rgba(255,255,255,.06);--accent:#8FC3D4;--accent-2:#A9D3E0;--on-accent:#0B1A20;color-scheme:dark}
 .lock{position:relative;overflow:hidden;background:var(--bg)!important;color:var(--text)}
-.lock::after{content:"SB";position:absolute;inset-inline:0;bottom:-.18em;text-align:center;font-weight:700;line-height:1;font-size:min(46vw,30rem);color:color-mix(in srgb,var(--text) 5%,transparent);pointer-events:none;user-select:none}
 .lock-card{position:relative;z-index:1;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--text)}
 .lock-card p,.lock-card label{color:var(--muted)}
 .lock-card input{background:var(--card)!important;border:1px solid var(--line)!important;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;caret-color:var(--text)}
 .lock-card input::placeholder{color:var(--faint)}
 .lock-card .btn.primary{background:var(--accent)!important;color:var(--on-accent)!important}
 .lock-card .link{color:var(--accent)}
-.lock-logo::before{background:var(--text)}
+/* ---- Eenvoudiger en beter leesbaar (18 tot 65+) ---- */
+:root{--logo:#c8262d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--logo:#e8454c}}
+:root[data-theme="dark"]{--logo:#e8454c}
+:root{--muted:#575b61}
+:root[data-theme="dark"]{--muted:#aab2b9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--muted:#aab2b9}}
+.lock{--muted:#545a61}
+:root[data-theme="dark"] .lock{--muted:#b3bcc3}
+.small{font-size:13.5px}
+.lock-card{max-width:400px}
+.lock-card h1{font-size:28px}
+.lock-card p{font-size:16px;line-height:1.5;color:var(--muted)}
+.lock-card label{font-size:15px;font-weight:600;color:var(--text);margin-top:16px}
+.lock-card input[type=text],.lock-card input[type=password],.lock-card input[type=email]{font-size:17px;padding:13px 14px;min-height:50px}
+.lock-card .btn.primary{min-height:52px;font-size:17px}
+.lock-card .link{font-size:15.5px;padding:8px}
+.lock-card .showpw{display:flex;align-items:center;gap:10px;font-weight:500;font-size:15px;margin-top:14px;color:var(--muted);cursor:pointer}
+.lock-card .showpw input{width:20px;height:20px}
+.btn{min-height:40px}
+#lockLocal{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -2140,25 +2159,12 @@ input.nb-title{font-size:28px!important}
 /* =========================================================
    Taken — persoonlijke takenlijst
    Alle gegevens worden lokaal versleuteld (AES-256-GCM, sleutel
-   afgeleid van je wachtwoord met PBKDF2-SHA256). Optioneel
-   gesynchroniseerd als versleutelde blob in een geheime GitHub Gist.
+   afgeleid van je wachtwoord met PBKDF2-SHA256). Met een account
+   (zie cloud.json) synchroniseert de versleutelde kluis tussen toestellen.
    ========================================================= */
 
 const VAULT = 'taken.vault.v1';
 const ITER = 310000;
-const GIST_FILE = 'taken.vault.json';
-const CONFIG_URL = 'config.json';
-const CFG_CACHE = 'taken.config.v1';
-// Waar staat deze app op GitHub? Op *.github.io leiden we repo en map uit het adres af (/map/ = gebruikerssite, /repo/map/ = projectsite);
-// op een eigen domein gelden de vaste waarden hieronder. Pas die aan als je de app daar zelf host.
-function ghTarget(host, path) {
-  const m = /^([^.]+)\.github\.io$/i.exec(host); if (!m) return null;
-  const seg = path.split('/').filter(x => x && !/\.html?$/i.test(x));
-  if (!seg.length) return null;
-  return seg.length === 1 ? {repo:m[1] + '/' + m[1] + '.github.io', dir:seg[0]} : {repo:m[1] + '/' + seg[0], dir:seg.slice(1).join('/')};
-}
-const GH_AUTO = ghTarget(location.hostname, location.pathname);
-const REPO = GH_AUTO?.repo || 'sbmusicbe/sbmusicbe.github.io', BRANCH = 'main', CONFIG_PATH = GH_AUTO ? GH_AUTO.dir + '/config.json' : 'taken/config.json';
 const COLORS = ['#c8262d','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
 const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',multiselect:'Meerdere keuzes',checkbox:'Vinkje',url:'Link'};
 const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
@@ -2343,7 +2349,7 @@ function clientBytes(arr, full) {
   }
   return clCache.bytes;
 }
-// volledige kluis (zoals in de gist en in back-ups): alle gegevens inclusief klanten in één stuk
+// volledige kluis (zoals in de online kluis en in back-ups): alle gegevens inclusief klanten in één stuk
 function encodeParts(obj, full) {
   if (obj !== data || !obj.clients || obj.clients.length < 500) return [te.encode(JSON.stringify(obj))];
   const cb = clientBytes(obj.clients, full);
@@ -2375,7 +2381,7 @@ async function unseal(key, blob) { return JSON.parse(await unsealText(key, blob)
 /* ---- Datasleutel en herstelsleutel (accounts) ----
    De kluis van een account is versleuteld met een willekeurige datasleutel. Die zit twee keer ingepakt in de kluis (blob.w):
    met een sleutel uit het wachtwoord (w.pw) en met een herstelsleutel (w.rec). Een wachtwoord wijzigen pakt enkel de datasleutel
-   opnieuw in; met de herstelsleutel kies je een nieuw wachtwoord als je het vergeten bent. Lokale kluizen en gists blijven zoals vroeger. */
+   opnieuw in; met de herstelsleutel kies je een nieuw wachtwoord als je het vergeten bent. Lokale kluizen blijven zoals vroeger. */
 const REC_ITER = 10000, B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 function newRecoveryKey() {
   const u = crypto.getRandomValues(new Uint8Array(20)); let bits = '', s = '';
@@ -2507,7 +2513,7 @@ function tombstone(id) { data.deleted[id] = now(); }
 let persistChain = Promise.resolve();
 /* Op het toestel staat de kluis in twee delen: een kleine kern (taken, verkopen, instellingen) en de klanten apart (IndexedDB).
    Een gewone wijziging schrijft enkel de kern; de klanten enkel als ze veranderd zijn. Bij het ontgrendelen opent de app
-   meteen met de kern en laden de klanten daarna op de achtergrond. De gist en back-ups blijven één volledige kluis. */
+   meteen met de kern en laden de klanten daarna op de achtergrond. De online kluis en back-ups blijven één volledige kluis. */
 const CL_KEY = 'taken.clients.';
 let clPending = false, clFailed = false, clRev = null, clSigSaved = null, clReadyP = Promise.resolve();
 function persist() {
@@ -2541,7 +2547,7 @@ function persist() {
   }).catch(e => { console.error(e); toast('Opslaan mislukt: ' + e.message); });
   return persistChain;
 }
-// volledige kluis voor de gist, een back-up of een controle (bevat alle klanten)
+// volledige kluis voor de dienst, een back-up of een controle (bevat alle klanten)
 async function persistFull() {
   await persist(); await clReadyP;
   if (clPending) throw new Error('de klanten zijn nog niet geladen');
@@ -2582,34 +2588,7 @@ function save(soon) {
 let syncDirty = true;
 function commit() { save(); renderAll(); }
 
-/* ---------------- GitHub Gist sync ---------------- */
-async function gh(token, method, path, body, meta) {
-  const r = await fetch('https://api.github.com' + path, {
-    method, cache:'no-store',
-    headers:{'Authorization':'Bearer ' + token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28',
-      ...(body ? {'Content-Type':'application/json'} : {}), ...(meta?.ifNoneMatch ? {'If-None-Match':meta.ifNoneMatch} : {})},
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (meta) meta.etag = r.headers.get('etag') || null;
-  if (r.status === 304) return null;
-  if (!r.ok) {
-    const j = await r.json().catch(() => ({}));
-    throw new Error(`GitHub ${r.status}: ${j.message || r.statusText}`);
-  }
-  return r.json();
-}
 const NOT_MODIFIED = {};
-async function gistGet(s, meta) {
-  const g = await gh(s.token, 'GET', '/gists/' + encodeURIComponent(s.gistId), undefined, meta);
-  if (g === null) return NOT_MODIFIED;
-  const f = g.files && g.files[GIST_FILE];
-  if (!f) return null;
-  let c = f.content;
-  if (f.truncated) c = await (await fetch(f.raw_url, {cache:'no-store'})).text();
-  return JSON.parse(c);
-}
-const gistPut = (s, blob, meta) => gh(s.token, 'PATCH', '/gists/' + encodeURIComponent(s.gistId), {files:{[GIST_FILE]:{content:JSON.stringify(blob)}}}, meta);
-const gistCreate = (token, blob) => gh(token, 'POST', '/gists', {description:'Taken — versleutelde kluis', public:false, files:{[GIST_FILE]:{content:JSON.stringify(blob)}}});
 
 /* ---------------- Account en cloud (Supabase) ----------------
    Staat er een cloud.json (project-URL + publieke sleutel), dan log je in met e-mail en wachtwoord en bewaart de dienst per
@@ -2747,9 +2726,8 @@ async function persistCloud() {
   }
   return persistFull();
 }
-const persistRemote = s => s?.cloud ? persistCloud() : persistFull();
-const remoteGet = (s, meta) => s.cloud ? cloudGet(s, meta) : gistGet(s, meta);
-const remotePut = (s, blob, meta) => s.cloud ? cloudPut(s, blob, meta) : gistPut(s, blob, meta);
+const persistRemote = () => persistCloud();
+const remoteGet = cloudGet, remotePut = cloudPut;
 
 let syncTimer = null, syncing = false, syncAgain = false, syncState = {state:'idle'}, syncEtag = null;
 function scheduleSync(delay) {
@@ -2760,7 +2738,7 @@ function scheduleSync(delay) {
 }
 async function syncNow(pw) {
   const s = data?.settings.sync;
-  if (!s || !K) { renderSync(); return; }
+  if (!s?.cloud || !K) { renderSync(); return; }
   if (!navigator.onLine) { setSync('offline'); return; }
   if (syncing) { syncAgain = true; return; }
   syncing = true; setSync('busy');
@@ -2823,44 +2801,6 @@ function renderSync() {
   else el.textContent = 'Synchronisatie ingesteld';
 }
 
-/* ---------------- Sleutelbestand (config.json) ----------------
-   config.json staat op de site zelf en bevat de GitHub-token + gist-ID,
-   versleuteld met hetzelfde wachtwoord als de kluis. Zo volstaat je
-   wachtwoord om op elke browser automatisch je taken op te halen. */
-let CFG = null;
-async function fetchConfig() {
-  try {
-    const r = await fetch(CONFIG_URL + '?t=' + now(), {cache:'no-store'});
-    if (r.ok) {
-      const j = await r.json();
-      if (j && j.ct && j.salt) { localStorage.setItem(CFG_CACHE, JSON.stringify(j)); return j; }
-    }
-    if (r.status === 404) { localStorage.removeItem(CFG_CACHE); return null; }
-  } catch {}
-  try { return JSON.parse(localStorage.getItem(CFG_CACHE)); } catch { return null; }
-}
-// Staat config.json overeen met de huidige sleutel en synchronisatie?
-let cfgState = 'unknown';
-async function checkConfig(refetch) {
-  if (data?.settings.sync?.cloud) { cfgState = 'ok'; renderBanner(); return cfgState; }   // met een account is er geen sleutelbestand nodig
-  if (refetch) CFG = await fetchConfig();
-  const s = data?.settings.sync;
-  if (!CFG) cfgState = 'none';
-  else if (!K || CFG.salt !== b64(K.salt)) cfgState = 'stale';
-  else {
-    try {
-      const c = await unseal(K.key, CFG);
-      cfgState = s && c.token === s.token && c.gistId === s.gistId ? 'ok' : 'stale';
-    } catch { cfgState = 'stale'; }
-  }
-  renderBanner();
-  return cfgState;
-}
-async function makeConfig() {
-  const s = data.settings.sync;
-  return JSON.stringify(await seal(K, {token:s.token, gistId:s.gistId}));
-}
-
 /* ---------------- Lock screen ---------------- */
 let lockMode = 'loading';
 function renderLock() {
@@ -2868,8 +2808,8 @@ function renderLock() {
   $('#lockErr').textContent = '';
   btn.hidden = false; alt.hidden = false; $('#lockBio').hidden = true; $('#lockForgot').hidden = true;
   // met een accountdienst blijft er altijd een uitweg naar de lokale kluis op dit toestel (bv. als de dienst even niet werkt)
-  const loc = $('#lockLocal'); loc.hidden = !CLOUD || lockMode === 'loading' || lockMode === 'restore';
-  loc.textContent = lockMode.startsWith('cloud') ? 'Zonder account (enkel op dit toestel)' : 'Inloggen met een account';
+  const loc = $('#lockLocal'); loc.hidden = !CLOUD || lockMode === 'loading';
+  loc.textContent = lockMode.startsWith('cloud') ? 'Gebruik zonder account' : 'Inloggen met een account';
   if (!window.crypto?.subtle) {
     sub.textContent = 'Deze pagina moet via https geopend worden (versleuteling is anders niet beschikbaar).';
     f.innerHTML = ''; btn.hidden = true; alt.hidden = true; return;
@@ -2880,7 +2820,7 @@ function renderLock() {
   const un = $('#lockForm input[name="username"]'); if (un) un.disabled = !!CLOUD && lockMode.startsWith('cloud');
   if (CLOUD && lockMode === 'cloud-in') {
     $('#lockTitle').textContent = 'Inloggen';
-    sub.textContent = 'Log in met je e-mailadres en wachtwoord. Je gegevens zijn versleuteld en blijven van jou.';
+    sub.textContent = 'Log in met je e-mailadres en wachtwoord.';
     let last = ''; try { last = localStorage.getItem(CLOUD_USER) || ''; } catch {}
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required value="${esc(last)}" ${last ? '' : 'autofocus'}>
       <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required ${last ? 'autofocus' : ''}>`;
@@ -2888,43 +2828,41 @@ function renderLock() {
     if (bioGet() && bioSupported() && last) { $('#lockBio').hidden = false; $('#lockBio').textContent = 'Inloggen met ' + bioName(); }
   } else if (CLOUD && lockMode === 'cloud-forgot') {
     $('#lockTitle').textContent = 'Wachtwoord vergeten';
-    sub.textContent = 'Vul je e-mailadres in. Je krijgt een mail met een link. Daarna heb je je herstelsleutel nodig om een nieuw wachtwoord te kiezen.';
+    sub.textContent = 'Vul je e-mailadres in. Je krijgt een mail met een link. Daarna kies je een nieuw wachtwoord met je herstelsleutel.';
     let last = ''; try { last = localStorage.getItem(CLOUD_USER) || ''; } catch {}
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required value="${esc(last)}" autofocus>`;
     btn.textContent = 'Mail versturen'; alt.textContent = 'Terug naar inloggen';
   } else if (CLOUD && lockMode === 'cloud-reset') {
     $('#lockTitle').textContent = 'Nieuw wachtwoord';
-    sub.textContent = `Kies een nieuw wachtwoord voor ${resetEmail}. Vul hiervoor de herstelsleutel in die je bij het aanmaken van je account bewaarde.`;
+    sub.textContent = `Nieuw wachtwoord voor ${resetEmail}. Vul de herstelsleutel in die je bij het aanmaken van je account bewaarde.`;
     f.innerHTML = `<label for="rk">Herstelsleutel</label><input id="rk" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-…" autofocus>
       <label for="pw1">Nieuw wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="${CLOUD_MINPW}" required>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
-    btn.textContent = 'Nieuw wachtwoord instellen'; alt.textContent = 'Ik heb geen herstelsleutel: begin met een lege kluis';
+    btn.textContent = 'Nieuw wachtwoord instellen'; alt.textContent = 'Ik heb geen herstelsleutel';
   } else if (CLOUD && lockMode === 'cloud-up') {
     $('#lockTitle').textContent = 'Account aanmaken';
-    sub.textContent = `Kies een e-mailadres en een wachtwoord van minstens ${CLOUD_MINPW} tekens. Daarmee worden je gegevens versleuteld; zonder dit wachtwoord kan niemand ze lezen (ook wij niet). Je krijgt straks een herstelsleutel die je veilig moet bewaren.`;
+    sub.textContent = `Kies je e-mailadres en een wachtwoord van minstens ${CLOUD_MINPW} tekens. Daarna krijg je een herstelsleutel om te bewaren, voor als je je wachtwoord vergeet.`;
     f.innerHTML = `<label for="lkEmail">E-mailadres</label><input id="lkEmail" type="email" autocomplete="username" required autofocus>
       <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="${CLOUD_MINPW}" required>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
     btn.textContent = 'Account aanmaken'; alt.textContent = 'Ik heb al een account';
   } else if (lockMode === 'setup') {
     $('#lockTitle').textContent = 'Welkom bij Taken';
-    sub.textContent = 'Kies een wachtwoord. Al je taken worden daarmee versleuteld; zonder dit wachtwoord kan niemand ze lezen (ook jij niet, dus onthoud het goed).';
+    sub.textContent = 'Kies een wachtwoord om je taken te beveiligen. Onthoud het goed: zonder dit wachtwoord kan niemand ze lezen.';
     f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="8" required autofocus>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
-    btn.textContent = 'Aan de slag'; alt.textContent = 'Ik heb al een kluis in GitHub Gist';
-  } else if (lockMode === 'unlock') {
-    $('#lockTitle').textContent = 'Taken';
-    sub.textContent = CFG ? 'Voer je wachtwoord in. Je taken worden automatisch opgehaald en gesynchroniseerd.' : 'Voer je wachtwoord in om te ontgrendelen.';
-    f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required autofocus>`;
-    btn.textContent = 'Ontgrendelen'; alt.textContent = 'Herstellen vanaf GitHub Gist';
-    if (bioGet() && bioSupported()) { $('#lockBio').hidden = false; $('#lockBio').textContent = 'Ontgrendelen met ' + bioName(); }
+    btn.textContent = 'Aan de slag'; alt.hidden = true;
   } else {
-    $('#lockTitle').textContent = 'Herstellen vanaf Gist';
-    sub.textContent = 'Haal je versleutelde kluis op van GitHub. Gebruik dit op een nieuw toestel of na een wachtwoordwijziging.';
-    f.innerHTML = `<label for="rTok">GitHub-token</label><input id="rTok" type="password" autocomplete="off" required>
-      <label for="rGist">Gist-ID</label><input id="rGist" type="text" autocomplete="off" required>
-      <label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required>`;
-    btn.textContent = 'Herstellen'; alt.textContent = 'Terug';
+    $('#lockTitle').textContent = 'Taken';
+    sub.textContent = 'Voer je wachtwoord in om te ontgrendelen.';
+    f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required autofocus>`;
+    btn.textContent = 'Ontgrendelen'; alt.hidden = true;
+    if (bioGet() && bioSupported()) { $('#lockBio').hidden = false; $('#lockBio').textContent = 'Ontgrendelen met ' + bioName(); }
+  }
+  const pws = [...f.querySelectorAll('input[type=password]')];
+  if (pws.length) {   // wachtwoord kunnen tonen: duidelijker bij het typen, vooral op een telefoon
+    f.insertAdjacentHTML('beforeend', '<label class="showpw"><input type="checkbox" id="showPw"> Wachtwoord tonen</label>');
+    $('#showPw').onchange = e => pws.forEach(i => { i.type = e.target.checked ? 'text' : 'password'; });
   }
   setTimeout(() => { if (!$('#lockFields').contains(document.activeElement)) $('#lockFields input')?.focus(); }, 30);
 }
@@ -2947,74 +2885,17 @@ $('#lockAlt').addEventListener('click', async () => {
   }
   if (CLOUD && lockMode === 'cloud-forgot') { lockMode = 'cloud-in'; renderLock(); return; }
   if (CLOUD && lockMode.startsWith('cloud')) { lockMode = lockMode === 'cloud-up' ? 'cloud-in' : 'cloud-up'; renderLock(); return; }
-  lockMode = lockMode === 'restore' ? (vaultBlob() ? 'unlock' : 'setup') : 'restore';
-  renderLock();
 });
 
-// Ontgrendelen: lokale kluis en/of (via config.json) de gedeelde kluis in de gist.
+// Ontgrendelen zonder account: de kluis op dit toestel.
 async function unlockWith(pw) {
-  const keys = new Map();
-  const keyObj = async blob => {
-    if (!keys.has(blob.salt + blob.iter)) keys.set(blob.salt + blob.iter, await deriveKey(pw, unb64(blob.salt), blob.iter));
-    return {key:keys.get(blob.salt + blob.iter), salt:unb64(blob.salt), iter:blob.iter};
-  };
   const local = vaultBlob();
-  // Snel inloggen: staat de kluis al op dit toestel, dan wachten we niet op het netwerk. Het sleutelbestand wordt
-  // op de achtergrond ververst en de online kluis wordt na het openen samengevoegd (syncNow).
-  let cached = null; try { cached = JSON.parse(localStorage.getItem(CFG_CACHE)); } catch {}
-  const usedCache = !!(local && cached);
-  if (usedCache) { CFG = cached; fetchConfig().then(c => { CFG = c; if (data) checkConfig(); }).catch(() => {}); }
-  else CFG = await fetchConfig();
-  let localData = null, creds = null;
-  if (local) try { localData = normalize(await unseal((await keyObj(local)).key, local)); } catch {}
-  if (localData) {
-    if (!localData.settings.sync && CFG) try { creds = await unseal((await keyObj(CFG)).key, CFG); } catch {}
-    K = await keyObj(local);
-    data = localData;
-    if (creds) data.settings.sync = creds;
-    if (local.split) startClientLoad(local, K.key);   // klanten laden op de achtergrond
-    enterApp();
-    syncNow(pw);
-    return;
-  }
-  // past het wachtwoord niet op de lokale kluis, dan kan het wachtwoord op een ander toestel gewijzigd zijn: haal het verse sleutelbestand op
-  if (usedCache) CFG = await fetchConfig();
-  if (CFG) try { creds = await unseal((await keyObj(CFG)).key, CFG); } catch {}
-  if (!localData && !creds) throw new Error('Onjuist wachtwoord.');
-
-  if (creds) {
-    let rblob = null, remote = null;
-    try { rblob = await gistGet(creds); }
-    catch (e) { if (!localData) throw new Error('GitHub is niet bereikbaar: ' + e.message); }
-    if (rblob) {
-      try { remote = normalize(await unseal((await keyObj(rblob)).key, rblob)); }
-      catch { if (!localData) throw new Error('De online kluis kan niet ontsleuteld worden met dit wachtwoord.'); }
-    }
-    if (remote) {
-      K = await keyObj(rblob);
-      data = localData ? merge(localData, remote) : remote;
-      data.settings.sync = creds;
-      await persist();
-      enterApp();
-      syncNow(pw);
-      return;
-    }
-    if (!localData) {
-      // gist bestaat maar is nog leeg: nieuwe kluis starten
-      K = await keyObj(CFG);
-      data = newData();
-      data.settings.sync = creds;
-      await persist();
-      enterApp();
-      syncNow(pw);
-      return;
-    }
-  }
-  K = await keyObj(local);
-  data = localData;
-  if (creds) data.settings.sync = creds;
+  let kk, ld;
+  try { kk = await openKey(pw, local); ld = await openLocalFull(local, kk.key); } catch { throw new Error('Onjuist wachtwoord.'); }
+  K = kk; data = ld;
+  if (data.settings.sync && !data.settings.sync.cloud) data.settings.sync = null;   // oude GitHub-koppeling (token) uit de kluis halen
+  if (data.settings.sync?.cloud) { lockMode = 'cloud-in'; renderLock(); throw new Error('Deze kluis hoort bij een account. Log in met je e-mailadres en wachtwoord.'); }
   enterApp();
-  syncNow(pw);
 }
 
 // Gegevens op dit toestel met een ander wachtwoord: vraag het oude wachtwoord om ze mee te nemen (of laat ze wissen)
@@ -3222,21 +3103,6 @@ $('#lockForm').addEventListener('submit', async e => {
       enterApp();
     } else if (lockMode === 'unlock') {
       await unlockWith(pw);
-    } else {
-      const s = {token:$('#rTok').value.trim(), gistId:$('#rGist').value.trim().replace(/^.*\//, '')};
-      const blob = await gistGet(s);
-      if (!blob) throw new Error(`Bestand ${GIST_FILE} niet gevonden in deze gist.`);
-      const key = await deriveKey(pw, unb64(blob.salt), blob.iter);
-      let remote;
-      try { remote = normalize(await unseal(key, blob)); }
-      catch { throw new Error('Onjuist wachtwoord voor deze kluis.'); }
-      if (vaultBlob() && !confirm('De gegevens op dit toestel worden vervangen door de kluis uit GitHub. Doorgaan?')) throw new Error('Geannuleerd.');
-      K = {key, salt:unb64(blob.salt), iter:blob.iter};
-      data = remote;
-      data.settings.sync = s;
-      await persist();
-      enterApp();
-      setSync('ok');
     }
   } catch (ex) {
     err.textContent = ex.message;
@@ -3251,7 +3117,6 @@ function enterApp() {
   renderAll();
   startTimers();
   warmClients();
-  checkConfig();
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
 // Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
@@ -3771,7 +3636,7 @@ function renderAll() {
   if (view.type === 'sales' && !salesPageById(view.id)) view = {type:'all'};
   const sales = view.type === 'sales';
   if (sales) selectedId = null;
-  renderNav(); renderHead(); renderBanner();
+  renderNav(); renderHead();
   for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = sales;
   $('#salesPage').hidden = !sales;
   if (view.type === 'client' && !clPending && !clientById(view.id)) view = {type:'clients'};
@@ -4846,82 +4711,21 @@ function openFieldEditor(f, presetProject, back) {
   draw();
 }
 
-function cfgBox() {
-  if (cfgState === 'ok') return `<p style="margin:0"><b>Stap 2 ✓</b> Actief in al je browsers. Open <b>${esc(location.host + location.pathname)}</b> op eender welk toestel en log in met je wachtwoord: je ziet overal dezelfde taken.</p>`;
-  const stale = cfgState === 'stale';
-  return `<p><b>Stap 2.</b> ${stale
-      ? 'Het sleutelbestand op je site hoort nog bij je oude wachtwoord of een andere gist. Vervang de inhoud van <code>' + CONFIG_PATH + '</code> door de nieuwe versie.'
-      : 'Publiceer het versleutelde sleutelbestand op je site. Daarna volstaat je wachtwoord op elke browser, en kan niemand anders nog een account aanmaken.'}</p>
-    <p class="muted small">${stale
-      ? 'Klik op “Inhoud kopiëren”, dan op “Openen op GitHub”, vervang alles door de gekopieerde tekst en klik op “Commit changes”.'
-      : 'Klik op “Publiceren op GitHub” en daarna op GitHub op de groene knop “Commit changes”. Na 1 à 2 minuten staat het online.'}</p>
-    <div class="dlg-actions" style="margin-top:4px">
-      ${stale
-        ? '<button type="button" class="btn" id="cfCopy">Inhoud kopiëren</button><a class="btn primary" id="cfEdit" target="_blank" rel="noopener" style="text-decoration:none" href="https://github.com/' + REPO + '/edit/' + BRANCH + '/' + CONFIG_PATH + '">Openen op GitHub</a>'
-        : '<button type="button" class="btn primary" id="cfPublish">Publiceren op GitHub</button><button type="button" class="btn" id="cfCopy">Inhoud kopiëren</button>'}
-      <span class="grow"></span><button type="button" class="btn" id="cfCheck">Controleren</button>
-    </div>
-    <p class="muted small" id="cfMsg" style="margin:8px 0 0"></p>`;
-}
-function bindCfgBox(d) {
-  $('#cfPublish', d)?.addEventListener('click', async () => {
-    const w = window.open('', '_blank');
-    const url = `https://github.com/${REPO}/new/${BRANCH}/${CONFIG_PATH.replace(/\/[^/]+$/, '')}?filename=${encodeURIComponent(CONFIG_PATH.split('/').pop())}&value=${encodeURIComponent(await makeConfig())}`;
-    if (w) w.location = url; else location.href = url;
-  });
-  $('#cfCopy', d)?.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(await makeConfig()); toast('Inhoud gekopieerd'); }
-    catch { prompt('Kopieer deze inhoud:', await makeConfig()); }
-  });
-  $('#cfCheck', d)?.addEventListener('click', async () => {
-    $('#cfMsg', d).textContent = 'Controleren…';
-    const st = await checkConfig(true);
-    if (st === 'ok') { openSettings(); toast('Alles is ingesteld'); }
-    else $('#cfMsg', d).textContent = st === 'none'
-      ? 'Nog niet gevonden. GitHub Pages heeft na het committen meestal 1 à 2 minuten nodig.'
-      : 'Het bestand online is nog de oude versie. Probeer over een minuutje opnieuw.';
-  });
-}
-function renderBanner() {
-  const el = $('#banner'); if (!el || !data) return;
-  let msg = '';
-  if (data.settings.sync?.cloud) msg = '';
-  else if (!data.settings.sync) msg = 'Je taken staan nu alleen in deze browser.';
-  else if (cfgState === 'none') msg = 'Nog één stap om al je browsers automatisch te synchroniseren.';
-  else if (cfgState === 'stale') msg = 'Het sleutelbestand op je site moet bijgewerkt worden.';
-  let snooze = 0; try { snooze = +localStorage.getItem('taken.banner.later') || 0; } catch {}
-  if (snooze > now()) msg = '';
-  el.hidden = !msg;
-  if (msg) el.innerHTML = `<span>${msg}</span><button type="button" class="btn" id="bnGo">${data.settings.sync ? 'Afronden' : 'Synchronisatie instellen'}</button><button type="button" class="btn bn-later" id="bnLater">Later</button>`;
-}
-
 function openSettings() {
   const s = data.settings.sync;
   showDialog(`
     <h3>Instellingen</h3>
 
-    <h4>${s?.cloud ? 'Account' : 'Synchroniseren tussen al je browsers'}</h4>
+    <h4>Account</h4>
     ${s?.cloud ? `<div class="box">
         <p><b>Ingelogd als</b> ${esc(s.email || '')}</p>
         <p class="muted small">Je gegevens staan versleuteld in je account en synchroniseren automatisch op al je toestellen. Vergeet je je wachtwoord, dan heb je je herstelsleutel nodig; bewaar ook af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
         <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button>${K?.w ? '<button type="button" class="btn" id="stRecNew">Nieuwe herstelsleutel</button>' : ''}<span class="grow"></span><button type="button" class="btn" id="stLogout">Uitloggen</button></div>
         <div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn danger" id="stDelAcc">Account verwijderen</button></div>
       </div>`
-    : s ? `<div class="box">
-        <p><b>Stap 1 ✓</b> Gekoppeld aan geheime gist <code>${esc(s.gistId)}</code>. ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
-        <div class="dlg-actions" style="margin-top:4px"><button type="button" class="btn" id="stSync">Nu synchroniseren</button><span class="grow"></span><button type="button" class="btn danger" id="stUnlink">Ontkoppelen</button></div>
-      </div>
-      <div class="box">${cfgBox()}</div>`
     : `<div class="box">
-        <p class="muted small">Nu staan je taken alleen in deze browser. Koppel één keer een (gratis) GitHub-token: Taken bewaart dan een <b>versleutelde</b> kopie in een geheime Gist, en elke browser waarin je met je wachtwoord inlogt, toont dezelfde taken.</p>
-        <p class="muted small"><b>Stap 1.</b> Maak een token op <a href="https://github.com/settings/tokens/new?scopes=gist&description=Taken" target="_blank" rel="noopener">github.com/settings/tokens</a> met alleen het vinkje <code>gist</code> (kies als vervaldatum “No expiration” of een lange termijn) en plak het hieronder.</p>
-        <label class="fl">GitHub-token<input id="stTok" type="password" autocomplete="off" placeholder="ghp_…"></label>
-        <details style="margin-top:10px"><summary class="muted small" style="cursor:pointer">Ik heb al een gist met taken</summary>
-          <label class="fl">Bestaand gist-ID<input id="stGist" type="text" autocomplete="off"></label>
-          <label class="fl">Je wachtwoord<input id="stPw" type="password" autocomplete="current-password"></label>
-        </details>
-        <p class="err" id="stErr"></p>
-        <div class="dlg-actions" style="margin-top:6px"><span class="grow"></span><button type="button" class="btn primary" id="stConnect">Koppelen</button></div>
+        <p class="muted small">Je taken staan nu alleen op dit toestel.${CLOUD ? ' Met een account heb je ze op al je toestellen, en kun je je wachtwoord herstellen als je het vergeet.' : ' Maak af en toe een back-up (hieronder).'}</p>
+        ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
 
     <h4>Beveiliging</h4>
@@ -4993,36 +4797,9 @@ function openSettings() {
         };
       });
     });
-    $('#stUnlink', d)?.addEventListener('click', () => {
-      if (!confirm('Synchronisatie in deze browser ontkoppelen? De gist en het sleutelbestand op je site blijven bestaan.')) return;
-      data.settings.sync = null; setSync('idle'); save(); checkConfig(); openSettings();
-    });
-    bindCfgBox(d);
-    $('#stConnect', d)?.addEventListener('click', async e => {
-      const token = $('#stTok', d).value.trim(), gistId = $('#stGist', d).value.trim().replace(/^.*\//, ''), pw = $('#stPw', d).value;
-      const err = $('#stErr', d);
-      if (!token) { err.textContent = 'Vul een token in.'; return; }
-      e.target.disabled = true; e.target.textContent = 'Bezig…'; err.textContent = '';
-      try {
-        if (!gistId) {
-          const g = await gistCreate(token, await persistFull());
-          data.settings.sync = {token, gistId:g.id};
-          save();
-          setSync('ok');
-        } else {
-          const blob = await gistGet({token, gistId});
-          if (blob && blob.salt !== b64(K.salt) && !pw) throw new Error('Deze gist werd met een ander wachtwoord of op een ander toestel aangemaakt. Vul je wachtwoord in.');
-          data.settings.sync = {token, gistId};
-          save();
-          await syncNow(pw);
-          if (syncState.state === 'err') { data.settings.sync = null; save(); throw new Error(syncState.msg); }
-        }
-        await checkConfig(true);
-        openSettings();
-        toast('Stap 1 klaar: gekoppeld');
-      } catch (ex) {
-        err.textContent = ex.message; e.target.disabled = false; e.target.textContent = 'Koppelen';
-      }
+    $('#stToAccount', d)?.addEventListener('click', async () => {
+      try { localStorage.setItem('taken.lock.mode', 'cloud-up'); } catch {}
+      lock();
     });
     $('#stPwSave', d).onclick = async () => {
       const err = $('#stPwErr', d), o = $('#stOld', d).value, n1 = $('#stNew1', d).value, n2 = $('#stNew2', d).value;
@@ -5048,9 +4825,7 @@ function openSettings() {
         try { await remotePut(data.settings.sync, blob); setSync('ok'); }
         catch (ex) { if (ex.conflict) { syncDirty = true; scheduleSync(300); } else setSync('err', ex.message); }
       }
-      await checkConfig();
-      if (data.settings.sync && CFG) { openSettings(); toast('Wachtwoord gewijzigd. Werk nu het sleutelbestand bij.'); }
-      else { dlg.close(); toast('Wachtwoord gewijzigd'); }
+      dlg.close(); toast('Wachtwoord gewijzigd');
     };
     const download = (name, obj) => {
       const a = document.createElement('a');
@@ -5084,7 +4859,7 @@ function openSettings() {
       } catch (ex) { alert('Importeren mislukt: ' + ex.message); }
     };
     $('#stWipe', d).onclick = () => {
-      if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden (een gesynchroniseerde gist blijft bestaan).')) return;
+      if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden .')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
       if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
       localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER);
@@ -5782,10 +5557,7 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
   e.stopPropagation(); navArchOpen[a.dataset.navarch] = !navArchOpen[a.dataset.navarch]; renderNav();
 });
 $('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
-$('#banner').addEventListener('click', e => {
-  if (e.target.id === 'bnGo') openSettings();
-  if (e.target.id === 'bnLater') { try { localStorage.setItem('taken.banner.later', String(now() + 7 * 864e5)); } catch {} renderBanner(); }
-});
+
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#projNotes').addEventListener('input', e => {
@@ -7257,11 +7029,12 @@ function startTimers() {
   addEventListener('offline', () => { if (data?.settings.sync) setSync('offline'); });
 }
 
-// Snel starten: heeft dit toestel al een kluis of sleutelbestand, dan meteen het wachtwoord vragen.
-try { CFG = JSON.parse(localStorage.getItem(CFG_CACHE)); } catch {}
+// Snel starten: heeft dit toestel al een kluis, dan meteen het wachtwoord vragen.
 const cloudDefaultMode = () => 'cloud-in';   // de meeste bezoekers hebben al een account (nieuw toestel); "Account aanmaken" staat eronder
 loadVault().finally(async () => {
-if (CLOUD) lockMode = cloudDefaultMode(); else if (CFG || vaultBlob()) lockMode = 'unlock';
+if (!CLOUD) await loadCloudCfg().catch(() => {});   // eerst weten of er een accountdienst is
+if (CLOUD) lockMode = cloudDefaultMode(); else lockMode = vaultBlob() ? 'unlock' : 'setup';
+try { if (CLOUD && localStorage.getItem('taken.lock.mode') === 'cloud-up') { lockMode = 'cloud-up'; lockModeChosen = true; } localStorage.removeItem('taken.lock.mode'); } catch {}
 if (/type=recovery/.test(location.hash)) {   // link uit de herstelmail
   if (!CLOUD) await loadCloudCfg();
   if (CLOUD && await takeRecoveryLink()) { lockMode = 'cloud-reset'; lockModeChosen = true; }
@@ -7271,14 +7044,6 @@ loadCloudCfg().then(c => {
   if (!c || lockModeChosen || $('#lock').hidden) return;
   const typed = [...$$('#lockFields input')].some(i => i.value);
   if (!lockMode.startsWith('cloud') && !typed) { lockMode = cloudDefaultMode(); renderLock(); }
-});
-if (!CLOUD) fetchConfig().then(c => {
-  if (CLOUD) return;
-  CFG = c;
-  const mode = CFG || vaultBlob() ? 'unlock' : 'setup';
-  // alleen bijsturen als je zelf nog niets gekozen of getypt hebt
-  const typed = [...$$('#lockFields input')].some(i => i.value);
-  if (mode !== lockMode && !$('#lock').hidden && !lockModeChosen && !typed) { lockMode = mode; renderLock(); }
 });
 });
 

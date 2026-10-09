@@ -1,9 +1,9 @@
 /* Taken — service worker
    Bewaart de app zelf (HTML, iconen, logo) op het toestel, zodat Taken meteen
    opent, ook zonder internet. Je gegevens staan al versleuteld in de browser;
-   config.json en GitHub worden nooit gecachet en gaan altijd naar het netwerk. */
-const CACHE = 'taken-app-v14';
-const ASSETS = ['./', '../images/logo-mask.png', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
+   cloud.json en de accountdienst worden nooit gecachet en gaan altijd naar het netwerk. */
+const CACHE = 'taken-app-v15';
+const ASSETS = ['./', 'logo-r.svg', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
   'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 const PAGE = new URL('./', self.registration.scope).href;
 
@@ -34,7 +34,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin || !url.href.startsWith(self.registration.scope)) return;
-  if (url.pathname.endsWith('/config.json') || url.pathname.endsWith('/cloud.json') || url.pathname.endsWith('/sw.js')) return;
+  if (url.pathname.endsWith('/cloud.json') || url.pathname.endsWith('/sw.js')) return;
 
   // De app zelf: meteen uit het toestel laden, op de achtergrond bijwerken.
   if (req.mode === 'navigate') {

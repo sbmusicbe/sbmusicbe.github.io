@@ -60,7 +60,7 @@ De app slaat bij elke wijziging op met een controle op `rev` (alleen bijwerken a
 | Nieuw toestel: pagina openen en wachtwoord | Pagina openen, e-mail en wachtwoord |
 | Eén persoon | Zoveel personen als je wilt, elk met eigen gegevens |
 
-De gist-synchronisatie blijft voor wie geen account wil: **zonder `cloud.json` werkt Taken zoals nu**, volledig lokaal en optioneel met een gist.
+Zonder `cloud.json` werkt Taken volledig lokaal (één toestel, met back-ups). De vroegere synchronisatie via GitHub-gist en `config.json` is verwijderd.
 
 ## Instellen door de beheerder (eenmalig, ongeveer 10 minuten)
 

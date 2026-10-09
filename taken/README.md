@@ -36,19 +36,13 @@ De hele app is één bestand (`index.html`) in gewone HTML, CSS en JavaScript, z
 - Lokaal staat een kleine kern (taken, projecten, verkopen) in `localStorage` en de grote klantenlijst apart in IndexedDB. Het versleutelen en ontsleutelen gebeurt in een achtergrondproces (Web Worker), zodat de pagina soepel blijft, ook met zeventigduizend klanten.
 - Na een tijd zonder activiteit (standaard 30 minuten) vergrendelt de app zichzelf.
 
-### Synchroniseren tussen toestellen (optioneel)
+### Synchroniseren tussen toestellen
 
-Zonder synchronisatie werk je op één toestel. Wil je op meerdere toestellen dezelfde gegevens, dan bewaart de app een **versleutelde kopie in een geheime GitHub Gist**:
-
-1. Maak op [github.com/settings/tokens](https://github.com/settings/tokens/new?scopes=gist&description=Taken) een token met alleen het recht `gist`.
-2. Open in de app **Instellingen → Synchroniseren** en plak het token. De app maakt de gist aan.
-3. Volg stap 2 in dezelfde instellingen: je krijgt een klein sleutelbestand (`config.json`) om in je eigen hosting te zetten. Daarin staan token en gist versleuteld met je wachtwoord. Daarna volstaat het op elk ander toestel om de pagina te openen en in te loggen.
-
-De gist bevat alleen versleutelde tekst. Bij het samenvoegen wint per item de nieuwste wijziging; verwijderde items worden bijgehouden, zodat ze niet terugkomen. Een back-up download je altijd via **Instellingen** (versleuteld of leesbaar).
+Zonder account werk je op één toestel; een back-up maak je via **Instellingen** (versleuteld of leesbaar). Wil je dezelfde gegevens op meerdere toestellen, dan gebruik je een account (zie hieronder). Bij het samenvoegen wint per item de nieuwste wijziging; verwijderde items worden bijgehouden, zodat ze niet terugkomen.
 
 ## Meerdere gebruikers (accounts)
 
-Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-mailadres en wachtwoord** en ziet alleen zijn eigen gegevens. Je hoeft geen GitHub-token, gist of sleutelbestand meer te regelen: een nieuw toestel is gewoon inloggen. De dienst (Supabase, gratis plan) bewaart per account één **versleutelde** kluis; uit je wachtwoord worden een login-geheim (naar de dienst) en de sleutel van de kluis (blijft op je toestel) afgeleid, dus de dienst kan je gegevens niet lezen.
+Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-mailadres en wachtwoord** en ziet alleen zijn eigen gegevens. Een nieuw toestel is gewoon inloggen. De dienst (Supabase, gratis plan) bewaart per account één **versleutelde** kluis; uit je wachtwoord worden een login-geheim (naar de dienst) en de sleutel van de kluis (blijft op je toestel) afgeleid, dus de dienst kan je gegevens niet lezen.
 
 **Aanzetten (eenmalig, door de beheerder):**
 
@@ -76,7 +70,7 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 
 **Let op:** bewaar ook af en toe een versleutelde back-up (**Instellingen → Back-up**). Een gratis Supabase-project kan na een periode zonder gebruik gepauzeerd worden; de repository bevat een geplande wekelijkse ping die dat voorkomt.
 
-Verwijder je `taken/cloud.json`, dan werkt de app weer volledig lokaal, optioneel met een gist.
+Verwijder je `taken/cloud.json`, dan werkt de app weer volledig lokaal (één toestel, met back-ups).
 
 ## Installeren: stap voor stap
 
@@ -88,16 +82,14 @@ Je hebt alleen een gratis [GitHub-account](https://github.com/signup) nodig. Gee
 2. Klik rechtsboven op **Fork** (of **Use this template** als dat er staat) en bevestig. Je hebt nu je eigen kopie onder je eigen account.
 3. Heb je liever een nieuwe, lege repository? Maak er een met **New repository**, kies **Public** en upload de map `taken/` (zie stap 2).
 
-> **Belangrijk:** verwijder de bestanden `taken/config.json` en `taken/cloud.json` uit je kopie.
-> - `config.json` bevat het versleutelde sleutelbestand van de oorspronkelijke eigenaar; zolang het er staat, vraagt de app naar zijn wachtwoord en kun je zelf geen account aanmaken.
-> - `cloud.json` wijst naar het accountproject van de oorspronkelijke eigenaar. Laat je het staan, dan maken jouw gebruikers een account in zijn project. Wil je zelf accounts, maak dan je eigen project en zet je eigen gegevens erin (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)).
+> **Belangrijk:** verwijder het bestand `taken/cloud.json` uit je kopie. Het wijst naar het accountproject van de oorspronkelijke eigenaar. Laat je het staan, dan maken jouw gebruikers een account in zijn project. Wil je zelf accounts, maak dan je eigen project en zet je eigen gegevens erin (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)).
 >
-> Open elk bestand op GitHub, klik op de prullenbak en bevestig met **Commit changes**.
+> Open het bestand op GitHub, klik op de prullenbak en bevestig met **Commit changes**.
 
 ### 2. (Alleen bij een nieuwe, lege repository) De bestanden uploaden
 
 1. Klik in je repository op **Add file → Upload files**.
-2. Sleep de hele map `taken/` erin (alles behalve `config.json`) en klik op **Commit changes**.
+2. Sleep de hele map `taken/` erin (zonder `cloud.json`, tenzij je eigen accountproject erin staat) en klik op **Commit changes**.
 
 ### 3. De site aanzetten met GitHub Pages
 
@@ -114,19 +106,11 @@ Je app staat nu op:
 
 1. Open het adres. Je ziet het welkomstscherm.
 2. Kies een **sterk wachtwoord** (minstens 8 tekens) en bevestig het, en klik op **Aan de slag**. Dit wachtwoord versleutelt al je gegevens. **Het is niet te herstellen**; schrijf het ergens veilig op.
-3. Klaar: je kunt meteen taken, klanten en verkopen toevoegen. Op dit moment staan je gegevens alleen op dit toestel.
+3. Klaar: je kunt meteen taken, klanten en verkopen toevoegen. Op dit moment staan je gegevens alleen op dit toestel. Met een account (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)) werk je op al je toestellen.
 
-### 5. Op meerdere toestellen werken (synchronisatie)
+### 5. Op meerdere toestellen werken
 
-1. Maak op GitHub een token: [github.com/settings/tokens/new](https://github.com/settings/tokens/new?scopes=gist&description=Taken). Vink **alleen `gist`** aan, kies een lange vervaldatum (of *No expiration*) en klik op **Generate token**. Kopieer het token (het staat maar één keer in beeld).
-2. Open in de app het tandwiel (**Instellingen**) en ga naar **Synchroniseren tussen al je browsers**.
-3. Plak het token en klik op **Koppelen**. De app maakt een geheime gist aan voor je versleutelde gegevens (**Stap 1 ✓**).
-4. Klik bij **Stap 2** op **Publiceren op GitHub**. GitHub opent met het sleutelbestand al ingevuld; klik op de groene knop **Commit changes**. Na één à twee minuten staat het online; klik in de app op **Controleren**.
-5. Op een tweede toestel open je hetzelfde adres en log je in met je wachtwoord. De gegevens worden automatisch opgehaald.
-
-> Het sleutelbestand bevat je token en gist, versleuteld met je wachtwoord. Het is veilig om publiek te staan, maar wie je site opent kan daarna geen nieuw account meer aanmaken: de app vraagt dan om het wachtwoord.
->
-> Op een eigen domein (bijvoorbeeld `crm.jouwbedrijf.be`) kan de app je repository niet zelf herkennen. Pas dan bovenaan het script in `index.html` de waarden `REPO` en `CONFIG_PATH` aan (de regels met `const REPO = …`).
+Zet de accountdienst aan (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)). Iedereen logt dan op elk toestel in met e-mailadres en wachtwoord en ziet dezelfde gegevens.
 
 ### 6. Als app op je toestel zetten
 
@@ -150,12 +134,10 @@ Haal in je fork de nieuwste wijzigingen binnen (**Sync fork → Update branch**)
 
 | Probleem | Oplossing |
 |---|---|
-| De app vraagt een wachtwoord dat ik niet ken, of een e-mailadres en wachtwoord | `taken/config.json` of `taken/cloud.json` van de oorspronkelijke eigenaar staat nog in je kopie. Verwijder die bestanden (stap 1). |
+| De app vraagt een e-mailadres en wachtwoord | `taken/cloud.json` van de oorspronkelijke eigenaar staat nog in je kopie. Verwijder dat bestand (stap 1). |
 | De pagina geeft een 404 | Controleer bij **Settings → Pages** of de site aan staat en of je het juiste adres (met `/taken/`) gebruikt. Wacht een paar minuten na de eerste keer aanzetten. |
-| "Publiceren op GitHub" opent de verkeerde repository | Je gebruikt een eigen domein. Pas `REPO` en `CONFIG_PATH` aan (zie hierboven). |
-| Een tweede toestel toont niet dezelfde gegevens | Open **Instellingen** en bekijk of beide stappen een vinkje hebben. Klik op **Controleren** en wacht even op GitHub Pages. |
-| Wachtwoord gewijzigd en nu synchroniseert het niet meer | Werk het sleutelbestand bij via **Instellingen → Stap 2**. |
-| Wachtwoord vergeten | Met een account: *Wachtwoord vergeten?* op het inlogscherm en je herstelsleutel. Zonder account (lokaal of gist) is er geen herstel; een versleutelde back-up heeft nog altijd het oude wachtwoord nodig. |
+| Een tweede toestel toont niet dezelfde gegevens | Log op beide toestellen in met hetzelfde account en kijk bij **Instellingen → Account** of de synchronisatie een fout meldt. |
+| Wachtwoord vergeten | Met een account: *Wachtwoord vergeten?* op het inlogscherm en je herstelsleutel. Zonder account is er geen herstel; een versleutelde back-up heeft nog altijd het oude wachtwoord nodig. |
 
 ### Lokaal uitproberen
 
@@ -175,12 +157,12 @@ python3 -m http.server 8000
 | `index.html` | De volledige app: opmaak, logica en gegevensmodel |
 | `sw.js` | Offline-werking en updates |
 | `manifest.webmanifest`, `icon*.png`, `favicon*.png` | Installeerbare app en pictogrammen |
-| `config.json` | Versleuteld sleutelbestand voor de synchronisatie (jouw eigen token en gist, enkel leesbaar met je wachtwoord) |
+| `cloud.json` | Verwijst naar je accountdienst (Supabase); zonder dit bestand werkt de app lokaal |
+| `supabase.sql` | Databasescript voor de accountdienst |
 
 ## Beperkingen
 
 - **Zonder account is het één gebruiker per kluis:** één wachtwoord opent één gegevensset. Voor meerdere gebruikers met aparte accounts zet je de optionele accountdienst aan, zie [Meerdere gebruikers](#meerdere-gebruikers-accounts).
-- Synchronisatie loopt via een GitHub-token; wie dat token heeft, kan de versleutelde gist overschrijven of verwijderen (lezen kan niet zonder wachtwoord).
 - Een vergeten wachtwoord kan niet hersteld worden. Bewaar een versleutelde back-up.
 
 ## Bijdragen
