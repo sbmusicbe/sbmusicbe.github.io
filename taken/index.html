@@ -2200,6 +2200,16 @@ table.sales .grp-day td{text-transform:none;font-size:13px}
 .t-ico.emo{width:auto!important;height:auto!important;font-size:18px!important}
 .card .t-ico{margin-bottom:6px!important}
 .pcalc{border-radius:8px!important}
+
+/* rondleiding */
+#tour{position:fixed;inset:0;z-index:100}
+#tour .tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none;transition:all .2s ease}
+#tour .tour-card{position:fixed;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);box-sizing:border-box}
+#tour .tour-n{margin:0 0 4px;font-size:12.5px;color:var(--muted)}
+#tour h3{margin:0 0 6px;font-size:18px}
+#tour .tour-x{margin:0 0 14px;font-size:15px;line-height:1.5;color:var(--muted)}
+#tour .tour-btns{display:flex;align-items:center;gap:8px}
+#tour:has(.tour-hole[style*="display:none"]){background:rgba(0,0,0,.5)}
 /* inlogscherm */
 .lock{--bg:#ffffff;--panel:#ffffff;--card:#ffffff;--text:#18181b;--muted:#5b5b63;--line:#d4d4d8;--accent:#18181b;--accent-2:#000;--on-accent:#fff;background:#fff!important}
 :root[data-theme="dark"] .lock{--bg:#0c0c0d;--panel:#141415;--card:#141415;--text:#f4f4f5;--muted:#a1a1aa;--line:#2a2a2e;--accent:#f4f4f5;--accent-2:#fff;--on-accent:#111;background:#0c0c0d!important}
@@ -3169,7 +3179,7 @@ function showRecoveryKey(rec, again) {
       a.download = 'taken-herstelsleutel.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#rkOk', d).onchange = e => { $('#rkDone', d).disabled = !e.target.checked; };
-    $('#rkDone', d).onclick = () => d.close();
+    $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeTour, 400); };
     d.addEventListener('cancel', e => { if (!$('#rkOk', d).checked) e.preventDefault(); }, {once:true});
   });
 }
@@ -3265,6 +3275,72 @@ $('#lockForm').addEventListener('submit', async e => {
   }
 });
 
+/* ---------------- Rondleiding voor nieuwe gebruikers ---------------- */
+function tourSteps() {
+  const mob = matchMedia('(max-width:860px)').matches, q = x => document.querySelector(x);
+  const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
+  return [
+    {title:'Welkom bij Taken', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
+    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een taak maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
+    {el:() => q('.board .col') || q('#list'), title:'Kolommen zijn stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
+    ...(mob ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
+    {el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'},
+    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je eigen velden en de instellingen.'}] : [
+      {el:() => q('#openFields'), title:'Eigen velden', text:'Voeg extra gegevens toe aan je taken, zoals formaat, telefoonnummer of kortingsprijs.'},
+      {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe herstelsleutel.'}]),
+    {title:'Klaar om te beginnen', text:'Maak je eerste taak aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
+  ];
+}
+let tourOn = false;
+function startTour() {
+  if (tourOn) return; tourOn = true;
+  const steps = tourSteps(); let i = 0;
+  const root = document.createElement('div'); root.id = 'tour';
+  root.innerHTML = '<div class="tour-hole"></div><div class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tourT"><p class="tour-n"></p><h3 id="tourT"></h3><p class="tour-x"></p><div class="tour-btns"><button type="button" class="link" data-t="skip">Overslaan</button><span class="grow"></span><button type="button" class="btn" data-t="prev">Vorige</button><button type="button" class="btn primary" data-t="next">Volgende</button></div></div>';
+  document.body.appendChild(root);
+  const hole = root.querySelector('.tour-hole'), card = root.querySelector('.tour-card');
+  const finish = () => {
+    tourOn = false; root.remove(); removeEventListener('keydown', onKey); removeEventListener('resize', place);
+    if (data && !data.settings.tourDone) { data.settings.tourDone = true; save(); }
+  };
+  const place = () => {
+    const st = steps[i], el = st.el?.(), vw = innerWidth, vh = innerHeight;
+    const ok = el && el.getClientRects().length;
+    card.style.width = Math.min(340, vw - 24) + 'px';
+    if (!ok) { hole.style.cssText = 'display:none'; card.style.left = Math.max(12, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(12, (vh - card.offsetHeight) / 2.4) + 'px'; return; }
+    const r = el.getBoundingClientRect(), pad = 6;
+    hole.style.cssText = `display:block;left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px`;
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+    let left, top;
+    if (r.right < 320 && vw > 860) { left = r.right + 16; top = Math.min(Math.max(12, r.top - 8), vh - ch - 12); }
+    else { left = Math.min(Math.max(12, r.left + r.width / 2 - cw / 2), vw - cw - 12); top = r.bottom + 14 + ch < vh ? r.bottom + 14 : Math.max(12, r.top - ch - 14); }
+    card.style.left = left + 'px'; card.style.top = top + 'px';
+  };
+  const show = () => {
+    const st = steps[i], el = st.el?.();
+    if (el && el.getClientRects().length) el.scrollIntoView({block:'nearest', inline:'nearest'});
+    card.querySelector('.tour-n').textContent = `Stap ${i + 1} van ${steps.length}`;
+    card.querySelector('h3').textContent = st.title; card.querySelector('.tour-x').textContent = st.text;
+    card.querySelector('[data-t=prev]').hidden = i === 0;
+    card.querySelector('[data-t=next]').textContent = i === steps.length - 1 ? 'Aan de slag' : 'Volgende';
+    card.querySelector('[data-t=skip]').hidden = i === steps.length - 1;
+    place(); card.querySelector('[data-t=next]').focus({preventScroll:true});
+  };
+  const onKey = e => { if (e.key === 'Escape') finish(); else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); card.querySelector('[data-t=next]').click(); } else if (e.key === 'ArrowLeft' && i) { i--; show(); } };
+  card.addEventListener('click', e => {
+    const t = e.target.closest('[data-t]')?.dataset.t; if (!t) return;
+    if (t === 'skip') finish(); else if (t === 'prev') { i--; show(); } else if (i === steps.length - 1) finish(); else { i++; show(); }
+  });
+  addEventListener('keydown', onKey); addEventListener('resize', place);
+  show();
+}
+// alleen voor wie nieuw is: nog geen taken of klanten en de rondleiding nog niet gezien
+function maybeTour() {
+  if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
+  if (!data || tourOn || data.settings.tourDone || dlg.open || !$('#lock').hidden) return;
+  if (data.tasks.length || data.clients.length) { data.settings.tourDone = true; return; }
+  startTour();
+}
 function enterApp() {
   $('#lock').hidden = true;
   $('#app').hidden = false;
@@ -3272,6 +3348,7 @@ function enterApp() {
   renderAll();
   startTimers();
   warmClients();
+  setTimeout(maybeTour, 900);
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
 // Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
@@ -4891,6 +4968,9 @@ function openSettings() {
         ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
 
+    <h4>Hulp</h4>
+    <button type="button" class="btn" id="stTour">Rondleiding bekijken</button>
+
     <h4>Beveiliging</h4>
     <label class="fl">Automatisch vergrendelen na inactiviteit
       <select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -4960,6 +5040,7 @@ function openSettings() {
         };
       });
     });
+    $('#stTour', d).addEventListener('click', () => { dlg.close(); setTimeout(startTour, 250); });
     $('#stToAccount', d)?.addEventListener('click', async () => {
       try { localStorage.setItem('taken.lock.mode', 'cloud-up'); } catch {}
       lock();
