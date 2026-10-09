@@ -7032,7 +7032,8 @@ function startTimers() {
 // Snel starten: heeft dit toestel al een kluis, dan meteen het wachtwoord vragen.
 const cloudDefaultMode = () => 'cloud-in';   // de meeste bezoekers hebben al een account (nieuw toestel); "Account aanmaken" staat eronder
 loadVault().finally(async () => {
-if (CLOUD) lockMode = cloudDefaultMode(); else if (vaultBlob()) lockMode = 'unlock';
+if (!CLOUD) await loadCloudCfg().catch(() => {});   // eerst weten of er een accountdienst is
+if (CLOUD) lockMode = cloudDefaultMode(); else lockMode = vaultBlob() ? 'unlock' : 'setup';
 try { if (CLOUD && localStorage.getItem('taken.lock.mode') === 'cloud-up') { lockMode = 'cloud-up'; lockModeChosen = true; } localStorage.removeItem('taken.lock.mode'); } catch {}
 if (/type=recovery/.test(location.hash)) {   // link uit de herstelmail
   if (!CLOUD) await loadCloudCfg();
