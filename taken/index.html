@@ -2445,9 +2445,21 @@ async function storeVault(blob) {
 let K = null;       // {key, salt, iter}
 let data = null;
 
+// Standaardvelden voor elk nieuw account of nieuwe kluis (vaste id's, zodat toestellen elkaar niet dubbel invullen)
+const DEFAULT_FIELDS = [
+  ['f-eerste-contact', 'Eerste x contactname', 'date'],
+  ['f-naam', 'Naam', 'text'],
+  ['f-telefoon', 'Telefoonnummer', 'text'],
+  ['f-email', 'Emailadres', 'text'],
+  ['f-formaat', 'Formaat', 'select', ['1/1', '1/2', '1/4', '1/8', '1/12', '1/16', '1/32', 'Banner', 'Vergroting', 'Annulatie']],
+  ['f-kortingsprijs', 'Kortingsprijs', 'number'],
+  ['f-klant-koud-repeat', 'Klant/Koud/Repeat', 'select', ['Klant', 'Koud', 'Repeat']],
+];
+const defaultFields = () => DEFAULT_FIELDS.map(([id, name, type, opts], i) => ({id, name, type, order:i, all:true, projectIds:[], showInList:true, u:0,
+  options:(opts || []).map((label, j) => ({id:id + '-' + j, label, color:COLORS[j % COLORS.length]}))}));
 function newData() {
   return normalize({v:1, updatedAt:now(), projects:[{id:'inbox', name:'Inbox', color:'#246fe0', order:0, u:0}],
-    fields:[], tasks:[], deleted:{}, prefs:{}, settings:{sync:null, autolock:30}});
+    fields:defaultFields(), tasks:[], deleted:{}, prefs:{}, settings:{sync:null, autolock:30}});
 }
 function normalize(d) {
   d.projects ||= []; d.fields ||= []; d.tasks ||= []; d.deleted ||= {}; d.prefs ||= {}; d.settings ||= {};
