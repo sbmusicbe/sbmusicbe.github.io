@@ -3112,8 +3112,41 @@ function renderLock() {
     f.insertAdjacentHTML('beforeend', '<label class="showpw"><input type="checkbox" id="showPw"> Wachtwoord tonen</label>');
     $('#showPw').onchange = e => pws.forEach(i => { i.type = e.target.checked ? 'text' : 'password'; });
   }
+  if ((lockMode === 'cloud-in' || lockMode === 'unlock') && window.crypto?.subtle) {
+    f.insertAdjacentHTML('beforeend', '<label class="showpw"><input type="checkbox" id="rememberPw"> Wachtwoord onthouden op dit toestel</label><p class="small muted" style="margin:2px 0 0 30px">Niet doen op een gedeelde computer.</p>');
+    recallPw().then(r => {   // al onthouden: vul het in (enkel als je zelf nog niets typte)
+      const em = $('#lkEmail'), pw = $('#pw1'), cb = $('#rememberPw');
+      if (!r || !cb || !pw || pw.value || (em && em.value && r.email && normEmail(em.value) !== normEmail(r.email))) return;
+      if (em && !em.value) em.value = r.email || '';
+      pw.value = r.pw; cb.checked = true;
+    });
+  }
   setTimeout(() => { if (!$('#lockFields').contains(document.activeElement)) $('#lockFields input')?.focus(); }, 30);
 }
+/* ---------------- Wachtwoord onthouden op dit toestel ----------------
+   Het wachtwoord wordt versleuteld met een sleutel die dit toestel niet kan prijsgeven (niet-exporteerbaar, in IndexedDB).
+   Bij het openen staat het wachtwoord dan al ingevuld; je klikt nog altijd zelf op Inloggen. Niet doen op een gedeelde computer. */
+const REM_KEY = 'taken.remember.v1';
+async function remCryptoKey(create) {
+  let k = await idbKV('get', 'remember.key').catch(() => null);
+  if (!k && create) { k = await crypto.subtle.generateKey({name:'AES-GCM', length:256}, false, ['encrypt', 'decrypt']); await idbKV('set', 'remember.key', k); }
+  return k;
+}
+async function rememberPw(email, pw) {
+  try {
+    const key = await remCryptoKey(true), iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, te.encode(JSON.stringify({email, pw})));
+    localStorage.setItem(REM_KEY, JSON.stringify({iv:b64(iv), ct:b64(ct)}));
+  } catch {}
+}
+async function recallPw() {
+  try {
+    const r = JSON.parse(localStorage.getItem(REM_KEY) || 'null'); if (!r) return null;
+    const key = await remCryptoKey(false); if (!key) return null;
+    return JSON.parse(td.decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(r.iv)}, key, unb64(r.ct))));
+  } catch { return null; }
+}
+const forgetPw = () => { try { localStorage.removeItem(REM_KEY); } catch {} };
 let lockModeChosen = false;
 $('#lockLocal').addEventListener('click', () => {
   lockModeChosen = true;
@@ -3327,12 +3360,13 @@ async function signupCloud(emailRaw, pw, pw2) {
 $('#lockForm').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#lockErr'), btn = $('#lockBtn');
-  const pw = $('#pw1')?.value || '';
+  const pw = $('#pw1')?.value || '', rem = $('#rememberPw'), remOn = !!rem?.checked, remEmail = $('#lkEmail')?.value || '';
   err.textContent = ''; btn.disabled = true;
   const old = btn.textContent; btn.textContent = 'Even geduld…';
   try {
     if (CLOUD && lockMode === 'cloud-in') {
       await unlockCloud($('#lkEmail').value, pw);
+      if (rem) { if (remOn) rememberPw(normEmail(remEmail), pw); else forgetPw(); }
     } else if (CLOUD && lockMode === 'cloud-forgot') {
       await sendRecoveryMail($('#lkEmail').value);
       lockMode = 'cloud-in'; renderLock(); $('#lockErr').textContent = 'Als dit e-mailadres een account heeft, is er een mail onderweg. Open de link in die mail op dit toestel.';
@@ -3351,8 +3385,10 @@ $('#lockForm').addEventListener('submit', async e => {
       enterApp();
     } else if (lockMode === 'unlock') {
       await unlockWith(pw);
+      if (rem) { if (remOn) rememberPw('', pw); else forgetPw(); }
     }
   } catch (ex) {
+    if (remOn && /onjuist|klopt niet|ontsleuteld/i.test(ex.message)) forgetPw();   // onthouden wachtwoord is niet meer geldig
     err.textContent = ex.message;
     btn.disabled = false; btn.textContent = old;
   }
@@ -5114,7 +5150,7 @@ function openSettings() {
           try { await deleteAccount(); }
           catch (ex) { err.textContent = ex.message; hold.reset(); return; }
           if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
-          try { localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); } catch {}
+          try { localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); localStorage.removeItem(REM_KEY); } catch {}
           idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
         });
       });
@@ -5160,6 +5196,7 @@ function openSettings() {
       if (K.w) K = {...K, w:{...K.w, pw:await wrapRaw(K.raw, n1, ITER)}};   // snel: enkel de datasleutel opnieuw inpakken
       else { const salt = crypto.getRandomValues(new Uint8Array(16)); K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER}; }
       await persist(); const blob = await persistRemote(data.settings.sync);
+      forgetPw();
       if (bioGet()) { localStorage.removeItem(BIO_KEY); toast('Wachtwoord gewijzigd; zet ' + bioName() + ' opnieuw aan'); }
       if (data.settings.sync) {
         try { await remotePut(data.settings.sync, blob); setSync('ok'); }
@@ -5202,7 +5239,7 @@ function openSettings() {
       if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden .')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
       if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
-      localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER);
+      localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); localStorage.removeItem(REM_KEY);
       idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
     };
   });
