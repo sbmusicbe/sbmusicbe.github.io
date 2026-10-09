@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
 <script>try{var t=localStorage.getItem("taken.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
@@ -2210,6 +2210,89 @@ table.sales .grp-day td{text-transform:none;font-size:13px}
 #tour .tour-x{margin:0 0 14px;font-size:15px;line-height:1.5;color:var(--muted)}
 #tour .tour-btns{display:flex;align-items:center;gap:8px}
 #tour:has(.tour-hole[style*="display:none"]){background:rgba(0,0,0,.5)}
+
+/* =====================================================================
+   Kitchen (dqnamo.com/kitchen): Radix-grijsschaal met brons, voelbare knoppen met rand en diepte,
+   dunne kaarten met een heel zachte schaduw, Inter, Barlow voor cijfers.
+   ===================================================================== */
+:root{
+  --gray-1:#fcfcfc;--gray-2:#f9f9f9;--gray-3:#f0f0f0;--gray-4:#e8e8e8;--gray-5:#e0e0e0;--gray-6:#d9d9d9;--gray-7:#cecece;--gray-8:#bbb;--gray-9:#8d8d8d;--gray-10:#838383;--gray-11:#646464;--gray-12:#202020;
+  --bronze-3:#f6edea;--bronze-7:#d3bcb3;--bronze-9:#a18072;--bronze-11:#7d5e54;
+  --bg:var(--gray-1);--panel:#fff;--card:#fff;--side:var(--gray-2);--col:var(--gray-2);
+  --text:var(--gray-12);--muted:var(--gray-11);--faint:var(--gray-9);
+  --line:var(--gray-5);--hairline:var(--gray-4);--hover:var(--gray-3);--sel:var(--gray-4);--fill:var(--gray-3);--group:var(--gray-2);
+  --accent:#4a4a46;--accent-2:#292926;--on-accent:#eeeeec;--brand:#4a4a46;--accent-soft:var(--bronze-3);--accent-line:var(--bronze-7);--sel-task:var(--bronze-3);
+  --tf:#4a4a46;--tfh:#64645e;--tc:#eeeeec;--tb:#292926;--tbs:#141412;
+  --sf:var(--gray-4);--sfh:var(--gray-1);--sc:var(--gray-12);--sb:var(--gray-6);--sbs:var(--gray-9);
+  --small-shadow:2px 2px 4px #00000005,0 1px 2px #00000008;
+  --r:8px;--ctl-r:8px;--r-card:12px;--ctl-h:38px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --gray-1:#111;--gray-2:#191919;--gray-3:#222;--gray-4:#2a2a2a;--gray-5:#313131;--gray-6:#3a3a3a;--gray-7:#484848;--gray-8:#606060;--gray-9:#6e6e6e;--gray-10:#7b7b7b;--gray-11:#b4b4b4;--gray-12:#eee;
+  --bronze-3:#262220;--bronze-7:#5a4c47;--bronze-9:#a18072;--bronze-11:#d4b3a5;
+  --panel:#191919;--card:#191919;
+  --tf:#d9d9d6;--tfh:#fff;--tc:#1a1a18;--tb:#8d8d8a;--tbs:#4d4d4a;--accent:#d9d9d6;--accent-2:#fff;--on-accent:#1a1a18;--brand:#d9d9d6;
+  --sf:var(--gray-4);--sfh:var(--gray-6);--sc:var(--gray-12);--sb:var(--gray-1);--sbs:#000;
+}}
+:root[data-theme="dark"]{
+  --gray-1:#111;--gray-2:#191919;--gray-3:#222;--gray-4:#2a2a2a;--gray-5:#313131;--gray-6:#3a3a3a;--gray-7:#484848;--gray-8:#606060;--gray-9:#6e6e6e;--gray-10:#7b7b7b;--gray-11:#b4b4b4;--gray-12:#eee;
+  --bronze-3:#262220;--bronze-7:#5a4c47;--bronze-9:#a18072;--bronze-11:#d4b3a5;
+  --panel:#191919;--card:#191919;
+  --tf:#d9d9d6;--tfh:#fff;--tc:#1a1a18;--tb:#8d8d8a;--tbs:#4d4d4a;--accent:#d9d9d6;--accent-2:#fff;--on-accent:#1a1a18;--brand:#d9d9d6;
+  --sf:var(--gray-4);--sfh:var(--gray-6);--sc:var(--gray-12);--sb:var(--gray-1);--sbs:#000;
+}
+/* voelbare knoppen: vlak, rand eronder; bij indrukken zakt de knop */
+.btn,.tb-cols,#quickAdd .btn{background:var(--sf)!important;color:var(--sc)!important;border:0!important;border-radius:10px!important;font-weight:550!important;
+  box-shadow:inset 0 1px 0 var(--sfh),0 2px 0 var(--sb),0 3px 0 var(--sbs)!important;margin-bottom:3px;transform:translateY(0);
+  transition:transform .15s cubic-bezier(.23,1,.32,1),box-shadow .15s cubic-bezier(.23,1,.32,1),background .12s}
+.btn:hover,.tb-cols:hover{background:var(--sf)!important;filter:brightness(.98)}
+@media (hover:hover) and (pointer:fine){.btn:hover,.tb-cols:hover{transform:translateY(1px);box-shadow:inset 0 1px 0 var(--sfh),0 1px 0 var(--sb),0 2px 0 var(--sbs)!important}}
+.btn:active,.tb-cols:active{transform:translateY(2px)!important;box-shadow:inset 0 1px 0 var(--sfh),0 0 0 var(--sb),0 1px 0 var(--sbs)!important}
+.btn:focus-visible,.tb-cols:focus-visible,.seg button:focus-visible,.nav-item:focus-visible{outline:2px solid var(--bronze-9);outline-offset:2px}
+.btn.primary,.tb-add,#banner .btn,.lock-card .btn.primary{background:var(--tf)!important;color:var(--tc)!important;
+  box-shadow:inset 0 1px 0 var(--tfh),0 3px 0 var(--tb),0 4px 0 var(--tbs)!important;margin-bottom:4px}
+@media (hover:hover) and (pointer:fine){.btn.primary:hover,.tb-add:hover{background:var(--tf)!important;transform:translateY(2px);box-shadow:inset 0 1px 0 var(--tfh),0 1px 0 var(--tb),0 2px 0 var(--tbs)!important}}
+.btn.primary:active,.tb-add:active{transform:translateY(3px)!important;box-shadow:inset 0 1px 0 var(--tfh),0 0 0 var(--tb),0 1px 0 var(--tbs)!important}
+.btn.danger{color:var(--danger)!important}
+.btn:disabled,.btn[aria-disabled=true]{opacity:.45;pointer-events:none}
+.toolbar .btn,.toolbar .tb-add,.toolbar .btn.primary,.main-head .btn{filter:none!important}
+.link{color:var(--bronze-11)!important}
+a{color:var(--bronze-11)}
+/* keuzeschakelaar: grijs bad met witte actieve knop */
+.seg{background:var(--fill)!important;border:0!important;border-radius:10px!important;padding:3px!important}
+.seg button{border-radius:8px!important;color:var(--muted)!important}
+.seg button.on{background:var(--panel)!important;color:var(--text)!important;box-shadow:var(--small-shadow),0 0 0 1px var(--line)!important}
+/* vlakken */
+.card,.sales-stat,.pace,.pg-card,.box,.table-wrap,.task,#banner,.pcalc{border:1px solid var(--hairline)!important;border-radius:12px!important;box-shadow:var(--small-shadow)!important;background:var(--panel)!important}
+.card:hover{border-color:var(--gray-7)!important}
+.card.sel,.card.sel:hover{border-color:var(--bronze-9)!important;box-shadow:0 0 0 1px var(--bronze-9)!important}
+.col{border:1px solid var(--hairline)!important;border-radius:12px!important;background:var(--col)!important}
+.props,#dNotes,ul.comments li{border-radius:10px!important;background:var(--fill)!important}
+#detail{border-left:1px solid var(--hairline)!important}
+dialog{border-radius:16px!important;border:1px solid var(--hairline)!important;box-shadow:0 6px 16px -8px #0000001a,0 16px 32px -16px #00000024!important}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=tel],input[type=email],input[type=search],select,textarea{background:var(--gray-1)!important;border:1px solid var(--line)!important;border-radius:8px!important;box-shadow:inset 0 1px 2px #0000000a!important}
+input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--bronze-9) 22%,transparent)!important}
+.top-search{border-radius:10px!important;background:var(--gray-1)!important}
+.nav-item{border-radius:8px!important}
+.nav-item.on{background:var(--gray-4)!important;box-shadow:inset 2px 0 0 var(--bronze-9)!important}
+.chip,.c-count,.fchip{border-radius:6px!important}
+.pc-out li{border-radius:8px!important}
+/* cijfers in Barlow */
+.sales-stat b,.pc-out li b,.pace b,#spPay b,.sp-num,table.sales td.num input,table.sales tfoot td{font-family:Barlow,Inter,sans-serif!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
+.sales-stat b{font-weight:600!important}
+/* progress / accentkleuren in brons */
+.sales-stat .bar i,.progress i,.pace-bar i{background:var(--bronze-9)!important}
+@media (max-width:860px){
+  #fab{background:var(--tf)!important;color:var(--tc)!important;border-radius:14px!important;box-shadow:inset 0 1px 0 var(--tfh),0 3px 0 var(--tb),0 4px 0 var(--tbs)!important}
+  #tabBar button.on{color:var(--text)!important}
+  .col-tabs button.on{background:var(--tf)!important;color:var(--tc)!important}
+}
+.lock{--bg:var(--gray-1);--panel:#fff;--line:var(--gray-6)}
+.lock-card{border-radius:16px!important;box-shadow:var(--small-shadow)!important}
+.lock-card input{border-radius:8px!important}
+/* ingedrukt houden om te bevestigen */
+.hold{position:relative;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+.hold::before{content:"";position:absolute;inset:0;background:var(--danger);opacity:.28;transform:scaleX(var(--hold,0));transform-origin:left;pointer-events:none}
 /* inlogscherm */
 .lock{--bg:#ffffff;--panel:#ffffff;--card:#ffffff;--text:#18181b;--muted:#5b5b63;--line:#d4d4d8;--accent:#18181b;--accent-2:#000;--on-accent:#fff;background:#fff!important}
 :root[data-theme="dark"] .lock{--bg:#0c0c0d;--panel:#141415;--card:#141415;--text:#f4f4f5;--muted:#a1a1aa;--line:#2a2a2e;--accent:#f4f4f5;--accent-2:#fff;--on-accent:#111;background:#0c0c0d!important}
@@ -4951,6 +5034,20 @@ function openFieldEditor(f, presetProject, back) {
   draw();
 }
 
+// Ingedrukt houden om te bevestigen (voor onomkeerbare acties): de knop vult zich, bij loslaten stopt het
+function holdToConfirm(btn, onDone, ms = 1100) {
+  let t0 = 0, raf = 0, done = false;
+  const set = f => btn.style.setProperty('--hold', f);
+  const stop = () => { cancelAnimationFrame(raf); raf = 0; if (!done) set(0); };
+  const tick = () => { const f = Math.min(1, (performance.now() - t0) / ms); set(f); if (f >= 1) { done = true; raf = 0; onDone(); } else raf = requestAnimationFrame(tick); };
+  const start = e => { if (btn.disabled || done || raf) return; e.preventDefault(); t0 = performance.now(); raf = requestAnimationFrame(tick); };
+  btn.classList.add('hold');
+  btn.addEventListener('pointerdown', start);
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, stop);
+  btn.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') start(e); });
+  btn.addEventListener('keyup', stop);
+  return {reset() { done = false; set(0); }};
+}
 function openSettings() {
   const s = data.settings.sync;
   showDialog(`
@@ -5007,20 +5104,19 @@ function openSettings() {
         <label class="fl">Wachtwoord<input id="daPw" type="password" autocomplete="current-password" autofocus></label>
         <label class="fl">Typ VERWIJDEREN om te bevestigen<input id="daTxt" type="text" autocomplete="off"></label>
         <p class="err" id="daErr"></p>
-        <div class="dlg-actions"><button type="button" class="btn" id="daNo">Annuleren</button><span class="grow"></span><button type="button" class="btn danger" id="daOk">Account definitief verwijderen</button></div>`, dd => {
+        <div class="dlg-actions"><button type="button" class="btn" id="daNo">Annuleren</button><span class="grow"></span><button type="button" class="btn danger" id="daOk">Houd ingedrukt om definitief te verwijderen</button></div>`, dd => {
         $('#daNo', dd).onclick = () => dd.close();
-        $('#daOk', dd).onclick = async e => {
+        const okBtn = $('#daOk', dd), hold = holdToConfirm(okBtn, async () => {
           const err = $('#daErr', dd); err.textContent = '';
-          if ($('#daTxt', dd).value.trim() !== 'VERWIJDEREN') { err.textContent = 'Typ VERWIJDEREN om te bevestigen.'; return; }
-          e.target.disabled = true;
+          if ($('#daTxt', dd).value.trim() !== 'VERWIJDEREN') { err.textContent = 'Typ VERWIJDEREN om te bevestigen.'; hold.reset(); return; }
           try { const b = vaultBlob(); await unseal((await openKey($('#daPw', dd).value, b)).key, b); }
-          catch { err.textContent = 'Wachtwoord klopt niet.'; e.target.disabled = false; return; }
+          catch { err.textContent = 'Wachtwoord klopt niet.'; hold.reset(); return; }
           try { await deleteAccount(); }
-          catch (ex) { err.textContent = ex.message; e.target.disabled = false; return; }
+          catch (ex) { err.textContent = ex.message; hold.reset(); return; }
           if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
           try { localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); } catch {}
           idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
-        };
+        });
       });
     });
     $('#stRecNew', d)?.addEventListener('click', () => {
