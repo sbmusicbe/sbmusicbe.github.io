@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>try{var t=localStorage.getItem("taken.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
@@ -2080,6 +2080,142 @@ body{font-size:16px}
 #banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:15px!important;color:var(--text)!important;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:16px!important;padding:14px 16px!important;margin:0 0 16px!important}
 #banner .btn{padding:10px 16px!important;border:0!important;background:var(--accent)!important;color:var(--on-accent)!important;font-weight:600!important;border-radius:12px!important}
 @media (max-width:860px){ #tabBar button{font-size:12px!important} .foot-btn{height:46px!important} }
+
+/* =====================================================================
+   Strak ontwerp: platte vlakken, dunne lijnen, kleine afronding, één accentkleur (inkt).
+   Staat helemaal onderaan en vervangt de zachtere stijl hierboven.
+   ===================================================================== */
+:root{
+  --bg:#ffffff; --panel:#ffffff; --card:#ffffff; --side:#f7f7f8; --col:#f7f7f8; --seg-on:#18181b;
+  --text:#18181b; --muted:#5b5b63; --faint:#9a9aa3;
+  --line:#e4e4e7; --hairline:#ececef; --hover:#f4f4f5; --sel:#ececef; --fill:#f4f4f5; --group:#fafafa;
+  --material:#ffffff; --material-strong:#ffffff; --glass:#ffffff; --glass-strong:#ffffff; --glass-edge:transparent;
+  --accent:#18181b; --accent-2:#000000; --on-accent:#ffffff; --brand:#18181b;
+  --accent-soft:#f4f4f5; --accent-line:#d4d4d8; --sel-task:#f4f4f5;
+  --danger:#dc2626; --ok:#15803d;
+  --shadow-card:none; --shadow-lift:0 4px 14px rgba(0,0,0,.08); --shadow:0 12px 32px rgba(0,0,0,.14);
+  --r:6px; --ctl-r:6px; --r-card:8px; --ctl-h:36px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0c0d; --panel:#141415; --card:#141415; --side:#101011; --col:#111112; --seg-on:#f4f4f5;
+  --text:#f4f4f5; --muted:#a1a1aa; --faint:#71717a;
+  --line:#2a2a2e; --hairline:#222226; --hover:#1c1c1f; --sel:#232327; --fill:#1c1c1f; --group:#111112;
+  --material:#141415; --material-strong:#141415; --glass:#141415; --glass-strong:#141415;
+  --accent:#f4f4f5; --accent-2:#ffffff; --on-accent:#111111; --brand:#f4f4f5;
+  --accent-soft:#1c1c1f; --accent-line:#3f3f46; --sel-task:#1c1c1f;
+  --danger:#f87171; --ok:#4ade80; --shadow-lift:0 4px 14px rgba(0,0,0,.5); --shadow:0 12px 32px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --bg:#0c0c0d; --panel:#141415; --card:#141415; --side:#101011; --col:#111112; --seg-on:#f4f4f5;
+  --text:#f4f4f5; --muted:#a1a1aa; --faint:#71717a;
+  --line:#2a2a2e; --hairline:#222226; --hover:#1c1c1f; --sel:#232327; --fill:#1c1c1f; --group:#111112;
+  --material:#141415; --material-strong:#141415; --glass:#141415; --glass-strong:#141415;
+  --accent:#f4f4f5; --accent-2:#ffffff; --on-accent:#111111; --brand:#f4f4f5;
+  --accent-soft:#1c1c1f; --accent-line:#3f3f46; --sel-task:#1c1c1f;
+  --danger:#f87171; --ok:#4ade80; --shadow-lift:0 4px 14px rgba(0,0,0,.5); --shadow:0 12px 32px rgba(0,0,0,.6);
+}
+body,button,input,select,textarea{font-family:Inter,-apple-system,"Segoe UI",system-ui,Roboto,sans-serif!important}
+h1,h2,h3,.main-head h2,#dTitle,.lock-card h1,.lock-card h2,dialog h3,.sales-stat b{font-family:inherit!important;font-weight:650!important;letter-spacing:-.012em!important}
+body{background:var(--bg)!important;font-size:15px;line-height:1.5;letter-spacing:0}
+body{background-image:none!important}
+/* zijbalk */
+#side{background:var(--side)!important;border-right:1px solid var(--line)!important}
+.brand{font-weight:650;font-size:16px}
+.nav-item{border-radius:6px!important;min-height:36px;font-size:14.5px;font-weight:500;color:var(--text)}
+.nav-item:hover{background:var(--hover)!important}
+.nav-item.on{background:var(--sel)!important;box-shadow:none!important;font-weight:650;color:var(--text)!important}
+.nav-item.on svg,.nav-item .ico{color:var(--muted)!important}
+.side-section{font-size:12px!important;font-weight:600;letter-spacing:.04em!important;text-transform:uppercase!important;color:var(--faint)!important;padding:20px 10px 6px!important}
+.side-section::before,.side-section .dot{display:none!important}
+.side-foot{background:none!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;margin:10px 0 0!important;padding:10px 4px 0!important}
+.foot-btn{height:38px!important;border-radius:6px!important;font-size:14.5px!important}
+.foot-btn:hover{background:var(--hover)!important}
+#syncStatus{font-size:12.5px}
+/* bovenbalk en titel */
+.topbar,.main-head,.d-head{background:var(--bg)!important;border:0!important}
+.main-head h2{font-size:clamp(22px,2.2vw,26px)!important;line-height:1.2!important}
+#viewSub,.main-head .sub{font-size:14px;color:var(--muted)}
+.top-search{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:6px!important}
+.icon-btn{border-radius:6px!important}
+.icon-btn:hover{background:var(--hover)}
+/* knoppen en keuzeschakelaars */
+.btn,.tb-cols,.tb-add,#quickAdd .btn{border-radius:6px!important;background:var(--panel)!important;border:1px solid var(--line)!important;color:var(--text)!important;box-shadow:none!important;font-weight:550!important;min-height:36px;transition:background .12s,border-color .12s}
+.btn:hover,.tb-cols:hover{background:var(--hover)!important;border-color:var(--accent-line)!important}
+.btn.primary,.tb-add,#banner .btn,.lock-card .btn.primary{background:var(--accent)!important;color:var(--on-accent)!important;border-color:var(--accent)!important}
+.btn.primary:hover,.tb-add:hover{background:var(--accent-2)!important;border-color:var(--accent-2)!important}
+.btn.danger{color:var(--danger)!important;background:var(--panel)!important}
+.seg{border-radius:6px!important;background:var(--panel)!important;border:1px solid var(--line)!important;padding:2px!important;box-shadow:none!important}
+.seg button{border-radius:4px!important;font-weight:550!important;color:var(--muted)!important}
+.seg button.on{background:var(--accent)!important;color:var(--on-accent)!important;box-shadow:none!important}
+.link,a{color:var(--text)}
+/* vlakken: dunne rand, geen schaduw */
+.card,.sales-stat,.pace,.pg-card,.box,.table-wrap,.task,#banner{background:var(--card)!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:8px!important}
+.props,#dNotes,ul.comments li{background:var(--fill)!important;border:0!important;box-shadow:none!important;border-radius:6px!important}
+.card:hover{border-color:var(--accent-line)!important;transform:none!important;box-shadow:none!important}
+.card.sel,.card.on,.task.sel{border-color:var(--accent)!important;background:var(--card)!important}
+.col{background:var(--col)!important;border:1px solid var(--hairline)!important;border-radius:8px!important}
+.col-head,.col .nm{font-size:14px;font-weight:650}
+.c-count,.chip{border-radius:4px!important}
+.chip{background:var(--fill)!important}
+.col-add input,.col-add input:focus{border-radius:6px!important}
+/* paneel en dialogen */
+#detail{background:var(--panel)!important;border-radius:0!important;border:0!important;border-left:1px solid var(--line)!important;box-shadow:-12px 0 32px rgba(0,0,0,.06)!important}
+dialog{border-radius:12px!important;border:1px solid var(--line)!important;background:var(--panel)!important;box-shadow:var(--shadow)!important}
+dialog::backdrop{background:rgba(0,0,0,.35)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#toast{border-radius:8px!important}
+/* invoervelden */
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],input[type=url],input[type=tel],input[type=email],input[type=search],select,textarea{background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:6px!important;box-shadow:none!important}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)!important;outline:0}
+.fl,label.fl,.prop>span{color:var(--muted)!important}
+/* tabellen */
+table.sales th,.pg-table th{background:var(--group)!important;font-size:12px!important;font-weight:600!important;letter-spacing:.03em;text-transform:uppercase!important;color:var(--muted)!important;border-bottom:1px solid var(--line)!important}
+table.sales td{border-bottom:1px solid var(--hairline)}
+table.sales td input,table.sales td select{background:transparent!important;border:1px solid transparent!important;border-radius:4px!important}
+table.sales td input:hover,table.sales td select:hover{border-color:var(--line)!important}
+table.sales td input:focus{background:var(--panel)!important}
+table.sales .grp-day td{text-transform:none;font-size:13px}
+/* mobiel: gewone onderbalk, vierkante knop */
+@media (max-width:860px){
+  #tabBar{left:0!important;right:0!important;bottom:0!important;height:calc(58px + env(safe-area-inset-bottom))!important;padding:4px 8px env(safe-area-inset-bottom)!important;border-radius:0!important;border:0!important;border-top:1px solid var(--line)!important;background:var(--panel)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  #tabBar button{border-radius:6px!important}
+  #tabBar button.on{background:none!important;box-shadow:none!important;color:var(--text)!important;font-weight:650}
+  .tb-ind{display:none!important}
+  #fab{border-radius:12px!important;width:52px!important;height:52px!important;right:16px!important;bottom:calc(72px + env(safe-area-inset-bottom))!important;background:var(--accent)!important;color:var(--on-accent)!important;box-shadow:var(--shadow-lift)!important}
+  .top-avatar{border-radius:8px!important;width:40px!important;height:40px!important;box-shadow:none!important;border:1px solid var(--line)!important}
+  .col-tabs button{border-radius:6px!important}
+  .col-tabs button.on{background:var(--accent)!important;color:var(--on-accent)!important}
+}
+/* fijnschaven */
+.fchip,.badge,.pill{border-radius:4px!important}
+#side{box-shadow:none!important}
+#app.side-open #side{box-shadow:var(--shadow)!important}
+.toolbar .btn,.toolbar .tb-add,.toolbar .btn.primary,.main-head .btn{box-shadow:none!important;filter:none!important}
+.tb-add::after,.tb-add::before{display:none!important}
+.side-section>span::before,.d-sec>span::before,.eyebrow::before{display:none!important}
+.side-section>span,.d-sec>span,.eyebrow{font-size:12px!important;font-weight:600!important;letter-spacing:.04em!important;text-transform:uppercase!important;color:var(--faint)!important;gap:0!important}
+.btn.primary,.btn.primary:hover,.tb-add,.tb-add:hover,#banner .btn,#fab,#fab:hover{box-shadow:none!important}
+.pc-out li{border-radius:6px!important}
+.card.sel,.card.sel:hover{outline:0!important;box-shadow:none!important;border-color:var(--accent)!important}
+.t-ico{width:24px!important;height:24px!important;border-radius:6px!important;font-size:14px!important}
+.t-ico.emo{width:auto!important;height:auto!important;font-size:18px!important}
+.card .t-ico{margin-bottom:6px!important}
+.pcalc{border-radius:8px!important}
+
+/* rondleiding */
+#tour{position:fixed;inset:0;z-index:100}
+#tour .tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none;transition:all .2s ease}
+#tour .tour-card{position:fixed;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);box-sizing:border-box}
+#tour .tour-n{margin:0 0 4px;font-size:12.5px;color:var(--muted)}
+#tour h3{margin:0 0 6px;font-size:18px}
+#tour .tour-x{margin:0 0 14px;font-size:15px;line-height:1.5;color:var(--muted)}
+#tour .tour-btns{display:flex;align-items:center;gap:8px}
+#tour:has(.tour-hole[style*="display:none"]){background:rgba(0,0,0,.5)}
+/* inlogscherm */
+.lock{--bg:#ffffff;--panel:#ffffff;--card:#ffffff;--text:#18181b;--muted:#5b5b63;--line:#d4d4d8;--accent:#18181b;--accent-2:#000;--on-accent:#fff;background:#fff!important}
+:root[data-theme="dark"] .lock{--bg:#0c0c0d;--panel:#141415;--card:#141415;--text:#f4f4f5;--muted:#a1a1aa;--line:#2a2a2e;--accent:#f4f4f5;--accent-2:#fff;--on-accent:#111;background:#0c0c0d!important}
+.lock-card{background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;animation:none!important}
+.lock-card .btn.primary{border-radius:6px!important}
+.lock-card input{border-radius:6px!important}
 </style>
 </head>
 <body>
@@ -3032,7 +3168,7 @@ async function deleteAccount() {
 function showRecoveryKey(rec, again) {
   showDialog(`<h3>${again ? 'Nieuwe herstelsleutel' : 'Bewaar je herstelsleutel'}</h3>
     <p class="muted small">Vergeet je ooit je wachtwoord, dan kun je met deze sleutel opnieuw toegang krijgen tot je gegevens. Niemand anders kan dat, ook wij niet. Bewaar de sleutel op een veilige plek (bv. in een wachtwoordbeheerder of op papier).${again ? ' De vorige herstelsleutel werkt niet meer.' : ''}</p>
-    <div class="box"><code id="rkVal" style="font-size:18px;letter-spacing:1px;word-break:break-all;user-select:all">${esc(rec)}</code></div>
+    <div class="box"><code id="rkVal" style="font-size:15px;letter-spacing:.5px;word-break:keep-all;user-select:all">${esc(rec)}</code></div>
     <div class="dlg-actions" style="margin-top:6px"><button type="button" class="btn" id="rkCopy">Kopiëren</button><button type="button" class="btn" id="rkDl">Downloaden</button></div>
     <label class="chk" style="margin-top:10px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="rkOk"> Ik heb de herstelsleutel veilig bewaard</label>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="rkDone" disabled>Klaar</button></div>`, d => {
@@ -3043,7 +3179,7 @@ function showRecoveryKey(rec, again) {
       a.download = 'taken-herstelsleutel.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#rkOk', d).onchange = e => { $('#rkDone', d).disabled = !e.target.checked; };
-    $('#rkDone', d).onclick = () => d.close();
+    $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeTour, 400); };
     d.addEventListener('cancel', e => { if (!$('#rkOk', d).checked) e.preventDefault(); }, {once:true});
   });
 }
@@ -3139,6 +3275,72 @@ $('#lockForm').addEventListener('submit', async e => {
   }
 });
 
+/* ---------------- Rondleiding voor nieuwe gebruikers ---------------- */
+function tourSteps() {
+  const mob = matchMedia('(max-width:860px)').matches, q = x => document.querySelector(x);
+  const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
+  return [
+    {title:'Welkom bij Taken', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
+    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een taak maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
+    {el:() => q('.board .col') || q('#list'), title:'Kolommen zijn stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
+    ...(mob ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
+    {el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'},
+    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je eigen velden en de instellingen.'}] : [
+      {el:() => q('#openFields'), title:'Eigen velden', text:'Voeg extra gegevens toe aan je taken, zoals formaat, telefoonnummer of kortingsprijs.'},
+      {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe herstelsleutel.'}]),
+    {title:'Klaar om te beginnen', text:'Maak je eerste taak aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
+  ];
+}
+let tourOn = false;
+function startTour() {
+  if (tourOn) return; tourOn = true;
+  const steps = tourSteps(); let i = 0;
+  const root = document.createElement('div'); root.id = 'tour';
+  root.innerHTML = '<div class="tour-hole"></div><div class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tourT"><p class="tour-n"></p><h3 id="tourT"></h3><p class="tour-x"></p><div class="tour-btns"><button type="button" class="link" data-t="skip">Overslaan</button><span class="grow"></span><button type="button" class="btn" data-t="prev">Vorige</button><button type="button" class="btn primary" data-t="next">Volgende</button></div></div>';
+  document.body.appendChild(root);
+  const hole = root.querySelector('.tour-hole'), card = root.querySelector('.tour-card');
+  const finish = () => {
+    tourOn = false; root.remove(); removeEventListener('keydown', onKey); removeEventListener('resize', place);
+    if (data && !data.settings.tourDone) { data.settings.tourDone = true; save(); }
+  };
+  const place = () => {
+    const st = steps[i], el = st.el?.(), vw = innerWidth, vh = innerHeight;
+    const ok = el && el.getClientRects().length;
+    card.style.width = Math.min(340, vw - 24) + 'px';
+    if (!ok) { hole.style.cssText = 'display:none'; card.style.left = Math.max(12, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(12, (vh - card.offsetHeight) / 2.4) + 'px'; return; }
+    const r = el.getBoundingClientRect(), pad = 6;
+    hole.style.cssText = `display:block;left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px`;
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+    let left, top;
+    if (r.right < 320 && vw > 860) { left = r.right + 16; top = Math.min(Math.max(12, r.top - 8), vh - ch - 12); }
+    else { left = Math.min(Math.max(12, r.left + r.width / 2 - cw / 2), vw - cw - 12); top = r.bottom + 14 + ch < vh ? r.bottom + 14 : Math.max(12, r.top - ch - 14); }
+    card.style.left = left + 'px'; card.style.top = top + 'px';
+  };
+  const show = () => {
+    const st = steps[i], el = st.el?.();
+    if (el && el.getClientRects().length) el.scrollIntoView({block:'nearest', inline:'nearest'});
+    card.querySelector('.tour-n').textContent = `Stap ${i + 1} van ${steps.length}`;
+    card.querySelector('h3').textContent = st.title; card.querySelector('.tour-x').textContent = st.text;
+    card.querySelector('[data-t=prev]').hidden = i === 0;
+    card.querySelector('[data-t=next]').textContent = i === steps.length - 1 ? 'Aan de slag' : 'Volgende';
+    card.querySelector('[data-t=skip]').hidden = i === steps.length - 1;
+    place(); card.querySelector('[data-t=next]').focus({preventScroll:true});
+  };
+  const onKey = e => { if (e.key === 'Escape') finish(); else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); card.querySelector('[data-t=next]').click(); } else if (e.key === 'ArrowLeft' && i) { i--; show(); } };
+  card.addEventListener('click', e => {
+    const t = e.target.closest('[data-t]')?.dataset.t; if (!t) return;
+    if (t === 'skip') finish(); else if (t === 'prev') { i--; show(); } else if (i === steps.length - 1) finish(); else { i++; show(); }
+  });
+  addEventListener('keydown', onKey); addEventListener('resize', place);
+  show();
+}
+// alleen voor wie nieuw is: nog geen taken of klanten en de rondleiding nog niet gezien
+function maybeTour() {
+  if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
+  if (!data || tourOn || data.settings.tourDone || dlg.open || !$('#lock').hidden) return;
+  if (data.tasks.length || data.clients.length) { data.settings.tourDone = true; return; }
+  startTour();
+}
 function enterApp() {
   $('#lock').hidden = true;
   $('#app').hidden = false;
@@ -3146,6 +3348,7 @@ function enterApp() {
   renderAll();
   startTimers();
   warmClients();
+  setTimeout(maybeTour, 900);
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
 // Snelkoppelingen uit de taakbalk/het startmenu (?view=today, ?new=1) en heropenen van een al open venster.
@@ -4765,6 +4968,9 @@ function openSettings() {
         ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
 
+    <h4>Hulp</h4>
+    <button type="button" class="btn" id="stTour">Rondleiding bekijken</button>
+
     <h4>Beveiliging</h4>
     <label class="fl">Automatisch vergrendelen na inactiviteit
       <select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -4834,6 +5040,7 @@ function openSettings() {
         };
       });
     });
+    $('#stTour', d).addEventListener('click', () => { dlg.close(); setTimeout(startTour, 250); });
     $('#stToAccount', d)?.addEventListener('click', async () => {
       try { localStorage.setItem('taken.lock.mode', 'cloud-up'); } catch {}
       lock();
