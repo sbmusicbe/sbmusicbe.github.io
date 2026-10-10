@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Taken</title>
+<title>Klose</title>
 <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Taken">
-<link rel="manifest" href="manifest.webmanifest?v=2">
-<link rel="icon" href="icon.svg?v=2" type="image/svg+xml">
-<link rel="icon" href="favicon-32.png?v=2" type="image/png" sizes="32x32">
-<link rel="icon" href="favicon-48.png?v=2" type="image/png" sizes="48x48">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<meta name="apple-mobile-web-app-title" content="Klose">
+<link rel="manifest" href="manifest.webmanifest?v=3">
+<link rel="icon" href="icon.svg?v=3" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png?v=3" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon-48.png?v=3" type="image/png" sizes="48x48">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1801,10 +1801,10 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--tex
 
 a,.link{color:var(--accent)}
 .link:hover{text-decoration:underline}
-/* logo: de rode r (zelfde als het app-icoon) */
+/* logo: de K van Klose (donker, in de donkere modus de lichte variant) */
 .brand i,.lock-logo{background:none!important;width:auto!important;height:auto!important;border-radius:0!important;box-shadow:none!important;display:block!important;color:var(--text)}
-.brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:331/229;width:30px;background:var(--logo);-webkit-mask:url("logo-r.svg") center/contain no-repeat;mask:url("logo-r.svg") center/contain no-repeat}
-.lock-logo::before{width:64px}
+.brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:784/1006;width:22px;background:url("logo-k.png") center/contain no-repeat}
+.lock-logo::before{width:46px}
 .brand i img,.brand i svg,.lock-logo img,.lock-logo svg{display:none!important}
 .brand{font-weight:600;font-size:17px;letter-spacing:-.01em}
 /* inlogscherm = het laadscherm van de site: zwart, wit logo, dun voortgangsstreepje */
@@ -1987,7 +1987,7 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
 }
 .top-avatar{display:none}
 .top-avatar{width:46px;height:46px;border-radius:50%;border:0;background:var(--panel);padding:0;place-items:center;box-shadow:var(--shadow-card)}
-.top-avatar::before{content:"";display:block;width:24px;aspect-ratio:331/229;background:var(--logo);-webkit-mask:url("logo-r.svg") center/contain no-repeat;mask:url("logo-r.svg") center/contain no-repeat}
+.top-avatar::before{content:"";display:block;width:20px;aspect-ratio:784/1006;background:url("logo-k.png") center/contain no-repeat}
 .group{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 18px!important}
 .proj-notes,#banner{background:none!important;box-shadow:none!important}
 .proj-notes:hover{background:none!important}
@@ -2227,6 +2227,9 @@ table.sales .grp-day td{text-transform:none;font-size:13px}
 .help-list li span{display:block;color:var(--muted);font-size:14.5px;line-height:1.45}
 .pc-togo{flex:1 1 100%;order:2;margin:0;font-size:15px;color:var(--muted)}
 .pc-togo b{color:var(--text);font-family:Barlow,Inter,sans-serif;font-size:17px}
+/* donkere modus: lichte K */
+:root[data-theme="dark"] .brand i::before,:root[data-theme="dark"] .lock-logo::before,:root[data-theme="dark"] .top-avatar::before{background-image:url("logo-k-light.png")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brand i::before,:root:not([data-theme="light"]) .lock-logo::before,:root:not([data-theme="light"]) .top-avatar::before{background-image:url("logo-k-light.png")}}
 /* rondleiding */
 #tour{position:fixed;inset:0;z-index:100}
 #tour .tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none;transition:all .2s ease}
@@ -2336,7 +2339,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 <div id="lock" class="lock">
   <form id="lockForm" class="lock-card" autocomplete="on">
     <div class="lock-logo has-img"><img src="icon.svg" alt="" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-    <h1 id="lockTitle">Taken</h1>
+    <h1 id="lockTitle">Klose</h1>
     <p id="lockSub" class="muted"></p>
     <input type="text" name="username" autocomplete="username" value="taken" hidden>
     <div id="lockFields"></div>
@@ -2349,13 +2352,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 </div>
 
 <!-- ============ App ============ -->
-<div id="titlebar" aria-hidden="true"><img src="icon.svg" alt=""><span id="tbTitle">Taken</span></div>
+<div id="titlebar" aria-hidden="true"><img src="icon.svg" alt=""><span id="tbTitle">Klose</span></div>
 <div id="ctxMenu" role="menu" hidden></div>
 <datalist id="clientNames"></datalist>
 <div id="app" hidden>
   <aside id="side">
     <div class="side-head">
-      <span class="brand"><i class="has-img"><img src="icon.svg" alt="" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Taken</span>
+      <span class="brand"><i class="has-img"><img src="icon.svg" alt="" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Klose</span>
     </div>
     <nav id="nav"></nav>
     <div class="side-section"><span>Overzicht</span></div>
@@ -2420,7 +2423,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 <script>
 'use strict';
 /* =========================================================
-   Taken — persoonlijke takenlijst
+   Klose — persoonlijke takenlijst
    Alle gegevens worden lokaal versleuteld (AES-256-GCM, sleutel
    afgeleid van je wachtwoord met PBKDF2-SHA256). Met een account
    (zie cloud.json) synchroniseert de versleutelde kluis tussen toestellen.
@@ -3134,13 +3137,13 @@ function renderLock() {
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
     btn.textContent = 'Account aanmaken'; alt.textContent = 'Ik heb al een account';
   } else if (lockMode === 'setup') {
-    $('#lockTitle').textContent = 'Welkom bij Taken';
+    $('#lockTitle').textContent = 'Welkom bij Klose';
     sub.textContent = 'Kies een wachtwoord om je taken te beveiligen. Onthoud het goed: zonder dit wachtwoord kan niemand ze lezen.';
     f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="8" required autofocus>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
     btn.textContent = 'Aan de slag'; alt.hidden = true;
   } else {
-    $('#lockTitle').textContent = 'Taken';
+    $('#lockTitle').textContent = 'Klose';
     sub.textContent = 'Voer je wachtwoord in om te ontgrendelen.';
     f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="current-password" required autofocus>`;
     btn.textContent = 'Ontgrendelen'; alt.hidden = true;
@@ -3330,8 +3333,8 @@ function showRecoveryKey(rec, again) {
     $('#rkCopy', d).onclick = async () => { try { await navigator.clipboard.writeText(rec); toast('Gekopieerd'); } catch { toast('Kopiëren mislukt: selecteer de sleutel en kopieer zelf'); } };
     $('#rkDl', d).onclick = () => {
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([`Taken: noodcode\n${data?.settings.sync?.email || ''}\n\n${rec}\n\nBewaar dit bestand veilig. Met deze sleutel kun je een vergeten wachtwoord vervangen.\n`], {type:'text/plain'}));
-      a.download = 'taken-noodcode.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      a.href = URL.createObjectURL(new Blob([`Klose: noodcode\n${data?.settings.sync?.email || ''}\n\n${rec}\n\nBewaar dit bestand veilig. Met deze sleutel kun je een vergeten wachtwoord vervangen.\n`], {type:'text/plain'}));
+      a.download = 'klose-noodcode.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#rkOk', d).onchange = e => { $('#rkDone', d).disabled = !e.target.checked; };
     $('#rkDone', d).onclick = () => { d.close(); setTimeout(maybeStart, 400); };
@@ -3438,7 +3441,7 @@ function tourSteps() {
   const mob = matchMedia('(max-width:860px)').matches, q = x => document.querySelector(x);
   const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
   return [
-    {title:'Welkom bij Taken', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
+    {title:'Welkom bij Klose', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
     {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een taak maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
     {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
     ...(mob || !feat('clients') ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
@@ -3498,7 +3501,7 @@ function featureChecks(cur) {
 }
 function askFeatures() {
   return new Promise(resolve => {
-    showDialog(`<h3>Waarvoor gebruik je Taken?</h3>
+    showDialog(`<h3>Waarvoor gebruik je Klose?</h3>
       <p class="muted small">Kies wat je nodig hebt. De rest blijft verborgen zodat het overzichtelijk blijft. Je kunt dit altijd aanpassen onder Instellingen.</p>
       <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Taken</b><small>Je to-do’s met deadline, notities en opmerkingen</small></span></label>${featureChecks({})}</div>
       <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="ftOk">Verder</button></div>`, d => {
@@ -3542,7 +3545,7 @@ function enterApp() {
   { const fp = sortedProjects().find(p => p.id !== 'inbox' && !p.finished); if (view.type === 'all' && fp) view = {type:'project', id:fp.id}; }
   $('#lock').hidden = true;
   $('#app').hidden = false;
-  document.title = 'Taken';
+  document.title = 'Klose';
   renderAll();
   startTimers();
   warmClients();
@@ -3998,8 +4001,8 @@ function renderHead() {
   const ab = $('#archBar'); ab.hidden = !arch?.finished;
   if (arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button>`;
   $('#editProject').title = 'Meer';
-  document.title = `${viewTitle()} · Taken`;
-  $('#tbTitle').textContent = `${viewTitle()} — Taken`;
+  document.title = `${viewTitle()} · Klose`;
+  $('#tbTitle').textContent = `${viewTitle()} — Klose`;
   $('#miniTitle').textContent = viewTitle();
 }
 function toolbarFields() {
@@ -7458,7 +7461,7 @@ async function bioKey(secret) {
 const bioAssert = (credId, salt) => navigator.credentials.get({publicKey:{challenge:rndBytes(32), rpId:location.hostname, allowCredentials:[{type:'public-key', id:credId}], userVerification:'required', timeout:60000, extensions:{prf:{eval:{first:salt}}}}});
 async function bioEnable(pw) {
   const salt = rndBytes(32);
-  const cred = await navigator.credentials.create({publicKey:{challenge:rndBytes(32), rp:{name:'Taken', id:location.hostname}, user:{id:rndBytes(16), name:'taken', displayName:'Taken'},
+  const cred = await navigator.credentials.create({publicKey:{challenge:rndBytes(32), rp:{name:'Klose', id:location.hostname}, user:{id:rndBytes(16), name:'taken', displayName:'Taken'},
     pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}], timeout:60000,
     authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'}, extensions:{prf:{eval:{first:salt}}}}});
   const ext = cred.getClientExtensionResults().prf;
@@ -7491,7 +7494,7 @@ function bioBox() {
   if (!bioSupported()) return `<div class="box"><b>${name}</b><p class="muted small">Niet beschikbaar in deze browser.</p></div>`;
   if (bioGet()) return `<div class="box bio-box"><div class="nt-head"><div><b>Ontgrendelen met ${name}</b><br><span class="muted small">Aan op dit toestel</span></div><button type="button" class="btn" id="bioOff">Uitzetten</button></div></div>`;
   return `<div class="box bio-box"><b>Ontgrendelen met ${name}</b>
-    <p class="muted small">Ontgrendel Taken op dit toestel met ${name} in plaats van je wachtwoord te typen. Je wachtwoord wordt enkel bewaard in een versleutelde vorm die alleen ${name} kan openen. Vereist iOS 18 of nieuwer.</p>
+    <p class="muted small">Ontgrendel Klose op dit toestel met ${name} in plaats van je wachtwoord te typen. Je wachtwoord wordt enkel bewaard in een versleutelde vorm die alleen ${name} kan openen. Vereist iOS 18 of nieuwer.</p>
     <label class="fl">Je wachtwoord<input id="bioPw" type="password" autocomplete="current-password"></label>
     <p class="err" id="bioErr"></p>
     <button type="button" class="btn" id="bioOn">${name} aanzetten</button></div>`;

@@ -1,4 +1,4 @@
-# Multi-user voor HardSales CRM: uitwerking
+# Multi-user voor Klose: uitwerking
 
 > **Status:** alles uit dit plan is gebouwd en staat aan zodra `taken/cloud.json` bestaat: accounts met e-mail en wachtwoord, een versleutelde kluis per account met datasleutel en **herstelsleutel**, **snelle wachtwoordwijziging**, **wachtwoord vergeten** via een herstelmail, synchronisatie met versiecontrole, het **splitsen van zeer grote kluizen** (klanten apart) en het meenemen van bestaande gegevens. Het SQL-script staat nu in [`supabase.sql`](supabase.sql). Opmerking: in de praktijk staan de ingepakte datasleutels in de kluis zelf (`blob.w`); de kolom `wrapped` blijft leeg en ongebruikt.
 
@@ -60,7 +60,7 @@ De app slaat bij elke wijziging op met een controle op `rev` (alleen bijwerken a
 | Nieuw toestel: pagina openen en wachtwoord | Pagina openen, e-mail en wachtwoord |
 | Eén persoon | Zoveel personen als je wilt, elk met eigen gegevens |
 
-Zonder `cloud.json` werkt Taken volledig lokaal (één toestel, met back-ups). De vroegere synchronisatie via GitHub-gist en `config.json` is verwijderd.
+Zonder `cloud.json` werkt Klose volledig lokaal (één toestel, met back-ups). De vroegere synchronisatie via GitHub-gist en `config.json` is verwijderd.
 
 ## Instellen door de beheerder (eenmalig, ongeveer 10 minuten)
 
