@@ -1280,7 +1280,7 @@ html.wco dialog{max-height:calc(100vh - env(titlebar-area-height,33px) - 24px)}
 .ci-prog span{display:block;margin-top:6px;font-size:13px;color:var(--muted)}
 
 
-/* desktop: invoerbalk enkel na "+ Taak" / N, compactere werkbalk */
+/* desktop: invoerbalk enkel na "+ Deal" / N, compactere werkbalk */
 .tb-add{display:none}
 @media (min-width:861px){
   #quickAdd,#qaPreview{display:none}
@@ -1458,7 +1458,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,v
 .chip,.fchip{border-radius:999px;font-weight:600}
 #banner{border-radius:12px!important;background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important}
 
-/* ---- taken ---- */
+/* ---- deals ---- */
 .check{width:20px;height:20px;border-radius:50%!important;border:1.5px solid var(--faint)}
 .check svg{width:12px;height:12px}
 .check.on{background:var(--accent);border-color:var(--accent)}
@@ -1524,7 +1524,7 @@ dialog{background:var(--panel)!important;border:1px solid var(--line)!important;
 }
 
 /* ===== Rust: minder tegelijk in beeld (zoals Things: bediening verschijnt pas als je ze nodig hebt) ===== */
-/* werkbalk: enkel Bord/Lijst, Filter en + Taak; zoeken, sorteren, filteren en kolommen klappen open onder Filter */
+/* werkbalk: enkel Bord/Lijst, Filter en + Deal; zoeken, sorteren, filteren en kolommen klappen open onder Filter */
 @media (min-width:861px){
   .tb-toggle{display:inline-flex;align-items:center;gap:6px;position:relative;margin-left:auto}
   .tb-toggle svg{width:14px;height:14px}
@@ -1643,7 +1643,7 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
 /* de glaslaag achter de kop (verscheen bij scrollen) hoort niet bij deze look en bedekte de hele pagina */
 .main-head::before,.main-head.scrolled::before{content:none!important;display:none!important}
 @media (min-width:861px){
-  /* titelregel: titel + ondertitel links, werkbalk (Bord/Lijst, Filter, + Taak) rechts */
+  /* titelregel: titel + ondertitel links, werkbalk (Bord/Lijst, Filter, + Deal) rechts */
   .main-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:12px 20px 56px}
   .main-inner>*{grid-column:1/-1}
   .main-inner>.main-head{grid-column:1;grid-row:1}
@@ -1654,7 +1654,7 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
   .main-head h2{font-size:24px}
   .main-head .view-sub{font-size:13px;color:var(--muted);margin:0;white-space:nowrap}
   .main-head #editProject{align-self:center}
-  /* taak open in het bord: het detailpaneel ligt over de rechterkant, dus de werkbalk schuift mee op */
+  /* deal open in het bord: het detailpaneel ligt over de rechterkant, dus de werkbalk schuift mee op */
   #app.board-mode.with-detail .main-inner>.toolbar{margin-right:calc(var(--detail-w,400px) + 24px)}
   #app.board-mode.with-detail .main-head #editProject{margin-right:calc(var(--detail-w,400px) + 24px)}
   .topbar{height:40px;padding:0 20px}
@@ -2395,7 +2395,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
       <div id="banner" hidden></div>
       <div class="toolbar" id="toolbar"></div>
       <form id="quickAdd" autocomplete="off">
-        <input id="qaInput" type="text" placeholder="Nieuwe taak… bv. “Jan bellen morgen 14u”" enterkeyhint="done">
+        <input id="qaInput" type="text" placeholder="Nieuwe deal… bv. “Jan bellen morgen 14u”" enterkeyhint="done">
         <button class="btn primary" type="submit">Toevoegen</button>
       </form>
       <div id="qaPreview"><span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span></div>
@@ -2409,7 +2409,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
   <!-- iOS 27: compacte titelbalk, zwevende tabbalk en +-knop (alleen gsm) -->
   <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
   <nav id="tabBar" aria-label="Hoofdnavigatie"><i class="tb-ind" aria-hidden="true"></i>
-    <button type="button" data-tab="all"><span class="ti"></span><span>Taken</span></button>
+    <button type="button" data-tab="all"><span class="ti"></span><span>Deals</span></button>
     <button type="button" id="tabSlot" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
     <button type="button" data-tab="agenda"><span class="ti"></span><span>Agenda</span></button>
     <button type="button" data-tab="more"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Meer</span></button>
@@ -2423,7 +2423,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 <script>
 'use strict';
 /* =========================================================
-   Klose — persoonlijke takenlijst
+   Klose — persoonlijke dealslijst
    Alle gegevens worden lokaal versleuteld (AES-256-GCM, sleutel
    afgeleid van je wachtwoord met PBKDF2-SHA256). Met een account
    (zie cloud.json) synchroniseert de versleutelde kluis tussen toestellen.
@@ -2800,7 +2800,7 @@ const VIEW_FEATURE = {clients:'clients', client:'clients', agenda:'agenda', btw:
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
-/* Op het toestel staat de kluis in twee delen: een kleine kern (taken, verkopen, instellingen) en de klanten apart (IndexedDB).
+/* Op het toestel staat de kluis in twee delen: een kleine kern (deals, verkopen, instellingen) en de klanten apart (IndexedDB).
    Een gewone wijziging schrijft enkel de kern; de klanten enkel als ze veranderd zijn. Bij het ontgrendelen opent de app
    meteen met de kern en laden de klanten daarna op de achtergrond. De online kluis en back-ups blijven één volledige kluis. */
 const CL_KEY = 'taken.clients.';
@@ -3138,7 +3138,7 @@ function renderLock() {
     btn.textContent = 'Account aanmaken'; alt.textContent = 'Ik heb al een account';
   } else if (lockMode === 'setup') {
     $('#lockTitle').textContent = 'Welkom bij Klose';
-    sub.textContent = 'Kies een wachtwoord om je taken te beveiligen. Onthoud het goed: zonder dit wachtwoord kan niemand ze lezen.';
+    sub.textContent = 'Kies een wachtwoord om je deals te beveiligen. Onthoud het goed: zonder dit wachtwoord kan niemand ze lezen.';
     f.innerHTML = `<label for="pw1">Wachtwoord</label><input id="pw1" type="password" autocomplete="new-password" minlength="8" required autofocus>
       <label for="pw2">Herhaal wachtwoord</label><input id="pw2" type="password" autocomplete="new-password" required>`;
     btn.textContent = 'Aan de slag'; alt.hidden = true;
@@ -3442,14 +3442,14 @@ function tourSteps() {
   const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
   return [
     {title:'Welkom bij Klose', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
-    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een taak maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
-    {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een taak naar de volgende kolom als je verder bent. Klik op een taak om alles te zien en aan te passen.'},
-    ...(mob || !feat('clients') ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een taak koppel je aan een klant door de naam te typen.'}]),
+    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een deal maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
+    {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een deal naar de volgende kolom als je verder bent. Klik op een deal om alles te zien en aan te passen.'},
+    ...(mob || !feat('clients') ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een deal koppel je aan een klant door de naam te typen.'}]),
     ...(!feat('sales') ? [] : [{el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'}]),
     ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je extra gegevens en de instellingen.'}] : [
-      {el:() => q('#openFields'), title:'Extra gegevens', text:'Voeg extra gegevens toe aan je taken, zoals formaat, telefoonnummer of kortingsprijs.'},
+      {el:() => q('#openFields'), title:'Extra gegevens', text:'Voeg extra gegevens toe aan je deals, zoals formaat, telefoonnummer of kortingsprijs.'},
       {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe noodcode.'}]),
-    {title:'Klaar om te beginnen', text:'Maak je eerste taak aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
+    {title:'Klaar om te beginnen', text:'Maak je eerste deal aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
   ];
 }
 let tourOn = false;
@@ -3503,7 +3503,7 @@ function askFeatures() {
   return new Promise(resolve => {
     showDialog(`<h3>Waarvoor gebruik je Klose?</h3>
       <p class="muted small">Kies wat je nodig hebt. De rest blijft verborgen zodat het overzichtelijk blijft. Je kunt dit altijd aanpassen onder Instellingen.</p>
-      <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Taken</b><small>Je to-do’s met deadline, notities en opmerkingen</small></span></label>${featureChecks({})}</div>
+      <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Deals</b><small>Je deals met deadline, notities en opmerkingen</small></span></label>${featureChecks({})}</div>
       <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="ftOk">Verder</button></div>`, d => {
       dlg.dataset.sticky = '1';
       d.addEventListener('cancel', e => e.preventDefault(), {once:true});
@@ -3514,7 +3514,7 @@ function askFeatures() {
     });
   });
 }
-// Alleen taken: rustige stappen in plaats van het verkoopproces (enkel zolang er nog geen taken zijn)
+// Alleen deals: rustige stappen in plaats van het verkoopproces (enkel zolang er nog geen deals zijn)
 function neutralStages() {
   if (data.tasks.length) return;
   const set = {callback:['Te doen', '#eb8909', false], mail:['Bezig', '#246fe0', false], positive:['Klaar', '#3aa655', true]};
@@ -3528,7 +3528,7 @@ async function firstRun() {
   if (!f.clients && !f.sales) neutralStages();
   save(); renderAll();
 }
-// alleen voor wie nieuw is: nog geen taken of klanten en de rondleiding nog niet gezien
+// alleen voor wie nieuw is: nog geen deals of klanten en de rondleiding nog niet gezien
 async function maybeStart() {
   if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
   if (!data || tourOn || dlg.open || !$('#lock').hidden) return;
@@ -3583,8 +3583,8 @@ async function lock() {
 let view = {type:'all'};
 let selectedId = null;
 let searchQ = '';
-const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle taken']];
-const SIDE_VIEWS = [];   // geen vaste weergaven meer in de zijbalk; Taken en Vandaag blijven via de tabbalk op gsm, het logo brengt je terug naar alle taken
+const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle deals']];
+const SIDE_VIEWS = [];   // geen vaste weergaven meer in de zijbalk; Deals en Vandaag blijven via de tabbalk op gsm, het logo brengt je terug naar alle deals
 const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === 'sales' ? 's:' + view.id : view.type;
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
@@ -3713,7 +3713,7 @@ function matchFilter(t, ff, fv) {
     default: return String(v ?? '').toLowerCase().includes(fv.toLowerCase());
   }
 }
-// Bij een actieve sortering staan taken zonder deadline altijd bovenaan; de eigen (sleep)volgorde blijft zoals ze is
+// Bij een actieve sortering staan deals zonder deadline altijd bovenaan; de eigen (sleep)volgorde blijft zoals ze is
 function taskSorter(key) {
   const f = sortFn(key);
   return key === 'manual' ? f : (a, b) => (!a.due === !b.due ? f(a, b) : a.due ? 1 : -1);
@@ -3835,7 +3835,7 @@ function renderList() {
       <ul class="tasks">${(cut ? g.tasks.slice(0, LIST_LIMIT) : g.tasks).map(taskRow).join('')}</ul>${cut ? `<button type="button" class="link list-more" data-lmore="${esc(gk)}">Toon alle ${g.tasks.length}</button>` : ''}</section>`;
   }
   if (!open.length) {
-    const msg = searchQ || p.fv ? 'Geen taken gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag. Geniet ervan!' : 'Nog geen taken hier.';
+    const msg = searchQ || p.fv ? 'Geen deals gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag. Geniet ervan!' : 'Nog geen deals hier.';
     html = `<div class="empty">${I.done}<div>${msg}</div></div>`;
   }
   if (p.showDone && done.length) html += `<details class="done-sec" open><summary>Afgewerkt (${done.length})</summary><ul class="tasks">${done.map(taskRow).join('')}</ul></details>`;
@@ -3869,8 +3869,8 @@ function renderBoard() {
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
       <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right">${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-menu" data-colmenu="${st.id}" data-total="${total}" title="Meer" aria-label="Meer acties voor ${esc(st.label)}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
-      <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Taak toevoegen" aria-label="Taak toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
-      <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep taken hierheen</div>'}</div>
+      <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Deal toevoegen" aria-label="Deal toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
+      <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep deals hierheen</div>'}</div>
       ${more}
     </section>`;
   };
@@ -3916,7 +3916,7 @@ function renderMain() {
   const board = prefs().layout === 'board';
   $('.main-inner').classList.toggle('wide', board);
   $('#app').classList.toggle('board-mode', board);
-  $('#qaInput').placeholder = board ? `Nieuwe taak in ${firstOpen().label}… bv. “Jan bellen morgen 14u”` : 'Nieuwe taak… bv. “Jan bellen morgen 14u”';
+  $('#qaInput').placeholder = board ? `Nieuwe deal in ${firstOpen().label}… bv. “Jan bellen morgen 14u”` : 'Nieuwe deal… bv. “Jan bellen morgen 14u”';
   if (board) renderBoard(); else renderList();
 }
 
@@ -3971,8 +3971,8 @@ function viewSubtitle() {
   const t = view.type;
   if (['all', 'project', 'inbox', 'today', 'upcoming'].includes(t)) {
     const open = viewTasks(false).filter(x => !x.done), late = open.filter(x => x.due && x.due < today()).length;
-    if (!open.length) return 'Geen open taken.';
-    return `${open.length} open ${open.length === 1 ? 'taak' : 'taken'}${late ? ` · ${late} te laat` : ''}`;
+    if (!open.length) return 'Geen open deals.';
+    return `${open.length} open ${open.length === 1 ? 'deal' : 'deals'}${late ? ` · ${late} te laat` : ''}`;
   }
   if (t === 'clients') return `${data.clients.length.toLocaleString('nl-BE')} klanten`;
   if (t === 'notes') return `${data.notes.length} ${data.notes.length === 1 ? 'pagina' : 'pagina’s'}`;
@@ -3980,12 +3980,12 @@ function viewSubtitle() {
   if (t === 'agenda') { const n = eventsSoon(); return n ? `${n} ${n === 1 ? 'datum' : 'data'} de komende 7 dagen` : 'Niets gepland de komende 7 dagen.'; }
   return '';
 }
-// Eerste keer: nog geen enkele taak, dan een duidelijke uitnodiging
+// Eerste keer: nog geen enkele deal, dan een duidelijke uitnodiging
 function renderWelcome() {
   const el = $('#banner'); if (!el) return;
   const empty = !data.tasks.length && view.type === 'all';
   el.hidden = !empty;
-  el.innerHTML = empty ? '<span><b>Welkom!</b> Begin met je eerste taak: klik op de knop, typ wat je wilt doen en druk op Enter. Je kunt er later een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste taak toevoegen</button>' : '';
+  el.innerHTML = empty ? '<span><b>Welkom!</b> Begin met je eerste deal: klik op de knop, typ wat je wilt doen en druk op Enter. Je kunt er later een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
 }
 function renderHead() {
   renderWelcome();
@@ -4037,7 +4037,7 @@ function renderToolbar() {
   $('#toolbar').innerHTML = `
     <div class="seg" role="group" aria-label="Weergave"><button type="button" data-layout="board" class="${board ? 'on' : ''}">Bord</button><button type="button" data-layout="list" class="${board ? '' : 'on'}">Lijst</button></div>
     <button type="button" class="btn tb-toggle ${active ? 'active' : ''}" data-tbmore aria-expanded="${tbOpen}">${I.filter}Opties${active ? '<i class="tb-dot"></i>' : ''}</button>
-    <button type="button" class="btn tb-add" data-qa title="Nieuwe taak (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nieuwe taak</button>
+    <button type="button" class="btn tb-add" data-qa title="Nieuwe deal (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nieuwe deal</button>
     <div class="tb-more">
     ${board ? '<button type="button" class="btn tb-cols" data-cols>Stappen</button>' : ''}
     <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
@@ -4174,9 +4174,9 @@ function createTask(r, stage, top) {
   // klant koppelen: expliciet, of een bekende firma/naam in de titel ("Bel Garage Smet")
   const cl = r.clientId ? clientById(r.clientId) : clientInTitle(t.title);
   if (cl) t.clientId = cl.id;
-  // een taak zonder deadline komt helemaal bovenaan de kolom (nieuw werk dat nog opgepakt moet worden); met deadline onderaan zoals voorheen
+  // een deal zonder deadline komt helemaal bovenaan de kolom (nieuw werk dat nog opgepakt moet worden); met deadline onderaan zoals voorheen
   if (top || !t.due) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
-  // filterwaarde van huidige weergave overnemen, zodat de taak zichtbaar blijft
+  // filterwaarde van huidige weergave overnemen, zodat de deal zichtbaar blijft
   const p = prefs();
   if (p.ff && p.fv && p.fv !== '__empty') {
     const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
@@ -4200,7 +4200,7 @@ $('#quickAdd').addEventListener('submit', e => {
   renderQaPreview();
   createTask(r);
 });
-// Tab in de invoerbalk: taak aanmaken en meteen verder naar de velden van die taak (notities, status, deadline, klant, …)
+// Tab in de invoerbalk: deal aanmaken en meteen verder naar de velden van die deal (notities, status, deadline, klant, …)
 $('#qaInput').addEventListener('keydown', e => {
   if (e.key !== 'Tab' || e.shiftKey || e.isComposing) return;
   const r = parseQuick($('#qaInput').value); if (!r.title) return;
@@ -4278,9 +4278,9 @@ function deleteTask(id) {
   tombstone(id);
   if (selectedId === id) selectedId = null;
   commit();
-  toast('Taak verwijderd', () => { delete data.deleted[id]; data.tasks.push(touch(copy)); commit(); });
+  toast('Deal verwijderd', () => { delete data.deleted[id]; data.tasks.push(touch(copy)); commit(); });
 }
-// de klik die een taak opent, mag het paneel niet meteen weer sluiten ('klik buiten = sluiten')
+// de klik die een deal opent, mag het paneel niet meteen weer sluiten ('klik buiten = sluiten')
 let detailJustOpened = false;
 function openTask(id) { selectedId = id; detailJustOpened = true; setTimeout(() => detailJustOpened = false, 0); renderMain(); renderDetail(true); }
 function closeDetail() { selectedId = null; renderMain(); renderDetail(true); }
@@ -4316,7 +4316,7 @@ function renderDetail(force) {
   const p = proj(t.projectId), fs = fieldsFor(t.projectId);
   const created = new Date(t.createdAt || t.order || now());
   const wide = detailIsWide(detailWidth());
-  const keep = el.dataset.tid === t.id ? focusKey(document.activeElement, el) : null;   // zelfde taak opnieuw tekenen: focus (en dus Tab) mag niet verloren gaan
+  const keep = el.dataset.tid === t.id ? focusKey(document.activeElement, el) : null;   // zelfde deal opnieuw tekenen: focus (en dus Tab) mag niet verloren gaan
   el.dataset.tid = t.id;
   el.innerHTML = `
     <div class="d-grab" aria-hidden="true"></div>
@@ -4356,7 +4356,7 @@ function renderDetail(force) {
         <textarea id="dComment" rows="2" placeholder="Schrijf een opmerking…" aria-label="Nieuwe opmerking">${esc(commentDrafts[t.id] || '')}</textarea>
         <button type="button" class="btn primary" data-act="addcomment">Plaatsen</button>
       </div>
-      <div style="margin-top:22px"><button type="button" class="btn danger" data-act="deletetask">Taak verwijderen</button></div>
+      <div style="margin-top:22px"><button type="button" class="btn danger" data-act="deletetask">Deal verwijderen</button></div>
       <p class="muted small" style="margin-top:16px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
     </div>`;
   autosize($('#dTitle'));
@@ -4808,7 +4808,7 @@ function showDialog(html, bind) {
 dlg.addEventListener('click', e => { if (e.target === dlg && !dlg.dataset.sticky) dlg.close(); });
 dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
 
-// Nieuwe klant vanuit een taak: telefoon en e-mail die in de titel of notities staan worden meteen ingevuld
+// Nieuwe klant vanuit een deal: telefoon en e-mail die in de titel of notities staan worden meteen ingevuld
 function contactsFromText(txt) {
   txt = String(txt || '');
   const email = (txt.match(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/i) || [''])[0];
@@ -4816,7 +4816,7 @@ function contactsFromText(txt) {
   for (const m of txt.matchAll(/(?:\+|00)?\d[\d\s./()-]{7,}\d/g)) { const d = m[0].replace(/\D/g, ''); if (d.length >= 9 && d.length <= 14) { phone = m[0].trim(); break; } }
   return {email, phone};
 }
-// Alles wat in de taak al is ingevuld (titel, notities, eigen velden, opmerkingen) alvast voor de klantenfiche klaarzetten
+// Alles wat in de deal al is ingevuld (titel, notities, eigen velden, opmerkingen) alvast voor de klantenfiche klaarzetten
 function clientGuessFromTask(t) {
   const texts = [t.title, t.notes], g = {no:'', contact:'', city:''};
   for (const f of data.fields || []) {
@@ -4862,7 +4862,7 @@ function openNewClientDialog(name, t) {
       created = true;
       t.clientId = c.id; touch(t); save(); dlg.close();
       renderNav(); renderMain(); renderDetail(true);
-      toast(ex ? `Taak gekoppeld aan “${clientLabel(c)}”` : `Nieuwe klant “${clientLabel(c)}” aangemaakt`);
+      toast(ex ? `Deal gekoppeld aan “${clientLabel(c)}”` : `Nieuwe klant “${clientLabel(c)}” aangemaakt`);
     };
     dlg.addEventListener('close', () => { if (!created) renderDetail(true); }, {once:true});
   });
@@ -4935,7 +4935,7 @@ function finishProject(p, on) {
 }
 function deleteProject(p) {
       const n = data.tasks.filter(t => t.projectId === p.id).length;
-      if (!confirm(`Project “${p.name}”${n ? ` en de ${n} taken erin` : ''} definitief verwijderen?`)) return false;
+      if (!confirm(`Project “${p.name}”${n ? ` en de ${n} deals erin` : ''} definitief verwijderen?`)) return false;
       data.projects = data.projects.filter(x => x.id !== p.id); tombstone(p.id);
       for (const t of data.tasks.filter(t => t.projectId === p.id)) tombstone(t.id);
       data.tasks = data.tasks.filter(t => t.projectId !== p.id);
@@ -5034,7 +5034,7 @@ function openFieldsDialog() {
   const scope = f => f.all ? 'Alle projecten' : (f.projectIds.map(id => data.projects.find(p => p.id === id)?.name).filter(Boolean).join(', ') || 'Geen projecten');
   showDialog(`
     <h3>Extra gegevens</h3>
-    <p class="muted small" style="margin:0">Voeg extra eigenschappen toe aan je taken, zoals klant, locatie, status, budget of een link. Je kunt ze op alle projecten of enkel op bepaalde projecten gebruiken.</p>
+    <p class="muted small" style="margin:0">Voeg extra eigenschappen toe aan je deals, zoals klant, locatie, status, budget of een link. Je kunt ze op alle projecten of enkel op bepaalde projecten gebruiken.</p>
     ${fs.length ? `<ul class="flist">${fs.map((f, i) => `<li>
         <div><b>${esc(f.name)}</b><span class="muted">${TYPES[f.type]} · ${esc(scope(f))}${f.showInList ? ' · zichtbaar in lijst' : ''}</span></div>
         <button class="icon-btn" data-mv="${f.id}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Omhoog">${I.up}</button>
@@ -5081,7 +5081,7 @@ function openFieldEditor(f, presetProject, back) {
         <label class="chk"><input type="checkbox" id="feAll" ${draft.all ? 'checked' : ''}> Alle projecten</label>
         <div id="feProjects" style="display:grid;gap:6px;padding-left:24px;${draft.all ? 'opacity:.5' : ''}">${sortedProjects().map(p => `<label class="chk"><input type="checkbox" data-pid="${p.id}" ${draft.projectIds.includes(p.id) ? 'checked' : ''} ${draft.all ? 'disabled' : ''}><span class="dot" style="width:9px;height:9px;border-radius:50%;background:${p.color}"></span>${esc(p.name)}</label>`).join('')}</div>
       </div></div>
-    <label class="chk" style="margin-top:14px"><input type="checkbox" id="feList" ${draft.showInList ? 'checked' : ''}> Tonen in de takenlijst</label>
+    <label class="chk" style="margin-top:14px"><input type="checkbox" id="feList" ${draft.showInList ? 'checked' : ''}> Tonen in de lijst met deals</label>
     <p class="err" id="feErr"></p>
     <div class="dlg-actions">
       ${!isNew ? '<button type="button" class="btn danger" id="feDel">Verwijderen</button>' : ''}
@@ -5119,7 +5119,7 @@ function openFieldEditor(f, presetProject, back) {
       commit(); done();
     };
     $('#feDel', d)?.addEventListener('click', () => {
-      if (!confirm(`“${f.name}” verwijderen? De waarden in je taken verdwijnen ook.`)) return;
+      if (!confirm(`“${f.name}” verwijderen? De waarden in je deals verdwijnen ook.`)) return;
       data.fields = data.fields.filter(x => x.id !== f.id); tombstone(f.id);
       for (const t of data.tasks) if (f.id in t.custom) { delete t.custom[f.id]; touch(t); }
       for (const k of Object.keys(data.prefs)) {
@@ -5159,7 +5159,7 @@ function openSettings() {
         <div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn danger" id="stDelAcc">Account verwijderen</button></div>
       </div>`
     : `<div class="box">
-        <p class="muted small">Je taken staan nu alleen op dit toestel.${CLOUD ? ' Met een account heb je ze op al je toestellen, en kun je je wachtwoord herstellen als je het vergeet.' : ' Maak af en toe een back-up (hieronder).'}</p>
+        <p class="muted small">Je deals staan nu alleen op dit toestel.${CLOUD ? ' Met een account heb je ze op al je toestellen, en kun je je wachtwoord herstellen als je het vergeet.' : ' Maak af en toe een back-up (hieronder).'}</p>
         ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
 
@@ -5191,7 +5191,7 @@ function openSettings() {
       <button type="button" class="btn" id="stImp">Back-up terugzetten…</button>
       <input type="file" id="stFile" accept=".json,application/json" hidden>
     </div>
-    <p class="muted small">Een back-up terugzetten voegt de taken samen met wat er al is.</p>
+    <p class="muted small">Een back-up terugzetten voegt de deals samen met wat er al is.</p>
 
     <h4>Dit toestel</h4>
     <button type="button" class="btn danger" id="stWipe">Alle gegevens van dit toestel wissen</button>
@@ -5310,7 +5310,7 @@ function openSettings() {
       } catch (ex) { alert('Importeren mislukt: ' + ex.message); }
     };
     $('#stWipe', d).onclick = () => {
-      if (!confirm('Alle taken op dit toestel wissen? Dit kan niet ongedaan gemaakt worden .')) return;
+      if (!confirm('Alle deals op dit toestel wissen? Dit kan niet ongedaan gemaakt worden .')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
       if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
       localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); localStorage.removeItem(REM_KEY);
@@ -5945,13 +5945,13 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
 });
 $('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
 
-$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Alle taken'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView({type:'all'}); });
+$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Alle deals'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView({type:'all'}); });
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#salesNav').addEventListener('click', e => { const b = e.target.closest('[data-sales]'); if (b) setView({type:'sales', id:b.dataset.sales}); });
 $('#addSales').onclick = () => openSalesPageDialog(null);
 $('#openFields').onclick = () => { $('#app').classList.remove('side-open'); openFieldsDialog(); };
-// Licht/donker: zonder keuze volgt Taken je toestel; de knop onderaan de zijbalk onthoudt je keuze op dit toestel
+// Licht/donker: zonder keuze volgt Deals je toestel; de knop onderaan de zijbalk onthoudt je keuze op dit toestel
 const themeNow = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
 function paintThemeColor() {
   const c = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0A0A0A';
@@ -5985,7 +5985,7 @@ $('#tabBar').addEventListener('click', e => {
   }
   setView({type:t});
 });
-// Invoerbalk: op desktop verborgen tot je op "+ Taak" klikt of N drukt; leeg verlaten sluit hem weer.
+// Invoerbalk: op desktop verborgen tot je op "+ Deal" klikt of N drukt; leeg verlaten sluit hem weer.
 function openQuickAdd() { document.body.classList.add('qa-open'); $('#qaInput').focus(); }
 const deskQa = () => !matchMedia('(max-width:860px)').matches;
 $('#toolbar').addEventListener('click', e => { if (e.target.closest('[data-qa]')) openQuickAdd(); });
@@ -6242,11 +6242,11 @@ $('#topHelp').onclick = () => openHelp();
 function openHelp() {
   showDialog(`<h3>Hulp</h3>
     <ul class="help-list">
-      <li><b>Een taak maken</b><span>Klik op “Nieuwe taak”, typ wat je wilt doen en druk op Enter.</span></li>
-      <li><b>Een deadline instellen</b><span>Typ het erbij: “Jan bellen morgen 14u” zet de taak op morgen om 14:00.</span></li>
-      <li><b>Verder in het proces</b><span>Sleep de taak naar de volgende stap, of kies de stap in het taakpaneel.</span></li>
-      <li><b>Een taak afronden</b><span>Klik op het rondje links van de taak.</span></li>
-      <li><b>Een klant koppelen</b><span>Open de taak en typ de naam bij “Klant”.</span></li>
+      <li><b>Een deal maken</b><span>Klik op “Nieuwe deal”, typ wat je wilt doen en druk op Enter.</span></li>
+      <li><b>Een deadline instellen</b><span>Typ het erbij: “Jan bellen morgen 14u” zet de deal op morgen om 14:00.</span></li>
+      <li><b>Verder in het proces</b><span>Sleep de deal naar de volgende stap, of kies de stap in het dealpaneel.</span></li>
+      <li><b>Een deal afronden</b><span>Klik op het rondje links van de deal.</span></li>
+      <li><b>Een klant koppelen</b><span>Open de deal en typ de naam bij “Klant”.</span></li>
     </ul>
     <div class="dlg-actions"><button type="button" class="btn" id="hpTour">Rondleiding bekijken</button><button type="button" class="btn" id="hpKeys">Sneltoetsen</button><span class="grow"></span><button type="button" class="btn primary" id="hpClose">Sluiten</button></div>`, d => {
     $('#hpClose', d).onclick = () => dlg.close();
@@ -6264,7 +6264,7 @@ function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbS
 function openShortcutsDialog() {
   const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
   const rows = [['N of Q', 'Nieuwe kaart'], [k + ' K', 'Nieuwe kaart (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
-    [k + ' 1 … 2', 'Alle taken · Klanten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
+    [k + ' 1 … 2', 'Alle deals · Klanten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
     ['Delete', 'Open kaart verwijderen'], ['Esc', 'Sluiten'], ['Rechtsklik', 'Snelmenu op kaarten, projecten en pagina’s'], ['?', 'Deze lijst']];
   showDialog(`<h3>Sneltoetsen</h3><div class="kbd-list">${rows.map(([a, b]) => `<div><span>${esc(b)}</span><span>${a.split(' ').map(x => x === '…' || x === 'of' ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="kbOk">Sluiten</button></div>`, d => { $('#kbOk', d).onclick = () => dlg.close(); });
@@ -6543,7 +6543,7 @@ function addTaskForClient(id) {
 }
 function deleteClient(c) {
   const n = data.tasks.filter(t => t.clientId === c.id).length;
-  if (!confirm(`Klant “${clientLabel(c)}” verwijderen?${n ? ` De ${n} taken blijven bestaan, maar zonder klant.` : ''}`)) return;
+  if (!confirm(`Klant “${clientLabel(c)}” verwijderen?${n ? ` De ${n} deals blijven bestaan, maar zonder klant.` : ''}`)) return;
   for (const t of data.tasks) if (t.clientId === c.id) { delete t.clientId; touch(t); }
   data.clients = data.clients.filter(x => x.id !== c.id); tombstone(c.id); clientsChanged();
   view = {type:'clients'}; commit(); toast('Klant verwijderd');
@@ -6622,7 +6622,7 @@ function fillClientSuggestions(inp) {
 document.addEventListener('focusin', e => { if (e.target.getAttribute?.('list') === 'clientNames') fillClientSuggestions(e.target); });
 document.addEventListener('input', e => { if (e.target.getAttribute?.('list') === 'clientNames') fillClientSuggestions(e.target); }, true);
 // sorteren van de klantenlijst: klik op een kolomkop (nog eens = omgekeerd); lege waarden altijd onderaan
-const CL_SORTS = [['name', 'Klant', 1], ['no', 'Klantnr', 1], ['eds', 'Uitgaves', 1], ['phone', 'Telefoon', 1], ['city', 'Gemeente', 1], ['open', 'Open taken', -1], ['total', 'Omzet', -1], ['last', 'Laatste contact', -1]];
+const CL_SORTS = [['name', 'Klant', 1], ['no', 'Klantnr', 1], ['eds', 'Uitgaves', 1], ['phone', 'Telefoon', 1], ['city', 'Gemeente', 1], ['open', 'Open deals', -1], ['total', 'Omzet', -1], ['last', 'Laatste contact', -1]];
 const clSortPref = () => { const p = data.prefs.clientsSort; return p && CL_SORTS.some(x => x[0] === p.k) ? p : {k:'name', dir:1}; };
 function setClientSort(k, dir) {
   const cur = clSortPref(), def = (CL_SORTS.find(x => x[0] === k) || [])[2] || 1;
@@ -7053,7 +7053,7 @@ function clientHtml() {
       ${c.phone ? `<a class="btn" href="tel:${esc(telHref(c.phone))}">${I.phone}Bellen</a>` : ''}
       ${c.mobile ? `<a class="btn" href="tel:${esc(telHref(c.mobile))}">${I.phone}${c.phone ? 'Gsm' : 'Bellen'}</a>` : ''}
       ${c.email ? `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Mailen</a>` : ''}
-      <button type="button" class="btn primary" id="clTask">+ Taak</button>
+      <button type="button" class="btn primary" id="clTask">+ Deal</button>
       <span class="grow"></span>
       <button type="button" class="icon-btn" id="clMenu2" title="Meer" aria-label="Meer acties" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
     </div>
@@ -7061,7 +7061,7 @@ function clientHtml() {
       <div class="sales-stat"><span>Omzet totaal</span><b>${eur(g.total)}</b></div>
       <div class="sales-stat"><span>Omzet ${y}</span><b>${eur(g.year)}</b></div>
       <div class="sales-stat"><span>Verkopen</span><b>${g.count}</b></div>
-      <div class="sales-stat"><span>Open taken</span><b>${g.open}</b></div>
+      <div class="sales-stat"><span>Open deals</span><b>${g.open}</b></div>
       ${posSt && negSt ? `<div class="sales-stat"><span>${esc(posSt.label)} / ${esc(negSt.label)}</span><b>${fin('positive')} / ${fin('negative')}</b></div>` : ''}
       <div class="sales-stat"><span>Laatste contact</span><b>${relDay(g.last)}</b></div>
     </div>
@@ -7083,9 +7083,9 @@ function clientHtml() {
         </div>
       </section>
       <section class="pg-card">
-        <h3>Taken <span class="muted">${tasks.length}</span></h3>
+        <h3>Deals <span class="muted">${tasks.length}</span></h3>
         ${tasks.length ? `<ul class="pg-list">${tasks.map(t => { const st = stageById(t.stage);
-          return `<li><button type="button" data-task="${t.id}" class="${t.done ? 'done' : ''}"><span class="dot" style="background:${st?.color || 'var(--muted)'}"></span><span class="nm">${esc(t.title)}</span><span class="meta">${esc(st?.label || '')}${t.done && t.doneAt ? ' · ' + relDay(tsYmd(t.doneAt)) : t.due ? ' · ' + esc(dueLabel(t.due)) + (t.time ? ' ' + esc(t.time) : '') : ''}</span></button></li>`; }).join('')}</ul>` : '<p class="muted small">Nog geen taken voor deze klant.</p>'}
+          return `<li><button type="button" data-task="${t.id}" class="${t.done ? 'done' : ''}"><span class="dot" style="background:${st?.color || 'var(--muted)'}"></span><span class="nm">${esc(t.title)}</span><span class="meta">${esc(st?.label || '')}${t.done && t.doneAt ? ' · ' + relDay(tsYmd(t.doneAt)) : t.due ? ' · ' + esc(dueLabel(t.due)) + (t.time ? ' ' + esc(t.time) : '') : ''}</span></button></li>`; }).join('')}</ul>` : '<p class="muted small">Nog geen deals voor deze klant.</p>'}
       </section>
       <section class="pg-card">
         <h3>Verkopen <span class="muted">${ss.length}</span>${ss.length ? `<span class="grow"></span><b>${eur(g.total)}</b>` : ''}</h3>
@@ -7461,7 +7461,7 @@ async function bioKey(secret) {
 const bioAssert = (credId, salt) => navigator.credentials.get({publicKey:{challenge:rndBytes(32), rpId:location.hostname, allowCredentials:[{type:'public-key', id:credId}], userVerification:'required', timeout:60000, extensions:{prf:{eval:{first:salt}}}}});
 async function bioEnable(pw) {
   const salt = rndBytes(32);
-  const cred = await navigator.credentials.create({publicKey:{challenge:rndBytes(32), rp:{name:'Klose', id:location.hostname}, user:{id:rndBytes(16), name:'taken', displayName:'Taken'},
+  const cred = await navigator.credentials.create({publicKey:{challenge:rndBytes(32), rp:{name:'Klose', id:location.hostname}, user:{id:rndBytes(16), name:'klose', displayName:'Klose'},
     pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}], timeout:60000,
     authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'}, extensions:{prf:{eval:{first:salt}}}}});
   const ext = cred.getClientExtensionResults().prf;

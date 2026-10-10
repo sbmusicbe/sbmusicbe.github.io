@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Klose",
   "short_name": "Klose",
-  "description": "Klose: taken, kanban en verkopen – versleuteld en gesynchroniseerd.",
+  "description": "Klose: deals, kanban en verkopen – versleuteld en gesynchroniseerd.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -40,7 +40,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Nieuwe taak",
+      "name": "Nieuwe deal",
       "short_name": "Nieuw",
       "url": "./?new=1",
       "icons": [
@@ -63,7 +63,7 @@
       ]
     },
     {
-      "name": "Alle taken",
+      "name": "Alle deals",
       "url": "./?view=all",
       "icons": [
         {

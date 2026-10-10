@@ -1,6 +1,6 @@
 # Klose
 
-**Open source CRM voor wie hard moet verkopen.** Taken, klanten, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server, geen abonnement, geen account: je gegevens blijven versleuteld op je eigen toestel, met optionele synchronisatie tussen al je toestellen.
+**Open source CRM voor wie hard moet verkopen.** Deals, klanten, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server, geen abonnement, geen account: je gegevens blijven versleuteld op je eigen toestel, met optionele synchronisatie tussen al je toestellen.
 
 > De app heet **Klose** (de map en het adres blijven `taken/`). De code staat in deze map (`taken/`) en draait op elke statische hosting, bijvoorbeeld GitHub Pages.
 
@@ -8,8 +8,8 @@
 
 | Onderdeel | Wat je ermee doet |
 |---|---|
-| **Taken** | Projecten met een bord (kolommen) of een lijst. Deadline en uur, extra gegevens, opmerkingen, archief. Een taak zonder deadline staat altijd bovenaan. |
-| **Klanten** | Een klantenfiche per klant (firma, klantnummer, contact, telefoon, gsm, e-mail, gemeente, uitgaves, projectnummers). Import uit Excel (`.xlsx`), CSV of plakken uit Excel, ook met tienduizenden rijen. Taken koppel je aan een klant; maak je vanuit een taak een nieuwe klant, dan worden de gegevens uit de taak al ingevuld. |
+| **Deals** | Projecten met een bord (kolommen) of een lijst. Deadline en uur, extra gegevens, opmerkingen, archief. Een deal zonder deadline staat altijd bovenaan. |
+| **Klanten** | Een klantenfiche per klant (firma, klantnummer, contact, telefoon, gsm, e-mail, gemeente, uitgaves, projectnummers). Import uit Excel (`.xlsx`), CSV of plakken uit Excel, ook met tienduizenden rijen. Deals koppel je aan een klant; maak je vanuit een deal een nieuwe klant, dan worden de gegevens uit de deal al ingevuld. |
 | **Verkopen** | Een pagina per maand met een tabel van verkopen (kolommen zelf in te stellen), doelstelling, bedrag per dag dat nog nodig is, commissie en bonus. Een nieuwe regel krijgt standaard aantal 1. |
 | **Prijsberekening** | Bovenaan een project: vul het bedrag in dat nog verkocht moet worden (*To go*) en het aantal 1/8-ruimtes (*PK*), en de app rekent de prijs per formaat uit: 1/1, 1/2, 1/4, 1/8, 1/12, 1/16 en 1/32 (naar boven afgerond). |
 | **BTW-calculator** | Reken een bedrag om van of naar inclusief btw (6, 9, 12 of 21%). |
@@ -28,17 +28,17 @@ Daarnaast:
 
 ### Alles in je browser
 
-De hele app is één bestand (`index.html`) in gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. Hosting is dus niets meer dan het uploaden van de map. De gegevens zijn één document met taken, projecten, velden, klanten, verkopen en agenda.
+De hele app is één bestand (`index.html`) in gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. Hosting is dus niets meer dan het uploaden van de map. De gegevens zijn één document met deals, projecten, velden, klanten, verkopen en agenda.
 
 ### Versleuteld opgeslagen
 
 - Je kiest bij de eerste keer een wachtwoord. Daaruit wordt met **PBKDF2** (310.000 rondes) een sleutel afgeleid. Alles wordt met **AES-GCM** versleuteld, zodat zonder wachtwoord niemand het kan lezen, ook jij niet.
-- Lokaal staat een kleine kern (taken, projecten, verkopen) in `localStorage` en de grote klantenlijst apart in IndexedDB. Het versleutelen en ontsleutelen gebeurt in een achtergrondproces (Web Worker), zodat de pagina soepel blijft, ook met zeventigduizend klanten.
+- Lokaal staat een kleine kern (deals, projecten, verkopen) in `localStorage` en de grote klantenlijst apart in IndexedDB. Het versleutelen en ontsleutelen gebeurt in een achtergrondproces (Web Worker), zodat de pagina soepel blijft, ook met zeventigduizend klanten.
 - Na een tijd zonder activiteit (standaard 30 minuten) vergrendelt de app zichzelf.
 
 ### Eenvoudig beginnen
 
-Bij het eerste gebruik vraagt de app **waarvoor je Klose gebruikt**: enkel taken, of ook Klanten, Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel taken, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
+Bij het eerste gebruik vraagt de app **waarvoor je Klose gebruikt**: enkel deals, of ook Klanten, Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel deals, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
 
 ### Synchroniseren tussen toestellen
 
@@ -70,7 +70,7 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 - **Account verwijderen** (Instellingen → Account) wist je account en je online kluis definitief. Dit werkt na het (opnieuw) uitvoeren van `supabase.sql`, dat de functie `delete_my_account` toevoegt.
 - Accounts van de eerste versie krijgen bij de eerstvolgende login automatisch een noodcode.
 
-**Zeer grote kluizen.** Staat het script `supabase.sql` in je project, dan bewaart de dienst de klanten apart van de rest. Een gewone wijziging (een taak afvinken) uploadt dan enkel de kleine kern; de klantenlijst gaat alleen mee als die veranderd is. Zonder dat script blijft alles gewoon in één stuk werken.
+**Zeer grote kluizen.** Staat het script `supabase.sql` in je project, dan bewaart de dienst de klanten apart van de rest. Een gewone wijziging (een deal afvinken) uploadt dan enkel de kleine kern; de klantenlijst gaat alleen mee als die veranderd is. Zonder dat script blijft alles gewoon in één stuk werken.
 
 **Let op:** bewaar ook af en toe een versleutelde back-up (**Instellingen → Back-up**). Een gratis Supabase-project kan na een periode zonder gebruik gepauzeerd worden; de repository bevat een geplande wekelijkse ping die dat voorkomt.
 
@@ -110,7 +110,7 @@ Je app staat nu op:
 
 1. Open het adres. Je ziet het welkomstscherm.
 2. Kies een **sterk wachtwoord** (minstens 8 tekens) en bevestig het, en klik op **Aan de slag**. Dit wachtwoord versleutelt al je gegevens. **Het is niet te herstellen**; schrijf het ergens veilig op.
-3. Klaar: je kunt meteen taken, klanten en verkopen toevoegen. Op dit moment staan je gegevens alleen op dit toestel. Met een account (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)) werk je op al je toestellen.
+3. Klaar: je kunt meteen deals, klanten en verkopen toevoegen. Op dit moment staan je gegevens alleen op dit toestel. Met een account (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)) werk je op al je toestellen.
 
 ### 5. Op meerdere toestellen werken
 
