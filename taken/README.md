@@ -1,8 +1,8 @@
-# HardSales CRM
+# Klose
 
 **Open source CRM voor wie hard moet verkopen.** Taken, klanten, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server, geen abonnement, geen account: je gegevens blijven versleuteld op je eigen toestel, met optionele synchronisatie tussen al je toestellen.
 
-> In de app heet het scherm nog **Taken**. De code staat in deze map (`taken/`) en draait op elke statische hosting, bijvoorbeeld GitHub Pages.
+> De app heet **Klose** (de map en het adres blijven `taken/`). De code staat in deze map (`taken/`) en draait op elke statische hosting, bijvoorbeeld GitHub Pages.
 
 ## Wat kan het?
 
@@ -38,7 +38,7 @@ De hele app is één bestand (`index.html`) in gewone HTML, CSS en JavaScript, z
 
 ### Eenvoudig beginnen
 
-Bij het eerste gebruik vraagt de app **waarvoor je Taken gebruikt**: enkel taken, of ook Klanten, Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel taken, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
+Bij het eerste gebruik vraagt de app **waarvoor je Klose gebruikt**: enkel taken, of ook Klanten, Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel taken, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
 
 ### Synchroniseren tussen toestellen
 
