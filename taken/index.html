@@ -2154,7 +2154,7 @@ body{background-image:none!important}
 .card:hover{border-color:var(--accent-line)!important;transform:none!important;box-shadow:none!important}
 .card.sel,.card.on,.task.sel{border-color:var(--accent)!important;background:var(--card)!important}
 .col{background:var(--col)!important;border:1px solid var(--hairline)!important;border-radius:8px!important}
-.col-head,.col .nm{font-size:14px;font-weight:650}
+.col .nm{font-size:14px;font-weight:650}
 .c-count,.chip{border-radius:4px!important}
 .chip{background:var(--fill)!important}
 .col-add input,.col-add input:focus{border-radius:6px!important}
@@ -2307,10 +2307,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 .chip,.c-count,.fchip{border-radius:6px!important}
 .pc-out li{border-radius:8px!important}
 /* cijfers in Barlow */
-.sales-stat b,.pc-out li b,.pace b,#spPay b,.sp-num,table.sales td.num input,table.sales tfoot td{font-family:Barlow,Inter,sans-serif!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
+.sales-stat b,.pc-out li b,.pace b,#spPay b,table.sales td.num input,table.sales tfoot td{font-family:Barlow,Inter,sans-serif!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
 .sales-stat b{font-weight:600!important}
 /* progress / accentkleuren in brons */
-.sales-stat .bar i,.progress i,.pace-bar i{background:var(--bronze-9)!important}
+.sales-stat .bar i,.progress i{background:var(--bronze-9)!important}
 @media (max-width:860px){
   #fab{background:var(--tf)!important;color:var(--tc)!important;border-radius:14px!important;box-shadow:inset 0 1px 0 var(--tfh),0 3px 0 var(--tb),0 4px 0 var(--tbs)!important}
   #tabBar button.on{color:var(--text)!important}
@@ -2945,7 +2945,6 @@ const conflictError = () => Object.assign(new Error('De online kluis is intussen
 // Zeer grote kluizen staan in twee delen: de kern in kolom blob, de klanten apart in kolom clients (zie supabase.sql).
 // Ontbreken die kolommen (script nog niet uitgevoerd), dan blijft alles in één stuk in blob zitten.
 let cloudSplit = null, cloudClientsRev = null, cloudClientsBlob = null;
-const missingCol = e => e.status === 400 && /clients|42703|PGRST204|PGRST/i.test((e.code || '') + e.message);
 // kluis ophalen: null = nog geen kluis, NOT_MODIFIED = niets veranderd sinds meta.ifNoneMatch (de versie dient als etag)
 async function cloudGet(s, meta) {
   const ss = await cloudToken(), q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
