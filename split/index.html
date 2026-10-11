@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Split — kosten delen</title>
+<meta name="description" content="Deel kosten met vrienden, huisgenoten of op reis. Gratis, zonder account — alles blijft op je eigen toestel.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{--bg:#f6f7f6;--panel:#fff;--text:#16211f;--muted:#64726f;--line:#e2e8e6;--accent:#0f766e;--accent-d:#0b5d57;--pos:#15803d;--neg:#b91c1c;--soft:#e6f2f0;--r:12px;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1514;--panel:#16201e;--text:#e8efed;--muted:#8da09c;--line:#26332f;--accent:#2dd4bf;--accent-d:#5eead4;--pos:#4ade80;--neg:#f87171;--soft:#1b2b28;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+header.top{display:flex;align-items:center;gap:10px;margin:4px 0 16px}
+header.top h1{font-size:20px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 14px;min-height:42px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+@media(prefers-color-scheme:dark){button.primary{color:#04201c}}
+button.primary:hover{background:var(--accent-d)}
+button.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+button.danger{color:var(--neg)}
+button.sm{min-height:34px;padding:5px 10px;font-size:14px}
+input,select{width:100%;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 12px;min-height:44px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+label.f{display:block;margin:0 0 12px;font-size:13px;color:var(--muted)}
+label.f>input,label.f>select{margin-top:4px;color:var(--text);font-size:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row.click{cursor:pointer}.row.click:hover{background:var(--soft)}
+.grow{flex:1;min-width:0}
+.t{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.s{font-size:13px;color:var(--muted)}
+.amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.date{width:42px;text-align:center;font-size:11px;text-transform:uppercase;color:var(--muted);line-height:1.1}
+.date b{display:block;font-size:18px;color:var(--text)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none;font-size:14px}
+.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin:0 0 14px}
+.tabs button{flex:1;border:0;background:transparent;min-height:38px;border-radius:9px;color:var(--muted)}
+.tabs button.on{background:var(--panel);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.fab{position:fixed;right:max(16px,calc(50vw - 344px));bottom:calc(20px + env(safe-area-inset-bottom));box-shadow:0 6px 20px rgba(0,0,0,.25);border-radius:999px;padding:0 22px;min-height:52px;font-size:16px}
+.empty{text-align:center;color:var(--muted);padding:40px 16px}
+.sum{display:flex;gap:10px;margin-bottom:14px}
+.sum .card{flex:1;padding:12px 14px}
+.sum .big{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+dialog{border:0;border-radius:16px;padding:0;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:var(--panel);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
+.dh{padding:16px 18px 8px;font-weight:700;font-size:18px}
+.db{padding:8px 18px;overflow:auto}
+.df{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px 16px;border-top:1px solid var(--line)}
+.pr{display:flex;align-items:center;gap:10px;padding:6px 0}
+.pr .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pr input[type=number],.pr input[type=text]{width:110px;text-align:right}
+.pr input[type=checkbox]{width:22px;height:22px;min-height:0;accent-color:var(--accent)}
+.err{color:var(--neg);font-size:14px;min-height:20px;padding:4px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px}
+.chip button{border:0;background:transparent;min-height:26px;padding:0 6px;color:var(--muted)}
+.row2{display:flex;gap:8px}.row2>*{flex:1}
+.foot{margin-top:24px;text-align:center;font-size:13px;color:var(--muted)}
+a{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#16211f;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:99}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<dialog id="dlg"></dialog>
+<script>
+"use strict";
+const KEY="split.v1";
+const COLORS=["#0f766e","#b45309","#7c3aed","#be123c","#1d4ed8","#4d7c0f","#c2410c","#0e7490","#a21caf","#475569"];
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-3);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
+
+let db={groups:[]};
+try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&Array.isArray(r.groups))db=r}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast("Opslaan mislukt")}};
+const ui={gid:null,tab:"uitgaven"};
+
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
+const fmt=(c,cur)=>new Intl.NumberFormat("nl-BE",{style:"currency",currency:cur||"EUR"}).format(c/100);
+const parseAmt=v=>{const n=parseFloat(String(v).trim().replace(",","."));return isFinite(n)?Math.round(n*100):NaN};
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const color=(g,id)=>COLORS[Math.max(0,g.members.findIndex(m=>m.id===id))%COLORS.length];
+const mname=(g,id)=>(g.members.find(m=>m.id===id)||{name:"?"}).name;
+const avatar=(g,id)=>`<div class="av" style="background:${color(g,id)}">${esc(mname(g,id).trim().charAt(0).toUpperCase())}</div>`;
+
+// Verdeel `total` cent volgens gewichten (grootste-rest methode, som klopt altijd).
+function distribute(total,w){
+  const ids=Object.keys(w).filter(k=>w[k]>0),sum=ids.reduce((a,k)=>a+w[k],0),out={};
+  if(!ids.length||!sum)return out;
+  let used=0;const rem=[];
+  ids.forEach(k=>{const x=total*w[k]/sum,f=Math.floor(x);out[k]=f;used+=f;rem.push([k,x-f])});
+  rem.sort((a,b)=>b[1]-a[1]);
+  for(let i=0;used<total;i++,used++)out[rem[i%rem.length][0]]++;
+  return out;
+}
+function owed(e){
+  if(e.type==="payment")return{};
+  const s=e.split;
+  if(s.mode==="exact")return{...s.vals};
+  return distribute(e.amount,s.vals);
+}
+function balances(g){
+  const n={};g.members.forEach(m=>n[m.id]=0);
+  g.expenses.forEach(e=>{
+    if(!(e.paidBy in n))n[e.paidBy]=0;
+    n[e.paidBy]+=e.amount;
+    if(e.type==="payment"){n[e.to]=(n[e.to]||0)-e.amount;return}
+    const o=owed(e);for(const k in o)n[k]=(n[k]||0)-o[k];
+  });
+  return n;
+}
+// Minimaal aantal overschrijvingen (greedy: grootste schuldenaar → grootste schuldeiser).
+function settle(bal){
+  const d=[],c=[],out=[];
+  for(const k in bal){if(bal[k]<0)d.push([k,-bal[k]]);else if(bal[k]>0)c.push([k,bal[k]])}
+  while(d.length&&c.length){
+    d.sort((a,b)=>b[1]-a[1]);c.sort((a,b)=>b[1]-a[1]);
+    const x=Math.min(d[0][1],c[0][1]);
+    out.push({from:d[0][0],to:c[0][0],amount:x});
+    d[0][1]-=x;c[0][1]-=x;
+    if(!d[0][1])d.shift();if(!c[0][1])c.shift();
+  }
+  return out;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const g=db.groups.find(x=>x.id===ui.gid);
+  if(!g){ui.gid=null;return home()}
+  group(g);
+}
+function home(){
+  document.title="Split — kosten delen";
+  $("#app").innerHTML=`
+  <header class="top"><div class="logo">€</div><h1>Split</h1>
+    <button class="sm" data-act="import">Importeren</button></header>
+  ${db.groups.length?`<div class="card">${db.groups.map(g=>{
+    const b=balances(g),tot=g.expenses.filter(e=>e.type!=="payment").reduce((a,e)=>a+e.amount,0);
+    return`<div class="row click" data-act="open" data-id="${g.id}"><div class="av" style="background:var(--accent)">${esc(g.name.charAt(0).toUpperCase())}</div>
+    <div class="grow"><div class="t">${esc(g.name)}</div><div class="s">${g.members.length} personen · totaal ${fmt(tot,g.cur)}</div></div>
+    <span class="s">›</span></div>`}).join("")}</div>`
+  :`<div class="empty"><p style="font-size:18px;color:var(--text);margin:0 0 6px"><b>Deel kosten, zonder gedoe.</b></p>
+    Maak een groep voor een reis, huis of avondje uit.<br>Geen account nodig — alles blijft op dit toestel.</div>`}
+  <button class="primary fab" data-act="newgroup">+ Nieuwe groep</button>
+  <p class="foot">Gegevens staan alleen in je browser. Maak af en toe een back-up via de groep.</p>`;
+}
+function group(g){
+  document.title=g.name+" — Split";
+  const bal=balances(g),me=g.members.length;
+  const tot=g.expenses.filter(e=>e.type!=="payment").reduce((a,e)=>a+e.amount,0);
+  let body="";
+  if(ui.tab==="uitgaven"){
+    const list=[...g.expenses].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+    body=list.length?`<div class="card">${list.map(e=>{
+      const d=new Date(e.date+"T12:00:00"),mon=d.toLocaleDateString("nl-BE",{month:"short"});
+      const pay=e.type==="payment";
+      return`<div class="row click" data-act="edit" data-id="${e.id}">
+      <div class="date">${mon}<b>${d.getDate()}</b></div>
+      <div class="grow"><div class="t">${pay?"Betaling":esc(e.desc)}</div>
+      <div class="s">${pay?`${esc(mname(g,e.paidBy))} → ${esc(mname(g,e.to))}`:`${esc(mname(g,e.paidBy))} betaalde`}</div></div>
+      <div class="amt ${pay?"pos":""}">${fmt(e.amount,g.cur)}</div></div>`}).join("")}</div>`
+    :`<div class="empty">Nog geen uitgaven.<br>Tik op “+ Uitgave” om te beginnen.</div>`;
+  }else if(ui.tab==="saldo"){
+    body=`<div class="card">${g.members.map(m=>{const v=bal[m.id]||0;
+      return`<div class="row">${avatar(g,m.id)}<div class="grow"><div class="t">${esc(m.name)}</div>
+      <div class="s">${v>0?"krijgt nog terug":v<0?"moet nog betalen":"is in orde"}</div></div>
+      <div class="amt ${v>0?"pos":v<0?"neg":""}">${fmt(Math.abs(v),g.cur)}</div></div>`}).join("")}</div>`;
+  }else if(ui.tab==="afrekenen"){
+    const s=settle(bal);
+    body=s.length?`<div class="card">${s.map((t,i)=>`<div class="row">${avatar(g,t.from)}
+      <div class="grow"><div class="t">${esc(mname(g,t.from))} betaalt ${esc(mname(g,t.to))}</div>
+      <div class="s">${fmt(t.amount,g.cur)}</div></div>
+      <button class="sm" data-act="settle" data-i="${i}">Gedaan</button></div>`).join("")}</div>
+      <p class="s" style="margin-top:10px">Minimaal aantal overschrijvingen om alles recht te trekken. Tik “Gedaan” om de betaling te registreren.</p>`
+    :`<div class="empty">🎉 Alles is afgerekend.</div>`;
+  }else{
+    body=`<div class="chips">${g.members.map(m=>`<span class="chip">${esc(m.name)}<button data-act="rmmember" data-id="${m.id}" aria-label="Verwijder ${esc(m.name)}">✕</button></span>`).join("")}</div>
+    <form data-form="addmember" class="row2" style="margin-bottom:18px"><input name="n" placeholder="Nieuwe persoon" maxlength="40" required><button class="primary" style="flex:none">Toevoegen</button></form>
+    <div class="card">
+      <div class="row click" data-act="share"><div class="grow"><div class="t">Deel via link</div><div class="s">Kopie van deze groep, gecodeerd in de link</div></div></div>
+      <div class="row click" data-act="export"><div class="grow"><div class="t">Back-up downloaden</div><div class="s">JSON-bestand</div></div></div>
+      <div class="row click" data-act="rename"><div class="grow"><div class="t">Naam & munt wijzigen</div><div class="s">${esc(g.name)} · ${g.cur}</div></div></div>
+      <div class="row click" data-act="delgroup"><div class="grow"><div class="t neg">Groep verwijderen</div></div></div>
+    </div>`;
+  }
+  $("#app").innerHTML=`
+  <header class="top"><button class="ghost sm" data-act="home" aria-label="Terug">←</button><h1>${esc(g.name)}</h1></header>
+  <div class="sum"><div class="card"><div class="s">Totaal uitgegeven</div><div class="big">${fmt(tot,g.cur)}</div></div>
+  <div class="card"><div class="s">Per persoon (gem.)</div><div class="big">${fmt(me?Math.round(tot/me):0,g.cur)}</div></div></div>
+  <div class="tabs" role="tablist">${[["uitgaven","Uitgaven"],["saldo","Saldo"],["afrekenen","Afrekenen"],["groep","Groep"]]
+    .map(([k,l])=>`<button role="tab" class="${ui.tab===k?"on":""}" data-act="tab" data-id="${k}">${l}</button>`).join("")}</div>
+  ${body}
+  ${me>=2&&ui.tab!=="groep"?`<button class="primary fab" data-act="newexp">+ Uitgave</button>`:""}`;
+}
+
+/* ---------- dialogs ---------- */
+const dlg=$("#dlg");
+function modal(title,html,onsubmit,okLabel="Opslaan",extra=""){
+  dlg.innerHTML=`<form method="dialog"><div class="dh">${title}</div><div class="db">${html}<div class="err" id="err"></div></div>
+  <div class="df">${extra}<button type="button" data-close>Annuleren</button><button class="primary" value="ok">${okLabel}</button></div></form>`;
+  const f=dlg.querySelector("form");
+  f.onsubmit=ev=>{ev.preventDefault();const r=onsubmit(f);if(r===false)return;dlg.close()};
+  dlg.querySelector("[data-close]").onclick=()=>dlg.close();
+  dlg.showModal();
+  return f;
+}
+const fail=m=>{$("#err").textContent=m;return false};
+
+function newGroup(){
+  modal("Nieuwe groep",`
+  <label class="f">Naam<input name="name" placeholder="Bv. Citytrip Rome" maxlength="50" required></label>
+  <label class="f">Munt<select name="cur">${["EUR","USD","GBP","CHF","SEK","DKK","NOK","PLN","CZK"].map(c=>`<option>${c}</option>`).join("")}</select></label>
+  <label class="f">Deelnemers (gescheiden door komma’s, jij erbij)<input name="mem" placeholder="Sam, Lotte, Jonas" required></label>`,
+  f=>{
+    const names=[...new Set(f.mem.value.split(",").map(s=>s.trim()).filter(Boolean))];
+    if(names.length<2)return fail("Voeg minstens twee personen toe.");
+    const g={id:uid(),name:f.name.value.trim(),cur:f.cur.value,members:names.map(n=>({id:uid(),name:n})),expenses:[]};
+    db.groups.unshift(g);save();ui.gid=g.id;ui.tab="uitgaven";render();
+  },"Maken");
+}
+
+function expenseForm(e){
+  const g=db.groups.find(x=>x.id===ui.gid);
+  const pay=e&&e.type==="payment";
+  if(pay)return paymentForm(g,e);
+  let mode=e?e.split.mode:"equal";
+  const vals0=e?e.split.vals:Object.fromEntries(g.members.map(m=>[m.id,1]));
+  const cache={equal:{},exact:{},percent:{},shares:{}};
+  if(e)cache[mode]=mode==="equal"?Object.fromEntries(g.members.map(m=>[m.id,vals0[m.id]?1:0])):{...vals0};
+  const form=modal(e?"Uitgave bewerken":"Nieuwe uitgave",`
+  <label class="f">Omschrijving<input name="desc" maxlength="80" required value="${esc(e?e.desc:"")}"></label>
+  <div class="row2"><label class="f">Bedrag (${g.cur})<input name="amt" inputmode="decimal" required value="${e?(e.amount/100).toFixed(2).replace(".",","):""}"></label>
+  <label class="f">Datum<input name="date" type="date" required value="${e?e.date:today()}"></label></div>
+  <label class="f">Betaald door<select name="by">${g.members.map(m=>`<option value="${m.id}" ${e&&e.paidBy===m.id?"selected":""}>${esc(m.name)}</option>`).join("")}</select></label>
+  <div class="s" style="margin-bottom:6px">Verdelen</div>
+  <div class="tabs" id="modes">${[["equal","Gelijk"],["exact","Bedragen"],["percent","%"],["shares","Delen"]].map(([k,l])=>`<button type="button" data-m="${k}">${l}</button>`).join("")}</div>
+  <div id="split"></div><div class="s" id="hint"></div>`,
+  f=>{
+    const amount=parseAmt(f.amt.value);
+    if(!(amount>0))return fail("Vul een geldig bedrag in.");
+    const cur=readVals(),v={};
+    if(mode==="equal"||mode==="shares"||mode==="percent"){
+      for(const k in cur){const n=mode==="equal"?(cur[k]?1:0):parseFloat(String(cur[k]).replace(",","."));if(n>0)v[k]=n}
+      if(!Object.keys(v).length)return fail("Kies minstens één persoon.");
+      if(mode==="percent"){const s=Object.values(v).reduce((a,b)=>a+b,0);if(Math.abs(s-100)>0.01)return fail(`Procenten tellen op tot ${+s.toFixed(2)}%, moet 100% zijn.`)}
+    }else{
+      let s=0;for(const k in cur){const c=cur[k]===""?0:parseAmt(cur[k]);if(isNaN(c)||c<0)return fail("Ongeldig bedrag.");if(c>0){v[k]=c;s+=c}}
+      if(s!==amount)return fail(`Bedragen tellen op tot ${fmt(s,g.cur)}, moet ${fmt(amount,g.cur)} zijn.`);
+    }
+    const rec={id:e?e.id:uid(),type:"expense",desc:f.desc.value.trim(),amount,paidBy:f.by.value,date:f.date.value,split:{mode,vals:v}};
+    if(e)g.expenses[g.expenses.findIndex(x=>x.id===e.id)]=rec;else g.expenses.push(rec);
+    save();render();
+  },"Opslaan",e?`<button type="button" class="danger" style="margin-right:auto" id="del">Verwijderen</button>`:"");
+  function readVals(){
+    const o={};form.querySelectorAll("[data-mid]").forEach(i=>o[i.dataset.mid]=i.type==="checkbox"?i.checked:i.value);return o;
+  }
+  function draw(){
+    form.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+    const c=cache[mode];
+    form.querySelector("#split").innerHTML=g.members.map(m=>{
+      let inp;
+      if(mode==="equal")inp=`<input type="checkbox" data-mid="${m.id}" ${(Object.keys(c).length?c[m.id]:true)?"checked":""}>`;
+      else inp=`<input type="text" inputmode="decimal" data-mid="${m.id}" placeholder="${mode==="shares"?"1":"0"}" value="${c[m.id]!=null?(mode==="exact"?(c[m.id]/100).toFixed(2).replace(".",","):c[m.id]):(mode==="shares"?"1":"")}">`;
+      return`<label class="pr">${avatar(g,m.id)}<span class="nm">${esc(m.name)}</span>${inp}</label>`}).join("");
+    form.querySelector("#hint").textContent={equal:"Vink aan wie meebetaalt.",exact:"Vul per persoon het bedrag in.",percent:"Moet samen 100% zijn.",shares:"Bv. 2 delen voor een koppel, 1 voor een single."}[mode];
+  }
+  form.querySelector("#modes").onclick=ev=>{const b=ev.target.closest("[data-m]");if(!b)return;cache[mode]=readVals();
+    if(mode==="equal"){const c=cache.equal;Object.keys(c).forEach(k=>c[k]=c[k]?1:0)}
+    mode=b.dataset.m;draw()};
+  const del=form.querySelector("#del");
+  if(del)del.onclick=()=>{if(confirm("Deze uitgave verwijderen?")){g.expenses=g.expenses.filter(x=>x.id!==e.id);save();dlg.close();render()}};
+  draw();
+}
+function paymentForm(g,e,pre){
+  const d=e||pre||{};
+  const sel=(n,v)=>`<select name="${n}">${g.members.map(m=>`<option value="${m.id}" ${v===m.id?"selected":""}>${esc(m.name)}</option>`).join("")}</select>`;
+  modal(e?"Betaling bewerken":"Betaling registreren",`
+  <div class="row2"><label class="f">Van${sel("from",d.paidBy||d.from)}</label><label class="f">Naar${sel("to",d.to||(g.members[1]||{}).id)}</label></div>
+  <div class="row2"><label class="f">Bedrag (${g.cur})<input name="amt" inputmode="decimal" required value="${d.amount?(d.amount/100).toFixed(2).replace(".",","):""}"></label>
+  <label class="f">Datum<input name="date" type="date" required value="${e?e.date:today()}"></label></div>`,
+  f=>{
+    const amount=parseAmt(f.amt.value);
+    if(!(amount>0))return fail("Vul een geldig bedrag in.");
+    if(f.from.value===f.to.value)return fail("Kies twee verschillende personen.");
+    const rec={id:e?e.id:uid(),type:"payment",amount,paidBy:f.from.value,to:f.to.value,date:f.date.value};
+    if(e)g.expenses[g.expenses.findIndex(x=>x.id===e.id)]=rec;else g.expenses.push(rec);
+    save();render();
+  },"Opslaan",e?`<button type="button" class="danger" style="margin-right:auto" id="del">Verwijderen</button>`:"");
+  const del=dlg.querySelector("#del");
+  if(del)del.onclick=()=>{if(confirm("Deze betaling verwijderen?")){g.expenses=g.expenses.filter(x=>x.id!==e.id);save();dlg.close();render()}};
+}
+
+/* ---------- delen / back-up ---------- */
+const b64=u8=>btoa(String.fromCharCode(...u8)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const unb64=s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0));
+async function pipe(u8,Stream){const s=new Blob([u8]).stream().pipeThrough(new Stream("deflate-raw"));return new Uint8Array(await new Response(s).arrayBuffer())}
+async function encodeGroup(g){
+  const u8=new TextEncoder().encode(JSON.stringify(g));
+  if(window.CompressionStream)return"z"+b64(await pipe(u8,CompressionStream));
+  return"j"+b64(u8);
+}
+async function decodeGroup(s){
+  const raw=unb64(s.slice(1));
+  const u8=s[0]==="z"?await pipe(raw,DecompressionStream):raw;
+  return JSON.parse(new TextDecoder().decode(u8));
+}
+function sane(g){
+  return g&&typeof g.name==="string"&&Array.isArray(g.members)&&Array.isArray(g.expenses)&&g.members.every(m=>m&&typeof m.id==="string"&&typeof m.name==="string");
+}
+function adopt(g){
+  if(!sane(g))throw new Error("bad");
+  g.id=uid();g.cur=g.cur||"EUR";db.groups.unshift(g);save();ui.gid=g.id;ui.tab="uitgaven";render();
+}
+async function checkHash(){
+  const m=location.hash.match(/^#g=(.+)$/);if(!m)return;
+  history.replaceState(null,"",location.pathname);
+  try{
+    const g=await decodeGroup(m[1]);
+    if(!sane(g))throw 0;
+    if(confirm(`Groep “${g.name}” importeren?`))adopt(g);
+  }catch(e){toast("Link ongeldig")}
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",async ev=>{
+  const el=ev.target.closest("[data-act]");if(!el)return;
+  const g=db.groups.find(x=>x.id===ui.gid),a=el.dataset.act,id=el.dataset.id;
+  if(a==="open"){ui.gid=id;ui.tab="uitgaven";render();scrollTo(0,0)}
+  else if(a==="home"){ui.gid=null;render()}
+  else if(a==="tab"){ui.tab=id;render()}
+  else if(a==="newgroup")newGroup();
+  else if(a==="newexp")expenseForm();
+  else if(a==="edit")expenseForm(g.expenses.find(x=>x.id===id));
+  else if(a==="settle"){const s=settle(balances(g))[+el.dataset.i];if(s)paymentForm(g,null,{from:s.from,paidBy:s.from,to:s.to,amount:s.amount})}
+  else if(a==="rmmember"){
+    const used=g.expenses.some(e=>e.paidBy===id||e.to===id||(e.split&&id in e.split.vals));
+    if(g.members.length<=2)return toast("Minstens twee personen nodig");
+    if(used)return toast("Heeft nog uitgaven — verwijder die eerst");
+    g.members=g.members.filter(m=>m.id!==id);save();render();
+  }
+  else if(a==="rename"){
+    modal("Groep wijzigen",`<label class="f">Naam<input name="name" value="${esc(g.name)}" maxlength="50" required></label>
+    <label class="f">Munt<select name="cur">${["EUR","USD","GBP","CHF","SEK","DKK","NOK","PLN","CZK"].map(c=>`<option ${c===g.cur?"selected":""}>${c}</option>`).join("")}</select></label>`,
+    f=>{g.name=f.name.value.trim();g.cur=f.cur.value;save();render()});
+  }
+  else if(a==="delgroup"){if(confirm(`Groep “${g.name}” en alle uitgaven definitief verwijderen?`)){db.groups=db.groups.filter(x=>x.id!==g.id);save();ui.gid=null;render()}}
+  else if(a==="export"){
+    const url=URL.createObjectURL(new Blob([JSON.stringify(g,null,2)],{type:"application/json"}));
+    const l=document.createElement("a");l.href=url;l.download=`split-${g.name.replace(/[^\w-]+/g,"_")}.json`;l.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  else if(a==="share"){
+    const url=location.origin+location.pathname+"#g="+await encodeGroup(g);
+    try{if(navigator.share){await navigator.share({title:g.name,url});return}}catch(e){if(e.name==="AbortError")return}
+    try{await navigator.clipboard.writeText(url);toast("Link gekopieerd")}catch(e){prompt("Kopieer deze link:",url)}
+  }
+  else if(a==="import"){
+    modal("Importeren",`<label class="f">Back-upbestand (.json)<input type="file" name="file" accept="application/json,.json"></label>
+    <label class="f">…of plak een deellink<input name="link" placeholder="https://sbmusic.be/split/#g=…"></label>`,
+    f=>{
+      const done=p=>p.then(()=>toast("Groep geïmporteerd")).catch(()=>toast("Import mislukt"));
+      if(f.file.files[0])done(f.file.files[0].text().then(t=>adopt(JSON.parse(t))));
+      else if(f.link.value.includes("#g="))done(decodeGroup(f.link.value.split("#g=")[1].trim()).then(adopt));
+      else return fail("Kies een bestand of plak een link.");
+    },"Importeren");
+  }
+});
+document.addEventListener("submit",ev=>{
+  const f=ev.target.closest("[data-form=addmember]");if(!f)return;ev.preventDefault();
+  const g=db.groups.find(x=>x.id===ui.gid),n=f.n.value.trim();if(!n)return;
+  if(g.members.some(m=>m.name.toLowerCase()===n.toLowerCase()))return toast("Naam bestaat al");
+  g.members.push({id:uid(),name:n});save();render();
+});
+render();checkHash();
+</script>
+</body>
+</html>
