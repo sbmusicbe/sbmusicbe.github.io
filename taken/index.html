@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Klose</title>
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F4F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1014" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Klose">
-<link rel="manifest" href="manifest.webmanifest?v=3">
-<link rel="icon" href="icon.svg?v=3" type="image/svg+xml">
-<link rel="icon" href="favicon-32.png?v=3" type="image/png" sizes="32x32">
-<link rel="icon" href="favicon-48.png?v=3" type="image/png" sizes="48x48">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
+<link rel="manifest" href="manifest.webmanifest?v=4">
+<link rel="icon" href="icon.svg?v=4" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png?v=4" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon-48.png?v=4" type="image/png" sizes="48x48">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=4">
 <script>try{var t=localStorage.getItem("taken.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
@@ -1801,7 +1801,7 @@ a,.link{color:var(--accent)}
 .link:hover{text-decoration:underline}
 /* logo: de K van Klose (donker, in de donkere modus de lichte variant) */
 .brand i,.lock-logo{background:none!important;width:auto!important;height:auto!important;border-radius:0!important;box-shadow:none!important;display:block!important;color:var(--text)}
-.brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:784/1006;width:22px;background:url("logo-k.png") center/contain no-repeat}
+.brand i::before,.lock-logo::before{content:"";display:block;aspect-ratio:60/72;width:22px;background:url("klose-k-transparant.svg") center/contain no-repeat}
 .lock-logo::before{width:46px}
 .brand i img,.brand i svg,.lock-logo img,.lock-logo svg{display:none!important}
 .brand{font-weight:600;font-size:17px;letter-spacing:-.01em}
@@ -1985,7 +1985,7 @@ ul.tasks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(21
 }
 .top-avatar{display:none}
 .top-avatar{width:46px;height:46px;border-radius:50%;border:0;background:var(--panel);padding:0;place-items:center;box-shadow:var(--shadow-card)}
-.top-avatar::before{content:"";display:block;width:20px;aspect-ratio:784/1006;background:url("logo-k.png") center/contain no-repeat}
+.top-avatar::before{content:"";display:block;width:20px;aspect-ratio:60/72;background:url("klose-k-transparant.svg") center/contain no-repeat}
 .group{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 18px!important}
 .proj-notes,#banner{background:none!important;box-shadow:none!important}
 .proj-notes:hover{background:none!important}
@@ -2226,8 +2226,8 @@ table.sales .grp-day td{text-transform:none;font-size:13px}
 .pc-togo{flex:1 1 100%;order:2;margin:0;font-size:15px;color:var(--muted)}
 .pc-togo b{color:var(--text);font-family:Barlow,Inter,sans-serif;font-size:17px}
 /* donkere modus: lichte K */
-:root[data-theme="dark"] .brand i::before,:root[data-theme="dark"] .lock-logo::before,:root[data-theme="dark"] .top-avatar::before{background-image:url("logo-k-light.png")}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brand i::before,:root:not([data-theme="light"]) .lock-logo::before,:root:not([data-theme="light"]) .top-avatar::before{background-image:url("logo-k-light.png")}}
+:root[data-theme="dark"] .brand i::before,:root[data-theme="dark"] .lock-logo::before,:root[data-theme="dark"] .top-avatar::before{background-image:url("klose-k-licht.svg")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brand i::before,:root:not([data-theme="light"]) .lock-logo::before,:root:not([data-theme="light"]) .top-avatar::before{background-image:url("klose-k-licht.svg")}}
 /* rondleiding */
 #tour{position:fixed;inset:0;z-index:100}
 #tour .tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none;transition:all .2s ease}
@@ -2375,273 +2375,231 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
 
 
 /* lettertypen staan in de app zelf (geen Google nodig, ook offline) */
-@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/bricolage-grotesque-latin-800-normal.woff2) format('woff2')}
-@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/hanken-grotesk-latin-400-normal.woff2) format('woff2')}
-@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/hanken-grotesk-latin-500-normal.woff2) format('woff2')}
-@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/hanken-grotesk-latin-600-normal.woff2) format('woff2')}
-@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/hanken-grotesk-latin-700-normal.woff2) format('woff2')}
-@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2')}
-@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/geist-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/geist-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/geist-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/geist-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/geist-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/geist-mono-latin-500-normal.woff2) format('woff2')}
 
 /* =====================================================================
-   KLOSE HUISSTIJL v1 — platte vlakken, harde randen, één oranje signaal per scherm.
-   Papier (#F4F1EA) als pagina, wit voor kaarten en velden, inkt (#111318) voor tekst.
-   Lettertypen: Bricolage Grotesque 800 (koppen), Hanken Grotesk (tekst), IBM Plex Mono (cijfers).
+   KLOSE LIQUID GLASS — doorschijnend glas boven een zacht gekleurd vlak, capsules, één oranje signaal.
+   Tokens volgen de stijlgids (design system "Klose"): surface, glass, glass-strong, glass-edge, signal, won, ink.
    ===================================================================== */
 :root{
-  --surface:#FFFFFF;--raised:#FFFFFF;--sunken:#F4F1EA;--b-line:#D9D4C6;--b-border:#7A7667;
-  --ink:#111318;--ink-muted:#4D5059;--signal:#FF4B1F;--signal-hover:#FF6A42;--on-signal:#111318;
-  --signal-text:#C2380F;--signal-soft:#FFE3DA;--won:#1E5BC6;--won-soft:#DCE7FB;--focus:#111318;
-  --f-display:'Bricolage Grotesque','Hanken Grotesk',system-ui,sans-serif;
-  --f-text:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  /* de oudere lagen lezen deze namen: ze krijgen nu de merkkleuren */
-  --bg:var(--surface);--panel:var(--raised);--card:var(--raised);--side:var(--surface);--col:var(--raised);--seg-on:var(--raised);
+  --surface:#F2F4F8;--raised:#FFFFFF;--sunken:#E7EAF0;
+  --glass:rgba(255,255,255,.62);--glass-strong:rgba(255,255,255,.82);--glass-edge:rgba(255,255,255,.8);
+  --b-line:#DDE1E8;--b-border:#6B7280;--ink:#111318;--ink-muted:#4D5059;
+  --signal:#FF4B1F;--signal-hover:#FF6A42;--on-signal:#111318;--signal-text:#C2380F;--signal-soft:#FFE3DA;
+  --won:#1E5BC6;--won-soft:#DCE7FB;--focus:#111318;
+  --shadow-glass:0 10px 30px rgba(17,19,24,.10),0 2px 6px rgba(17,19,24,.06);
+  --shadow-edge:inset 0 1px 0 rgba(255,255,255,.9);
+  --shadow-signal:0 8px 20px rgba(255,75,31,.32);
+  --blur-glass:24px;--blur-orb:64px;
+  --r-sm:10px;--r-md:14px;--r-lg:24px;--r-xl:32px;--r-pill:999px;
+  --f-display:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-text:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  /* de oudere lagen lezen deze namen */
+  --bg:var(--surface);--panel:var(--raised);--card:var(--raised);--side:transparent;--col:transparent;--seg-on:var(--glass-strong);
   --text:var(--ink);--muted:var(--ink-muted);--faint:var(--ink-muted);
-  --line:var(--b-line);--hairline:var(--b-line);--hover:var(--sunken);--sel:var(--sunken);--fill:var(--sunken);--group:var(--sunken);
+  --line:var(--b-line);--hairline:var(--b-line);--hover:rgba(17,19,24,.06);--sel:rgba(17,19,24,.08);--fill:var(--sunken);--group:var(--sunken);
   --accent:var(--signal-text);--accent-2:var(--signal-text);--on-accent:#fff;--accent-soft:var(--signal-soft);--accent-line:var(--signal);--sel-task:var(--signal-soft);
   --danger:var(--signal-text);--ok:var(--won);
-  --material:var(--raised);--material-strong:var(--raised);--glass:var(--raised);--glass-strong:var(--raised);--glass-edge:var(--b-line);
-  --glass-shadow:none;--glass-blur:none;--wallpaper:none;--shadow:none;--shadow-card:none;--shadow-lift:none;
-  --ctl-r:10px;--r-card:14px;--ctl-h:44px;--ctl-fs:15px;--ctl-px:16px;
+  --material:var(--glass);--material-strong:var(--glass-strong);--glass-blur:none;--wallpaper:none;--shadow:var(--shadow-glass);--shadow-card:var(--shadow-glass);--shadow-lift:var(--shadow-glass);
+  --ctl-r:14px;--r-card:24px;--ctl-h:44px;--ctl-fs:15px;--ctl-px:20px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --surface:#111318;--raised:#1A1D24;--sunken:#0B0C10;--b-line:#272B34;--b-border:#6B707C;
-  --ink:#F4F1EA;--ink-muted:#A8ABB4;--signal-text:#FF4B1F;--signal-soft:#3A1D14;--won:#86AEFF;--won-soft:#14233F;--focus:#F4F1EA;--on-accent:#111318}}
+  --surface:#0E1014;--raised:#1A1D24;--sunken:#090A0D;--glass:rgba(32,36,44,.58);--glass-strong:rgba(20,22,28,.82);--glass-edge:rgba(255,255,255,.18);
+  --b-line:#272B34;--b-border:#6B707C;--ink:#FFFFFF;--ink-muted:#A8ABB4;--signal-text:#FF4B1F;--signal-soft:#3A1D14;--won:#86AEFF;--won-soft:#14233F;--focus:#FFFFFF;
+  --shadow-glass:0 12px 32px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.35);--shadow-edge:inset 0 1px 0 rgba(255,255,255,.14);--on-accent:#111318;--hover:rgba(255,255,255,.07);--sel:rgba(255,255,255,.1)}}
 :root[data-theme="dark"]{
-  --surface:#111318;--raised:#1A1D24;--sunken:#0B0C10;--b-line:#272B34;--b-border:#6B707C;
-  --ink:#F4F1EA;--ink-muted:#A8ABB4;--signal-text:#FF4B1F;--signal-soft:#3A1D14;--won:#86AEFF;--won-soft:#14233F;--focus:#F4F1EA;--on-accent:#111318}
+  --surface:#0E1014;--raised:#1A1D24;--sunken:#090A0D;--glass:rgba(32,36,44,.58);--glass-strong:rgba(20,22,28,.82);--glass-edge:rgba(255,255,255,.18);
+  --b-line:#272B34;--b-border:#6B707C;--ink:#FFFFFF;--ink-muted:#A8ABB4;--signal-text:#FF4B1F;--signal-soft:#3A1D14;--won:#86AEFF;--won-soft:#14233F;--focus:#FFFFFF;
+  --shadow-glass:0 12px 32px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.35);--shadow-edge:inset 0 1px 0 rgba(255,255,255,.14);--on-accent:#111318;--hover:rgba(255,255,255,.07);--sel:rgba(255,255,255,.1)}
 
-html,body{background:var(--surface)!important;color:var(--ink);background-image:none!important}
+/* het vlak achter het glas: surface met twee vervaagde kleurvlekken (signal en won) */
+html{background:var(--surface)!important}
+body{background:transparent!important;background-image:none!important;color:var(--ink);isolation:isolate}
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;opacity:.5;filter:blur(var(--blur-orb));pointer-events:none;
+  background:radial-gradient(34% 40% at 16% 22%,var(--signal) 0,transparent 72%),radial-gradient(32% 38% at 86% 80%,var(--won) 0,transparent 72%)}
+html,body{height:100%}
 body,button,input,select,textarea{font-family:var(--f-text)!important;letter-spacing:0!important;font-size:15px;line-height:22px}
-body{padding:0!important;height:100%!important}
-/* geen schaduwen, geen glas, geen verlopen */
-#side,#detail,.d-head,dialog,#toast,#updBar,.lock-card,.card,.col,.btn,.icon-btn,.chip,.seg,.top-search,.top-btn,.tb-toggle,.sales-stat,.pace,.box,.table-wrap,.pg-card,.props,ul.comments li,#banner,#tabBar,#fab,#ctxMenu,#datePop,#timePop,#fmtPop,.main-head,.topbar,.main-inner,#quickAdd,.d-more,.feat{
-  box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;text-shadow:none!important}
-.main-inner{background:none!important}
-#app{height:100%!important;border-radius:0!important;background:var(--surface)!important;box-shadow:none!important;overflow:visible}
+#app{background:transparent!important;height:100%!important;border-radius:0!important;box-shadow:none!important}
+.main-inner,.main-head,.main-head.scrolled,.topbar,#main{background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 
-/* koppen: Bricolage Grotesque 800; verder alles Hanken Grotesk */
-h1,.lock-card h1,.lock-card h2,.main-head h2,.brand,#lockTitle{font-family:var(--f-display)!important;font-weight:800!important;letter-spacing:-.04em!important}
-.main-head h2,#dTitle,dialog h3,h3{color:var(--ink)}
-#app .main-head h2{font-size:clamp(32px,3.6vw,48px)!important;line-height:1.08!important;text-wrap:balance}
+/* een glaslaag: vulling, vervaging, lichtrand, schaduw */
+#side,#detail,.card,.task,.sales-stat,.pace,.pg-card,.box,.btw-card,.ag-cal,.lock-card,#toast,#updBar,#ctxMenu,#datePop,#timePop,#fmtPop,dialog,#tabBar,.top-search,.seg,.tb-toggle,.top-btn,.d-more,#banner,.nb-list,.feat{
+  -webkit-backdrop-filter:blur(var(--blur-glass)) saturate(180%)!important;backdrop-filter:blur(var(--blur-glass)) saturate(180%)!important;
+  border:1px solid var(--glass-edge)!important;box-shadow:var(--shadow-edge),var(--shadow-glass)!important}
+#side,#detail,.card,.task,.sales-stat,.pace,.pg-card,.box,.btw-card,.ag-cal,.lock-card,.top-search,.seg,.tb-toggle,.top-btn,.d-more,#banner,.nb-list,.feat{background:var(--glass)!important}
+#detail,#toast,#updBar,#ctxMenu,#datePop,#timePop,#fmtPop,dialog,#tabBar{background:var(--glass-strong)!important}
+
+/* typografie */
+h1,.lock-card h1,.main-head h2,.brand,#lockTitle,.sales-stat b{font-family:var(--f-display)!important;font-weight:700!important;letter-spacing:-.04em!important}
+#app .main-head h2{font-size:clamp(32px,3.6vw,48px)!important;line-height:1.08!important;color:var(--ink);text-wrap:balance}
 #app .main-head h2 .dot{display:none}
-#app .main-head .view-sub{font-family:var(--f-text);font-size:13px;line-height:18px;color:var(--ink-muted)}
-dialog h3,.d-sec h3{font-family:var(--f-text)!important;font-weight:700!important;font-size:20px!important;line-height:28px!important;letter-spacing:0!important}
-#dTitle{font-family:var(--f-text)!important;font-weight:700!important;font-size:20px;line-height:28px;letter-spacing:0!important}
-/* wordmerk: "Klose" met oranje punt, 20% afstand tot de tegel */
-.brand,#lockTitle{color:var(--ink)}
+#app .main-head .view-sub{font-size:13px;line-height:18px;color:var(--ink-muted)}
+dialog h3,.d-sec h3,#dTitle{font-family:var(--f-text)!important;font-weight:600!important;font-size:20px!important;line-height:28px!important;letter-spacing:-.015em!important;color:var(--ink)}
 .brand::after,#lockTitle::after{content:".";color:var(--signal)}
-.brand{font-size:26px!important;line-height:1;gap:.2em!important}
-.lock-tag{margin:2px 0 14px;color:var(--ink-muted);font-size:15px;text-align:center}
+.brand{font-size:26px!important;line-height:1;gap:.2em!important;color:var(--ink)}
 #lockTitle{font-size:48px!important;line-height:52px!important;text-align:center;margin:8px 0 0}
-/* labels: hoofdletters met 0,06 em */
-.side-section,.side-section>span,.eyebrow,.d-sec>span,.prop>span,label.fl,.fl,.pg-table th,table.sales th,.lbl{
-  font-family:var(--f-text)!important;font-size:12px!important;line-height:16px!important;font-weight:600!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:var(--ink-muted)!important}
+.lock-tag{margin:2px 0 14px;color:var(--ink-muted);font-size:15px;text-align:center}
+.side-section,.side-section>span,.eyebrow,.d-sec>span,.prop>span,label.fl,.fl,.pg-table th,table.sales th,.lbl{font-family:var(--f-text)!important;font-size:12px!important;line-height:16px!important;font-weight:600!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:var(--ink-muted)!important}
 .side-section>span::before,.d-sec>span::before,.eyebrow::before{display:none!important}
-/* cijfers in mono, zodat ze onder elkaar uitlijnen */
-.mono,.sales-stat b,.pace b,table.sales td,.pg-table td.num,.cnt,.count,.cl-no,.cl-no-mini,#dTime,#dDue,input[type=tel],input[inputmode=numeric],input[inputmode=decimal],.calc-v,.num{font-family:var(--f-mono)!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
-.sales-stat b{font-size:28px!important;line-height:32px!important;font-weight:500!important}
+.mono,.sales-stat b,.pace b,.cnt,.count,.cl-no,.cl-no-mini,#dTime,#dDue,input[type=tel],input[inputmode=numeric],input[inputmode=decimal],.num,
+html body :is(.pc-out li b,.pc-togo b,#spPay b,.sp-num,table.sales td.num input,table.sales tfoot td,#salesPage .t-money,#salesPage .t-date,#salesPage .t-number){font-family:var(--f-mono)!important;font-variant-numeric:tabular-nums;letter-spacing:0!important;font-weight:500}
+.sales-stat b{font-size:28px!important;line-height:32px!important}
+body b,body strong{font-family:inherit}
 
-/* zijbalk */
-#side{background:var(--surface)!important;border:0!important;border-right:1px solid var(--b-line)!important;padding:20px 14px 16px!important}
-#side .nav-item,#side .foot-btn{min-height:44px;border-radius:10px!important;padding:10px 12px!important;font-size:15px!important;font-weight:400!important;color:var(--ink)!important;background:transparent!important;border:0!important;gap:12px}
+/* beweging: kort en vloeiend, indrukken schaalt naar 97% */
+.btn,.icon-btn,.nav-item,.chip,.seg button,.top-btn,.top-search,input,select,textarea,.card,.task,.sw,.foot-btn,.tb-toggle{transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease),opacity .2s var(--ease)}
+.btn:active,.icon-btn:active,.nav-item:active,.seg button:active,.tb-toggle:active{transform:scale(.97)}
+
+/* zijbalk: een zwevend glasvlak */
+@media (min-width:861px){
+  #app{grid-template-columns:288px minmax(0,1fr)!important}
+  #app.with-detail{grid-template-columns:288px minmax(0,1fr) var(--detail-w,400px)!important}
+  #app.board-mode.with-detail{grid-template-columns:288px 1fr!important}
+  #side{margin:12px 0 12px 12px;height:calc(100% - 24px);border-radius:var(--r-xl)!important;padding:20px 14px 16px!important}
+  #app .main-inner{padding:24px 40px 64px!important}
+}
+#side .nav-item,#side .foot-btn{min-height:44px;border-radius:var(--r-pill)!important;padding:10px 16px!important;font-size:15px!important;font-weight:500!important;color:var(--ink)!important;background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;gap:12px}
 #side .nav-item .ico,#side .foot-btn svg{color:var(--ink-muted)}
-#side .nav-item:hover,#side .foot-btn:hover{background:var(--sunken)!important}
-#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"]{background:var(--sunken)!important;font-weight:600!important}
-#side .nav-item.active .cnt,#side .nav-item.on .cnt{color:var(--ink)}
-#side .side-section{padding:24px 12px 8px!important}
-/* knoppen */
-#app .btn,#app .tb-toggle,#app .top-btn{min-height:44px;padding:10px 18px!important;border-radius:10px!important;background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;font-weight:600!important;font-size:15px!important}
-#app .btn:hover,#app .tb-toggle:hover{background:var(--sunken)!important}
-#app .btn.primary,#app .tb-add,#app #lockBtn{background:var(--signal)!important;color:var(--on-signal)!important;border-color:var(--signal)!important}
-#app .btn.primary:hover,#app .tb-add:hover{background:var(--signal-hover)!important;border-color:var(--signal-hover)!important}
-#app .btn.danger,#app .btn.danger:hover{color:var(--signal-text)!important;border-color:var(--signal-text)!important;background:transparent!important}
-#qaBtn,#quickAdd .btn{background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important}
+#side .nav-item:hover,#side .foot-btn:hover{background:var(--hover)!important}
+#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"]{background:var(--glass-strong)!important;font-weight:600!important;box-shadow:var(--shadow-edge),var(--shadow-glass)!important}
+#side .side-section{padding:26px 16px 8px!important}
+
+/* knoppen: capsules */
+#app .btn,#app .tb-toggle,#app .top-btn,:is(dialog,#detail,#toast) .btn,.lock .btn{min-height:44px;padding:0 22px!important;border-radius:var(--r-pill)!important;background:var(--glass)!important;color:var(--ink)!important;font-weight:600!important;font-size:15px!important;background-image:none!important}
+#app .btn:hover,#app .tb-toggle:hover,:is(dialog,#detail) .btn:hover{background:var(--glass-strong)!important}
+#app .btn.primary,#app .tb-add,.lock .btn.primary,#lockBtn,:is(dialog,#detail) .btn.primary{color:var(--on-signal)!important;background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 55%),var(--signal)!important;border:1px solid transparent!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),var(--shadow-signal)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#app .btn.primary:hover,#app .tb-add:hover,:is(dialog,#detail) .btn.primary:hover{background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 55%),var(--signal-hover)!important}
+#app .btn.danger,:is(dialog,#detail) .btn.danger{color:var(--signal-text)!important}
+#quickAdd .btn,#quickAdd .btn.primary{background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#quickAdd .btn:hover{background:var(--hover)!important}
 .link,a.link,button.link{color:var(--signal-text)!important;font-weight:600}
-.icon-btn{border-radius:10px!important;color:var(--ink)}
+.icon-btn{border-radius:var(--r-pill)!important;color:var(--ink)}
 .main-head .icon-btn,.toolbar .icon-btn,.d-head .icon-btn,.topbar .icon-btn{min-width:44px;min-height:44px}
-.icon-btn:hover{background:var(--sunken)!important}
-/* Bord/Lijst: gewone knoppen, de gekozen is inkt */
-#app .seg{background:transparent!important;gap:6px;padding:0;border:0!important}
-#app .seg button{min-height:44px;padding:10px 18px!important;border-radius:10px!important;border:1px solid var(--b-border)!important;color:var(--ink)!important;background:transparent!important;font-weight:600!important}
-#app .seg button.on{background:var(--ink)!important;color:var(--surface)!important;border-color:var(--ink)!important}
-/* velden */
-input,select,textarea,.top-search{background:var(--raised)!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:10px!important;min-height:44px;font-size:15px}
+.icon-btn:hover{background:var(--hover)!important}
+button:disabled,.btn[disabled]{color:var(--ink-muted)!important;background:var(--sunken)!important;box-shadow:none!important;cursor:not-allowed}
+/* Bord/Lijst: capsule met tabs */
+#app .toolbar{gap:12px!important;align-items:center}
+#app .seg{display:inline-flex;padding:4px!important;gap:2px!important;border-radius:var(--r-pill)!important;height:auto!important;overflow:visible!important}
+#app .seg button{border:0!important;border-radius:var(--r-pill)!important;min-height:40px;padding:0 20px!important;background:transparent!important;color:var(--ink)!important;font-weight:500!important;box-shadow:none!important}
+#app .seg button.on{background:var(--glass-strong)!important;font-weight:600!important;box-shadow:var(--shadow-edge),var(--shadow-glass)!important}
+#app .tb-toggle{padding:0 18px!important}
+
+/* velden: echte rand, glas-strong als vulling */
+:is(#app,.lock,dialog,#detail) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]){background:var(--glass-strong)!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:var(--r-md)!important;min-height:44px;font-size:15px;box-shadow:none!important;-webkit-backdrop-filter:blur(var(--blur-glass))!important;backdrop-filter:blur(var(--blur-glass))!important}
+:is(#app,.lock,dialog,#detail) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):hover{border-color:var(--ink)!important}
+:is(#app,.lock,dialog,#detail) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):focus{border-color:var(--ink)!important}
 textarea{min-height:88px}
 input::placeholder,textarea::placeholder{color:var(--ink-muted);opacity:1}
-input[type=checkbox],input[type=radio]{min-height:0;accent-color:var(--ink)}
-:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px!important;border-radius:10px}
-/* bord: platte kolommen, kaarten met rand */
-#app .board{gap:16px!important}
-#app .col{background:var(--sunken)!important;border:1px solid var(--b-line)!important;border-top:1px solid var(--b-line)!important;border-radius:14px!important;padding:12px!important}
-#app .col>header .nm{font-size:15px;font-weight:600;color:var(--ink)}
-#app .col>header .dot{width:10px;height:10px;border-radius:50%}
-#app .col>header .count{background:var(--raised);color:var(--ink);border:1px solid var(--b-line);border-radius:999px;padding:0 9px;font-size:13px;font-weight:500;line-height:20px}
-#app .card{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important;padding:14px 16px!important;transform:none}
-#app .card:hover{border-color:var(--b-border)!important;transform:none;box-shadow:none!important}
-#app .card.sel{border:2px solid var(--ink)!important;padding:13px 15px!important}
-#app .card.due-late,#app .card.due-today,#app .card.due-soon{border:1px solid var(--signal)!important}
-#app .card .t-title{font-size:15px;line-height:22px;font-weight:600;letter-spacing:0;color:var(--ink)}
-#app .card .t-ico{border-radius:6px;background:var(--sunken)!important;color:var(--ink)!important;font-size:12px;font-weight:600}
+input[type=checkbox],input[type=radio]{accent-color:var(--ink)}
+:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px!important}
+#app .top-search{border-radius:var(--r-pill)!important;min-height:44px;padding:0 18px!important}
+#app .top-btn,#app .topbar .icon-btn{border-radius:var(--r-pill)!important}
+#app .topbar{height:60px!important}
+/* snel toevoegen: één rustig veld, tips alleen tijdens het typen */
+#quickAdd{gap:12px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+:is(#app) #quickAdd #qaInput:not([type=checkbox]){border-radius:var(--r-pill)!important;min-height:52px;padding:0 24px!important;border:1px solid var(--glass-edge)!important;background:var(--glass)!important;box-shadow:var(--shadow-edge),var(--shadow-glass)!important}
+#qaPreview .qa-hint{opacity:0;transition:opacity .2s var(--ease);color:var(--ink-muted)}
+#quickAdd:focus-within+#qaPreview .qa-hint{opacity:1}
+#qaPreview{min-height:22px;margin:10px 8px 4px}
+
+/* bord: kolommen laten het vlak zien, de kaarten zijn glas */
+#app .board{gap:20px!important;padding:4px 2px 24px!important}
+#app .col{background:transparent!important;border:0!important;box-shadow:none!important;padding:4px 2px!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#app .col>header{padding:0 8px 12px}
+#app .col>header .nm{font-size:14px;font-weight:600;color:var(--ink)}
+#app .col>header .dot{width:12px;height:12px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--ink-muted)}
+#app .col>header .count{background:transparent;border:0;color:var(--ink-muted);padding:0 2px}
+#app .col.over,#app .col.drop,#app .col.drag-over{background:color-mix(in srgb,var(--glass) 55%,transparent)!important;border-radius:var(--r-lg)!important}
+:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]){border:1px dashed var(--b-border)!important;background:transparent!important;border-radius:var(--r-pill)!important;min-height:44px;padding:0 18px!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]):focus{background:var(--glass-strong)!important;border-style:solid!important}
 .col-empty{color:var(--ink-muted)}
-/* status en badges: altijd met een woord, stipje in de kleur van de stap */
-.chip{background:var(--sunken)!important;color:var(--ink)!important;border:0;border-radius:999px;font-size:13px;line-height:18px;font-weight:500;padding:3px 10px}
-.chip.opt{background:var(--sunken)!important;color:var(--ink)!important;display:inline-flex;align-items:center;gap:6px;font-weight:600}
-.chip.opt::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 25%,transparent)!important}
-.chip.due{background:none!important;padding:0!important;color:var(--ink-muted)!important}
-.chip.due.today,.chip.due.late,.chip.due.soon{color:var(--signal-text)!important;font-weight:600}
-.chip.due.today::before,.chip.due.late::before,.chip.due.soon::before{content:"";width:8px;height:8px;background:var(--signal);display:inline-block;margin-right:6px}
-/* lijstrijen */
-.task{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
-.task.sel{border:2px solid var(--ink)!important}
-/* paneel, dialogen, popovers: rand in plaats van schaduw */
-#app #detail{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
-#app.board-mode #detail{top:12px!important;right:12px!important;bottom:12px!important;border:1px solid var(--b-border)!important}
-#detail .d-head{background:var(--raised)!important;border-radius:14px 14px 0 0!important;border-bottom:1px solid var(--b-line)!important}
-.props,#dNotes,ul.comments li,.d-more .props{background:var(--sunken)!important;border:0!important;border-radius:10px!important}
-dialog{background:var(--raised)!important;color:var(--ink);border:1px solid var(--b-border)!important;border-radius:14px!important}
-dialog::backdrop{background:rgba(17,19,24,.55)!important}
-#ctxMenu,#datePop,#timePop,#fmtPop{background:var(--raised)!important;border:1px solid var(--b-border)!important;border-radius:10px!important}
-.sales-stat,.pace,.box,.table-wrap,.pg-card{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
-table.sales thead th,.pg-table thead th{background:var(--sunken)!important}
-/* melding en toast: inkt met lichte tekst; de actie is oranje op inkt */
-#toast,#updBar{background:var(--ink)!important;color:var(--surface)!important;border-radius:10px!important;border:0!important}
-#toast button,#updBar .x{color:var(--surface)!important}
-#updBar #updGo{background:var(--signal)!important;color:var(--on-signal)!important;border:0!important;min-height:44px}
-/* mobiel: tabbalk en de ene knop */
-#tabBar{background:var(--surface)!important;border-top:1px solid var(--b-line)!important}
-#tabBar button{color:var(--ink-muted)}#tabBar button.on,#tabBar button.active{color:var(--ink);font-weight:600}
-#fab{background:var(--signal)!important;color:var(--on-signal)!important;border:0!important}
-/* aanmelden */
-.lock{background:var(--surface)!important}
-.lock-card{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
-/* beweging blijft rustig: geen opheffen, geen schaduw */
-@media (hover:hover){#app .card:hover{transform:none!important}}
-/* verfijning */
-#app .btn,#app .btn.primary,#app .tb-add,#app .seg button,.lock .btn,#lockBtn,#app .top-btn{background-image:none!important;box-shadow:none!important;filter:none!important;text-shadow:none!important;border-bottom-width:1px!important}
-.lock .btn.primary,#lockBtn,#app .btn.primary,#app .tb-add{background:var(--signal)!important;color:var(--on-signal)!important;border:1px solid var(--signal)!important}
-.lock .btn:not(.primary){background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important}
-:is(#app,.lock,dialog,#detail) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]){background:var(--raised)!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:10px!important;box-shadow:none!important}
-:is(#app,.lock,dialog,#detail) :is(input,select,textarea):focus{border-color:var(--ink)!important}
-#app #dTitle{background:transparent!important;border-color:transparent!important;min-height:0;padding-left:4px}
-#app #dTitle:hover{border-color:var(--b-line)!important}
-#app .main-head,#app .main-head.scrolled,#app .topbar,#app .main-inner>.main-head h2{background:transparent!important;border:0!important}
-#app .topbar{height:56px!important}
-#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"],#side #nav .nav-item,#side #salesNav .nav-item,#side #projNav .nav-item{border:0!important;box-shadow:none!important}
-#app .seg::after,#app .seg::before,#app .toolbar::after,#app .toolbar::before{display:none!important}
-#app .col>header .dot,.chip.opt::before{box-sizing:border-box;border:1.5px solid var(--ink-muted);box-shadow:none!important}
-#app .col>header .dot{width:12px;height:12px}
-/* knoppen ook in dialogen en meldingen; werkbalk onder de titel */
-:is(dialog,#detail,#toast) .btn{min-height:44px;padding:10px 18px!important;border-radius:10px!important;background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;font-weight:600!important;background-image:none!important;box-shadow:none!important;filter:none!important}
-:is(dialog,#detail) .btn:hover{background:var(--sunken)!important}
-:is(dialog,#detail) .btn.primary{background:var(--signal)!important;color:var(--on-signal)!important;border-color:var(--signal)!important}
-:is(dialog,#detail) .btn.primary:hover{background:var(--signal-hover)!important}
-:is(dialog,#detail) .btn.danger{color:var(--signal-text)!important;border-color:var(--signal-text)!important}
-.feat,label.feat{border:1px solid var(--b-line)!important;background:var(--raised)!important;border-radius:10px!important}
-@media (min-width:861px){
-  #app .main-inner>.toolbar{grid-column:1/-1!important;grid-row:2!important;justify-content:flex-start!important;margin:12px 0 0!important;flex-wrap:wrap!important}
-  #app.board-mode.with-detail .main-inner>.toolbar{margin-right:calc(var(--detail-w,400px) + 24px)!important}
-  #app .main-head{grid-column:1/-1!important}
-  #app.board-mode.with-detail .main-head{margin-right:calc(var(--detail-w,400px) + 24px)!important}
-  #app .main-head h2{white-space:normal!important;overflow:visible!important}
-}
-#app .seg{height:auto!important;overflow:visible!important;align-items:stretch}
-/* opruiming: alles wat nog uit het vorige ontwerp kwam */
-:is(#app,dialog,#detail,#toast,#updBar,#ctxMenu,#datePop,#timePop,#fmtPop,.lock) :is(*,*::before,*::after),#detail,#toast,#updBar{box-shadow:none!important;text-shadow:none!important}
-.badge,.badge.opt{background:var(--sunken)!important;color:var(--ink)!important;border-radius:999px}
+#app .card{border-radius:var(--r-lg)!important;padding:20px!important;transform:none}
+#app .card:hover{background:var(--glass-strong)!important;transform:translateY(-1px)}
+#app .card.sel{border:2px solid var(--ink)!important;padding:19px!important}
+#app .card.due-late,#app .card.due-today,#app .card.due-soon{border-color:var(--signal)!important}
+#app .card .t-ico,.t-ico{display:none!important}
+#app .card .t-title{font-size:16px;line-height:22px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+#app .task{border-radius:var(--r-lg)!important}
+#app .task.sel{border:2px solid var(--ink)!important}
+
+/* status: altijd een woord en een stip */
+.chip,.badge{display:inline-flex;align-items:center;gap:6px;background:var(--sunken)!important;color:var(--ink)!important;border:1px solid transparent;border-radius:var(--r-pill);font:600 12px/16px var(--f-text);padding:5px 12px;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.chip.opt::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-sizing:border-box;border:1.5px solid var(--ink-muted)}
+.chip.due{background:none!important;padding:0!important;color:var(--ink-muted)!important;font-weight:500}
+.chip.due.today,.chip.due.late,.chip.due.soon{background:var(--signal-soft)!important;color:var(--ink)!important;padding:5px 12px!important;font-weight:600}
+.chip.due.today::before,.chip.due.late::before,.chip.due.soon::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--signal)}
 button.check{border-color:var(--b-border)!important}
+
+/* dealpaneel, dialogen, menu's */
+#app #detail{border-radius:var(--r-xl)!important}
+#app.board-mode #detail{top:12px!important;right:12px!important;bottom:12px!important}
+#detail .d-head{background:transparent!important;border-bottom:1px solid var(--b-line)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#detail .d-body{padding:8px 28px 32px!important}
+#app #dTitle{background:transparent!important;border-color:transparent!important;min-height:0;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#app #dTitle:hover{border-color:var(--b-line)!important}
+.props,.d-more .props,ul.comments li{background:var(--glass)!important;border:0!important;border-radius:var(--r-lg)!important;padding:4px 16px!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .props .prop{border-bottom:1px solid var(--b-line)}.props .prop:last-child{border-bottom:0}
-.t-ico{background:var(--sunken)!important;color:var(--ink)!important;border-radius:6px}
-/* verkopen */
+.d-more{border:0!important;box-shadow:none!important;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+dialog{border-radius:var(--r-xl)!important;color:var(--ink)}
+dialog::backdrop{background:rgba(17,19,24,.35)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#ctxMenu,#datePop,#timePop,#fmtPop{border-radius:var(--r-lg)!important}
+.feat,label.feat{border-radius:var(--r-lg)!important}
+#toast,#updBar{color:var(--ink)!important;border-radius:var(--r-pill)!important}
+#toast button,#updBar .x{color:var(--signal-text)!important}
+#updBar #updGo{background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 55%),var(--signal)!important;color:var(--on-signal)!important;border:0!important;min-height:44px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),var(--shadow-signal)!important}
+#updBar .x{background:transparent!important;box-shadow:none!important;border:0!important}
+
+/* dichte inhoud: tabellen en formulieren op surface-raised */
+.table-wrap,table.sales,.pg-table{background:var(--raised)!important}
+.table-wrap{border-radius:var(--r-lg)!important;border:1px solid var(--b-line)!important;box-shadow:none!important}
+table.sales thead th,.pg-table thead th{background:var(--sunken)!important}
 #salesPage,#salesPage *{font-family:var(--f-text)!important}
-#salesPage :is(.t-money,.t-date,.t-number,.sales-stat b,tfoot td:last-child,td.num,.mono,.cell.t-money,.cell.t-date),#salesPage .sales-stat b{font-family:var(--f-mono)!important}
-.sales-stat span,.sales-stat small{font-family:var(--f-text)!important}
 .pay-net{border-top-color:var(--b-line)!important}.pay-net b{color:var(--ink)!important}
-table.sales input,table.sales select,#salesPage .cell{border-color:transparent!important;background:transparent!important;border-radius:6px!important;min-height:40px}
-table.sales input:hover,table.sales select:hover{border-color:var(--b-line)!important}
-table.sales input:focus,table.sales select:focus{border-color:var(--ink)!important;background:var(--raised)!important}
-/* agenda: vlakke dagen met rand, kleuren uit het palet */
-.ev-druk{--ev:var(--signal)}.ev-deadline{--ev:var(--ink)}.ev-verschijning{--ev:var(--won)}.ev-anders{--ev:var(--ink-muted)}
-.ag-day,.ag-day.out,.ag-day.we,.ag-day.out.we{background:transparent!important;border:1px solid var(--b-line)!important;border-radius:10px!important}
-.ag-day.out,.ag-day.out.we{background:var(--sunken)!important}
-.ag-day.today{border:2px solid var(--ink)!important}
-.ag-day.today .ag-num{background:var(--signal)!important;color:var(--on-signal)!important}
-/* btw: twee gelijke vlakke kaarten */
-.btw-card,.btw-card.ink{background:var(--raised)!important;color:var(--ink)!important;border:1px solid var(--b-line)!important;border-radius:14px!important;padding:24px}
-.btw-card.ink .btw-field,.btw-field{background:var(--raised)!important;border:1px solid var(--b-border)!important;color:var(--ink)!important;border-radius:10px!important}
-.btw-card .eyebrow{opacity:1!important}.btw-card .fl{opacity:1!important;color:var(--ink-muted)!important}
-.btw-field input,#app .btw-field input{border:0!important;background:transparent!important;min-height:0;font-family:var(--f-mono)!important;font-size:20px}
-.btw-card .tot,.btw-card [class*=rate] button,.btw-rates button{border-color:var(--b-border)!important}
-.btw-rates button{background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:10px!important}
-.btw-rates button.on,.btw-rates button[aria-pressed=true]{background:var(--ink)!important;color:var(--surface)!important;border-color:var(--ink)!important}
-.btw-card.ink .btw-rates button.on{background:var(--ink)!important;color:var(--surface)!important}
-.btw-card.ink .tot{border-color:var(--b-line)!important}
-html body #app #detail,html body #app.board-mode #detail{box-shadow:none!important}
-body b,body strong{font-family:inherit}
-html body :is(.sales-stat b,.pc-out li b,.pc-togo b,.pace b,#spPay b,.sp-num,table.sales td.num input,table.sales tfoot td){font-family:var(--f-mono)!important;font-weight:500}
-:is(#app,.lock,dialog,#detail) .btw-field :is(input):not([type=checkbox]):not([type=radio]):not([type=range]){border:0!important;background:transparent!important;min-height:0;box-shadow:none!important}
-:is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]){border-color:transparent!important;background:transparent!important;border-radius:6px!important}
+:is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]){border-color:transparent!important;background:transparent!important;border-radius:var(--r-sm)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 :is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):hover{border-color:var(--b-line)!important}
 :is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):focus{border-color:var(--ink)!important;background:var(--raised)!important}
+/* agenda */
+.ev-druk{--ev:var(--signal)}.ev-deadline{--ev:var(--ink)}.ev-verschijning{--ev:var(--won)}.ev-anders{--ev:var(--ink-muted)}
+.ag-day,.ag-day.out,.ag-day.we,.ag-day.out.we{background:var(--glass)!important;border:1px solid var(--glass-edge)!important;border-radius:var(--r-md)!important;box-shadow:none!important}
+.ag-day.out,.ag-day.out.we{background:transparent!important}
+.ag-day.today{border:2px solid var(--ink)!important}
+.ag-day.today .ag-num{background:var(--signal)!important;color:var(--on-signal)!important}
+/* btw */
+.btw-card,.btw-card.ink{color:var(--ink)!important;border-radius:var(--r-xl)!important;padding:24px}
+.btw-field,.btw-card.ink .btw-field{background:var(--glass-strong)!important;border:1px solid var(--b-border)!important;color:var(--ink)!important;border-radius:var(--r-md)!important}
+:is(#app,.lock,dialog,#detail) .btw-field :is(input):not([type=checkbox]):not([type=radio]):not([type=range]){border:0!important;background:transparent!important;min-height:0;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;font-family:var(--f-mono)!important;font-size:20px}
+.btw-card .eyebrow{opacity:1!important}.btw-card .fl{opacity:1!important;color:var(--ink-muted)!important}
+.btw-rates button{background:var(--glass)!important;color:var(--ink)!important;border:1px solid var(--glass-edge)!important;border-radius:var(--r-pill)!important}
+.btw-rates button.on,.btw-rates button[aria-pressed=true],.btw-card.ink .btw-rates button.on{background:var(--ink)!important;color:var(--surface)!important}
+.btw-card .tot,.btw-card.ink .tot{border-color:var(--b-line)!important}
 
-/* ===== modern: meer lucht, minder kaders, één duidelijke actie per scherm ===== */
-:root{--sp:8px}
-@media (min-width:861px){#app .main-inner{padding:24px 40px 64px!important}}
-#app .board{gap:20px!important}
-/* werkbalk: Bord/Lijst als één gesegmenteerde schakelaar, Opties als lichte tekstknop */
-#app .toolbar{gap:12px!important;align-items:center}
-#app .seg{display:inline-flex;background:var(--sunken)!important;border-radius:999px!important;padding:4px!important;gap:2px!important;border:0!important}
-#app .seg button{border:0!important;border-radius:999px!important;min-height:36px;padding:6px 18px!important;background:transparent!important;color:var(--ink-muted)!important;font-weight:600!important}
-#app .seg button.on{background:var(--raised)!important;color:var(--ink)!important;box-shadow:none!important;outline:1px solid var(--b-line)}
-#app .tb-toggle{border:0!important;background:transparent!important;color:var(--ink-muted)!important;padding:10px 12px!important}
-#app .tb-toggle:hover{background:var(--sunken)!important;color:var(--ink)!important}
-#app .tb-add{border-radius:999px!important;padding:10px 22px!important}
-/* snel toevoegen: één rustig veld, tips alleen tijdens het typen */
-#quickAdd{gap:12px!important;padding:0!important;background:transparent!important;border:0!important}
-#quickAdd #qaInput{border:1px solid var(--b-line)!important;border-radius:999px!important;min-height:48px;padding:0 20px!important;background:var(--raised)!important}
-#quickAdd #qaInput:focus{border-color:var(--ink)!important}
-#quickAdd .btn,#quickAdd .btn.primary{background:transparent!important;color:var(--ink)!important;border:0!important;font-weight:600!important;padding:10px 14px!important}
-#quickAdd .btn:hover{background:var(--sunken)!important}
-#qaPreview .qa-hint{opacity:0;transition:opacity var(--t-med,.24s) ease;color:var(--ink-muted)}
-#quickAdd:focus-within+#qaPreview .qa-hint{opacity:1}
-#qaPreview{min-height:22px;margin:8px 4px 4px}
-/* kolommen: zacht vlak zonder rand; "Deal toevoegen" als tekstregel */
-#app .col{border:0!important;border-radius:24px!important;padding:16px 14px!important;background:var(--sunken)!important}
-#app .col>header{padding:0 6px 10px}
-#app .col>header .nm{font-size:14px;font-weight:600;letter-spacing:.01em}
-#app .col>header .count{background:transparent;border:0;color:var(--ink-muted);padding:0 2px}
-#app .col .add,#app .col .col-add,#app .col [data-addin],#app .col .quick,#app .col button.add-in{border:0!important;background:transparent!important;color:var(--ink-muted)!important;justify-content:flex-start}
-#app .col .cards>:is(.add-card,.new-card){border:0!important;background:transparent!important}
-/* kaarten: lichtere rand, geen letterbadge, rustige titel */
-#app .card{border:1px solid transparent!important;background:var(--raised)!important;border-radius:16px!important;padding:16px 18px!important;transition:transform .2s var(--out,ease),border-color .15s ease}
-#app .card:hover{border-color:var(--b-border)!important}
-#app .card .t-ico{display:none!important}
-#app .card .t-title{font-size:15px;line-height:22px;font-weight:600}
-#app .card .chip.due,#app .card .meta{margin-top:6px}
-/* bovenbalk: kleine zoekpil */
-#app .top-search{border-radius:999px!important;border:1px solid var(--b-line)!important;min-height:40px;padding:0 16px!important;background:var(--raised)!important}
-#app .top-btn,#app .topbar .icon-btn{border-radius:999px!important;border:1px solid var(--b-line)!important}
-/* zijbalk: rustiger */
-#side .side-section{padding:28px 12px 6px!important}
-#side .nav-item{border-radius:12px!important}
-#side .nav-item.active,#side .nav-item.on{background:var(--sunken)!important}
-/* titel: iets groter en met meer adem */
-#app .main-head{margin-bottom:4px!important}
-#app .main-head h2{letter-spacing:-.045em!important}
-/* dealpaneel: ruimer en zacht */
-#app #detail{border-radius:24px!important}
-#detail .d-body{padding:8px 28px 32px!important}
-.props,.d-more .props{border-radius:16px!important;padding:4px 16px!important}
-:is(#app) .col-add input:not([type=checkbox]){border:0!important;background:transparent!important;color:var(--ink)!important;min-height:40px;padding:0 10px!important;border-radius:12px!important}
-:is(#app) .col-add input::placeholder{color:var(--ink-muted)}
-:is(#app) .col-add input:hover{background:color-mix(in srgb,var(--raised) 60%,transparent)!important}
-:is(#app) .col-add input:focus{background:var(--raised)!important}
-:is(#app,.lock,dialog,#detail) #qaInput:focus{border-color:var(--b-line)!important}
-:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]){border:0!important;background:transparent!important;border-radius:12px!important;min-height:40px}
-:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]):hover{background:color-mix(in srgb,var(--raised) 60%,transparent)!important}
-:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]):focus{background:var(--raised)!important}
-#app #banner .btn.primary{background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important}
+/* mobiel: zwevende glasbalk met de ene oranje knop */
+#tabBar{border-radius:var(--r-pill)!important;left:12px!important;right:12px!important;bottom:calc(env(safe-area-inset-bottom) + 8px)!important;width:auto!important}
+#tabBar button{color:var(--ink-muted)}#tabBar button.on,#tabBar button.active{color:var(--ink);font-weight:600}
+#fab{background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 55%),var(--signal)!important;color:var(--on-signal)!important;border:0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),var(--shadow-signal)!important;bottom:calc(env(safe-area-inset-bottom) + 12px)!important}
+.lock{background:transparent!important}
+.lock-card{border-radius:var(--r-xl)!important}
+#app #banner .btn.primary{background:var(--glass)!important;color:var(--ink)!important;box-shadow:var(--shadow-edge),var(--shadow-glass)!important;border:1px solid var(--glass-edge)!important}
+
+/* terugval: zonder transparantie of backdrop-filter wordt glas een dicht vlak */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  #side,#detail,.card,.task,.sales-stat,.pace,.pg-card,.box,.btw-card,.lock-card,#toast,#updBar,#ctxMenu,#datePop,#timePop,#fmtPop,dialog,#tabBar,.top-search,.seg,.tb-toggle,.top-btn,.feat,#banner{background:var(--raised)!important}}
+@media (prefers-reduced-transparency:reduce){
+  body::before{display:none}
+  #side,#detail,.card,.task,.sales-stat,.pace,.pg-card,.box,.btw-card,.lock-card,#toast,#updBar,#ctxMenu,#datePop,#timePop,#fmtPop,dialog,#tabBar,.top-search,.seg,.tb-toggle,.top-btn,.feat,#banner,.props,.ag-day,.btw-field,
+  :is(#app,.lock,dialog,#detail) :is(input,select,textarea){background:var(--raised)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
+@media (prefers-reduced-motion:reduce){body::before{filter:blur(var(--blur-orb))}.btn:active,.icon-btn:active,.nav-item:active,.seg button:active{transform:none!important}#app .card:hover{transform:none!important}}
+
+/* verfijning glas */
+@media (min-width:861px){html body #app #side{margin:12px 0 12px 12px!important;height:calc(100% - 24px)!important;border-radius:var(--r-xl)!important}}
+html body :is(.lock,#app,dialog,#detail,#toast) .btn,html body #lockBtn{border-radius:var(--r-pill)!important}
 </style>
 </head>
 <body>

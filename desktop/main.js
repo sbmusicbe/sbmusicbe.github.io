@@ -13,7 +13,7 @@ let win;
 function open() {
   win = new BrowserWindow({
     width: 1280, height: 860, minWidth: 420, minHeight: 600,
-    backgroundColor: '#111318', title: 'Klose', autoHideMenuBar: true,
+    backgroundColor: '#0E1014', title: 'Klose', autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false },
   });
   Menu.setApplicationMenu(null);

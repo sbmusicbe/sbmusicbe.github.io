@@ -2,11 +2,11 @@
    Bewaart de app zelf (HTML, iconen, logo) op het toestel, zodat Klose meteen
    opent, ook zonder internet. Je gegevens staan al versleuteld in de browser;
    cloud.json en de accountdienst worden nooit gecachet en gaan altijd naar het netwerk. */
-const CACHE = 'taken-app-v35';
-const ASSETS = ['./', 'logo-k.png', 'logo-k-light.png', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
+const CACHE = 'taken-app-v36';
+const ASSETS = ['./', 'klose-k.svg', 'klose-k-licht.svg', 'klose-k-transparant.svg', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
   'apple-touch-icon.png', 'icon-192.png', 'icon-512.png',
-  'fonts/bricolage-grotesque-latin-800-normal.woff2', 'fonts/hanken-grotesk-latin-400-normal.woff2', 'fonts/hanken-grotesk-latin-500-normal.woff2',
-  'fonts/hanken-grotesk-latin-600-normal.woff2', 'fonts/hanken-grotesk-latin-700-normal.woff2', 'fonts/ibm-plex-mono-latin-400-normal.woff2', 'fonts/ibm-plex-mono-latin-500-normal.woff2'];
+  'fonts/geist-latin-400-normal.woff2', 'fonts/geist-latin-500-normal.woff2', 'fonts/geist-latin-600-normal.woff2', 'fonts/geist-latin-700-normal.woff2',
+  'fonts/geist-mono-latin-400-normal.woff2', 'fonts/geist-mono-latin-500-normal.woff2'];
 const PAGE = new URL('./', self.registration.scope).href;
 
 self.addEventListener('install', e => {

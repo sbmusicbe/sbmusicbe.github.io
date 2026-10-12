@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="512" height="512">
+<title>Klose</title>
+<rect width="96" height="96" rx="22" fill="#111318"/>
+<polyline points="43,48 68,74" fill="none" stroke="#FF4B1F" stroke-width="11" stroke-linejoin="miter"/>
+<line x1="31" y1="22" x2="31" y2="74" stroke="#FFFFFF" stroke-width="11"/>
+<polyline points="31,52 66,24" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linejoin="miter"/>
+<polyline points="52,22 68,22 68,38" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="miter"/>
+</svg>
