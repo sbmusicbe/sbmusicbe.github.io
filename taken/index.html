@@ -2375,6 +2375,64 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
   #toast,#updBar,dialog[open],dialog::backdrop{animation:none!important}
   .card:hover,.btn:active,.icon-btn:active{transform:none!important}
 }
+
+/* =====================================================================
+   Nieuw ontwerp (naar voorbeeld): witte afgeronde app op een grijze achtergrond, zachte pastelglans bovenaan,
+   grote lichte titel, zwarte actieve tab, blauw-violette hoofdknop, kolommen met ruime witte kaarten.
+   ===================================================================== */
+:root{--ink:#0d0e11;--indigo:#4f46e5;--indigo-2:#4338ca;--backdrop:#e3e4e5;--page:#ffffff;--col-bg:#f5f5f6;--edge:rgba(13,14,17,.08);--r-xl:28px;--r-lg:18px;--r-md:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#f3f4f6;--backdrop:#08090b;--page:#121316;--col-bg:#191a1e;--edge:rgba(255,255,255,.09);--indigo:#6366f1;--indigo-2:#5558e6}}
+:root[data-theme="dark"]{--ink:#f3f4f6;--backdrop:#08090b;--page:#121316;--col-bg:#191a1e;--edge:rgba(255,255,255,.09);--indigo:#6366f1;--indigo-2:#5558e6}
+
+/* knoppen: afgeronde rechthoeken i.p.v. pillen, wit met fijne rand en zachte schaduw */
+#app .btn,#app .tb-toggle,#app .top-btn{border-radius:var(--r-md)!important;background:var(--panel)!important;color:var(--text)!important;box-shadow:0 0 0 1px var(--edge),0 1px 2px rgba(0,0,0,.05)!important;border:0!important;font-weight:500}
+#app .btn:hover,#app .tb-toggle:hover{box-shadow:0 0 0 1px var(--edge),0 4px 12px rgba(0,0,0,.08)!important}
+#app .btn.primary,#app .tb-add{background:var(--indigo)!important;color:#fff!important;box-shadow:0 6px 16px color-mix(in srgb,var(--indigo) 35%,transparent)!important}
+#app .btn.primary:hover,#app .tb-add:hover{background:var(--indigo-2)!important;filter:none}
+/* Bord/Lijst als tabs: de actieve is zwart */
+#app .seg{background:transparent!important;box-shadow:none!important;padding:0;gap:4px;border-radius:0!important}
+#app .seg button{border-radius:var(--r-md)!important;padding:9px 16px;color:var(--muted)!important;background:transparent!important;box-shadow:none!important;font-weight:500}
+#app .seg button.on{background:var(--ink)!important;color:var(--page)!important}
+/* titel groot en licht */
+#app .main-head h2{font-size:clamp(34px,3.6vw,48px)!important;font-weight:400!important;letter-spacing:-.035em!important;line-height:1.08!important}
+#app .main-head h2 .dot{display:none}
+#app .main-head .view-sub{font-size:14px;color:var(--faint)}
+/* zijbalk: rustig, actieve rij als lichtgrijze blok */
+#side .nav-item{border-radius:var(--r-md)!important;padding:10px 12px!important;font-size:15px!important;font-weight:400!important;color:var(--text);gap:12px}
+#side .nav-item .ico{color:var(--muted)}
+#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"]{background:var(--col-bg)!important;color:var(--text)!important;font-weight:500!important}
+#side .nav-item,#side .nav-item:hover,#side .nav-item.active{border:0!important;box-shadow:none!important;outline:0}
+#side .nav-item:hover{background:var(--col-bg)!important}
+#app .main-head,#app .main-head.scrolled{background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:0!important}
+#app .main-head h2{background:transparent!important}
+@media (min-width:861px){#app .main-head{min-width:0;overflow:hidden}#app .main-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1}#app .main-head .view-sub{flex-shrink:0}}
+#side .side-section{font-size:11.5px!important;letter-spacing:.1em!important;color:var(--faint)!important;padding:26px 12px 8px!important}
+#side .foot-btn{border-radius:var(--r-md)!important}
+/* kolommen en kaarten */
+#app .col{background:var(--col-bg)!important;border:0!important;border-radius:22px!important;padding:12px!important}
+#app .col>header .nm{font-size:15px;font-weight:450;color:var(--muted)}
+#app .col>header .count{background:var(--panel);color:var(--text);border-radius:8px;padding:2px 9px;font-weight:600;font-size:13px;box-shadow:0 0 0 1px var(--edge)}
+#app .board{gap:16px!important;padding:4px 2px 20px!important}
+#app .card{background:var(--panel)!important;border:0!important;border-radius:var(--r-lg)!important;padding:16px 18px!important;box-shadow:0 0 0 1px var(--edge),0 1px 3px rgba(0,0,0,.04)!important}
+#app .card .t-title{font-size:17px;font-weight:450;letter-spacing:-.015em;line-height:1.3}
+#app .card .t-ico{border-radius:8px;font-size:12px;font-weight:600}
+@media (hover:hover){#app .card:hover{box-shadow:0 0 0 1px var(--edge),0 10px 28px rgba(0,0,0,.09)!important;transform:translateY(-2px)}}
+/* deal-paneel en dialogen */
+#app #detail{border-radius:24px!important}
+dialog{border-radius:22px!important}
+
+/* grote schermen: de app als witte afgeronde kaart op een grijze achtergrond, met pastelglans */
+@media (min-width:1100px){
+  html,body{background:var(--backdrop)!important}
+  body{padding:20px;box-sizing:border-box;height:100dvh}
+  #app{height:calc(100dvh - 40px)!important;border-radius:var(--r-xl);background:var(--page)!important;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.05);position:relative}
+  #side{background:transparent!important;border:0!important;padding:22px 16px 18px!important}
+  #app.board-mode #detail{top:36px!important;right:36px!important;bottom:36px!important;max-width:calc(100vw - 330px)}
+  .main-inner{padding:20px 36px 56px!important;background:radial-gradient(900px 360px at 88% -120px,rgba(255,213,128,.30),rgba(255,160,200,.18) 45%,transparent 72%)}
+  #qaToggle,.topbar{background:transparent!important}
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main-inner{background:radial-gradient(900px 360px at 88% -120px,rgba(99,102,241,.16),transparent 70%)!important}}
+:root[data-theme="dark"] .main-inner{background:radial-gradient(900px 360px at 88% -120px,rgba(99,102,241,.16),transparent 70%)!important}
 </style>
 </head>
 <body>
