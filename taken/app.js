@@ -658,7 +658,7 @@ $('#lockAlt').addEventListener('click', async () => {
   if (CLOUD && lockMode === 'cloud-reset') {   // zonder noodcode: de online kluis vervangen door een lege
     const pw = $('#pw1').value, err = $('#lockErr'); err.textContent = '';
     if (pw.length < CLOUD_MINPW) { err.textContent = `Kies eerst een nieuw wachtwoord van minstens ${CLOUD_MINPW} tekens.`; return; }
-    if (!confirm('Al je gegevens in dit account worden gewist en je begint opnieuw met een leeg account. Dit kan niet ongedaan gemaakt worden. Doorgaan?')) return;
+    if (!await askConfirm('Account leegmaken?', 'Al je gegevens in dit account worden gewist en je begint opnieuw met een leeg account. Dit kan niet ongedaan gemaakt worden.', {ok:'Alles wissen', danger:true})) return;
     const btn = $('#lockBtn'); btn.disabled = true;
     try { await resetCloud('', pw, $('#pw2').value, true); } catch (ex) { err.textContent = ex.message; btn.disabled = false; }
     return;
@@ -706,7 +706,7 @@ async function legacyData(local, pw) {
   for (;;) {
     const a = await askLegacyPassword(local, wrong);
     if (!a) throw new Error('Geannuleerd.');
-    if (a.skip) { if (!confirm('De gegevens op dit toestel worden gewist. Doorgaan?')) throw new Error('Geannuleerd.'); return null; }
+    if (a.skip) { if (!await askConfirm('Gegevens op dit toestel wissen?', 'De gegevens op dit toestel worden gewist.', {ok:'Wissen', danger:true})) throw new Error('Geannuleerd.'); return null; }
     try { return await open(a.pw); } catch { wrong = true; }
   }
 }
@@ -745,7 +745,7 @@ async function unlockCloud(emailRaw, pw) {
     let rK; try { rK = await openKey(pw, rblob); } catch { throw new Error('Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
     let remote; try { remote = normalize(await unsealRemote(rK.key, rblob)); } catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
     K = rK; data = remote;
-    if (localData && (!ask || confirm('Er staan ook gegevens op dit toestel. Samenvoegen met je account? (Annuleren = enkel de gegevens van je account gebruiken.)'))) data = merge(localData, remote);
+    if (localData && (!ask || await askConfirm('Gegevens samenvoegen?', 'Er staan ook gegevens op dit toestel. Wil je ze samenvoegen met je account, of enkel de gegevens van je account gebruiken?', {ok:'Samenvoegen', cancel:'Enkel account'}))) data = merge(localData, remote);
   } else {
     const env = await newEnvelope(pw); K = env.K; newRec = env.rec;
     data = localData || newData();   // eerste keer: bestaande gegevens van dit toestel verhuizen mee naar het account
@@ -825,7 +825,7 @@ async function resetCloud(rk, pw, pw2, fresh) {
     nK = {...rK, w:{pw:await wrapRaw(rK.raw, pw, ITER), rec:rblob.w.rec}};
   }
   const local = vaultBlob(); let owner = ''; try { owner = localStorage.getItem(CLOUD_USER) || ''; } catch {}
-  if (local && owner !== email && !confirm('De gegevens van een ander account op dit toestel worden vervangen. Doorgaan?')) throw new Error('Geannuleerd.');
+  if (local && owner !== email && !await askConfirm('Gegevens vervangen?', 'De gegevens van een ander account op dit toestel worden vervangen.')) throw new Error('Geannuleerd.');
   const nsec = await authSecret(email, pw);
   await sb('/auth/v1/user', {method:'PUT', token:ss.token, body:{password:nsec}});
   cloudAuth = {email, secret:nsec};
@@ -1363,7 +1363,7 @@ function renderHead() {
   const ab = $('#archBar'); ab.hidden = !arch?.finished;
   if (arch?.finished) ab.innerHTML = `<span>${I.check}Dit project is afgewerkt${arch.finishedAt ? ' op ' + new Date(arch.finishedAt).toLocaleDateString('nl-BE', {day:'numeric', month:'long', year:'numeric'}) : ''}.</span><span class="grow"></span><button type="button" class="btn" data-reopen>Heropenen</button>`;
   $('#editProject').title = 'Meer';
-  document.title = `${viewTitle()} · Klose`;
+  document.title = 'Klose';   // nooit projectnamen in de tabnaam (browsergeschiedenis, schermdelen)
   $('#tbTitle').textContent = `${viewTitle()} — Klose`;
   $('#miniTitle').textContent = viewTitle();
 }
@@ -1381,13 +1381,14 @@ function placeTabIndicator() {
 }
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
-  const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : 'all';
+  const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : view.type === 'btw' ? 'more' : 'all';
   const slot = $('#tabSlot'), sOn = feat('sales');
   slot.dataset.tab = sOn ? 'sales' : 'today'; slot.querySelector('.ti').innerHTML = sOn ? I.sales : I.today; slot.lastElementChild.textContent = sOn ? 'Verkopen' : 'Vandaag';
   $('#tabBar [data-tab="agenda"]').hidden = !feat('agenda');
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
-  $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
+  $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : view.type === 'agenda' ? 'Datum toevoegen' : 'Nieuwe deal');
+  $('#fab').hidden = view.type === 'btw';
 }
 function renderAll() {
   if (!data) return;
@@ -2133,6 +2134,28 @@ detail.addEventListener('click', e => {
 
 /* ---------------- Dialogs ---------------- */
 const dlg = $('#dlg');
+/* ---- Eigen bevestigings- en invoervensters (geen browser-pop-ups: die tonen een wachtwoord leesbaar en vallen uit de stijl) ---- */
+function ask({title, text = '', buttons, input = null}) {
+  return new Promise(resolve => {
+    const d = document.createElement('dialog'); d.id = 'ask'; d.setAttribute('aria-labelledby', 'askT');
+    d.innerHTML = `<form method="dialog" class="dlg-inner"><h3 id="askT">${esc(title)}</h3>${text ? `<p class="muted ask-text">${esc(text)}</p>` : ''}${input ? `<label class="fl">${esc(input.label)}<input id="askIn" type="${input.password ? 'password' : 'text'}" autocomplete="${input.password ? 'current-password' : 'off'}" ${input.password ? '' : 'autocapitalize="off" spellcheck="false"'}></label>` : ''}<p class="err" id="askErr"></p>
+      <div class="dlg-actions">${buttons.map((b, i) => `<button type="button" class="btn${b.primary ? ' primary' : ''}${b.danger ? ' danger-fill' : ''}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div></form>`;
+    let done = false;
+    const finish = v => { if (done) return; done = true; d.close(); d.remove(); resolve(v); };
+    d.addEventListener('cancel', e => { e.preventDefault(); finish(buttons.find(b => b.cancel)?.value ?? null); });
+    d.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && input && e.target.id === 'askIn') { e.preventDefault(); d.querySelector('.btn.primary')?.click(); } });
+    d.addEventListener('click', e => {
+      const b = e.target.closest('[data-i]'); if (!b) return;
+      const def = buttons[+b.dataset.i];
+      if (input && def.primary) { const v = $('#askIn', d).value; if (input.must && v !== input.must) { $('#askErr', d).textContent = input.mustMsg || 'Dat klopt niet.'; return; } finish(v); return; }
+      finish(def.value);
+    });
+    document.body.appendChild(d); d.showModal();
+    setTimeout(() => (d.querySelector('#askIn') || d.querySelector('.btn.primary') || d.querySelector('.btn'))?.focus(), 20);
+  });
+}
+const askConfirm = (title, text, {ok = 'Doorgaan', cancel = 'Annuleren', danger = false} = {}) =>
+  ask({title, text, buttons:[{label:cancel, value:false, cancel:true}, {label:ok, value:true, primary:true, danger}]});
 function showDialog(html, bind) {
   dlg.innerHTML = `<div class="dlg-inner">${html}</div>`;
   bind?.(dlg);
@@ -2141,7 +2164,7 @@ function showDialog(html, bind) {
   setTimeout(() => (dlg.querySelector('[autofocus]:not([disabled])') || dlg.querySelector('input:not([type=checkbox]):not([disabled]),select'))?.focus(), 20);
 }
 dlg.addEventListener('click', e => { if (e.target === dlg && !dlg.dataset.sticky) dlg.close(); });
-dlg.addEventListener('close', () => { dlg.innerHTML = ''; dlg.classList.remove('st-dlg'); });
+dlg.addEventListener('close', () => { if (dlg.open) return; dlg.innerHTML = ''; dlg.classList.remove('st-dlg'); });   // een direct heropend venster (close + showDialog in één adem) mag niet leeggemaakt worden
 
 
 function openProjectDialog(p) {
@@ -2198,7 +2221,7 @@ function openProjectDialog(p) {
       openFieldEditor(null, target.id === 'inbox' ? null : target.id, () => openProjectDialog(target));
     };
     $('#pjFin', d)?.addEventListener('click', () => { dlg.close(); finishProject(p, !p.finished); });
-    $('#pjDel', d)?.addEventListener('click', () => { if (deleteProject(p)) dlg.close(); });
+    $('#pjDel', d)?.addEventListener('click', async () => { if (await deleteProject(p)) dlg.close(); });
   });
 }
 $('#archBar').addEventListener('click', e => {
@@ -2209,9 +2232,9 @@ function finishProject(p, on) {
   p.finished = on; p.finishedAt = on ? now() : null; touch(p); commit();
   if (on) { navigator.vibrate?.(12); toast(`🎉 “${p.name}” afgewerkt`); } else toast(`“${p.name}” heropend`);
 }
-function deleteProject(p) {
+async function deleteProject(p) {
       const n = data.tasks.filter(t => t.projectId === p.id).length;
-      if (!confirm(`Project “${p.name}”${n ? ` en de ${n} deals erin` : ''} definitief verwijderen?`)) return false;
+      if (!await askConfirm('Project verwijderen?', `Project “${p.name}”${n ? ` en de ${n} deals erin` : ''} wordt definitief verwijderd.`, {ok:'Verwijderen', danger:true})) return false;
       data.projects = data.projects.filter(x => x.id !== p.id); tombstone(p.id);
       for (const t of data.tasks.filter(t => t.projectId === p.id)) tombstone(t.id);
       data.tasks = data.tasks.filter(t => t.projectId !== p.id);
@@ -2268,7 +2291,7 @@ function openStagesDialog() {
       draw();
     };
     $('#stCancel', d).onclick = () => dlg.close();
-    $('#stSave', d).onclick = () => {
+    $('#stSave', d).onclick = async () => {
       read(d);
       const err = $('#stErr', d);
       draft.forEach(x => x.label = x.label.trim());
@@ -2278,7 +2301,7 @@ function openStagesDialog() {
       const removed = data.stages.filter(x => !draft.some(y => y.id === x.id));
       const moving = data.tasks.filter(t => removed.some(x => x.id === t.stage));
       const openTarget = draft.find(x => !x.done), doneTarget = draft.find(x => x.done);
-      if (moving.length && !confirm(`${moving.length} kaart(en) uit verwijderde kolommen worden verplaatst naar “${openTarget.label}” (open) of “${doneTarget.label}” (afgewerkt). Doorgaan?`)) return;
+      if (moving.length && !await askConfirm('Kaarten verplaatsen?', `${moving.length} kaart(en) uit verwijderde kolommen worden verplaatst naar “${openTarget.label}” (open) of “${doneTarget.label}” (afgewerkt).`)) return;
       // kolommen bijwerken
       draft.forEach((x, i) => {
         const cur = data.stages.find(y => y.id === x.id);
@@ -2394,8 +2417,8 @@ function openFieldEditor(f, presetProject, back) {
       else Object.assign(f, draft, {u:now()});
       commit(); done();
     };
-    $('#feDel', d)?.addEventListener('click', () => {
-      if (!confirm(`“${f.name}” verwijderen? De waarden in je deals verdwijnen ook.`)) return;
+    $('#feDel', d)?.addEventListener('click', async () => {
+      if (!await askConfirm('Extra gegeven verwijderen?', `“${f.name}” verwijderen? De waarden in je deals verdwijnen ook.`, {ok:'Verwijderen', danger:true})) return;
       data.fields = data.fields.filter(x => x.id !== f.id); tombstone(f.id);
       for (const t of data.tasks) if (f.id in t.custom) { delete t.custom[f.id]; touch(t); }
       for (const k of Object.keys(data.prefs)) {
@@ -2596,8 +2619,8 @@ function openSettings() {
       a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     };
     $('#stExpEnc', d).onclick = async () => { try { download(`taken-backup-${today()}.json`, await persistFull()); } catch (ex) { toast('Back-up mislukt: ' + ex.message); } };
-    $('#stExpPlain', d).onclick = () => {
-      if (!confirm('De leesbare export is NIET versleuteld. Bewaar het bestand veilig. Doorgaan?')) return;
+    $('#stExpPlain', d).onclick = async () => {
+      if (!await askConfirm('Leesbare export maken?', 'Dit bestand is NIET versleuteld. Bewaar het veilig en wis het als je het niet meer nodig hebt.', {ok:'Exporteren'})) return;
       const copy = JSON.parse(JSON.stringify(data)); copy.settings.sync = null;
       download(`taken-export-${today()}.json`, copy);
     };
@@ -2608,7 +2631,7 @@ function openSettings() {
         const obj = JSON.parse(await file.text());
         let incoming;
         if (obj.ct && obj.salt) {
-          const pw = prompt('Wachtwoord van deze back-up:'); if (pw === null) return;
+          const pw = await ask({title:'Wachtwoord van de back-up', text:'Deze back-up is versleuteld. Vul het wachtwoord in waarmee hij gemaakt is.', input:{label:'Wachtwoord', password:true}, buttons:[{label:'Annuleren', value:null, cancel:true}, {label:'Terugzetten', primary:true}]}); if (pw === null) return;
           try { incoming = await unseal((await openKey(pw, obj)).key, obj); }
           catch { throw new Error('Onjuist wachtwoord voor deze back-up.'); }
         } else if (Array.isArray(obj.tasks)) incoming = obj;
@@ -2617,11 +2640,10 @@ function openSettings() {
         data = merge(data, normalize(incoming));
         data.settings.sync = sync;
         commit(); dlg.close(); toast('Import voltooid');
-      } catch (ex) { alert('Importeren mislukt: ' + ex.message); }
+      } catch (ex) { toast('Importeren mislukt: ' + ex.message); }
     };
-    $('#stWipe', d).onclick = () => {
-      if (!confirm('Alle deals op dit toestel wissen? Dit kan niet ongedaan gemaakt worden .')) return;
-      if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
+    $('#stWipe', d).onclick = async () => {
+      if (await ask({title:'Alles op dit toestel wissen?', text:'Alle deals op dit toestel worden gewist. Dit kan niet ongedaan gemaakt worden.', input:{label:'Typ WISSEN om te bevestigen', must:'WISSEN', mustMsg:'Typ het woord WISSEN.'}, buttons:[{label:'Annuleren', value:null, cancel:true}, {label:'Alles wissen', primary:true, danger:true}]}) === null) return;
       localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); localStorage.removeItem(REM_KEY);
       idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
     };
@@ -3010,12 +3032,12 @@ function openSalesPageDialog(pg) {
       } else Object.assign(pg, {title, month:m, target, workdays}, {u:now()});
       dlg.close(); commit();
     };
-    $('#pgDel', d)?.addEventListener('click', () => { if (deleteSalesPage(pg)) dlg.close(); });
+    $('#pgDel', d)?.addEventListener('click', async () => { if (await deleteSalesPage(pg)) dlg.close(); });
   });
 }
-function deleteSalesPage(pg) {
+async function deleteSalesPage(pg) {
   const n = salesRows(pg.id).length;
-  if (!confirm(`Pagina “${pg.title}”${n ? ` en de ${n} verkopen erop` : ''} definitief verwijderen?`)) return false;
+  if (!await askConfirm('Pagina verwijderen?', `Pagina “${pg.title}”${n ? ` en de ${n} verkopen erop` : ''} wordt definitief verwijderd.`, {ok:'Verwijderen', danger:true})) return false;
   for (const r of salesRows(pg.id)) tombstone(r.id);
   data.sales = data.sales.filter(r => r.pageId !== pg.id);
   data.salesPages = data.salesPages.filter(x => x.id !== pg.id); tombstone(pg.id);
@@ -3198,20 +3220,20 @@ function openSalesColsDialog() {
         <button type="button" class="icon-btn" data-sm="${i}" data-dir="1" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Naar rechts">${I.down}</button>
         <button type="button" class="icon-btn" data-sr="${i}" aria-label="Kolom verwijderen">${I.trash}</button>
       </div>`).join('')}</div>
-    <button type="button" class="link" id="scAdd" style="margin-top:10px;font-weight:550">+ Stap toevoegen</button>
+    <button type="button" class="link" id="scAdd" style="margin-top:10px;font-weight:550">+ Kolom toevoegen</button>
     <p class="err" id="scErr"></p>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="scCancel">Annuleren</button><button type="button" class="btn primary" id="scSave">Opslaan</button></div>`, d => {
     $$('[data-sm]', d).forEach(b => b.onclick = () => { read(d); const i = +b.dataset.sm, j = i + +b.dataset.dir; [draft[i], draft[j]] = [draft[j], draft[i]]; draw(); });
     $$('[data-sr]', d).forEach(b => b.onclick = () => { read(d); draft.splice(+b.dataset.sr, 1); draw(); });
     $('#scAdd', d).onclick = () => { read(d); draft.push({id:uid(), name:'', type:'text'}); draw(); setTimeout(() => $$('.st-row input', dlg).at(-1)?.focus(), 30); };
     $('#scCancel', d).onclick = () => dlg.close();
-    $('#scSave', d).onclick = () => {
+    $('#scSave', d).onclick = async () => {
       read(d);
       draft.forEach(c => c.name = c.name.trim());
       if (!draft.length) { $('#scErr', d).textContent = 'Hou minstens één kolom.'; return; }
       if (draft.some(c => !c.name)) { $('#scErr', d).textContent = 'Geef elke kolom een naam.'; return; }
       const removed = data.salesCols.filter(c => !draft.some(x => x.id === c.id));
-      if (removed.length && !confirm(`Kolom(men) ${removed.map(c => '“' + c.name + '”').join(', ')} verwijderen? De waarden erin verdwijnen.`)) return;
+      if (removed.length && !await askConfirm('Kolommen verwijderen?', `Kolom(men) ${removed.map(c => '“' + c.name + '”').join(', ')} verwijderen? De waarden erin verdwijnen.`, {ok:'Verwijderen', danger:true})) return;
       draft.forEach((c, i) => {
         const cur = data.salesCols.find(x => x.id === c.id);
         if (!cur) data.salesCols.push(touch({id:c.id, name:c.name, type:c.type, order:i}));
@@ -3901,10 +3923,14 @@ function openEventDialog(ev, date) {
       agendaMonth = st.date.slice(0, 7);
       dlg.close(); commit();
     };
-    $('#evDel', d)?.addEventListener('click', () => {
+    $('#evDel', d)?.addEventListener('click', async () => {
       const same = ev.series ? data.events.filter(x => x.series === ev.series && x.date >= ev.date) : [];
       let ids = [ev.id];
-      if (same.length > 1 && confirm(`Ook de ${same.length - 1} volgende data uit deze reeks verwijderen?\n\nOK = deze en de volgende · Annuleren = enkel deze`)) ids = same.map(x => x.id);
+      if (same.length > 1) {
+        const all = await ask({title:'Reeks verwijderen?', text:`Ook de ${same.length - 1} volgende data uit deze reeks verwijderen?`, buttons:[{label:'Annuleren', value:null, cancel:true}, {label:'Enkel deze', value:false}, {label:'Deze en volgende', value:true, primary:true, danger:true}]});
+        if (all === null) return;
+        if (all) ids = same.map(x => x.id);
+      }
       data.events = data.events.filter(x => !ids.includes(x.id)); ids.forEach(tombstone);
       dlg.close(); commit(); toast(ids.length > 1 ? `${ids.length} data verwijderd` : 'Verwijderd');
     });
@@ -4070,10 +4096,10 @@ function bioBox() {
   if (!bioSupported()) return `<div class="box"><b>${name}</b><p class="muted small">Niet beschikbaar in deze browser.</p></div>`;
   if (bioGet()) return `<div class="box bio-box"><div class="nt-head"><div><b>Ontgrendelen met ${name}</b><br><span class="muted small">Aan op dit toestel</span></div><button type="button" class="btn" id="bioOff">Uitzetten</button></div></div>`;
   return `<div class="box bio-box"><b>Ontgrendelen met ${name}</b>
-    <p class="muted small">Ontgrendel Klose op dit toestel met ${name} in plaats van je wachtwoord te typen. Je wachtwoord wordt enkel bewaard in een versleutelde vorm die alleen ${name} kan openen. Vereist iOS 18 of nieuwer.</p>
+    <p class="muted small">Ontgrendel Klose op dit toestel met ${name} in plaats van je wachtwoord te typen. Je wachtwoord wordt enkel bewaard in een versleutelde vorm die alleen ${name} kan openen. Vereist een toestel en browser die dit ondersteunen.</p>
     <label class="fl">Je wachtwoord<input id="bioPw" type="password" autocomplete="current-password"></label>
     <p class="err" id="bioErr"></p>
-    <button type="button" class="btn" id="bioOn">${name} aanzetten</button></div>`;
+    <button type="button" class="btn" id="bioOn">${cap(name)} aanzetten</button></div>`;
 }
 function bindBioBox(d) {
   const redraw = () => { const el = $('#bioOn', d)?.closest('.box') || $('#bioOff', d)?.closest('.box'); if (el) el.outerHTML = bioBox(); bindBioBox(d); };
