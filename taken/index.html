@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Klose</title>
-<meta name="theme-color" content="#F4F1EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2389,7 +2389,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
    Lettertypen: Bricolage Grotesque 800 (koppen), Hanken Grotesk (tekst), IBM Plex Mono (cijfers).
    ===================================================================== */
 :root{
-  --surface:#F4F1EA;--raised:#FFFFFF;--sunken:#E9E5DB;--b-line:#D9D4C6;--b-border:#7A7667;
+  --surface:#FFFFFF;--raised:#FFFFFF;--sunken:#F4F1EA;--b-line:#D9D4C6;--b-border:#7A7667;
   --ink:#111318;--ink-muted:#4D5059;--signal:#FF4B1F;--signal-hover:#FF6A42;--on-signal:#111318;
   --signal-text:#C2380F;--signal-soft:#FFE3DA;--won:#1E5BC6;--won-soft:#DCE7FB;--focus:#111318;
   --f-display:'Bricolage Grotesque','Hanken Grotesk',system-ui,sans-serif;
@@ -2547,6 +2547,43 @@ table.sales thead th,.pg-table thead th{background:var(--sunken)!important}
   #app .main-head h2{white-space:normal!important;overflow:visible!important}
 }
 #app .seg{height:auto!important;overflow:visible!important;align-items:stretch}
+/* opruiming: alles wat nog uit het vorige ontwerp kwam */
+:is(#app,dialog,#detail,#toast,#updBar,#ctxMenu,#datePop,#timePop,#fmtPop,.lock) :is(*,*::before,*::after),#detail,#toast,#updBar{box-shadow:none!important;text-shadow:none!important}
+.badge,.badge.opt{background:var(--sunken)!important;color:var(--ink)!important;border-radius:999px}
+button.check{border-color:var(--b-border)!important}
+.props .prop{border-bottom:1px solid var(--b-line)}.props .prop:last-child{border-bottom:0}
+.t-ico{background:var(--sunken)!important;color:var(--ink)!important;border-radius:6px}
+/* verkopen */
+#salesPage,#salesPage *{font-family:var(--f-text)!important}
+#salesPage :is(.t-money,.t-date,.t-number,.sales-stat b,tfoot td:last-child,td.num,.mono,.cell.t-money,.cell.t-date),#salesPage .sales-stat b{font-family:var(--f-mono)!important}
+.sales-stat span,.sales-stat small{font-family:var(--f-text)!important}
+.pay-net{border-top-color:var(--b-line)!important}.pay-net b{color:var(--ink)!important}
+table.sales input,table.sales select,#salesPage .cell{border-color:transparent!important;background:transparent!important;border-radius:6px!important;min-height:40px}
+table.sales input:hover,table.sales select:hover{border-color:var(--b-line)!important}
+table.sales input:focus,table.sales select:focus{border-color:var(--ink)!important;background:var(--raised)!important}
+/* agenda: vlakke dagen met rand, kleuren uit het palet */
+.ev-druk{--ev:var(--signal)}.ev-deadline{--ev:var(--ink)}.ev-verschijning{--ev:var(--won)}.ev-anders{--ev:var(--ink-muted)}
+.ag-day,.ag-day.out,.ag-day.we,.ag-day.out.we{background:transparent!important;border:1px solid var(--b-line)!important;border-radius:10px!important}
+.ag-day.out,.ag-day.out.we{background:var(--sunken)!important}
+.ag-day.today{border:2px solid var(--ink)!important}
+.ag-day.today .ag-num{background:var(--signal)!important;color:var(--on-signal)!important}
+/* btw: twee gelijke vlakke kaarten */
+.btw-card,.btw-card.ink{background:var(--raised)!important;color:var(--ink)!important;border:1px solid var(--b-line)!important;border-radius:14px!important;padding:24px}
+.btw-card.ink .btw-field,.btw-field{background:var(--raised)!important;border:1px solid var(--b-border)!important;color:var(--ink)!important;border-radius:10px!important}
+.btw-card .eyebrow{opacity:1!important}.btw-card .fl{opacity:1!important;color:var(--ink-muted)!important}
+.btw-field input,#app .btw-field input{border:0!important;background:transparent!important;min-height:0;font-family:var(--f-mono)!important;font-size:20px}
+.btw-card .tot,.btw-card [class*=rate] button,.btw-rates button{border-color:var(--b-border)!important}
+.btw-rates button{background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:10px!important}
+.btw-rates button.on,.btw-rates button[aria-pressed=true]{background:var(--ink)!important;color:var(--surface)!important;border-color:var(--ink)!important}
+.btw-card.ink .btw-rates button.on{background:var(--ink)!important;color:var(--surface)!important}
+.btw-card.ink .tot{border-color:var(--b-line)!important}
+html body #app #detail,html body #app.board-mode #detail{box-shadow:none!important}
+body b,body strong{font-family:inherit}
+html body :is(.sales-stat b,.pc-out li b,.pc-togo b,.pace b,#spPay b,.sp-num,table.sales td.num input,table.sales tfoot td){font-family:var(--f-mono)!important;font-weight:500}
+:is(#app,.lock,dialog,#detail) .btw-field :is(input):not([type=checkbox]):not([type=radio]):not([type=range]){border:0!important;background:transparent!important;min-height:0;box-shadow:none!important}
+:is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]){border-color:transparent!important;background:transparent!important;border-radius:6px!important}
+:is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):hover{border-color:var(--b-line)!important}
+:is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):focus{border-color:var(--ink)!important;background:var(--raised)!important}
 </style>
 </head>
 <body>
@@ -2648,7 +2685,7 @@ table.sales thead th,.pg-table thead th{background:var(--sunken)!important}
 
 const VAULT = 'taken.vault.v1';
 const ITER = 310000;
-const COLORS = ['#c8262d','#eb8909','#e2b203','#3aa655','#0fa3b1','#246fe0','#7c5cff','#e05194','#8b7355','#6b7280'];
+const COLORS = ['#111318','#FF4B1F','#1E5BC6','#4D5059','#7A7667','#C2380F'];
 const TYPES = {text:'Tekst',number:'Getal',date:'Datum',select:'Keuzelijst',multiselect:'Meerdere keuzes',checkbox:'Vinkje',url:'Link'};
 const DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
 const DAYS_SHORT = ['zo','ma','di','wo','do','vr','za'];
