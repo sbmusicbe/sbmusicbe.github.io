@@ -2584,6 +2584,64 @@ html body :is(.sales-stat b,.pc-out li b,.pc-togo b,.pace b,#spPay b,.sp-num,tab
 :is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]){border-color:transparent!important;background:transparent!important;border-radius:6px!important}
 :is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):hover{border-color:var(--b-line)!important}
 :is(#app,.lock,dialog,#detail) table.sales :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):focus{border-color:var(--ink)!important;background:var(--raised)!important}
+
+/* ===== modern: meer lucht, minder kaders, één duidelijke actie per scherm ===== */
+:root{--sp:8px}
+@media (min-width:861px){#app .main-inner{padding:24px 40px 64px!important}}
+#app .board{gap:20px!important}
+/* werkbalk: Bord/Lijst als één gesegmenteerde schakelaar, Opties als lichte tekstknop */
+#app .toolbar{gap:12px!important;align-items:center}
+#app .seg{display:inline-flex;background:var(--sunken)!important;border-radius:999px!important;padding:4px!important;gap:2px!important;border:0!important}
+#app .seg button{border:0!important;border-radius:999px!important;min-height:36px;padding:6px 18px!important;background:transparent!important;color:var(--ink-muted)!important;font-weight:600!important}
+#app .seg button.on{background:var(--raised)!important;color:var(--ink)!important;box-shadow:none!important;outline:1px solid var(--b-line)}
+#app .tb-toggle{border:0!important;background:transparent!important;color:var(--ink-muted)!important;padding:10px 12px!important}
+#app .tb-toggle:hover{background:var(--sunken)!important;color:var(--ink)!important}
+#app .tb-add{border-radius:999px!important;padding:10px 22px!important}
+/* snel toevoegen: één rustig veld, tips alleen tijdens het typen */
+#quickAdd{gap:12px!important;padding:0!important;background:transparent!important;border:0!important}
+#quickAdd #qaInput{border:1px solid var(--b-line)!important;border-radius:999px!important;min-height:48px;padding:0 20px!important;background:var(--raised)!important}
+#quickAdd #qaInput:focus{border-color:var(--ink)!important}
+#quickAdd .btn,#quickAdd .btn.primary{background:transparent!important;color:var(--ink)!important;border:0!important;font-weight:600!important;padding:10px 14px!important}
+#quickAdd .btn:hover{background:var(--sunken)!important}
+#qaPreview .qa-hint{opacity:0;transition:opacity var(--t-med,.24s) ease;color:var(--ink-muted)}
+#quickAdd:focus-within+#qaPreview .qa-hint{opacity:1}
+#qaPreview{min-height:22px;margin:8px 4px 4px}
+/* kolommen: zacht vlak zonder rand; "Deal toevoegen" als tekstregel */
+#app .col{border:0!important;border-radius:24px!important;padding:16px 14px!important;background:var(--sunken)!important}
+#app .col>header{padding:0 6px 10px}
+#app .col>header .nm{font-size:14px;font-weight:600;letter-spacing:.01em}
+#app .col>header .count{background:transparent;border:0;color:var(--ink-muted);padding:0 2px}
+#app .col .add,#app .col .col-add,#app .col [data-addin],#app .col .quick,#app .col button.add-in{border:0!important;background:transparent!important;color:var(--ink-muted)!important;justify-content:flex-start}
+#app .col .cards>:is(.add-card,.new-card){border:0!important;background:transparent!important}
+/* kaarten: lichtere rand, geen letterbadge, rustige titel */
+#app .card{border:1px solid transparent!important;background:var(--raised)!important;border-radius:16px!important;padding:16px 18px!important;transition:transform .2s var(--out,ease),border-color .15s ease}
+#app .card:hover{border-color:var(--b-border)!important}
+#app .card .t-ico{display:none!important}
+#app .card .t-title{font-size:15px;line-height:22px;font-weight:600}
+#app .card .chip.due,#app .card .meta{margin-top:6px}
+/* bovenbalk: kleine zoekpil */
+#app .top-search{border-radius:999px!important;border:1px solid var(--b-line)!important;min-height:40px;padding:0 16px!important;background:var(--raised)!important}
+#app .top-btn,#app .topbar .icon-btn{border-radius:999px!important;border:1px solid var(--b-line)!important}
+/* zijbalk: rustiger */
+#side .side-section{padding:28px 12px 6px!important}
+#side .nav-item{border-radius:12px!important}
+#side .nav-item.active,#side .nav-item.on{background:var(--sunken)!important}
+/* titel: iets groter en met meer adem */
+#app .main-head{margin-bottom:4px!important}
+#app .main-head h2{letter-spacing:-.045em!important}
+/* dealpaneel: ruimer en zacht */
+#app #detail{border-radius:24px!important}
+#detail .d-body{padding:8px 28px 32px!important}
+.props,.d-more .props{border-radius:16px!important;padding:4px 16px!important}
+:is(#app) .col-add input:not([type=checkbox]){border:0!important;background:transparent!important;color:var(--ink)!important;min-height:40px;padding:0 10px!important;border-radius:12px!important}
+:is(#app) .col-add input::placeholder{color:var(--ink-muted)}
+:is(#app) .col-add input:hover{background:color-mix(in srgb,var(--raised) 60%,transparent)!important}
+:is(#app) .col-add input:focus{background:var(--raised)!important}
+:is(#app,.lock,dialog,#detail) #qaInput:focus{border-color:var(--b-line)!important}
+:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]){border:0!important;background:transparent!important;border-radius:12px!important;min-height:40px}
+:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]):hover{background:color-mix(in srgb,var(--raised) 60%,transparent)!important}
+:is(#app) .col-add input:not([type=checkbox]):not([type=radio]):not([type=range]):focus{background:var(--raised)!important}
+#app #banner .btn.primary{background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important}
 </style>
 </head>
 <body>
