@@ -2704,6 +2704,9 @@ dialog[open]{animation:lgIn .5s var(--lg-spring) both}
 @media (prefers-reduced-motion:reduce){dialog[open],#toast,#updBar{animation:none!important}#app .seg .seg-thumb,#tabBar .tb-ind{transition:none!important}#app .card:hover{transform:none!important}}
 html body #app #quickAdd .btn,html body #app #quickAdd .btn.primary{background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;filter:none!important}
 html body #app #quickAdd .btn:hover{background:var(--hover)!important}
+html body #quickAdd,html body #qaPreview{display:none!important}
+html body.qa-open #quickAdd{display:flex!important}
+html body.qa-open #qaPreview{display:flex!important}
 </style>
 </head>
 <body>
@@ -3956,7 +3959,7 @@ function applyLaunch(url) {
   else if (['today', 'all', 'upcoming', 'inbox', 'clients'].includes(v)) setView({type:v});
   if (q.get('new')) {
     if (view.type === 'sales') setView({type:'all'});
-    setTimeout(() => { document.body.classList.add('qa-open'); $('#qaInput').focus(); }, 60);
+    setTimeout(newDealNow, 60);
   }
 }
 if ('launchQueue' in window) launchQueue.setConsumer(p => {
@@ -4380,7 +4383,7 @@ function renderWelcome() {
   const el = $('#banner'); if (!el) return;
   const empty = !data.tasks.length && view.type === 'all';
   el.hidden = !empty;
-  el.innerHTML = empty ? '<span><b>Nog geen deals.</b> Voeg je eerste deal toe: typ de naam en druk op Enter. Je kunt er later een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
+  el.innerHTML = empty ? '<span><b>Nog geen deals.</b> Voeg je eerste deal toe. Je kunt er daarna een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
 }
 function renderHead() {
   renderWelcome();
@@ -6381,7 +6384,13 @@ $('#tabBar').addEventListener('click', e => {
   setView({type:t});
 });
 // Invoerbalk: op desktop verborgen tot je op "+ Deal" klikt of N drukt; leeg verlaten sluit hem weer.
-function openQuickAdd() { document.body.classList.add('qa-open'); $('#qaInput').focus(); }
+// Nieuwe deal: meteen een deal aanmaken en het paneel openen met de titel geselecteerd (de aparte invoerbalk is weg)
+function newDealNow() {
+  const t = createTask({title:'Nieuwe deal', custom:{}, silent:true});
+  openTask(t.id);
+  setTimeout(() => { const el = $('#dTitle'); if (el) { el.focus(); el.select(); } }, 80);
+}
+const openQuickAdd = newDealNow;
 const deskQa = () => !matchMedia('(max-width:860px)').matches;
 $('#toolbar').addEventListener('click', e => { if (e.target.closest('[data-qa]')) openQuickAdd(); });
 $('#qaInput').addEventListener('blur', () => { if (deskQa() && !$('#qaInput').value.trim()) setTimeout(() => { if (document.activeElement !== $('#qaInput')) document.body.classList.remove('qa-open'); }, 150); });
@@ -6393,8 +6402,7 @@ $('#fab').addEventListener('click', () => {
   if (view.type === 'agenda') { openEventDialog(null, agendaSel || today()); return; }
   if (view.type === 'btw') { $('#btwEx')?.focus(); return; }
   if (view.type === 'notes') { newNote(); return; }
-  const open = document.body.classList.toggle('qa-open');
-  if (open) setTimeout(() => $('#qaInput').focus(), 30); else $('#qaInput').blur();
+  newDealNow();
 });
 // compacte titel verschijnt zodra de grote titel wegscrolt (gsm)
 $('#main').addEventListener('scroll', e => {
