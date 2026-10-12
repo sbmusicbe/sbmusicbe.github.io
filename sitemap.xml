@@ -2,15 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://sbmusic.be/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-10-12</lastmod>
   </url>
   <url>
     <loc>https://sbmusic.be/privacy.html</loc>
-    <priority>0.2</priority>
+    <lastmod>2026-10-12</lastmod>
   </url>
   <url>
     <loc>https://sbmusic.be/voorwaarden.html</loc>
-    <priority>0.2</priority>
+    <lastmod>2026-10-12</lastmod>
   </url>
 </urlset>
