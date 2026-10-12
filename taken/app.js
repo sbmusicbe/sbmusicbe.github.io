@@ -89,6 +89,7 @@ const I = {
   note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"/></svg>',
   up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
   down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
@@ -1640,9 +1641,13 @@ function renderDetail(force) {
       <div class="d-sec"><span>Opmerkingen${commentsOf(t.id).length ? ` <b class="c-count">${commentsOf(t.id).length}</b>` : ''}</span></div>
       <ul class="comments">${commentsOf(t.id).map(c => `
         <li data-cid="${c.id}"><div class="c-meta"><span>${esc(stamp(c.at))}</span><button type="button" class="icon-btn c-del" data-act="delcomment" title="Opmerking verwijderen" aria-label="Opmerking verwijderen">${I.trash}</button></div>
-        <div class="c-text">${esc(c.text)}</div></li>`).join('')}</ul>
+        ${c.text ? `<div class="c-text">${esc(c.text)}</div>` : ''}${imgsHtml(c.imgs, 'zoom')}</li>`).join('')}</ul>
       <div class="c-new">
-        <textarea id="dComment" rows="2" placeholder="Schrijf een opmerking…" aria-label="Nieuwe opmerking">${esc(commentDrafts[t.id] || '')}</textarea>
+        <div class="c-box">
+          <textarea id="dComment" rows="2" placeholder="Schrijf een opmerking of plak een afbeelding…" aria-label="Nieuwe opmerking">${esc(commentDrafts[t.id] || '')}</textarea>
+          <div class="c-pending" id="dPending">${pendingHtml(t.id)}</div>
+          <div class="c-tools"><button type="button" class="icon-btn" data-act="attach" title="Afbeelding toevoegen (of plak / sleep)" aria-label="Afbeelding toevoegen">${I.image}</button><input type="file" id="dFile" accept="image/*" multiple hidden></div>
+        </div>
         <button type="button" class="btn primary" data-act="addcomment">Plaatsen</button>
       </div>
       <div style="margin-top:22px"><button type="button" class="btn danger" data-act="deletetask">Deal verwijderen</button></div>
@@ -1667,11 +1672,51 @@ function restoreFocus(root, k) {
   try { if (k.pos && n.setSelectionRange) n.setSelectionRange(k.pos[0], k.pos[1]); } catch {}
 }
 const commentDrafts = {}, moreOpen = {};
+/* ---- Afbeeldingen bij opmerkingen: verkleind en als JPEG in de versleutelde kluis bewaard (metadata zoals locatie verdwijnt) ---- */
+const pendingImgs = {}, IMG_MAX = 6, IMG_EDGE = 1600;
+const IMG_OK = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
+const imgsHtml = (imgs, act) => { const ok = (imgs || []).filter(u => IMG_OK.test(u)); return ok.length ? `<div class="c-imgs">${ok.map((u, i) => `<button type="button" class="c-img" data-act="${act}" data-i="${i}" aria-label="Afbeelding vergroten"><img src="${u}" alt="Bijlage ${i + 1}" loading="lazy"></button>`).join('')}</div>` : ''; };
+const pendingHtml = tid => (pendingImgs[tid] || []).map((u, i) => `<span class="c-thumb"><img src="${u}" alt="Bijlage ${i + 1}"><button type="button" class="c-x" data-act="unattach" data-i="${i}" aria-label="Afbeelding verwijderen">×</button></span>`).join('');
+async function shrinkImage(file) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, IMG_EDGE / Math.max(bmp.width, bmp.height)), w = Math.max(1, Math.round(bmp.width * k)), h = Math.max(1, Math.round(bmp.height * k));
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(bmp, 0, 0, w, h); bmp.close?.();
+  return cv.toDataURL('image/jpeg', 0.82);
+}
+async function attachImages(t, files) {
+  const list = pendingImgs[t.id] ||= [];
+  for (const f of files) {
+    if (!/^image\//.test(f.type)) continue;
+    if (list.length >= IMG_MAX) { toast(`Maximaal ${IMG_MAX} afbeeldingen per opmerking`); break; }
+    try { list.push(await shrinkImage(f)); } catch { toast('Deze afbeelding kan niet gelezen worden'); }
+  }
+  const el = $('#dPending'); if (el && selectedId === t.id) el.innerHTML = pendingHtml(t.id);
+}
+function openLightbox(imgs, i) {
+  const ok = imgs.filter(u => IMG_OK.test(u)); if (!ok.length) return;
+  let full = false;
+  const lb = document.createElement('div'); lb.id = 'lightbox'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', 'Afbeelding');
+  lb.innerHTML = '<div class="lb-stage"><img alt=""></div><button type="button" class="lb-btn lb-x" aria-label="Sluiten">×</button><button type="button" class="lb-btn lb-prev" aria-label="Vorige">‹</button><button type="button" class="lb-btn lb-next" aria-label="Volgende">›</button><span class="lb-n"></span>';
+  const img = lb.querySelector('img'), prev = lb.querySelector('.lb-prev'), next = lb.querySelector('.lb-next');
+  const show = n => { i = (n + ok.length) % ok.length; img.src = ok[i]; full = false; lb.classList.remove('full'); lb.querySelector('.lb-n').textContent = ok.length > 1 ? `${i + 1} / ${ok.length}` : ''; prev.hidden = next.hidden = ok.length < 2; };
+  const close = () => { lb.remove(); removeEventListener('keydown', onKey, true); };
+  const onKey = e => {
+    if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') show(i - 1); else if (e.key === 'ArrowRight') show(i + 1); else return;
+    e.preventDefault(); e.stopImmediatePropagation();
+  };
+  lb.addEventListener('click', e => {
+    if (e.target.closest('.lb-x')) close(); else if (e.target.closest('.lb-prev')) show(i - 1); else if (e.target.closest('.lb-next')) show(i + 1);
+    else if (e.target === img) { full = !full; lb.classList.toggle('full', full); } else close();
+  });
+  addEventListener('keydown', onKey, true);
+  document.body.appendChild(lb); show(i); lb.querySelector('.lb-x').focus();
+}
 function addComment(t) {
-  const ta = $('#dComment'), text = ta?.value.trim();
-  if (!text) { ta?.focus(); return; }
-  data.comments.push(touch({id:uid(), taskId:t.id, text, at:now()}));
-  delete commentDrafts[t.id];
+  const ta = $('#dComment'), text = ta?.value.trim(), imgs = pendingImgs[t.id] || [];
+  if (!text && !imgs.length) { ta?.focus(); return; }
+  data.comments.push(touch({id:uid(), taskId:t.id, text, at:now(), ...(imgs.length ? {imgs:[...imgs]} : {})}));
+  delete commentDrafts[t.id]; delete pendingImgs[t.id];
   save(); renderMain(); renderDetail(true);
   const list = $('#detail .comments'); list?.lastElementChild?.scrollIntoView({block:'nearest'});
   $('#dComment')?.focus();
@@ -1683,6 +1728,17 @@ function deleteComment(cid) {
   save(); renderMain(); renderDetail(true);
   toast('Opmerking verwijderd', () => { delete data.deleted[cid]; data.comments.push(touch(copy)); save(); renderMain(); renderDetail(true); });
 }
+$('#detail').addEventListener('change', e => { if (e.target.id !== 'dFile') return; const t = taskById(selectedId); if (t) attachImages(t, [...e.target.files]); e.target.value = ''; });
+$('#detail').addEventListener('paste', e => {
+  if (e.target.id !== 'dComment') return; const t = taskById(selectedId); if (!t) return;
+  const files = [...(e.clipboardData?.files || [])].filter(f => /^image\//.test(f.type)); if (!files.length) return;
+  e.preventDefault(); attachImages(t, files);
+});
+$('#detail').addEventListener('dragover', e => { if (e.target.closest?.('.c-new') && e.dataTransfer?.types?.includes('Files')) e.preventDefault(); });
+$('#detail').addEventListener('drop', e => {
+  if (!e.target.closest?.('.c-new')) return; const t = taskById(selectedId); if (!t) return;
+  e.preventDefault(); attachImages(t, [...(e.dataTransfer?.files || [])]);
+});
 function autosize(ta) { if (!ta) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 2 + 'px'; }
 function setCustom(t, fid, val) {
   if (isEmpty(val)) delete t.custom[fid]; else t.custom[fid] = val;
@@ -1791,7 +1847,7 @@ let justSwiped = false;
   document.addEventListener('click', e => {
     if (!selectedId || !downOutside || justDragged || justSwiped || detailJustOpened || drag || dlg.open) return;
     if (document.body.classList.contains('resizing')) return;
-    if (e.target.closest('#detail, #dlg, #toast, .card, .task, [data-act], #lock')) return;
+    if (e.target.closest('#detail, #dlg, #lightbox, #toast, .card, .task, [data-act], #lock')) return;
     closeDetail();
   });
 }
@@ -2062,6 +2118,9 @@ detail.addEventListener('click', e => {
     case 'delete': deleteTask(t.id); break;
     case 'expand': setDetailWidth(detailIsWide(detailWidth()) ? DETAIL_DEFAULT : Math.max(DETAIL_WIDE, Math.round(innerWidth * 0.55)), true); break;
     case 'addcomment': addComment(t); break;
+    case 'attach': $('#dFile')?.click(); break;
+    case 'unattach': (pendingImgs[t.id] || []).splice(+b.dataset.i, 1); $('#dPending').innerHTML = pendingHtml(t.id); break;
+    case 'zoom': openLightbox(data.comments.find(x => x.id === b.closest('[data-cid]').dataset.cid)?.imgs || [], +b.dataset.i); break;
     case 'delcomment': deleteComment(b.closest('[data-cid]').dataset.cid); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'more': menuAt(b, taskMenuItems(t)); break;
