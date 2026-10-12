@@ -4180,37 +4180,6 @@ if ('serviceWorker' in navigator) {
   setInterval(checkUpdate, 10 * 60 * 1000);
 }
 
-/* ---------------- Liquid Glass: glijdende druppel in gesegmenteerde schakelaars ---------------- */
-(() => {
-  const last = new Map();                                    // laatste plek per schakelaar, zodat een nieuw getekende schakelaar vanaf de oude plek schuift
-  const place = seg => {
-    const on = seg.querySelector('button.on'); if (!on) return;
-    let th = seg.querySelector(':scope > .seg-thumb');
-    const first = !th;
-    if (!th) { th = document.createElement('i'); th.className = 'seg-thumb'; th.setAttribute('aria-hidden', 'true'); seg.prepend(th); }
-    const key = seg.getAttribute('aria-label') || 'seg';
-    const to = {x: on.offsetLeft, w: on.offsetWidth};
-    if (first) {
-      const from = last.get(key) || to;
-      th.style.width = from.w + 'px'; th.style.transform = `translateX(${from.x}px)`;
-      th.classList.add('ready');
-      requestAnimationFrame(() => requestAnimationFrame(() => { th.style.width = to.w + 'px'; th.style.transform = `translateX(${to.x}px)`; }));
-    } else { th.style.width = to.w + 'px'; th.style.transform = `translateX(${to.x}px)`; }
-    last.set(key, to);
-  };
-  const sweep = () => document.querySelectorAll('.seg').forEach(place);
-  new MutationObserver(() => requestAnimationFrame(sweep)).observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['class']});
-  addEventListener('resize', sweep);
-  document.fonts?.ready.then(sweep);
-  sweep();
-})();
-
-// lensbreking (Liquid Glass) alleen waar backdrop-filter met url() echt werkt: Chromium
-if (navigator.userAgentData?.brands?.some(b => /Chromium/i.test(b.brand))) document.documentElement.classList.add('lens');
-
-// logo-afbeelding niet geladen: terugvallen op het ingebouwde pictogram (vervangt een inline onerror, die de CSP niet toestaat)
-document.addEventListener('error', e => { const i = e.target; if (i && i.tagName === 'IMG' && i.parentNode?.classList?.contains('has-img')) i.parentNode.classList.remove('has-img'); }, true);
-
 // privacy: browsers bewaren of delen ingetypte tekst soms voor suggesties; deal- en klantvelden doen dat niet
 (() => {
   const off = root => root.querySelectorAll?.('input:not([autocomplete]):not([type=password]):not([type=checkbox]):not([type=radio]),textarea:not([autocomplete])').forEach(el => { if (!el.closest('#lock')) el.setAttribute('autocomplete', 'off'); });
