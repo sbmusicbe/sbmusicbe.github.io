@@ -14,7 +14,6 @@ Eerlijk vooraf: geen enkel systeem is "lek-vrij". Dit document zegt wat Klose do
 - **Automatisch vergrendelen** na 15 minuten zonder activiteit (instelbaar). Vergrendelen laadt de pagina opnieuw, waardoor alle gegevens uit het geheugen verdwijnen.
 - **Geen klantendatabase.** Klose bewaart geen klantenlijst meer; oude klantgegevens worden bij het openen gewist en bij de volgende keer opslaan ook online.
 - **Niet in een frame.** De app weigert ingebed te worden in een andere site.
-- **Windows-app:** geen toegang tot bestanden of systeem (sandbox), enkel de eigen site wordt geladen, alle toestemmingsvragen (camera, locatie, ...) worden geweigerd, ontwikkelaarstools staan uit in de uitgave.
 
 ## Wat Klose niet kan beschermen
 
