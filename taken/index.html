@@ -2331,6 +2331,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 .lock-card{background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;animation:none!important}
 .lock-card .btn.primary{border-radius:6px!important}
 .lock-card input{border-radius:6px!important}
+
+/* ---- melding: nieuwe versie (rechtsonder, boven alles) ---- */
+#updBar{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:9999;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 32px);padding:12px 14px 12px 16px;border-radius:14px;background:#1c1f26;color:#f5f6f8;font:500 14px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.28)}
+#updBar button{border:0;border-radius:9px;padding:8px 14px;font:600 14px system-ui,sans-serif;cursor:pointer;background:#fff;color:#111}
+#updBar button.x{background:none;color:#aab;padding:4px 8px;font-size:20px;line-height:1}
+@media (max-width:700px){#updBar{left:16px;right:16px;bottom:calc(78px + env(safe-area-inset-bottom));justify-content:space-between}}
 </style>
 </head>
 <body>
@@ -4200,7 +4206,7 @@ $('#quickAdd').addEventListener('submit', e => {
   renderQaPreview();
   createTask(r);
 });
-// Tab in de invoerbalk: deal aanmaken en meteen verder naar de velden van die deal (notities, status, deadline, klant, …)
+// Tab in de invoerbalk: deal aanmaken en meteen verder naar de velden van die deal (status, deadline, klant, …)
 $('#qaInput').addEventListener('keydown', e => {
   if (e.key !== 'Tab' || e.shiftKey || e.isComposing) return;
   const r = parseQuick($('#qaInput').value); if (!r.title) return;
@@ -4208,7 +4214,7 @@ $('#qaInput').addEventListener('keydown', e => {
   $('#qaInput').value = ''; renderQaPreview();
   const t = createTask({...r, silent:true});
   openTask(t.id);
-  setTimeout(() => { const el = $('#dNotes'); if (el) el.focus(); }, 60);
+  setTimeout(() => { const el = $('#dDue'); if (el) el.focus(); }, 60);
 });
 
 /* ---------------- Task actions ---------------- */
@@ -4332,16 +4338,16 @@ function renderDetail(force) {
         <button class="check ${t.done ? 'on' : ''}" data-act="toggle" aria-label="Voltooien">${I.check}</button>
         <textarea id="dTitle" rows="1" aria-label="Titel">${esc(t.title)}</textarea>
       </div>
-      <textarea id="dNotes" placeholder="Notities…" aria-label="Notities">${esc(t.notes || '')}</textarea>
       <div class="props">
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
         ${!feat('clients') && !t.clientId ? '' : (() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}${cl?.email ? `<a class="icon-btn" href="mailto:${esc(cl.email)}" title="${esc(cl.email)} mailen" aria-label="Mailen">${I.mail}</a>` : ''}</span></label>`; })()}
       </div>
-      <details class="d-more" id="dMore" ${moreOpen[t.id] || fs.some(f => !isEmpty(t.custom[f.id])) ? 'open' : ''}>
+      <details class="d-more" id="dMore" ${moreOpen[t.id] || t.notes || fs.some(f => !isEmpty(t.custom[f.id])) ? 'open' : ''}>
         <summary>Meer gegevens</summary>
         <div class="props">
+        ${t.notes ? `<label class="prop"><span>Notities</span><textarea id="dNotes" rows="2" aria-label="Notities">${esc(t.notes)}</textarea></label>` : ''}
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         </div>
         <div class="d-sec"><span>Extra gegevens</span><button class="link" data-act="fields">Extra gegevens beheren</button></div>
@@ -7518,14 +7524,23 @@ function bindBioBox(d) {
 /* ---------------- Offline & updates (service worker) ---------------- */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(e => console.warn('Service worker niet geregistreerd', e));
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data?.type !== 'update-ready') return;
-    const el = $('#toast');
-    el.innerHTML = '<span>Nieuwe versie klaar. Wordt gebruikt bij de volgende keer openen.</span><button type="button">Nu vernieuwen</button>';
-    el.hidden = false; clearTimeout(toastTimer);
-    el.querySelector('button').onclick = () => { el.hidden = true; lock(); };
-    toastTimer = setTimeout(() => el.hidden = true, 12000);
-  });
+  // Nieuwe versie: vaste melding rechtsonder, op elk scherm (ook bij het inloggen), tot de gebruiker ververst
+  const showUpdate = () => {
+    if ($('#updBar')) return;
+    const el = document.createElement('div');
+    el.id = 'updBar'; el.setAttribute('role', 'status');
+    el.innerHTML = '<span>Er is een nieuwe versie van Klose.</span><button type="button" id="updGo">Verversen</button><button type="button" id="updX" class="x" aria-label="Later">×</button>';
+    document.body.appendChild(el);
+    $('#updGo').onclick = () => location.reload();
+    $('#updX').onclick = () => el.remove();
+  };
+  const hadCtl = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadCtl) showUpdate(); });
+  navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'update-ready') showUpdate(); });
+  // regelmatig zelf controleren, ook als de app dagen openstaat
+  const checkUpdate = () => navigator.serviceWorker.ready.then(r => { r.update().catch(() => {}); r.active?.postMessage({type: 'check'}); }).catch(() => {});
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+  setInterval(checkUpdate, 10 * 60 * 1000);
 }
 </script>
 </body>
