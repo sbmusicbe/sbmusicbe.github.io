@@ -12,6 +12,7 @@ SB is een allround DJ uit België en de resident DJ van Café De Zwarte Ruiter. 
 - Instagram: https://instagram.com/sbmusicbe
 - TikTok: https://www.tiktok.com/@sbmusicbe
 - Facebook: https://www.facebook.com/sbmusicbe
+- SoundCloud: https://soundcloud.com/sbmusicbe
 
 ## Meer
 
