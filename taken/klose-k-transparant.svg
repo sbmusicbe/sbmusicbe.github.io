@@ -1,7 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 12 60 72" width="480" height="576">
-<title>Klose</title>
-<polyline points="43,48 68,74" fill="none" stroke="#FF4B1F" stroke-width="11" stroke-linejoin="miter"/>
-<line x1="31" y1="22" x2="31" y2="74" stroke="#111318" stroke-width="11"/>
-<polyline points="31,52 66,24" fill="none" stroke="#111318" stroke-width="11" stroke-linejoin="miter"/>
-<polyline points="52,22 68,22 68,38" fill="none" stroke="#111318" stroke-width="9" stroke-linejoin="miter"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 14 52 68" role="img" aria-label="Klose"><path d="M45 47 L63 72" stroke="#4B52F5" stroke-width="10" stroke-linecap="round" fill="none"></path><path d="M33 51 L62 25" stroke="#101010" stroke-width="10" stroke-linecap="round" fill="none"></path><path d="M33 24 V72" stroke="#101010" stroke-width="10" stroke-linecap="round" fill="none"></path></svg>
