@@ -983,14 +983,15 @@ $('#lockForm').addEventListener('submit', async e => {
 function tourSteps() {
   const mob = matchMedia('(max-width:860px)').matches, q = x => document.querySelector(x);
   const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
+  const hasCalc = !!q('#projCalc:not([hidden])');
   return [
     {title:'Welkom bij Klose', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
-    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een deal maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline of opmerking voeg je daarna toe.'},
-    {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een deal naar de volgende kolom als je verder bent. Klik op een deal om alles te zien en aan te passen.'},
+    {el:() => mob ? q('#fab') : q('.col-add input'), title:'Een deal maken', text:mob ? 'Tik op + om een deal te maken. Vul de naam in en de rest komt daarna.' : 'Typ onderaan een kolom de naam van een deal en druk op Enter. Schrijf je “morgen 14u” erbij, dan staat de deadline er meteen op. Druk op N om alle gegevens in één keer in te vullen.'},
+    {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Offerte. Sleep een deal naar de volgende kolom als je verder bent. Klik op een deal om alles te zien en aan te passen.'},
+    ...(!hasCalc ? [] : [{el:() => q('#projCalc'), title:'Prijsberekening', text:'Vul je streefcijfer, je huidige verkoopcijfer en de beschikbare 1/8-ruimtes in. Klose rekent de prijs per formaat voor je uit.'}]),
+    {el:() => q('#topSearch'), title:'Zoeken', text:'Zoek in al je deals op naam, notitie of opmerking. Druk op / om meteen te zoeken.'},
     ...(!feat('sales') ? [] : [{el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'}]),
-    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je extra gegevens en de instellingen.'}] : [
-      {el:() => q('#openFields'), title:'Extra gegevens', text:'Voeg extra gegevens toe aan je deals, zoals formaat, telefoonnummer of kortingsprijs.'},
-      {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe noodcode.'}]),
+    {el:() => mob ? q('#tabBar [data-tab=more]') : q('#openSettings'), title:'Instellingen', text:'Alle opties staan op één plek: sorteren, stappen, extra gegevens, thema, back-up en beveiliging.'},
     {title:'Klaar om te beginnen', text:'Maak je eerste deal aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
   ];
 }
@@ -3320,7 +3321,6 @@ $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#salesNav').addEventListener('click', e => { const b = e.target.closest('[data-sales]'); if (b) setView({type:'sales', id:b.dataset.sales}); });
 $('#addSales').onclick = () => openSalesPageDialog(null);
-$('#openFields').onclick = () => { $('#app').classList.remove('side-open'); openFieldsDialog(); };
 // Licht/donker: zonder keuze volgt Deals je toestel; de knop onderaan de zijbalk onthoudt je keuze op dit toestel
 const themeNow = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
 function paintThemeColor() {
@@ -3332,7 +3332,6 @@ function setTheme(t) {
   try { localStorage.setItem('taken.theme', t); } catch {}
   paintThemeColor();
 }
-$('#themeBtn').onclick = () => setTheme(themeNow() === 'dark' ? 'light' : 'dark');
 matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change', () => { if (!document.documentElement.dataset.theme) paintThemeColor(); });
 paintThemeColor();
 $('#openSettings').onclick = () => { $('#app').classList.remove('side-open'); openSettings(); };
@@ -3362,9 +3361,9 @@ function newDealNow() {
   openTask(t.id);
   setTimeout(() => { const el = $('#dTitle'); if (el) { el.focus(); el.select(); } }, 80);
 }
-const openQuickAdd = newDealNow;
+
 const deskQa = () => !matchMedia('(max-width:860px)').matches;
-$('#toolbar').addEventListener('click', e => { if (e.target.closest('[data-qa]')) openQuickAdd(); });
+document.addEventListener('click', e => { if (e.target.closest('[data-qa]')) newDealNow(); });
 $('#qaInput').addEventListener('blur', () => { if (deskQa() && !$('#qaInput').value.trim()) setTimeout(() => { if (document.activeElement !== $('#qaInput')) document.body.classList.remove('qa-open'); }, 150); });
 $('#qaInput').addEventListener('keydown', e => { if (e.key === 'Escape' && deskQa()) { e.preventDefault(); $('#qaInput').value = ''; $('#qaInput').dispatchEvent(new Event('input')); $('#qaInput').blur(); document.body.classList.remove('qa-open'); } });
 $('#fab').addEventListener('click', () => {
@@ -3577,23 +3576,23 @@ document.addEventListener('keydown', e => {
     if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
     if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); openSearch(); return; }
-    if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else openQuickAdd(); return; }
+    if (e.key.toLowerCase() === 'k') { e.preventDefault(); if (view.type === 'sales') addSalesRow(); else newDealNow(); return; }
   }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === '?') { e.preventDefault(); openHelp(); return; }
   if (e.key === 'Delete' && selectedId && view.type !== 'sales') { e.preventDefault(); deleteTask(selectedId); return; }
   if (isPageView()) return;
   if (view.type === 'sales') { if (e.key === 'n') { e.preventDefault(); addSalesRow(); } return; }
-  if (e.key === 'q' || e.key === 'n') { e.preventDefault(); openQuickAdd(); }
+  if (e.key === 'q' || e.key === 'n') { e.preventDefault(); newDealNow(); }
   else if (e.key === '/') { e.preventDefault(); openSearch(); }
 });
 
-$('#topSearch').onclick = () => { if (!isPageView() && view.type !== 'sales') openSearch(); else toast('Zoeken kan op de pagina zelf'); };
+$('#topSearch').onclick = () => { if (isPageView() || view.type === 'sales') setView({type:'all'}); openSearch(); };
 $('#topHelp').onclick = () => openHelp();
 function openHelp() {
   showDialog(`<h3>Hulp</h3>
     <ul class="help-list">
-      <li><b>Een deal maken</b><span>Klik op “Nieuwe deal”, typ wat je wilt doen en druk op Enter.</span></li>
+      <li><b>Een deal maken</b><span>Typ onderaan een kolom de naam en druk op Enter, of druk op N voor alle velden.</span></li>
       <li><b>Een deadline instellen</b><span>Typ het erbij: “Jan bellen morgen 14u” zet de deal op morgen om 14:00.</span></li>
       <li><b>Verder in het proces</b><span>Sleep de deal naar de volgende stap, of kies de stap in het dealpaneel.</span></li>
       <li><b>Een deal afronden</b><span>Klik op het rondje links van de deal.</span></li>
@@ -3604,9 +3603,14 @@ function openHelp() {
     $('#hpKeys', d).onclick = () => openShortcutsDialog();
   });
 }
-// de uitklapper onder Filter (computer) sluit zodra je ernaast klikt
+// Esc in het zoekveld: wissen en sluiten
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || e.target.id !== 'tbSearch') return;
+  e.preventDefault(); searchQ = ''; tbOpen = false; e.target.blur(); renderToolbar(); renderMain();
+});
+// het zoekveld sluit zodra je ernaast klikt (en niets zoekt)
 document.addEventListener('pointerdown', e => {
-  if (!tbOpen || matchMedia('(max-width:860px)').matches || e.target.closest('.toolbar')) return;
+  if (!tbOpen || e.target.closest('.toolbar,#topSearch')) return;
   tbOpen = false; if (!$('#toolbar').hidden) renderToolbar();
 }, true);
 function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbSearch')?.focus(); $('#tbSearch')?.select(); }
