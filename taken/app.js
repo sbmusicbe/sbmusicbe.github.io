@@ -80,7 +80,6 @@ const I = {
   expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
- notes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14A1.5 1.5 0 0 1 17 20.5H6z"/><path d="M6 3.5v17M10 8h5M10 12h5"/><path d="M4 7.5h4M4 12h4M4 16.5h4"/></svg>',
  btw:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>',
  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12.5 13.5h3.5v3.5h-3.5z" fill="currentColor" stroke="none"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
@@ -93,7 +92,6 @@ const I = {
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"/></svg>',
   up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
   down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
-  done:'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="26"/><path d="M20 33l8 8 16-17"/></svg>',
 };
 
 /* ---------------- Utilities ---------------- */
@@ -1477,7 +1475,6 @@ function renderTabBar() {
   $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   placeTabIndicator();
   $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : 'Nieuwe kaart');
-  if (view.type === 'sales' || isPageView()) document.body.classList.remove('qa-open');
 }
 function renderAll() {
   if (!data) return;
@@ -1487,12 +1484,12 @@ function renderAll() {
   const sales = view.type === 'sales';
   if (sales) selectedId = null;
   renderNav(); renderHead();
-  for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = sales;
+  for (const sel of ['#toolbar', '#list']) $(sel).hidden = sales;
   $('#salesPage').hidden = !sales;
   const page = isPageView();
   $('#pageView').hidden = !page;
   if (page) {
-    for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = true;
+    for (const sel of ['#toolbar', '#list']) $(sel).hidden = true;
     $('.main-inner').classList.add('wide');
     $('#app').classList.remove('board-mode');
     renderPage();
@@ -1566,14 +1563,6 @@ function parseQuick(text) {
   r.title = s.trim().replace(/\s+/g, ' ');
   return r;
 }
-function renderQaPreview() {
-  const v = $('#qaInput').value;
-  const el = $('#qaPreview');
-  if (!v.trim()) { el.innerHTML = '<span class="qa-hint">Tips: <b>vandaag</b>, <b>morgen</b>, <b>vrijdag</b>, <b>12/10</b>, <b>14u</b>, <b>#project</b>, <b>@mail</b>, <b>@bellen</b>, <b>@optie</b></span>'; return; }
-  const r = parseQuick(v);
-  el.innerHTML = r.tokens.map(([l, c]) => c ? `<span class="chip opt" style="--c:${c}">${esc(l)}</span>` : `<span class="chip">${esc(l)}</span>`).join('');
-}
-$('#qaInput').addEventListener('input', renderQaPreview);
 function createTask(r, stage, top) {
   stage = stage || r.stage || firstOpen().id;
   const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
@@ -1600,26 +1589,6 @@ function createTask(r, stage, top) {
   if (!r.silent && !viewTasks(true).some(x => x.id === t.id)) toast(`Toegevoegd aan ${proj(projectId).name}`);
   return t;
 }
-$('#quickAdd').addEventListener('submit', e => {
-  e.preventDefault();
-  const input = $('#qaInput');
-  const r = parseQuick(input.value);
-  if (!r.title) return;
-  input.value = '';
-  renderQaPreview();
-  createTask(r);
-});
-// Tab in de invoerbalk: deal aanmaken en meteen verder naar de velden van die deal (status, deadline, klant, …)
-$('#qaInput').addEventListener('keydown', e => {
-  if (e.key !== 'Tab' || e.shiftKey || e.isComposing) return;
-  const r = parseQuick($('#qaInput').value); if (!r.title) return;
-  e.preventDefault();
-  $('#qaInput').value = ''; renderQaPreview();
-  const t = createTask({...r, silent:true});
-  openTask(t.id);
-  setTimeout(() => { const el = $('#dDue'); if (el) el.focus(); }, 60);
-});
-
 /* ---------------- Task actions ---------------- */
 // Verplaatst een kaart naar een kolom.
 function setStage(t, st) {
@@ -3355,7 +3324,6 @@ $('#tabBar').addEventListener('click', e => {
   }
   setView({type:t});
 });
-// Invoerbalk: op desktop verborgen tot je op "+ Deal" klikt of N drukt; leeg verlaten sluit hem weer.
 // Nieuwe deal: meteen een deal aanmaken en het paneel openen met de titel geselecteerd (de aparte invoerbalk is weg)
 function newDealNow() {
   const t = createTask({title:'Nieuwe deal', custom:{}, silent:true});
@@ -3363,10 +3331,7 @@ function newDealNow() {
   setTimeout(() => { const el = $('#dTitle'); if (el) { el.focus(); el.select(); } }, 80);
 }
 
-const deskQa = () => !matchMedia('(max-width:860px)').matches;
 document.addEventListener('click', e => { if (e.target.closest('[data-qa]')) newDealNow(); });
-$('#qaInput').addEventListener('blur', () => { if (deskQa() && !$('#qaInput').value.trim()) setTimeout(() => { if (document.activeElement !== $('#qaInput')) document.body.classList.remove('qa-open'); }, 150); });
-$('#qaInput').addEventListener('keydown', e => { if (e.key === 'Escape' && deskQa()) { e.preventDefault(); $('#qaInput').value = ''; $('#qaInput').dispatchEvent(new Event('input')); $('#qaInput').blur(); document.body.classList.remove('qa-open'); } });
 $('#fab').addEventListener('click', () => {
   if (view.type === 'sales') { addSalesRow(); return; }
   if (view.type === 'agenda') { openEventDialog(null, agendaSel || today()); return; }
@@ -4056,7 +4021,7 @@ function startTimers() {
       // alleen hertekenen als de kleur van een kaart met uur (bijna te laat / te laat) echt verandert
       const dsig = data.tasks.filter(t => t.time && !t.done && t.due && t.due <= today()).map(t => t.id + dueState(t)).join('|');
       if (dsig === lastDueSig) return;
-      const busy = drag || document.activeElement?.closest?.('#list,#detail,#quickAdd,#toolbar');
+      const busy = drag || document.activeElement?.closest?.('#list,#detail,#toolbar');
       if (busy) lastMin = -1;   // bezig met typen of slepen: volgende ronde opnieuw proberen
       else if (view.type !== 'sales' && $('#lock').hidden) { lastDueSig = dsig; renderMain(); }
     }

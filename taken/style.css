@@ -65,10 +65,8 @@ code{background:var(--sunken);padding:1px 6px;border-radius:var(--r-sm);font:400
 .muted{color:var(--ink-muted)}
 .small{font-size:12px;line-height:16px}
 .grow{flex:1}
-.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .err{color:var(--dot-rose);font-size:13px;min-height:1.2em;margin:6px 0 0}
 img,svg{-webkit-user-drag:none}
-.k-note{display:inline-block;font:400 18px/24px var(--f-hand);color:var(--accent);transform:rotate(-3deg)}
 
 /* ---------- Velden ---------- */
 input[type=text],input[type=password],input[type=number],input[type=date],input[type=url],input[type=tel],input[type=email],input[type=search],select,textarea{
@@ -219,7 +217,6 @@ input[type=date]{font-variant-numeric:tabular-nums}
 .toolbar{display:none}
 .toolbar.open{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 #tbSearch{width:min(420px,100%);border-radius:var(--r-pill);padding:0 16px}
-#quickAdd,#qaPreview{display:none}
 #banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--accent-soft);font-size:14px}
 #banner span{flex:1;min-width:180px}
 #archBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 12px;padding:8px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--raised);color:var(--ink-muted)}
@@ -297,8 +294,6 @@ input[type=date]{font-variant-numeric:tabular-nums}
 .ghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;box-shadow:var(--shadow-float);cursor:grabbing}
 .is-dragging,.is-dragging *{cursor:grabbing!important;user-select:none}
 .is-dragging .board{scroll-snap-type:none!important}
-.task{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
-.task .restore{min-height:28px;padding:0 12px;font-size:13px}
 @media (min-width:861px){
 #app.board-mode.with-detail{grid-template-columns:var(--side-w) minmax(0,1fr)}
 #app.board-mode #detail{position:fixed;top:0;right:0;bottom:0;z-index:20;width:var(--detail-w,400px);max-width:calc(100vw - var(--side-w) - 8px);border-left:1px solid var(--line);box-shadow:var(--shadow-float)}
@@ -444,8 +439,6 @@ dialog.st-dlg .dlg-inner{display:block;height:100%;padding:0}
 .sales-stat.target .bar{display:block;height:4px;margin-top:6px;border-radius:2px;background:var(--sunken);overflow:hidden}
 .sales-stat.target .bar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
 .sales-stat.target.hit .bar i{background:var(--dot-mint)}
-.sales-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.sales-actions:empty{display:none}
 .table-wrap{overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--canvas)}
 table.sales{width:100%;border-collapse:collapse;font-size:14px}
 table.sales th{padding:8px 12px;border-bottom:1px solid var(--line);background:var(--raised);color:var(--ink-muted);font:500 11px/16px var(--f-mono);letter-spacing:.06em;text-align:left;text-transform:uppercase;white-space:nowrap}
@@ -688,9 +681,6 @@ body.sheet-open #scrim{z-index:35}
 .sales-stat{flex:1 1 50%;padding:10px 14px}
 .sales-stat:nth-child(2n){border-right:0}
 .sales-stat b{font-size:19px}
-.sales-actions{flex:1 1 100%;flex-wrap:nowrap;margin:0 -16px;padding:0 16px 2px;overflow-x:auto;scrollbar-width:none}
-.sales-actions::-webkit-scrollbar{display:none}
-.sales-actions>*{flex:none}
 .sales-head .grow{display:none}
 .sales-stat.count{display:none}
 table.sales.grouped th.t-date,table.sales.grouped tfoot td.t-date{display:none}
