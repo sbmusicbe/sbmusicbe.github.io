@@ -75,22 +75,14 @@ const stageById = id => data.stages.find(s => s.id === id) || firstOpen();
 const isDoneStage = id => !!data.stages.find(s => s.id === id)?.done;
 
 const I = {
-  inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>',
-  upcoming:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/></svg>',
   eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
-  filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
   expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   shrink:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
   comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1121 12z"/></svg>',
-  clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.1 4 1.6 4.5 4.3"/></svg>',
  notes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14A1.5 1.5 0 0 1 17 20.5H6z"/><path d="M6 3.5v17M10 8h5M10 12h5"/><path d="M4 7.5h4M4 12h4M4 16.5h4"/></svg>',
  btw:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>',
  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12.5 13.5h3.5v3.5h-3.5z" fill="currentColor" stroke="none"/></svg>',
-  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></svg>',
-  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg>',
-  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>',
-  archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
   sales:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -139,10 +131,6 @@ function dueLabel(s) {
   const d = parseYmd(s);
   if (diff > 1 && diff < 7) return cap(DAYS[d.getDay()]);
   return `${d.getDate()} ${MONTHS[d.getMonth()]}` + (d.getFullYear() !== new Date().getFullYear() ? ` ${d.getFullYear()}` : '');
-}
-function dateLong(s) {
-  const d = parseYmd(s);
-  return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
 /* ---------------- Crypto ---------------- */
 const te = new TextEncoder(), td = new TextDecoder();
@@ -317,7 +305,9 @@ function normalize(d) {
     const o = OLD_STAGES[st.id], n = DEFAULT_STAGES.find(x => x.id === st.id);
     if (o && n && st.label === o[0] && String(st.color).toLowerCase() === o[1]) { st.label = n.label; st.color = n.color; }
   }
-  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.clients ||= []; d.events ||= []; d.notes ||= [];
+  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.events ||= []; delete d.notes;
+  // de klantendatabase bestaat niet meer: alles wat er nog van over is (ook van oudere toestellen) wordt gewist
+  d.clients = []; for (const t of d.tasks) delete t.clientId;
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
   for (const r of d.sales) r.values ||= {};
   // eenmalig: een tekstkolom "Formaat" wordt een keuzekolom
@@ -341,7 +331,7 @@ function merge(a, b) {
   const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
   const del = {...a.deleted};
   for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
-  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients', 'events', 'notes']) {
+  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients', 'events']) {
     const m = new Map();
     for (const it of [...a[col], ...b[col]]) {
       const cur = m.get(it.id);
@@ -360,7 +350,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + s(d.notes || []) + JSON.stringify(Object.keys(d.deleted).sort());
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + JSON.stringify(Object.keys(d.deleted).sort());
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -373,13 +363,12 @@ const touch = o => { o.u = now(); return o; };
 function tombstone(id) { data.deleted[id] = now(); }
 /* Functies die je kunt aan- of uitzetten (zonder keuze staat alles aan, zoals bij bestaande gebruikers) */
 const FEATURES = [
-  ['clients', 'Klanten', 'Klantenlijst met telefoon, e-mail en omzet'],
   ['agenda', 'Agenda', 'Afspraken en deadlines op een kalender'],
   ['sales', 'Verkopen', 'Maandpagina’s met omzet, doel, commissie en bonus'],
   ['btw', 'BTW-rekenmachine', 'Een bedrag omrekenen van of naar inclusief btw'],
 ];
 const feat = k => { const f = data?.settings.features; return !f || f[k] !== false; };
-const VIEW_FEATURE = {clients:'clients', client:'clients', agenda:'agenda', btw:'btw', sales:'sales'};
+const VIEW_FEATURE = {agenda:'agenda', btw:'btw', sales:'sales'};
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
@@ -425,30 +414,8 @@ async function persistFull() {
   if (clPending) throw new Error('de klanten zijn nog niet geladen');
   return seal(K, data);
 }
-async function readClients(blob, key) {
-  const chunks = (await unsealText(key, blob)).split(',\n'), out = [];
-  for (let i = 0; i < chunks.length;) {
-    const t0 = performance.now();
-    while (i < chunks.length && performance.now() - t0 < 10) { const part = JSON.parse('[' + chunks[i++] + ']'); for (const c of part) out.push(c); }
-    await new Promise(r => setTimeout(r, 0));
-  }
-  return out;
-}
-function startClientLoad(local, key) {
-  clPending = true; clFailed = false; clRev = local.clv;
-  clReadyP = (async () => {
-    try {
-      const b = await idbKV('get', CL_KEY + local.clv);
-      if (!b) throw new Error('het klantenbestand ontbreekt op dit toestel');
-      const arr = await readClients(b, key), cur = data.clients;
-      if (cur.length) { const at = new Map(arr.map((c, i) => [c.id, i])); for (const c of cur) { const i = at.get(c.id); if (i === undefined) arr.push(c); else if ((c.u || 0) > (arr[i].u || 0)) arr[i] = c; } }
-      data.clients = arr; clientsChanged();
-      clSigSaved = cur.length ? null : clientsSig(arr) + '|' + b64(K.salt);   // intussen toegevoegde klanten moeten nog bewaard worden
-      clPending = false;
-    } catch (e) { clFailed = true; console.error(e); toast('Klanten konden niet geladen worden: ' + (e.message || e)); }
-    if (data && !$('#app').hidden) { if (document.activeElement?.closest?.('#detail,#quickAdd,#toolbar,dialog')) renderNav(); else renderAll(); }
-  })();
-}
+async function readClients() { return []; }   // de klantendatabase is verwijderd: oude blobs worden niet meer gelezen
+function startClientLoad() { clPending = false; clFailed = false; clRev = null; clReadyP = Promise.resolve(); }   // de klantendatabase bestaat niet meer: er valt niets te laden
 let saveTimer = null;
 function save(soon) {
   data.updatedAt = now();
@@ -528,7 +495,6 @@ const conflictError = () => Object.assign(new Error('De online kluis is intussen
 // Zeer grote kluizen staan in twee delen: de kern in kolom blob, de klanten apart in kolom clients (zie supabase.sql).
 // Ontbreken die kolommen (script nog niet uitgevoerd), dan blijft alles in één stuk in blob zitten.
 let cloudSplit = null, cloudClientsRev = null, cloudClientsBlob = null;
-const missingCol = e => e.status === 400 && /clients|42703|PGRST204|PGRST/i.test((e.code || '') + e.message);
 // kluis ophalen: null = nog geen kluis, NOT_MODIFIED = niets veranderd sinds meta.ifNoneMatch (de versie dient als etag)
 async function cloudGet(s, meta) {
   const ss = await cloudToken(), q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
@@ -543,12 +509,7 @@ async function cloudGet(s, meta) {
   cloudRev = full[0].rev; if (meta) meta.etag = String(cloudRev);
   const blob = JSON.parse(full[0].blob);
   if (blob.split) {   // de klanten staan apart; enkel opnieuw downloaden als ze veranderd zijn
-    if (!cloudClientsBlob || cloudClientsBlob.rev !== blob.clv) {
-      const c = await sb(q + '&select=clients', {token:ss.token});
-      if (!c[0]?.clients) throw new Error('De klanten ontbreken online.');
-      cloudClientsBlob = JSON.parse(c[0].clients);
-    }
-    blob.clientsBlob = cloudClientsBlob;
+    blob.clientsBlob = null;   // oude klantengegevens worden niet meer opgehaald
   }
   return blob;
 }
@@ -579,8 +540,7 @@ async function cloudPut(s, blob, meta) {
 async function unsealRemote(key, blob) {
   const core = await unseal(key, blob);
   if (blob.split) {
-    if (!blob.clientsBlob) throw new Error('De klanten ontbreken online.');
-    core.clients = await readClients(blob.clientsBlob, key);
+    core.clients = [];
   }
   return core;
 }
@@ -1025,11 +985,10 @@ function tourSteps() {
   const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
   return [
     {title:'Welkom bij Klose', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
-    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een deal maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline, klant of opmerking voeg je daarna toe.'},
+    {el:() => mob ? q('#fab') : q('.tb-add'), title:'Een deal maken', text:'Klik hier, typ wat je wilt doen en druk op Enter. Een deadline of opmerking voeg je daarna toe.'},
     {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Positief. Sleep een deal naar de volgende kolom als je verder bent. Klik op een deal om alles te zien en aan te passen.'},
-    ...(mob || !feat('clients') ? [] : [{el:() => navBy(/Klanten/), title:'Klanten', text:'Al je klanten op één plek, met contactgegevens en omzet. Een deal koppel je aan een klant door de naam te typen.'}]),
     ...(!feat('sales') ? [] : [{el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'}]),
-    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je klanten, je extra gegevens en de instellingen.'}] : [
+    ...(mob ? [{el:() => q('#tabBar [data-tab=more]'), title:'Meer', text:'Onder Meer vind je je extra gegevens en de instellingen.'}] : [
       {el:() => q('#openFields'), title:'Extra gegevens', text:'Voeg extra gegevens toe aan je deals, zoals formaat, telefoonnummer of kortingsprijs.'},
       {el:() => q('#openSettings'), title:'Instellingen', text:'Hier maak je een back-up, wijzig je je wachtwoord of maak je een nieuwe noodcode.'}]),
     {title:'Klaar om te beginnen', text:'Maak je eerste deal aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
@@ -1105,10 +1064,10 @@ function neutralStages() {
   const neg = data.stages.find(x => x.id === 'negative'); if (neg) { data.stages = data.stages.filter(x => x !== neg); tombstone(neg.id); }
 }
 async function firstRun() {
-  if (data.settings.features || data.tasks.length || data.clients.length) return;
+  if (data.settings.features || data.tasks.length) return;
   const f = await askFeatures();
   data.settings.features = f;
-  if (!f.clients && !f.sales) neutralStages();
+  if (!f.sales) neutralStages();
   save(); renderAll();
 }
 // alleen voor wie nieuw is: nog geen deals of klanten en de rondleiding nog niet gezien
@@ -1121,7 +1080,7 @@ async function maybeStart() {
 function maybeTour() {
   if (navigator.webdriver && !window.__tourTest) return;   // geautomatiseerde tests worden niet onderbroken
   if (!data || tourOn || data.settings.tourDone || dlg.open || !$('#lock').hidden) return;
-  if (data.tasks.length || data.clients.length) { data.settings.tourDone = true; return; }
+  if (data.tasks.length) { data.settings.tourDone = true; return; }
   startTour();
 }
 function enterApp() {
@@ -1131,7 +1090,6 @@ function enterApp() {
   document.title = 'Klose';
   renderAll();
   startTimers();
-  warmClients();
   setTimeout(maybeStart, 900);
   if (pendingLaunch) { const u = pendingLaunch; pendingLaunch = null; applyLaunch(u); }
 }
@@ -1141,7 +1099,7 @@ function applyLaunch(url) {
   const q = new URL(url, location.href).searchParams, v = q.get('view');
   if (location.search) history.replaceState(null, '', location.pathname);
   if (v === 'sales') { const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); }
-  else if (['today', 'all', 'upcoming', 'inbox', 'clients'].includes(v)) setView({type:v});
+  else if (['today', 'all', 'upcoming', 'inbox'].includes(v)) setView({type:v});
   if (q.get('new')) {
     if (view.type === 'sales') setView({type:'all'});
     setTimeout(newDealNow, 60);
@@ -1167,18 +1125,11 @@ let view = {type:'all'};
 let selectedId = null;
 let searchQ = '';
 const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle deals']];
-const SIDE_VIEWS = [];   // geen vaste weergaven meer in de zijbalk; Deals en Vandaag blijven via de tabbalk op gsm, het logo brengt je terug naar alle deals
 const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === 'sales' ? 's:' + view.id : view.type;
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
-  const layout = saved.layout || 'board';
-  const d = layout === 'board' ? {} : ({today:{sort:'due'}, upcoming:{sort:'due', group:'due'}}[view.type] || {});
-  return {sort:'manual', group:'stage', showDone:false, ff:'', fv:'', layout, ...d, ...saved};
-}
-function setPref(k, v) {
-  data.prefs[viewKey()] = {...(data.prefs[viewKey()] || {}), [k]:v};
-  if (k === 'ff') data.prefs[viewKey()].fv = '';
-  commit();
+  // weergave en sortering staan centraal in de instellingen; er is alleen nog een bord
+  return {group:'stage', showDone:false, ...saved, sort:data.settings.sort || 'manual', ff:'', fv:'', layout:'board'};
 }
 function setView(v) {
   const same = v.type === view.type && v.id === view.id;
@@ -1198,11 +1149,8 @@ function setView(v) {
 }
 function viewTitle() {
   if (view.type === 'project') return proj(view.id).name;
-  if (view.type === 'clients') return 'Klanten';
-  if (view.type === 'client') { const c = clientById(view.id); return c ? clientLabel(c) : 'Klant'; }
   if (view.type === 'agenda') return 'Agenda';
   if (view.type === 'btw') return 'BTW';
-  if (view.type === 'notes') return 'Notities';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
 }
@@ -1281,21 +1229,6 @@ function matchSearch(t, q) {
   if (data.comments.some(c => c.taskId === t.id && c.text.toLowerCase().includes(q))) return true;
   return data.fields.some(f => displayValue(f, t.custom[f.id]).toLowerCase().includes(q));
 }
-function matchFilter(t, ff, fv) {
-  if (!ff || fv === '' || fv == null) return true;
-  if (ff === 'priority') return true; // prioriteit bestaat niet meer
-  if (ff === 'project') return t.projectId === fv;
-  if (ff === 'stage') return t.stage === fv;
-  const f = fieldById(ff.slice(2)); if (!f) return true;
-  const v = t.custom[f.id];
-  if (fv === '__empty') return isEmpty(v);
-  switch (f.type) {
-    case 'select': return v === fv;
-    case 'multiselect': return Array.isArray(v) && v.includes(fv);
-    case 'checkbox': return (fv === '1') === !!v;
-    default: return String(v ?? '').toLowerCase().includes(fv.toLowerCase());
-  }
-}
 // Bij een actieve sortering staan deals zonder deadline altijd bovenaan; de eigen (sleep)volgorde blijft zoals ze is
 function taskSorter(key) {
   const f = sortFn(key);
@@ -1328,40 +1261,6 @@ function sortFn(key) {
   }
   return byOrder;
 }
-function groupTasks(tasks, g) {
-  if (!g) return [{key:'', label:'', tasks}];
-  const groups = new Map();
-  const add = (key, label, order, t, color) => {
-    if (!groups.has(key)) groups.set(key, {key, label, order, color, tasks:[]});
-    groups.get(key).tasks.push(t);
-  };
-  const td = today();
-  const f = g.startsWith('f:') ? fieldById(g.slice(2)) : null;
-  const porder = sortedProjects().map(p => p.id);
-  for (const t of tasks) {
-    if (g === 'project') { const p = proj(t.projectId); add(p.id, p.name, porder.indexOf(p.id), t, p.color); }
-    else if (g === 'stage') { const st = stageById(t.stage); add(st.id, st.label, stages().indexOf(st), t, st.color); }
-    else if (g === 'due') {
-      if (!t.due) add('none', 'Geen datum', 9999, t);
-      else {
-        const diff = daysBetween(td, t.due);
-        if (diff < 0) add('late', 'Te laat', -1, t);
-        else if (diff <= 6) add(t.due, (diff === 0 ? 'Vandaag · ' : diff === 1 ? 'Morgen · ' : '') + dateLong(t.due), diff, t);
-        else add('later', 'Later', 100, t);
-      }
-    } else if (f) {
-      const v = t.custom[f.id];
-      if (f.type === 'select') { const i = f.options.findIndex(o => o.id === v); if (i >= 0) add(v, f.options[i].label, i, t, f.options[i].color); else add('none', `Geen ${f.name.toLowerCase()}`, 9999, t); }
-      else if (f.type === 'multiselect') {
-        const ids = (Array.isArray(v) ? v : []).filter(id => optOf(f, id));
-        if (!ids.length) add('none', `Geen ${f.name.toLowerCase()}`, 9999, t);
-        for (const id of ids) { const i = f.options.findIndex(o => o.id === id); add(id, f.options[i].label, i, t, f.options[i].color); }
-      } else if (f.type === 'checkbox') add(v ? 'y' : 'n', `${f.name}: ${v ? 'ja' : 'nee'}`, v ? 0 : 1, t);
-      else add('all', '', 0, t);
-    } else add('all', '', 0, t);
-  }
-  return [...groups.values()].sort((a, b) => a.order - b.order);
-}
 // '', 'today', 'soon' (binnen 30 min), 'late' (datum of uur voorbij)
 function dueState(t) {
   if (t.done || !t.due) return '';
@@ -1392,45 +1291,18 @@ function taskIcon(t) {
   const p = proj(t.projectId);
   return p.emoji ? `<span class="t-ico emo" aria-hidden="true">${esc(p.emoji)}</span>` : `<span class="t-ico" style="--c:${p.color}" aria-hidden="true">${esc((p.name || '?').trim().charAt(0).toUpperCase())}</span>`;
 }
-function taskRow(t) {
-  const st = stageById(t.stage);
-  const meta = taskMeta(t);
-  const stageChip = prefs().group === 'stage' && !t.done ? '' : `<span class="chip opt" style="--c:${st.color}">${esc(st.label)}</span>`;
-  return `<li class="task ${t.done ? 'done' : ''} ${t.id === selectedId ? 'sel' : ''}" data-id="${t.id}">
-    <button class="check ${t.done ? 'on' : ''}" data-act="toggle" aria-label="${t.done ? 'Heropenen' : 'Voltooien'}">${I.check}</button>
-    ${taskIcon(t)}<div class="t-body"><div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>
-    ${stageChip ? `<div class="t-meta">${stageChip}</div>` : ''}${meta}</div></li>`;
-}
 function taskCard(t) {
   const ds = t.time ? dueState(t) : '';
   return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' || ds === 'today' ? 'due-' + ds : ''}" data-id="${t.id}">
     ${taskIcon(t)}<div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>${taskMeta(t)}</article>`;
 }
-function renderList() {
-  const p = prefs();
-  const all = viewTasks(p.showDone).filter(t => matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv));
-  const open = all.filter(t => !t.done).sort(taskSorter(p.sort));
-  const done = all.filter(t => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
-  let html = '';
-  for (const g of groupTasks(open, p.group)) {
-    const gk = viewKey() + '|' + (g.label || ''), cut = g.tasks.length > LIST_LIMIT && !listExpanded[gk];
-    html += `<section class="group">${g.label ? `<h3>${g.color ? `<span class="dot" style="width:9px;height:9px;border-radius:50%;background:${g.color};align-self:center"></span>` : ''}${esc(g.label)} <span class="count">${g.tasks.length}</span></h3>` : ''}
-      <ul class="tasks">${(cut ? g.tasks.slice(0, LIST_LIMIT) : g.tasks).map(taskRow).join('')}</ul>${cut ? `<button type="button" class="link list-more" data-lmore="${esc(gk)}">Toon alle ${g.tasks.length}</button>` : ''}</section>`;
-  }
-  if (!open.length) {
-    const msg = searchQ || p.fv ? 'Geen deals gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag.' : 'Nog geen deals hier.';
-    html = `<div class="empty">${I.done}<div>${msg}</div></div>`;
-  }
-  if (p.showDone && done.length) html += `<details class="done-sec" open><summary>Afgewerkt (${done.length})</summary><ul class="tasks">${done.map(taskRow).join('')}</ul></details>`;
-  $('#list').innerHTML = html;
-}
 
 let boardExpanded = {}, listExpanded = {};
 let tbOpen = false;
-const DONE_LIMIT = 30, COL_LIMIT = 60, LIST_LIMIT = 100;
+const DONE_LIMIT = 30, COL_LIMIT = 60;
 function renderBoard() {
   const p = prefs();
-  const all = viewTasks(true).filter(t => matchSearch(t, searchQ) && matchFilter(t, p.ff, p.fv));
+  const all = viewTasks(true).filter(t => matchSearch(t, searchQ));
   const sorter = taskSorter(p.sort), plainSorter = sortFn(p.sort);
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
@@ -1496,11 +1368,9 @@ function setHiddenCols(ids) {
 }
 function renderMain() {
   if (view.type === 'sales' || isPageView()) return;
-  const board = prefs().layout === 'board';
-  $('.main-inner').classList.toggle('wide', board);
-  $('#app').classList.toggle('board-mode', board);
-  $('#qaInput').placeholder = board ? `Nieuwe deal in ${firstOpen().label}… bv. “Jan bellen morgen 14u”` : 'Nieuwe deal… bv. “Jan bellen morgen 14u”';
-  if (board) renderBoard(); else renderList();
+  $('.main-inner').classList.add('wide');
+  $('#app').classList.add('board-mode');
+  renderBoard();
 }
 
 /* ---------------- Sidebar / header / toolbar ---------------- */
@@ -1522,8 +1392,7 @@ function renderNav() {
     upcoming: open.filter(t => t.due && t.due <= wk).length,
     all: open.length,
   };
-  $('#nav').innerHTML = SMART.filter(([k]) => SIDE_VIEWS.includes(k)).map(([k, label]) =>
-    `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${I[k]}</span><span class="nm">${label}</span><span class="cnt">${cnt[k] || ''}</span></button>`).join('');
+  $('#nav').innerHTML = '';
   const allOpen = data.tasks.filter(t => !t.done);
   const projItem = p => {
     const n = allOpen.filter(t => t.projectId === p.id).length;
@@ -1543,9 +1412,9 @@ function renderNav() {
       + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['clients', 'Klanten', I.clients, data.clients.length || ''], ['btw', 'BTW', I.btw, '']]
+  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
     .filter(([k]) => feat(k))
-    .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k || (k === 'clients' && view.type === 'client') ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
+    .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
   const tOn = [...$('#toolNav').children].length > 0; $('#toolNav').previousElementSibling.hidden = !tOn;
   renderSync();
@@ -1557,8 +1426,6 @@ function viewSubtitle() {
     if (!open.length) return 'Geen open deals.';
     return `${open.length} open ${open.length === 1 ? 'deal' : 'deals'}${late ? ` · ${late} te laat` : ''}`;
   }
-  if (t === 'clients') return `${data.clients.length.toLocaleString('nl-BE')} klanten`;
-  if (t === 'notes') return `${data.notes.length} ${data.notes.length === 1 ? 'pagina' : 'pagina’s'}`;
   if (t === 'btw') return 'Reken een bedrag om van of naar inclusief btw.';
   if (t === 'agenda') { const n = eventsSoon(); return n ? `${n} ${n === 1 ? 'datum' : 'data'} de komende 7 dagen` : 'Niets gepland de komende 7 dagen.'; }
   return '';
@@ -1568,7 +1435,7 @@ function renderWelcome() {
   const el = $('#banner'); if (!el) return;
   const empty = !data.tasks.length && view.type === 'all';
   el.hidden = !empty;
-  el.innerHTML = empty ? '<span><b>Nog geen deals.</b> Voeg je eerste deal toe. Je kunt er daarna een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
+  el.innerHTML = empty ? '<span><b>Nog geen deals.</b> Voeg je eerste deal toe. Je kunt er daarna een deadline of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
 }
 function renderHead() {
   renderWelcome();
@@ -1588,48 +1455,10 @@ function renderHead() {
   $('#tbTitle').textContent = `${viewTitle()} — Klose`;
   $('#miniTitle').textContent = viewTitle();
 }
-function toolbarFields() {
-  return view.type === 'project' ? fieldsFor(view.id) : view.type === 'inbox' ? fieldsFor('inbox') : sortedFields();
-}
 function renderToolbar() {
-  const p = prefs(), fs = toolbarFields();
-  if (p.sort === 'priority') p.sort = 'due';
-  if (p.group === 'priority') p.group = '';
-  if (p.ff === 'priority') { p.ff = ''; p.fv = ''; }
-  const o = (v, l, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`;
-  const sortOpts = [['manual','Eigen volgorde'],['newest','Nieuwste eerst'],['due','Deadline'],['title','Naam'],
-    ...fs.filter(f => f.type !== 'multiselect').map(f => ['f:' + f.id, f.name])];
-  const groupOpts = [['','Niet groeperen'], ['stage','Status'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ['due','Datum'],
-    ...fs.filter(f => ['select','multiselect','checkbox'].includes(f.type)).map(f => ['f:' + f.id, f.name])];
-  const filterOpts = [['','Geen filter'], ['stage','Status'], ...(view.type !== 'project' && view.type !== 'inbox' ? [['project','Project']] : []), ...fs.map(f => ['f:' + f.id, f.name])];
-  let fvHtml = '';
-  if (p.ff) {
-    const f = p.ff.startsWith('f:') ? fieldById(p.ff.slice(2)) : null;
-    let choices = null;
-    if (p.ff === 'stage') choices = stages().map(x => [x.id, x.label]);
-    else if (p.ff === 'project') choices = sortedProjects().map(x => [x.id, x.name]);
-    else if (f && (f.type === 'select' || f.type === 'multiselect')) choices = [...f.options.map(x => [x.id, x.label]), ['__empty','(leeg)']];
-    else if (f && f.type === 'checkbox') choices = [['1','Aangevinkt'],['0','Niet aangevinkt']];
-    fvHtml = choices
-      ? `<select id="tbFv" aria-label="Filterwaarde">${o('', 'Kies…', p.fv)}${choices.map(([v, l]) => o(v, l, p.fv)).join('')}</select>`
-      : `<input id="tbFv" type="text" placeholder="bevat…" value="${esc(p.fv)}" aria-label="Filterwaarde">`;
-  }
-  const board = p.layout === 'board';
-  const active = !!(searchQ || p.fv || p.sort !== 'manual' || (!board && p.group !== 'stage'));
-  $('#toolbar').classList.toggle('open', tbOpen);
-  $('#toolbar').innerHTML = `
-    <div class="seg" role="group" aria-label="Weergave"><button type="button" data-layout="board" class="${board ? 'on' : ''}">Bord</button><button type="button" data-layout="list" class="${board ? '' : 'on'}">Lijst</button></div>
-    <button type="button" class="btn tb-toggle ${active ? 'active' : ''}" data-tbmore aria-expanded="${tbOpen}">${I.filter}Opties${active ? '<i class="tb-dot"></i>' : ''}</button>
-    <button type="button" class="btn tb-add" data-qa title="Nieuwe deal (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nieuwe deal</button>
-    <div class="tb-more">
-    ${board ? '<button type="button" class="btn tb-cols" data-cols>Stappen</button>' : ''}
-    <input class="search" id="tbSearch" type="search" placeholder="Zoeken…" value="${esc(searchQ)}" aria-label="Zoeken">
-    <select id="tbSort" aria-label="Sorteren" title="Sorteren">${sortOpts.map(([v, l]) => o(v, 'Sorteren: ' + l, p.sort)).join('')}</select>
-    <select id="tbGroup" ${board ? 'hidden' : ''} aria-label="Groeperen" title="Groeperen">${groupOpts.map(([v, l]) => o(v, v ? 'Groeperen: ' + l : l, p.group)).join('')}</select>
-    <select id="tbFf" aria-label="Filter" title="Filter">${filterOpts.map(([v, l]) => o(v, v ? 'Filter: ' + l : l, p.ff)).join('')}</select>
-    ${fvHtml}
-    <label class="tgl" ${board ? 'hidden' : ''}><input type="checkbox" id="tbDone" ${p.showDone ? 'checked' : ''}> Afgeronde tonen</label>
-    </div>`;
+  // de werkbalk is weg (opties staan in de instellingen); alleen het zoekveld verschijnt, na een tik op de zoekknop
+  $('#toolbar').classList.toggle('open', tbOpen || !!searchQ);
+  $('#toolbar').innerHTML = `<input class="search" id="tbSearch" type="search" placeholder="Zoek in je deals…" value="${esc(searchQ)}" aria-label="Zoeken" autocomplete="off">`;
 }
 function placeTabIndicator() {
   const on = $('#tabBar button.on'), ind = $('#tabBar .tb-ind');
@@ -1659,7 +1488,6 @@ function renderAll() {
   renderNav(); renderHead();
   for (const sel of ['#toolbar', '#quickAdd', '#qaPreview', '#list']) $(sel).hidden = sales;
   $('#salesPage').hidden = !sales;
-  if (view.type === 'client' && !clPending && !clientById(view.id)) view = {type:'clients'};
   const page = isPageView();
   $('#pageView').hidden = !page;
   if (page) {
@@ -1678,7 +1506,7 @@ function renderAll() {
     return;
   }
   const focused = document.activeElement?.id;
-  if (focused !== 'tbSearch' && focused !== 'tbFv') renderToolbar();
+  if (focused !== 'tbSearch') renderToolbar();
   renderMain(); renderDetail();
 }
 
@@ -1754,9 +1582,6 @@ function createTask(r, stage, top) {
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), order:now(), custom:r.custom,
   });
-  // klant koppelen: expliciet, of een bekende firma/naam in de titel ("Bel Garage Smet")
-  const cl = r.clientId ? clientById(r.clientId) : clientInTitle(t.title);
-  if (cl) t.clientId = cl.id;
   // een deal zonder deadline komt helemaal bovenaan de kolom (nieuw werk dat nog opgepakt moet worden); met deadline onderaan zoals voorheen
   if (top || !t.due) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
   // filterwaarde van huidige weergave overnemen, zodat de deal zichtbaar blijft
@@ -1919,7 +1744,6 @@ function renderDetail(force) {
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
-        ${!feat('clients') && !t.clientId ? '' : (() => { const cl = t.clientId && clientById(t.clientId); return `<label class="prop"><span>Klant</span><span class="inline cl-inline"><input type="text" id="dClient" list="clientNames" value="${esc(cl ? clientLabel(cl) : '')}" placeholder="Kies of typ een klant (naam of klantnr)" autocomplete="off">${cl?.no ? `<button type="button" class="btn cl-no-mini" data-act="copyno" title="Klantnummer kopiëren (voor Navision)"><span class="mono">${esc(cl.no)}</span>${I.copy}</button>` : ''}${cl ? `<button type="button" class="icon-btn" data-act="openclient" title="Klantenfiche openen" aria-label="Klantenfiche openen">${I.clients}</button>` : ''}${phoneOf(cl) ? `<a class="icon-btn" href="tel:${esc(telHref(phoneOf(cl)))}" title="${esc(phoneOf(cl))} bellen" aria-label="Bellen">${I.phone}</a>` : ''}${cl?.email ? `<a class="icon-btn" href="mailto:${esc(cl.email)}" title="${esc(cl.email)} mailen" aria-label="Mailen">${I.mail}</a>` : ''}</span></label>`; })()}
       </div>
       <details class="d-more" id="dMore" ${moreOpen[t.id] === false ? '' : 'open'}>
         <summary>Meer gegevens</summary>
@@ -2322,17 +2146,6 @@ detail.addEventListener('change', e => {
     stageToast(t, res, undo);
     return;
   }
-  if (el.id === 'dClient') {
-    const v = el.value.trim();
-    if (!v) delete t.clientId;
-    else {
-      const c = clientByName(v);
-      if (!c) { if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); redrawDetail(); return; } openNewClientDialog(v, t); return; }   // nieuwe klant: eerst de gegevens (telefoon, e-mail, …) laten invullen
-      t.clientId = c.id;
-    }
-    touch(t); save(); renderNav(); renderMain(); redrawDetail();
-    return;
-  }
   if (el.id === 'dProject') t.projectId = el.value;
   else if (el.id === 'dDue') {
     t.due = el.value || null; if (!t.due) t.time = null;
@@ -2368,8 +2181,6 @@ detail.addEventListener('click', e => {
     case 'expand': setDetailWidth(detailIsWide(detailWidth()) ? DETAIL_DEFAULT : Math.max(DETAIL_WIDE, Math.round(innerWidth * 0.55)), true); break;
     case 'addcomment': addComment(t); break;
     case 'delcomment': deleteComment(b.closest('[data-cid]').dataset.cid); break;
-    case 'copyno': { const c = t.clientId && clientById(t.clientId); if (c?.no) copyText(String(c.no), 'Klantnummer'); break; }
-    case 'openclient': if (t.clientId) setView({type:'client', id:t.clientId}); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'more': menuAt(b, taskMenuItems(t)); break;
     case 'toggle': toggleTask(t.id); break;
@@ -2389,67 +2200,8 @@ function showDialog(html, bind) {
   setTimeout(() => (dlg.querySelector('[autofocus]:not([disabled])') || dlg.querySelector('input:not([type=checkbox]):not([disabled]),select'))?.focus(), 20);
 }
 dlg.addEventListener('click', e => { if (e.target === dlg && !dlg.dataset.sticky) dlg.close(); });
-dlg.addEventListener('close', () => { dlg.innerHTML = ''; });
+dlg.addEventListener('close', () => { dlg.innerHTML = ''; dlg.classList.remove('st-dlg'); });
 
-// Nieuwe klant vanuit een deal: telefoon en e-mail die in de titel of notities staan worden meteen ingevuld
-function contactsFromText(txt) {
-  txt = String(txt || '');
-  const email = (txt.match(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/i) || [''])[0];
-  let phone = '';
-  for (const m of txt.matchAll(/(?:\+|00)?\d[\d\s./()-]{7,}\d/g)) { const d = m[0].replace(/\D/g, ''); if (d.length >= 9 && d.length <= 14) { phone = m[0].trim(); break; } }
-  return {email, phone};
-}
-// Alles wat in de deal al is ingevuld (titel, notities, eigen velden, opmerkingen) alvast voor de klantenfiche klaarzetten
-function clientGuessFromTask(t) {
-  const texts = [t.title, t.notes], g = {no:'', contact:'', city:''};
-  for (const f of data.fields || []) {
-    const v = t.custom?.[f.id]; if (isEmpty(v) || typeof v === 'boolean') continue;
-    const val = Array.isArray(v) ? v.join(', ') : String(v), n = (f.name || '').toLowerCase();
-    texts.push(val);
-    if (/klantn|klant ?nr|orderklant|navision/.test(n) && !g.no) g.no = val.replace(/\D/g, '');
-    else if (/contact|persoon/.test(n) && !g.contact) g.contact = val;
-    else if (/plaats|gemeente|stad|woonplaats/.test(n) && !g.city) g.city = val;
-    else if (/tel|gsm|mobiel/.test(n) && !g.phone && contactsFromText(val).phone) g.phone = contactsFromText(val).phone;
-    else if (/mail/.test(n) && !g.email && contactsFromText(val).email) g.email = contactsFromText(val).email;
-  }
-  for (const c of commentsOf(t.id)) texts.push(c.text);
-  const found = contactsFromText(texts.join(' \n '));
-  return {no:g.no, contact:g.contact, city:g.city, phone:g.phone || found.phone, email:g.email || found.email};
-}
-function openNewClientDialog(name, t) {
-  const guess = clientGuessFromTask(t);
-  let created = false;
-  showDialog(`
-    <h3>Nieuwe klant</h3>
-    <p class="muted small">Deze klant bestaat nog niet. Vul de gegevens aan; alles is optioneel en later aan te passen in de klantenfiche.</p>
-    <form id="ncForm" autocomplete="off">
-      <div class="nc-grid">
-        <label class="fl">Firma<input id="ncCompany" type="text" value="${esc(name)}" autocomplete="organization"></label>
-        <label class="fl">Klantnr <small class="muted">(Navision)</small><input id="ncNo" type="text" inputmode="numeric" value="${esc(guess.no)}" autofocus></label>
-        <label class="fl">Telefoon<input id="ncPhone" type="tel" value="${esc(guess.phone)}" autocomplete="tel"></label>
-        <label class="fl">E-mail<input id="ncEmail" type="email" value="${esc(guess.email)}" autocomplete="email"></label>
-        <label class="fl">Contactpersoon<input id="ncContact" type="text" value="${esc(guess.contact)}" autocomplete="name"></label>
-        <label class="fl">Gemeente<input id="ncCity" type="text" value="${esc(guess.city)}" autocomplete="address-level2"></label>
-      </div>
-      <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="ncCancel">Annuleren</button><button type="submit" class="btn primary" id="ncOk">Klant aanmaken</button></div>
-    </form>`, d => {
-    $('#ncCancel', d).onclick = () => dlg.close();
-    $('#ncForm', d).onsubmit = e => {
-      e.preventDefault();
-      const v = id => $('#' + id, d).value.trim();
-      const company = v('ncCompany') || name;
-      const ex = clientByName(company);
-      const c = ex || newClientObj({company, no:v('ncNo'), phone:v('ncPhone'), email:v('ncEmail').toLowerCase(), contact:v('ncContact'), city:v('ncCity')});
-      if (!ex) data.clients.push(c); else for (const [k, id] of [['no', 'ncNo'], ['phone', 'ncPhone'], ['email', 'ncEmail'], ['contact', 'ncContact'], ['city', 'ncCity']]) if (!c[k] && v(id)) { c[k] = v(id); touch(c); }
-      clientsChanged();
-      created = true;
-      t.clientId = c.id; touch(t); save(); dlg.close();
-      renderNav(); renderMain(); renderDetail(true);
-      toast(ex ? `Deal gekoppeld aan “${clientLabel(c)}”` : `Nieuwe klant “${clientLabel(c)}” aangemaakt`);
-    };
-    dlg.addEventListener('close', () => { if (!created) renderDetail(true); }, {once:true});
-  });
-}
 
 function openProjectDialog(p) {
   const isNew = !p, isInbox = p?.id === 'inbox';
@@ -2729,12 +2481,36 @@ function holdToConfirm(btn, onDone, ms = 1100) {
   btn.addEventListener('keyup', stop);
   return {reset() { done = false; set(0); }};
 }
+let settingsTab = 'algemeen';
 function openSettings() {
   const s = data.settings.sync;
+  const tabs = [['algemeen', 'Algemeen'], ['account', 'Account'], ['deals', 'Deals'], ['verkopen', 'Verkopen'], ['beveiliging', 'Beveiliging'], ['gegevens', 'Gegevens']].filter(([k]) => k !== 'verkopen' || feat('sales'));
+  const row = (title, desc, ctl) => `<div class="st-row"><div class="st-t"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</div><div class="st-c">${ctl}</div></div>`;
+  const go = (id, label = 'Beheren') => `<button type="button" class="btn st-go" id="${id}">${label}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`;
+  const sel = (id, opts, cur) => `<select id="${id}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  const sortOpts = [['manual', 'Eigen volgorde'], ['newest', 'Nieuwste eerst'], ['due', 'Deadline'], ['title', 'Naam'], ...sortedFields().filter(f => f.type !== 'multiselect').map(f => ['f:' + f.id, f.name])];
+  const themeNowV = document.documentElement.dataset.theme || 'auto';
   showDialog(`
-    <h3>Instellingen</h3>
-
-    <h4>Account</h4>
+    <div class="st-wrap">
+      <nav class="st-nav" role="tablist" aria-label="Instellingen">
+        <h3>Instellingen</h3>
+        ${tabs.map(([k, l]) => `<button type="button" role="tab" class="st-tab" data-tab="${k}">${l}</button>`).join('')}
+        <span class="grow"></span>
+        <button type="button" class="btn primary st-done" id="stClose">Klaar</button>
+      </nav>
+      <div class="st-pane">
+        <section data-pane="algemeen" role="tabpanel">
+          <h2>Algemeen</h2><p class="st-lead">Wat je ziet en gebruikt in Klose.</p>
+          <h4>Functies</h4>
+          <p class="st-note">Zet aan wat je gebruikt. Wat uit staat, verdwijnt uit het menu; je gegevens blijven bewaard.</p>
+          <div class="feat-list" id="stFeats">${featureChecks(Object.fromEntries(FEATURES.map(([k]) => [k, feat(k)])))}</div>
+          <h4>Uiterlijk</h4>
+          <div class="st-card">${row('Thema', 'Volg je toestel, of kies zelf.', sel('stTheme', [['auto', 'Automatisch'], ['light', 'Licht'], ['dark', 'Donker']], themeNowV))}</div>
+          <h4>Hulp</h4>
+          <div class="st-card">${row('Rondleiding', 'Zie in een minuut waar alles staat.', go('stTour', 'Bekijken'))}${row('Sneltoetsen', 'Sneller werken met het toetsenbord.', go('stKeys', 'Bekijken'))}</div>
+        </section>
+        <section data-pane="account" role="tabpanel" hidden>
+          <h2>Account</h2><p class="st-lead">Aanmelden, synchroniseren en herstellen.</p>
     ${s?.cloud ? `<div class="box">
         <p><b>Ingelogd als</b> ${esc(s.email || '')}</p>
         <p class="muted small">Je gegevens staan veilig online en zijn op al je toestellen hetzelfde. Vergeet je je wachtwoord, dan heb je je noodcode nodig. Maak ook af en toe een back-up (hieronder). ${syncState.state === 'err' ? `<br><span class="err">${esc(syncState.msg)}</span>` : ''}</p>
@@ -2745,42 +2521,56 @@ function openSettings() {
         <p class="muted small">Je deals staan nu alleen op dit toestel.${CLOUD ? ' Met een account heb je ze op al je toestellen, en kun je je wachtwoord herstellen als je het vergeet.' : ' Maak af en toe een back-up (hieronder).'}</p>
         ${CLOUD ? '<div class="dlg-actions" style="margin-top:4px"><span class="grow"></span><button type="button" class="btn primary" id="stToAccount">Account maken en gegevens meenemen</button></div>' : ''}
       </div>`}
-
-    <h4>Functies</h4>
-    <p class="muted small" style="margin-top:0">Zet aan wat je gebruikt. Wat uit staat, verdwijnt uit het menu; je gegevens blijven bewaard.</p>
-    <div class="feat-list" id="stFeats">${featureChecks(Object.fromEntries(FEATURES.map(([k]) => [k, feat(k)])))}</div>
-
-    <h4>Hulp</h4>
-    <button type="button" class="btn" id="stTour">Rondleiding bekijken</button>
-
-    <details class="st-sec"><summary>Beveiliging</summary>
-    <label class="fl">Automatisch vergrendelen na inactiviteit
-      <select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-    <div style="margin-top:12px">${bioBox()}</div>
-    <details style="margin-top:12px"><summary style="cursor:pointer;font-size:14px;font-weight:600">Wachtwoord wijzigen</summary>
-      <label class="fl">Huidig wachtwoord<input id="stOld" type="password" autocomplete="current-password"></label>
+        </section>
+        <section data-pane="deals" role="tabpanel" hidden>
+          <h2>Deals</h2><p class="st-lead">Zo zien je pijplijn en je deals eruit.</p>
+          <div class="st-card">
+            ${row('Sorteren in een kolom', 'Geldt voor alle projecten.', sel('stSort', sortOpts, data.settings.sort || 'manual'))}
+            ${row('Stappen', 'De kolommen van je pijplijn: namen, kleuren en volgorde.', go('stStages'))}
+            ${row('Extra gegevens', 'Velden zoals formaat, telefoonnummer of kortingsprijs.', go('stFields'))}
+          </div>
+          <p class="st-note">De prijsberekening staat bij elk project en past zich aan wat je daar invult.</p>
+        </section>
+        ${feat('sales') ? `<section data-pane="verkopen" role="tabpanel" hidden>
+          <h2>Verkopen</h2><p class="st-lead">Je maandpagina's en wat erin staat.</p>
+          <div class="st-card">${row('Kolommen', 'Welke gegevens je per verkoop bijhoudt.', go('stSalesCols'))}</div>
+        </section>` : ''}
+        <section data-pane="beveiliging" role="tabpanel" hidden>
+          <h2>Beveiliging</h2><p class="st-lead">Je gegevens zijn versleuteld; hier regel je de toegang.</p>
+          <div class="st-card">${row('Automatisch vergrendelen', 'Na inactiviteit moet je opnieuw ontgrendelen.', `<select id="stAuto">${[[5,'5 minuten'],[15,'15 minuten'],[30,'30 minuten'],[60,'1 uur'],[240,'4 uur'],[0,'Nooit']].map(([v, l]) => `<option value="${v}" ${v === data.settings.autolock ? 'selected' : ''}>${l}</option>`).join('')}</select>`)}</div>
+          <h4>Ontgrendelen</h4>
+          <div class="st-card st-plain">${bioBox()}</div>
+          <h4>Wachtwoord wijzigen</h4>
+          <div class="st-card st-plain">
+    <label class="fl">Huidig wachtwoord<input id="stOld" type="password" autocomplete="current-password"></label>
       <label class="fl">Nieuw wachtwoord<input id="stNew1" type="password" autocomplete="new-password"></label>
       <label class="fl">Herhaal nieuw wachtwoord<input id="stNew2" type="password" autocomplete="new-password"></label>
       <p class="err" id="stPwErr"></p>
-      <button type="button" class="btn" id="stPwSave">Wachtwoord wijzigen</button>
-    </details>
-    </details>
-
-    <details class="st-sec"><summary>Back-up en geavanceerd</summary>
-    <h4>Back-up</h4>
-    <div class="dlg-actions" style="margin-top:6px">
-      <button type="button" class="btn" id="stExpEnc">Back-up maken</button>
-      <button type="button" class="btn" id="stExpPlain">Back-up als leesbaar bestand</button>
-      <button type="button" class="btn" id="stImp">Back-up terugzetten…</button>
-      <input type="file" id="stFile" accept=".json,application/json" hidden>
-    </div>
-    <p class="muted small">Een back-up terugzetten voegt de deals samen met wat er al is.</p>
-
-    <h4>Dit toestel</h4>
-    <button type="button" class="btn danger" id="stWipe">Alle gegevens van dit toestel wissen</button>
-    </details>
-
-    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="stClose">Klaar</button></div>`, d => {
+      <button type="button" class="btn" id="stPwSave">Wachtwoord wijzigen</button>          </div>
+        </section>
+        <section data-pane="gegevens" role="tabpanel" hidden>
+          <h2>Gegevens</h2><p class="st-lead">Back-ups en wat er op dit toestel staat.</p>
+          <h4>Back-up</h4>
+          <div class="st-card">
+            ${row('Back-up maken', 'Een versleuteld bestand met al je gegevens.', '<button type="button" class="btn" id="stExpEnc">Maken</button>')}
+            ${row('Leesbare back-up', 'Niet versleuteld: bewaar het bestand veilig.', '<button type="button" class="btn" id="stExpPlain">Maken</button>')}
+            ${row('Back-up terugzetten', 'Voegt de gegevens samen met wat er al is.', '<button type="button" class="btn" id="stImp">Kiezen…</button><input type="file" id="stFile" accept=".json,application/json" hidden>')}
+          </div>
+          <h4>Dit toestel</h4>
+          <div class="st-card">${row('Alles wissen', 'Verwijdert alle gegevens van dit toestel.', '<button type="button" class="btn danger" id="stWipe">Wissen</button>')}</div>
+        </section>
+      </div>
+    </div>`, d => {
+    dlg.classList.add('st-dlg');
+    const showTab = k => { settingsTab = k; d.querySelectorAll('.st-tab').forEach(b => { const on = b.dataset.tab === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); }); d.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== k); d.querySelector('.st-pane').scrollTop = 0; };
+    d.querySelector('.st-nav').addEventListener('click', e => { const b = e.target.closest('.st-tab'); if (b) showTab(b.dataset.tab); });
+    showTab(tabs.some(([k]) => k === settingsTab) ? settingsTab : 'algemeen');
+    $('#stTheme', d).onchange = e => { if (e.target.value === 'auto') { delete document.documentElement.dataset.theme; try { localStorage.removeItem('taken.theme'); } catch {} paintThemeColor(); } else setTheme(e.target.value); };
+    $('#stKeys', d).onclick = () => openShortcutsDialog();
+    $('#stSort', d).onchange = e => { data.settings.sort = e.target.value; commit(); };
+    $('#stStages', d).onclick = () => openStagesDialog();
+    $('#stFields', d).onclick = () => openFieldsDialog();
+    $('#stSalesCols', d)?.addEventListener('click', () => openSalesColsDialog());
     $('#stClose', d).onclick = () => dlg.close();
     $('#stAuto', d).onchange = e => { data.settings.autolock = +e.target.value; save(); };
     bindBioBox(d);
@@ -3008,7 +2798,7 @@ function cellInput(c, r) {
   if (c.type === 'date') return `<input type="text" ${a} value="${esc(fmtDateInp(v))}" data-iso="${esc(v)}" placeholder="dd/mm/jjjj" autocomplete="off">`;
   if (c.type === 'format') return `<button type="button" ${a} aria-haspopup="true">${fmtChips(v)}</button>`;
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
-  return `<input type="text" ${a} value="${esc(v)}"${isClientCol(c) ? ' list="clientNames" autocomplete="off"' : ''}>`;
+  return `<input type="text" ${a} value="${esc(v)}">`;
 }
 // Weeknummer binnen de maand zoals je het zelf noteert: week 1 = de (eventueel onvolledige) eerste week.
 function weekOfMonth(dateStr) {
@@ -3040,7 +2830,7 @@ function renderSales(force) {
   const cols = salesCols(), rows = salesRows(pg.id), tot = salesTotals(pg.id);
   const moneyCols = cols.filter(c => c.type === 'money');
   const dateCol = cols.find(c => c.type === 'date');
-  const grouped = !!dateCol && !pg.flat;
+  const grouped = !!dateCol;
   const el = $('#salesPage');
   const focusedNotes = active?.id === 'spNotes';
   const span = cols.length + 1;
@@ -3066,9 +2856,6 @@ function renderSales(force) {
       ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
       <div class="sales-stat count"><span>Aantal regels</span><b data-count>${rows.length}</b></div>
       <span class="grow"></span>
-      <div class="sales-actions">
-      ${dateCol ? `<div class="seg" role="group" aria-label="Weergave"><button type="button" data-flat="0" class="${grouped ? 'on' : ''}">Per week</button><button type="button" data-flat="1" class="${grouped ? '' : 'on'}">Lijst</button></div>` : ''}
-      </div>
     </div>
     <div id="spPace">${paceHtml(pg, main)}</div>
     <div id="spPay">${payHtml(pg, main)}</div>
@@ -3582,11 +3369,8 @@ $('#qaInput').addEventListener('blur', () => { if (deskQa() && !$('#qaInput').va
 $('#qaInput').addEventListener('keydown', e => { if (e.key === 'Escape' && deskQa()) { e.preventDefault(); $('#qaInput').value = ''; $('#qaInput').dispatchEvent(new Event('input')); $('#qaInput').blur(); document.body.classList.remove('qa-open'); } });
 $('#fab').addEventListener('click', () => {
   if (view.type === 'sales') { addSalesRow(); return; }
-  if (view.type === 'clients') { newClient(); return; }
-  if (view.type === 'client') { addTaskForClient(view.id); return; }
   if (view.type === 'agenda') { openEventDialog(null, agendaSel || today()); return; }
   if (view.type === 'btw') { $('#btwEx')?.focus(); return; }
-  if (view.type === 'notes') { newNote(); return; }
   newDealNow();
 });
 // compacte titel verschijnt zodra de grote titel wegscrolt (gsm)
@@ -3668,8 +3452,6 @@ $('#list').addEventListener('click', e => {
   if (jump) { $(`.col[data-stage="${jump.dataset.jump}"]`)?.scrollIntoView({behavior:'smooth', inline:'start', block:'nearest'}); return; }
   const more = e.target.closest('[data-more]');
   if (more) { boardExpanded[more.dataset.more] = true; renderMain(); return; }
-  const lmore = e.target.closest('[data-lmore]');
-  if (lmore) { listExpanded[lmore.dataset.lmore] = true; renderMain(); return; }
   const row = e.target.closest('.task,.card'); if (!row) return;
   if (e.target.closest('[data-act=toggle]')) toggleTask(row.dataset.id);
   else openTask(row.dataset.id);
@@ -3778,26 +3560,7 @@ function endDrag(drop) {
   settleCard(id, from);
   stageToast(t, res, undo);
 }
-$('#toolbar').addEventListener('input', e => {
-  if (e.target.id === 'tbSearch') { searchQ = e.target.value; renderMain(); }
-  if (e.target.id === 'tbFv' && e.target.tagName === 'INPUT') {
-    data.prefs[viewKey()] = {...(data.prefs[viewKey()] || {}), fv:e.target.value}; save(true); renderMain();
-  }
-});
-$('#toolbar').addEventListener('click', e => {
-  const b = e.target.closest('[data-layout]');
-  if (b) setPref('layout', b.dataset.layout);
-  if (e.target.closest('[data-cols]')) openStagesDialog();
-  if (e.target.closest('[data-tbmore]')) { tbOpen = !tbOpen; renderToolbar(); if (tbOpen) $('#tbSearch')?.focus(); }
-});
-$('#toolbar').addEventListener('change', e => {
-  const id = e.target.id;
-  if (id === 'tbSort') setPref('sort', e.target.value);
-  else if (id === 'tbGroup') setPref('group', e.target.value);
-  else if (id === 'tbFf') setPref('ff', e.target.value);
-  else if (id === 'tbFv' && e.target.tagName === 'SELECT') setPref('fv', e.target.value);
-  else if (id === 'tbDone') setPref('showDone', e.target.checked);
-});
+$('#toolbar').addEventListener('input', e => { if (e.target.id === 'tbSearch') { searchQ = e.target.value; renderMain(); } });
 document.addEventListener('keydown', e => {
   if (!data || dlg.open) return;
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
@@ -3809,7 +3572,7 @@ document.addEventListener('keydown', e => {
   }
   const mod = e.ctrlKey || e.metaKey;
   if (mod && !e.altKey && !e.shiftKey) {
-    const views = {'1':'all', '2':'clients'};
+    const views = {'1':'all'};
     if (views[e.key]) { e.preventDefault(); setView({type:views[e.key]}); return; }
     if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
@@ -3825,7 +3588,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === '/') { e.preventDefault(); openSearch(); }
 });
 
-$('#topSearch').onclick = () => { if (view.type === 'clients') $('#clSearch')?.focus(); else if (!isPageView() && view.type !== 'sales') openSearch(); else toast('Zoeken kan op de pagina zelf'); };
+$('#topSearch').onclick = () => { if (!isPageView() && view.type !== 'sales') openSearch(); else toast('Zoeken kan op de pagina zelf'); };
 $('#topHelp').onclick = () => openHelp();
 function openHelp() {
   showDialog(`<h3>Hulp</h3>
@@ -3834,7 +3597,6 @@ function openHelp() {
       <li><b>Een deadline instellen</b><span>Typ het erbij: “Jan bellen morgen 14u” zet de deal op morgen om 14:00.</span></li>
       <li><b>Verder in het proces</b><span>Sleep de deal naar de volgende stap, of kies de stap in het dealpaneel.</span></li>
       <li><b>Een deal afronden</b><span>Klik op het rondje links van de deal.</span></li>
-      <li><b>Een klant koppelen</b><span>Open de deal en typ de naam bij “Klant”.</span></li>
     </ul>
     <div class="dlg-actions"><button type="button" class="btn" id="hpTour">Rondleiding bekijken</button><button type="button" class="btn" id="hpKeys">Sneltoetsen</button><span class="grow"></span><button type="button" class="btn primary" id="hpClose">Sluiten</button></div>`, d => {
     $('#hpClose', d).onclick = () => dlg.close();
@@ -3852,7 +3614,7 @@ function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbS
 function openShortcutsDialog() {
   const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
   const rows = [['N of Q', 'Nieuwe kaart'], [k + ' K', 'Nieuwe kaart (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
-    [k + ' 1 … 2', 'Alle deals · Klanten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
+    [k + ' 1', 'Alle deals'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
     ['Delete', 'Open kaart verwijderen'], ['Esc', 'Sluiten'], ['Rechtsklik', 'Snelmenu op kaarten, projecten en pagina’s'], ['?', 'Deze lijst']];
   showDialog(`<h3>Sneltoetsen</h3><div class="kbd-list">${rows.map(([a, b]) => `<div><span>${esc(b)}</span><span>${a.split(' ').map(x => x === '…' || x === 'of' ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="kbOk">Sluiten</button></div>`, d => { $('#kbOk', d).onclick = () => dlg.close(); });
@@ -3923,30 +3685,28 @@ function calcTogoHtml(c) { const t = calcTogo(c); return t == null ? 'Vul het st
 function calcOut(c) {
   return calcPrices(c).map(([l, n]) => `<li class="${l === '1/8' ? 'base' : ''}"><span>${l}</span><b>${n == null ? '—' : '€ ' + calcNum(n)}</b></li>`).join('');
 }
-function toggleCalc(p) {
-  if (p.calc) delete p.calc;
-  else {
-    const m = String(p.notes || '');
-    p.calc = {target:(m.match(/(?:to\s*go|streef)\s*[-:=]?\s*([\d.,]+)/i) || [])[1] || '', current:'', pk:(m.match(/\bPK\s*[-:=]?\s*([\d.,]+)/i) || [])[1] || ''};
-  }
-  touch(p); save(); renderMain(); renderHead();
-}
 function renderCalc() {
   const el = $('#projCalc'), p = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
   // projecten met "To go" en "PK" in de notities krijgen de berekening één keer automatisch, met die waarden ingevuld
-  if (p && p.calc === undefined && /to\s*go/i.test(p.notes || '') && /\bPK\b/i.test(p.notes || '')) { toggleCalc(p); return; }
-  if (!p?.calc) { el.hidden = true; el.innerHTML = ''; return; }
+  if (!p || p.id === 'inbox') { el.hidden = true; el.innerHTML = ''; return; }
+  if (!p.calc) {   // de prijsberekening staat altijd bij een project; oude notities met To go/PK vullen hem één keer in
+    const m = String(p.notes || '');
+    p.calc = {target:(m.match(/(?:to\s*go|streef)\s*[-:=]?\s*([\d.,]+)/i) || [])[1] || '', current:'', pk:(m.match(/\bPK\s*[-:=]?\s*([\d.,]+)/i) || [])[1] || ''};
+    touch(p); save(true);
+  }
   el.hidden = false;
   // oude berekening (To go): omzetten naar streef + huidig verkoopcijfer
   if (p.calc.target === undefined) { p.calc = {target:p.calc.togo || '', current:'', pk:p.calc.pk || ''}; touch(p); save(true); }
   if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); return; }
   el.dataset.pid = p.id;
-  el.innerHTML = `<label class="fl">Streef (€)<input id="pcTarget" type="text" inputmode="decimal" value="${esc(p.calc.target || '')}" placeholder="bv. 13.000" autocomplete="off"></label>
-    <label class="fl">Huidig verkoopcijfer (€)<input id="pcCur" type="text" inputmode="decimal" value="${esc(p.calc.current || '')}" placeholder="bv. 6.204" autocomplete="off"></label>
-    <label class="fl">Beschikbaar 1/8<input id="pcPk" type="text" inputmode="decimal" value="${esc(p.calc.pk || '')}" placeholder="bv. 4,5" autocomplete="off"></label>
+  el.innerHTML = `<div class="pc-head"><span class="pc-title">Prijsberekening</span><button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button></div>
+    <div class="pc-fields">
+      <label class="fl">Streef (€)<input id="pcTarget" type="text" inputmode="decimal" value="${esc(p.calc.target || '')}" placeholder="bv. 13.000" autocomplete="off"></label>
+      <label class="fl">Huidig verkoopcijfer (€)<input id="pcCur" type="text" inputmode="decimal" value="${esc(p.calc.current || '')}" placeholder="bv. 6.204" autocomplete="off"></label>
+      <label class="fl">Beschikbaar 1/8<input id="pcPk" type="text" inputmode="decimal" value="${esc(p.calc.pk || '')}" placeholder="bv. 4,5" autocomplete="off"></label>
+    </div>
     <p class="pc-togo">${calcTogoHtml(p.calc)}</p>
-    <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>
-    <button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button>`;
+    <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>`;
 }
 $('#projCalc').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
@@ -4020,7 +3780,6 @@ $('#projNav').addEventListener('keydown', e => {
 function projectMenuItems(p) {
   const ids = navActiveIds(), pos = ids.indexOf(p.id);
   return [{label:'Bewerken…', attrs:'data-act="editproj"', run:() => openProjectDialog(p)},
-    p.id === 'inbox' ? null : {label:p.calc ? 'Prijsberekening verbergen' : 'Prijsberekening tonen', attrs:'data-act="pcalc"', run:() => toggleCalc(p)},
     pos > 0 ? {label:'Hoger in de lijst', run:() => moveProject(p.id, pos - 1)} : null,
     pos >= 0 && pos < ids.length - 1 ? {label:'Lager in de lijst', run:() => moveProject(p.id, pos + 1)} : null,
     p.id === 'inbox' ? null : '-',
@@ -4058,629 +3817,21 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['clients', 'client', 'agenda', 'btw', 'notes'];
+const PAGE_VIEWS = ['agenda', 'btw'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
-const normName = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
-const clientById = id => data.clients.find(c => c.id === id);
-const clientLabel = c => c.company || c.contact || (c.no ? 'Klant ' + c.no : 'Naamloze klant');
-let sortedMemo = null;
-const nlCollator = new Intl.Collator('nl', {sensitivity:'base', numeric:true});
-function sortedClients() {
-  if (sortedMemo && sortedMemo.arr === data.clients && sortedMemo.len === data.clients.length && sortedMemo.ver === clientsVer) return sortedMemo.list;
-  const list = [...data.clients].sort((a, b) => nlCollator.compare(clientLabel(a), clientLabel(b)));
-  sortedMemo = {arr:data.clients, len:data.clients.length, ver:clientsVer, list};
-  return list;
-}
-const telHref = s => String(s || '').replace(/[^\d+]/g, '');
-const phoneOf = c => c?.phone || c?.mobile || '';
-const isClientCol = c => c.type === 'text' && /klant|client|adverteerder|firma/i.test(c.name);
-const newClientObj = o => { clientsChanged(); return touch({id:uid(), no:'', company:'', contact:'', phone:'', mobile:'', email:'', city:'', block:'', notes:'', editions:[], createdAt:now(), ...o}); };
-const editionsOf = c => Array.isArray(c.editions) ? c.editions : [];
-// Zoekt een klant op naam, contactpersoon of klantnummer (ook "261523 Carremans" of "Carremans (261523)").
-// Index op naam en klantnr, zodat opzoeken ook met duizenden klanten meteen gaat.
-let clientsVer = 0, cIndex = null;
-// grote klantenlijsten (tienduizenden): index, sortering en zoeksleutels staan klaar vóór je ze nodig hebt, op een rustig moment
-let warmT = null;
-function warmClients() {
-  clearTimeout(warmT);
-  if (!data || data.clients.length < 2000) return;
-  warmT = setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 50)))(() => { try { if (data) { sortedClients(); clientIndex(); clientSearchKeys(); } } catch {} }, {timeout:4000}), 900);
-}
-const clientsChanged = () => { clientsVer++; warmClients(); };
-function clientIndex() {
-  if (cIndex && cIndex.arr === data.clients && cIndex.len === data.clients.length && cIndex.ver === clientsVer) return cIndex;
-  const byName = new Map(), byNo = new Map();
-  for (const c of data.clients) {
-    for (const nm of [c.company, c.contact]) { const n = normName(nm); if (n && !byName.has(n)) byName.set(n, c); }
-    const no = String(c.no || '').trim(); if (no && !byNo.has(no)) byNo.set(no, c);
-  }
-  return cIndex = {arr:data.clients, len:data.clients.length, ver:clientsVer, byName, byNo};
-}
-function clientByName(name) {
-  const n = normName(name); if (!n) return null;
-  const ix = clientIndex(), raw = String(name).trim();
-  const hit = ix.byNo.get(raw) || ix.byName.get(n) || ix.byNo.get(n);
-  if (hit) return hit;
-  const num = raw.match(/\b\d{4,}\b/)?.[0];
-  return (num && ix.byNo.get(num)) || null;
-}
-// Een bekende firma, naam of klantnr in de titel ("Bel Garage Smet")? Via de index: elke woordreeks
-// uit de titel opzoeken (snel, ook met tienduizenden klanten); de langste treffer wint.
-function clientInTitle(title) {
-  const w = normName(title).split(' ').filter(Boolean); if (!w.length) return null;
-  const ix = clientIndex();
-  for (let len = Math.min(w.length, 8); len >= 1; len--)
-    for (let i = 0; i + len <= w.length; i++) {
-      const n = w.slice(i, i + len).join(' ');
-      if (n.length < 3) continue;
-      const hit = ix.byName.get(n) || ix.byNo.get(n);
-      if (hit) return hit;
-    }
-  return null;
-}
-function newClient() {
-  const c = newClientObj({}); data.clients.push(c); save();
-  setView({type:'client', id:c.id});
-  setTimeout(() => $('#pageView [data-cf="company"]')?.focus(), 60);
-}
-function addTaskForClient(id) {
-  const c = clientById(id); if (!c) return;
-  const t = createTask({title:`Bel ${clientLabel(c)}`, custom:{}, clientId:id, projectId:'inbox', silent:true}, firstOpen().id);
-  openTask(t.id);
-  setTimeout(() => { const el = $('#dTitle'); if (el) { el.focus(); el.select(); } }, 60);
-}
-function deleteClient(c) {
-  const n = data.tasks.filter(t => t.clientId === c.id).length;
-  if (!confirm(`Klant “${clientLabel(c)}” verwijderen?${n ? ` De ${n} deals blijven bestaan, maar zonder klant.` : ''}`)) return;
-  for (const t of data.tasks) if (t.clientId === c.id) { delete t.clientId; touch(t); }
-  data.clients = data.clients.filter(x => x.id !== c.id); tombstone(c.id); clientsChanged();
-  view = {type:'clients'}; commit(); toast('Klant verwijderd');
-}
 async function copyText(txt, label) {
   try { await navigator.clipboard.writeText(txt); toast(`${label} gekopieerd`); }
   catch { toast('Kopiëren lukt niet in deze browser'); }
 }
 
 // Alle verkoopregels, plat: datum, bedrag, formaten, klant.
-function allSales() {
-  const cols = salesCols(), dateCol = cols.find(c => c.type === 'date'), money = cols.find(c => c.type === 'money');
-  const fmt = cols.find(c => c.type === 'format'), klant = cols.find(isClientCol);
-  const pages = new Map(data.salesPages.map(x => [x.id, x]));
-  return data.sales.filter(r => pages.has(r.pageId)).map(r => {
-    const pg = pages.get(r.pageId), d = dateCol && r.values[dateCol.id];
-    const name = klant ? String(r.values[klant.id] || '').trim() : '';
-    const c = name ? clientByName(name) : null;
-    return {row:r, page:pg, date:/^\d{4}-\d\d-\d\d$/.test(d || '') ? d : (pg.month ? pg.month + '-01' : ''),
-      amount:money ? (toNum(r.values[money.id]) || 0) : 0, formats:fmt ? formatList(r.values[fmt.id]) : [], clientName:name, clientId:c?.id || null};
-  });
-}
-const tsYmd = ms => ms ? ymd(new Date(ms)) : '';
-function relDay(s) {
-  if (!s) return '—';
-  const diff = Math.round((parseYmd(today()) - parseYmd(s)) / 86400000);
-  if (diff === 0) return 'vandaag'; if (diff === 1) return 'gisteren';
-  if (diff > 1 && diff < 7) return `${diff} dagen geleden`;
-  const d = parseYmd(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`;
-}
 const dayLabel = s => { const d = parseYmd(s); return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`; };
-function clientAgg(c, sales, maps) {
-  const tasks = maps ? (maps.tasks.get(c.id) || []) : data.tasks.filter(t => t.clientId === c.id);
-  const own = maps ? (maps.sales.get(c.id) || []) : sales.filter(x => x.clientId === c.id);
-  const y = today().slice(0, 4);
-  let last = '';
-  const seen = d => { if (d && d > last) last = d; };
-  for (const t of tasks) { seen(tsYmd(t.createdAt)); seen(tsYmd(t.doneAt)); if (!maps) for (const m of commentsOf(t.id)) seen(tsYmd(m.at)); }
-  if (maps) for (const t of tasks) seen(maps.lastComment.get(t.id));
-  for (const x of own) seen(x.date);
-  return {tasks, sales:own, open:tasks.filter(t => !t.done).length,
-    total:own.reduce((a, x) => a + x.amount, 0), year:own.filter(x => x.date.startsWith(y)).reduce((a, x) => a + x.amount, 0),
-    count:own.filter(x => x.amount > 0).length, last};
-}
-function clientMaps(sales) {
-  const tasks = new Map(), bySales = new Map(), lastComment = new Map();
-  for (const t of data.tasks) if (t.clientId) { if (!tasks.has(t.clientId)) tasks.set(t.clientId, []); tasks.get(t.clientId).push(t); }
-  for (const x of sales) if (x.clientId) { if (!bySales.has(x.clientId)) bySales.set(x.clientId, []); bySales.get(x.clientId).push(x); }
-  for (const m of data.comments) { const d = tsYmd(m.at); if (d > (lastComment.get(m.taskId) || '')) lastComment.set(m.taskId, d); }
-  return {tasks, sales:bySales, lastComment};
-}
-let clQuery = '', clEdition = '', clLimit = 50, searchMemo = null;
-// zoektekst per klant (één keer per wijziging berekend, ook voor tienduizenden klanten)
-function clientSearchKeys() {
-  if (searchMemo && searchMemo.arr === data.clients && searchMemo.len === data.clients.length && searchMemo.ver === clientsVer) return searchMemo.map;
-  const map = new Map();
-  for (const c of data.clients) map.set(c.id, normName([c.company, c.contact, c.no, c.city, c.phone, c.mobile, c.email, c.block, ...editionsOf(c), ...Object.values(c.projNos || {})].join(' ')) + ' ' + telHref(c.phone) + ' ' + telHref(c.mobile));
-  searchMemo = {arr:data.clients, len:data.clients.length, ver:clientsVer, map};
-  return map;
-}
-function filteredClients() {
-  const q = normName(clQuery), qd = clQuery.replace(/[^\d]/g, ''), keys = clientSearchKeys();
-  return sortedClients().filter(c => (!clEdition || editionsOf(c).includes(clEdition)) && (!q || keys.get(c.id).includes(q) || (qd.length >= 3 && keys.get(c.id).includes(qd))));
-}
-// suggesties in klantvelden (takenblad, verkopen): enkel de beste treffers, niet de hele lijst
-function fillClientSuggestions(inp) {
-  const q = normName(inp.value), keys = clientSearchKeys(), first = [], rest = [];
-  for (const c of sortedClients()) {
-    if (first.length >= 30) break;
-    const k = normName(clientLabel(c));
-    if (!q || k.startsWith(q) || String(c.no || '').startsWith(inp.value.trim())) first.push(c);
-    else if (rest.length < 30 && keys.get(c.id).includes(q)) rest.push(c);
-  }
-  $('#clientNames').innerHTML = [...first, ...rest].slice(0, 30).map(c => `<option value="${esc(clientLabel(c))}">${esc([c.no, c.contact].filter(Boolean).join(' · '))}</option>`).join('');
-}
-document.addEventListener('focusin', e => { if (e.target.getAttribute?.('list') === 'clientNames') fillClientSuggestions(e.target); });
-document.addEventListener('input', e => { if (e.target.getAttribute?.('list') === 'clientNames') fillClientSuggestions(e.target); }, true);
-// sorteren van de klantenlijst: klik op een kolomkop (nog eens = omgekeerd); lege waarden altijd onderaan
-const CL_SORTS = [['name', 'Klant', 1], ['no', 'Klantnr', 1], ['eds', 'Uitgaves', 1], ['phone', 'Telefoon', 1], ['city', 'Gemeente', 1], ['open', 'Open deals', -1], ['total', 'Omzet', -1], ['last', 'Laatste contact', -1]];
-const clSortPref = () => { const p = data.prefs.clientsSort; return p && CL_SORTS.some(x => x[0] === p.k) ? p : {k:'name', dir:1}; };
-function setClientSort(k, dir) {
-  const cur = clSortPref(), def = (CL_SORTS.find(x => x[0] === k) || [])[2] || 1;
-  data.prefs.clientsSort = {k, dir:dir ?? (cur.k === k ? -cur.dir : def)};
-  save(true); clLimit = 50; renderPage(true);
-}
-function sortClientList(list, sales, maps) {
-  const {k, dir} = clSortPref();
-  if (k === 'name') return dir === 1 ? list : [...list].reverse();   // de lijst staat al op naam
-  let val;
-  if (k === 'open' || k === 'total' || k === 'last') { const agg = new Map(list.map(c => [c.id, clientAgg(c, sales, maps)])); val = c => agg.get(c.id)[k]; }
-  else if (k === 'eds') val = c => [...editionsOf(c)].sort(nlCollator.compare)[0];
-  else if (k === 'phone') val = c => telHref(phoneOf(c));
-  else val = c => c[k];
-  const empty = v => v === undefined || v === null || v === '' || v === 0;
-  return list.map(c => [c, val(c)]).sort((x, y) => {
-    const ex = empty(x[1]), ey = empty(y[1]);
-    if (ex || ey) return ex - ey;
-    return (typeof x[1] === 'number' ? x[1] - y[1] : nlCollator.compare(String(x[1]), String(y[1]))) * dir;
-  }).map(x => x[0]);
-}
-function applyClientFilter() {
-  const tb = pv.querySelector('.cl-table tbody'); if (!tb) return;
-  const sales = allSales(), maps = clientMaps(sales), f = sortClientList(filteredClients(), sales, maps), shown = f.slice(0, clLimit);
-  const chips = list => list.length ? list.slice(0, 3).map(e => `<span class="fchip">${esc(e)}</span>`).join('') + (list.length > 3 ? `<span class="muted small"> +${list.length - 3}</span>` : '') : '';
-  tb.innerHTML = shown.map(c => { const g = clientAgg(c, sales, maps), ed = editionsOf(c); return `<tr data-client="${c.id}" tabindex="0">
-      <td><b>${esc(clientLabel(c))}</b>${c.company && c.contact ? `<div class="muted small">${esc(c.contact)}</div>` : ''}</td>
-      <td class="mono">${esc(c.no || '')}</td>
-      <td class="hide-m cl-eds">${chips(ed)}</td>
-      <td>${phoneOf(c) ? `<a href="tel:${esc(telHref(phoneOf(c)))}" class="tel">${esc(phoneOf(c))}</a>` : ''}</td>
-      <td class="hide-m">${esc(c.city || '')}</td>
-      <td class="num hide-m">${g.open || ''}</td>
-      <td class="num">${g.total ? eur(g.total) : ''}</td>
-      <td class="hide-m muted">${relDay(g.last)}</td></tr>`; }).join('')
-    + (f.length > shown.length ? `<tr class="cl-more"><td colspan="8"><button type="button" class="btn" id="clMore">Toon ${Math.min(100, f.length - shown.length)} meer</button> <span class="muted small">nog ${(f.length - shown.length).toLocaleString('nl-BE')} klanten — of verfijn je zoekopdracht</span></td></tr>` : '')
-    + (!f.length ? `<tr><td colspan="8" class="muted">Geen klanten gevonden.</td></tr>` : '');
-  const cnt = $('#clCount'), n = data.clients.length.toLocaleString('nl-BE');
-  if (cnt) cnt.textContent = f.length === data.clients.length ? `${n} klanten` : `${f.length.toLocaleString('nl-BE')} van ${n}`;
-}
 function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'clients' ? clientsHtml() : view.type === 'client' ? clientHtml() : view.type === 'btw' ? btwHtml() : view.type === 'notes' ? notesHtml() : agendaHtml();
-  if (view.type === 'client') el.querySelectorAll('textarea').forEach(autosize);
-  if (view.type === 'clients') applyClientFilter();
+  el.innerHTML = view.type === 'btw' ? btwHtml() : agendaHtml();
   if (view.type === 'btw') btwOut();
-}
-
-function clientsFromSales() {
-    const seen = new Set(); let n = 0;
-    for (const x of allSales()) { if (!x.clientName || x.clientId) continue; const k = normName(x.clientName); if (seen.has(k) || clientByName(x.clientName)) continue; seen.add(k); data.clients.push(newClientObj({company:x.clientName})); n++; }
-    commit(); toast(`${n} ${n === 1 ? 'klant' : 'klanten'} aangemaakt`);
-  }
-/* ---- Klantenlijst ---- */
-function clientsHtml() {
-  if (clPending) return '<div class="pg-empty"><b>Klanten laden…</b></div>';
-  const sales = allSales();
-  const known = new Set(), unmatched = [];
-  for (const x of sales) if (x.clientName && !x.clientId) { const k = normName(x.clientName); if (!known.has(k)) { known.add(k); unmatched.push(x.clientName); } }
-  const edCount = new Map();
-  for (const c of data.clients) for (const e of editionsOf(c)) edCount.set(e, (edCount.get(e) || 0) + 1);
-  const eds = [...edCount].sort((a, b) => nlCollator.compare(a[0], b[0]));
-  if (clEdition && !edCount.has(clEdition)) clEdition = '';
-  const bar = `<div class="pg-bar">
-      <input type="search" id="clSearch" value="${esc(clQuery)}" placeholder="Zoek op firma, klantnr, contact, gemeente, uitgave of nummer…" aria-label="Klanten zoeken">
-      ${eds.length ? `<select id="clEd" aria-label="Filter op uitgave"><option value="">Alle uitgaves</option>${eds.map(([e, n]) => `<option value="${esc(e)}" ${e === clEdition ? 'selected' : ''}>${esc(e)} (${n})</option>`).join('')}</select>` : ''}
-      <select id="clSort" class="cl-sort-m" aria-label="Sorteren">${CL_SORTS.flatMap(([k, l, d]) => [d, -d].map(dir => { const so = clSortPref(), lbl = k === 'name' || k === 'city' || k === 'eds' ? (dir === 1 ? 'A→Z' : 'Z→A') : k === 'last' ? (dir === 1 ? 'oudste eerst' : 'recentste eerst') : (dir === 1 ? 'laag→hoog' : 'hoog→laag'); return `<option value="${k}:${dir}" ${so.k === k && so.dir === dir ? 'selected' : ''}>${l}: ${lbl}</option>`; })).join('')}</select>
-      <span class="muted small" id="clCount"></span>
-      <span class="grow"></span>
-      <button type="button" class="icon-btn" id="clMenu" data-unmatched="${unmatched.length}" title="Meer" aria-label="Meer acties" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
-      <button type="button" class="btn primary" id="clNew">+ Nieuwe klant</button>
-    </div>`;
-  const so = clSortPref();
-  if (!data.clients.length) return bar + `<div class="pg-empty"><b>Nog geen klanten.</b><span>Importeer je klantenlijst uit Excel (klantnr, bedrijfsnaam, uitgave), maak een klant aan, of haal ze uit de kolom “Klant” van je verkooppagina’s.</span></div>`;
-  return bar + `<div class="table-wrap"><table class="pg-table cl-table">
-    <thead><tr>${[['name', 'Klant', ''], ['no', 'Klantnr', ''], ['eds', 'Uitgaves', 'hide-m'], ['phone', 'Telefoon', ''], ['city', 'Gemeente', 'hide-m'], ['open', 'Open', 'num hide-m'], ['total', 'Omzet', 'num'], ['last', 'Laatste contact', 'hide-m']]
-      .map(([k, l, cls]) => { const on = so.k === k; return `<th class="${cls} cl-sort${on ? ' on' : ''}" aria-sort="${on ? (so.dir === 1 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-clsort="${k}" title="Sorteren op ${l.toLowerCase()}">${l}<span class="sort-ar" aria-hidden="true">${on ? (so.dir === 1 ? '↑' : '↓') : '↕'}</span></button></th>`; }).join('')}</tr></thead>
-    <tbody></tbody></table></div>
-    <p class="muted small pg-note">Omzet komt uit de kolom “Klant” van je verkooppagina’s (naam of klantnummer).</p>`;
-}
-
-/* ---- Klanten importeren uit Excel (.xlsx), CSV of geplakt uit Excel ----
-   Grote bestanden (tientallen MB) worden in stukken gelezen: nooit het hele werkblad in één keer
-   in het geheugen. Eerst een voorbeeld van de eerste rijen om de kolommen te kiezen, daarna één
-   doorloop van alle rijen die enkel klantnr, naam en uitgave bijhoudt. */
-async function unzipEntries(buf) {
-  const dv = new DataView(buf), u8 = new Uint8Array(buf);
-  let e = buf.byteLength - 22; while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
-  if (e < 0) throw new Error('Dit is geen geldig .xlsx-bestand.');
-  let n = dv.getUint16(e + 10, true), q = dv.getUint32(e + 16, true);
-  if (q === 0xffffffff || n === 0xffff) throw new Error('Dit bestand is te groot voor de import (zip64). Bewaar het als CSV.');
-  const files = {}, tdec = new TextDecoder();
-  for (let i = 0; i < n; i++) {
-    if (dv.getUint32(q, true) !== 0x02014b50) break;
-    const method = dv.getUint16(q + 10, true), csize = dv.getUint32(q + 20, true), nl = dv.getUint16(q + 28, true), el = dv.getUint16(q + 30, true), cl = dv.getUint16(q + 32, true), lho = dv.getUint32(q + 42, true);
-    files[tdec.decode(u8.subarray(q + 46, q + 46 + nl))] = {method, csize, lho};
-    q += 46 + nl + el + cl;
-  }
-  const bytesOf = name => {
-    const f = files[name]; if (!f) return null;
-    const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true);
-    return {f, bytes:u8.subarray(start, start + f.csize)};
-  };
-  // tekst als stroom (stuk per stuk uitgepakt)
-  const stream = name => {
-    const x = bytesOf(name); if (!x) return null;
-    let st = new Blob([x.bytes]).stream();
-    if (x.f.method === 8) {
-      if (!('DecompressionStream' in window)) throw new Error('Deze browser kan .xlsx niet lezen; bewaar als CSV of plak de kolommen.');
-      st = st.pipeThrough(new DecompressionStream('deflate-raw'));
-    }
-    return st.pipeThrough(new TextDecoderStream());
-  };
-  const read = async name => { const st = stream(name); return st ? new Response(st).text() : null; };
-  return {files, stream, read};
-}
-const colIndex = ref => { let n = 0; for (const ch of ref.replace(/\d+/g, '')) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
-const XML_ENT = {amp:'&', lt:'<', gt:'>', quot:'"', apos:"'"};
-const xmlText = s => s.indexOf('&') < 0 ? s : s.replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => e[0] === '#' ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : +e.slice(1)) : (XML_ENT[e] ?? m));
-// Loopt door een XML-stroom en geeft elk <tag …>…</tag> (of <tag …/>) door, zonder alles in te lezen.
-async function scanTags(stream, tag, onItem, stop) {
-  const reader = stream.getReader(), open = '<' + tag, close = '</' + tag + '>';
-  let buf = '';
-  try {
-    for (;;) {
-      const {value, done} = await reader.read(); if (done) break;
-      buf += value; let pos = 0;
-      for (;;) {
-        let i = buf.indexOf(open, pos);
-        while (i >= 0 && !/[\s>/]/.test(buf[i + open.length] || '')) i = buf.indexOf(open, i + 1);
-        if (i < 0) { pos = Math.max(pos, buf.length - open.length - 1); break; }
-        const gt = buf.indexOf('>', i); if (gt < 0) { pos = i; break; }
-        if (buf[gt - 1] === '/') { onItem(buf.slice(i, gt + 1), ''); pos = gt + 1; if (stop?.()) return; continue; }
-        const j = buf.indexOf(close, gt); if (j < 0) { pos = i; break; }
-        onItem(buf.slice(i, gt + 1), buf.slice(gt + 1, j)); pos = j + close.length;
-        if (stop?.()) return;
-      }
-      buf = buf.slice(pos);
-    }
-  } finally { reader.cancel().catch(() => {}); }
-}
-const CELL_RE = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
-function rowCells(inner) {   // [[kolom, {i: sharedStringIndex} | {s: tekst}], …]
-  const out = []; let m, k = 0; CELL_RE.lastIndex = 0;
-  while ((m = CELL_RE.exec(inner))) {
-    const at = m[1], body = m[2] || '', ref = /\br="([A-Z]+)\d*"/.exec(at), t = /\bt="(\w+)"/.exec(at)?.[1];
-    const col = ref ? colIndex(ref[1]) : k; k = col + 1;
-    if (t === 'inlineStr') { out.push([col, {s:xmlText([...body.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join(''))}]); continue; }
-    const v = /<v>([\s\S]*?)<\/v>/.exec(body)?.[1]; if (v === undefined) continue;
-    out.push([col, t === 's' ? {i:+v} : {s:xmlText(v)}]);
-  }
-  return out;
-}
-// Snelle variant voor de volledige doorloop: enkel de gewenste kolommen ontleden, de rest overslaan.
-function pickCells(inner, want, maxCol, out, need) {
-  let i = 0, k = 0;
-  while ((i = inner.indexOf('<c', i)) >= 0) {
-    const ch = inner.charCodeAt(i + 2);
-    if (ch !== 32 && ch !== 62 && ch !== 47 && ch !== 9 && ch !== 10) { i += 2; continue; }
-    const gt = inner.indexOf('>', i); if (gt < 0) break;
-    const at = inner.slice(i + 2, gt), rp = at.indexOf(' r="');
-    let col = k;
-    if (rp >= 0) { let j = rp + 4, n = 0, cc; while ((cc = at.charCodeAt(j)) >= 65 && cc <= 90) { n = n * 26 + cc - 64; j++; } col = n - 1; }
-    if (col > maxCol) break;   // cellen staan op volgorde: de rest van de rij is niet nodig
-    k = col + 1;
-    const self = inner.charCodeAt(gt - 1) === 47, end = self ? gt + 1 : inner.indexOf('</c>', gt) + 4;
-    const w = want.indexOf(col);
-    if (w >= 0 && !self) {
-      const body = inner.slice(gt + 1, end - 4), tm = /\bt="(\w+)"/.exec(at), t = tm && tm[1];
-      if (t === 'inlineStr') out[w] = xmlText([...body.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join(''));
-      else { const a = body.indexOf('<v>'); if (a >= 0) { const v = body.slice(a + 3, body.indexOf('</v>', a)); if (t === 's') { out[w] = +v; need.add(+v); } else out[w] = xmlText(v); } }
-    }
-    i = end;
-  }
-}
-const sstText = inner => xmlText(inner.replace(/<rPh\b[\s\S]*?<\/rPh>/g, '').replace(/<[^>]+>/g, (tag, off, all) => '').trim());
-async function xlsxSource(file) {
-  const z = await unzipEntries(await file.arrayBuffer());
-  let sheet = 'xl/worksheets/sheet1.xml';
-  try {
-    const dp = new DOMParser(), wb = dp.parseFromString(await z.read('xl/workbook.xml'), 'application/xml'), rels = dp.parseFromString(await z.read('xl/_rels/workbook.xml.rels'), 'application/xml');
-    const first = wb.getElementsByTagName('sheet')[0], rid = first?.getAttribute('r:id') || first?.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
-    const rel = [...rels.getElementsByTagName('Relationship')].find(x => x.getAttribute('Id') === rid);
-    if (rel) { const t = rel.getAttribute('Target').replace(/^\//, ''); sheet = t.startsWith('xl/') ? t : 'xl/' + t; }
-  } catch {}
-  if (!z.files[sheet]) sheet = Object.keys(z.files).find(k => /^xl\/worksheets\/[^/]+\.xml$/.test(k));
-  if (!sheet) throw new Error('Geen werkblad gevonden in dit bestand.');
-  const sst = z.files['xl/sharedStrings.xml'] ? 'xl/sharedStrings.xml' : null;
-  const resolve = async need => {   // enkel de gedeelde teksten die we nodig hebben
-    const map = new Map(); if (!need.size || !sst) return map;
-    let max = -1; for (const x of need) if (x > max) max = x;
-    let idx = -1;
-    await scanTags(z.stream(sst), 'si', (o, inner) => { idx++; if (need.has(idx)) map.set(idx, sstText(inner)); }, () => idx >= max);
-    return map;
-  };
-  // aantal rijen uit <dimension ref="A1:K523412"/>
-  let total = 0;
-  { const rd = z.stream(sheet).getReader(); let head = '';
-    while (head.length < 4000) { const {value, done} = await rd.read(); if (done) break; head += value; }
-    rd.cancel().catch(() => {});
-    const dm = /<dimension\s+ref="[A-Z]+\d+:[A-Z]+(\d+)"/.exec(head); if (dm) total = +dm[1]; }
-  const raw = [];
-  await scanTags(z.stream(sheet), 'row', (o, inner) => raw.push(rowCells(inner)), () => raw.length >= 200);
-  const need = new Set(); for (const r of raw) for (const [, v] of r) if (v.i !== undefined) need.add(v.i);
-  const sm = await resolve(need);
-  const toRow = cells => { const a = []; for (const [ci, v] of cells) a[ci] = v.i !== undefined ? (sm.get(v.i) ?? '') : v.s; return Array.from(a, x => (x ?? '').toString().trim()); };
-  return {name:file.name, preview:raw.map(toRow), total:total > raw.length ? total : raw.length, more:raw.length >= 200 && total <= raw.length,
-    // alle rijen, enkel de gekozen kolommen → [[klantnr, naam, uitgave, telefoon, e-mail, gemeente, contact], …]
-    async rows(cols, skipFirst, onProgress) {
-      const toks = [], needAll = new Set(); let n = 0;
-      const want = CI_KEYS.map(k => cols[k] ?? -1), maxCol = Math.max(...want);
-      await scanTags(z.stream(sheet), 'row', (o, inner) => {
-        n++; if (skipFirst && n === 1) return;
-        const t = want.map(() => null);
-        pickCells(inner, want, maxCol, t, needAll);
-        if (t[0] !== null || t[1] !== null) toks.push(t);
-        if (n % 5000 === 0) onProgress?.(n, 'Rijen lezen');
-      });
-      onProgress?.(n, 'Teksten ophalen');
-      const map = await resolve(needAll);
-      const val = x => x === null ? '' : typeof x === 'number' ? (map.get(x) ?? '') : x;
-      return toks.map(t => t.map(val));
-    }};
-}
-function delimOf(lines) {
-  const cand = ['\t', ';', ','];
-  return cand.map(c => [c, lines.slice(0, 20).reduce((a, l) => a + (l.split(c).length - 1), 0)]).sort((a, b) => b[1] - a[1])[0][0];
-}
-function parseLine(line, d) {
-  const out = []; let cur = '', qt = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (qt) { if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') qt = false; else cur += ch; }
-    else if (ch === '"' && !cur) qt = true; else if (ch === d) { out.push(cur.trim()); cur = ''; } else cur += ch;
-  }
-  out.push(cur.trim()); return out;
-}
-function textSource(text, name) {
-  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter(l => l.trim());
-  const d = lines.length ? delimOf(lines) : '\t';
-  return {name, preview:lines.slice(0, 200).map(l => parseLine(l, d)), total:lines.length,
-    async rows(cols, skipFirst, onProgress) {
-      const out = [];
-      for (let i = skipFirst ? 1 : 0; i < lines.length; i++) {
-        const r = parseLine(lines[i], d); out.push(CI_KEYS.map(k => r[cols[k]] ?? ''));
-        if (i % 20000 === 0) { onProgress?.(i, 'Rijen lezen'); await new Promise(res => setTimeout(res, 0)); }
-      }
-      return out;
-    }};
-}
-const cleanNo = v => { const s = String(v ?? '').trim(); return /^\d+\.0+$/.test(s) ? s.replace(/\.0+$/, '') : s; };
-const CI_KEYS = ['no', 'name', 'ed', 'phone', 'email', 'city', 'contact', 'gsm', 'block', 'projno'];
-function guessCols(head, rows) {
-  const h = head.map(x => normName(x)), used = new Set();
-  const find = (re, not) => { const i = h.findIndex((x, j) => !used.has(j) && re.test(x) && !(not && not.test(x))); if (i >= 0) used.add(i); return i; };
-  const sample = i => rows.slice(0, 40).map(r => String(r[i] ?? '').trim()).filter(Boolean);
-  const byContent = test => { const i = head.findIndex((_, j) => { if (used.has(j)) return false; const v = sample(j); return v.length >= Math.min(3, rows.length) && v.filter(test).length >= v.length * 0.6; }); if (i >= 0) used.add(i); return i; };
-  let email = find(/(^| )(e ?mail|email|mail|mailadres)( |$)/);
-  let phone = find(/(^| )(tel|telefoon|telefoonnr|telefoonnummer|tel nr|telnr|phone)( |$)/, /fax/);
-  let gsm = find(/(^| )(gsm|gsm nummer|gsmnummer|gsmnr|gsm nr|mobiel|mobile)( |$)/);
-  let block = find(/(blokkering|geblokkeerd|blocked|blokkade)/);
-  let projno = find(/^project ?(nr|nummer|no|code|id)$/);
-  let no = find(/^((order ?|debiteur ?)?klant ?(nr|nummer|no|code)|nr|nummer|debiteur|debiteurnr|klantnr|customer ?(no|number|id))/);
-  let contact = find(/(contact|aanspreek|zaakvoerder|verantwoordelijke)/);
-  let city = find(/(gemeente|stad|woonplaats|plaats|city|town|localiteit|deelgemeente)/, /postcode/);
-  let name = find(/(bedrijf|firma|naam|klant$|^klant |company|name|adverteerder)/);
-  let ed = find(/(uitgave|editie|publicatie|titel|magazine|blad|krant|medium|edition|project ?omschrijving|projectnaam|project ?naam)/);
-  const byHeader = [no, name, ed].filter(i => i >= 0).length;
-  if (email < 0) email = byContent(v => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v));
-  if (no < 0) { no = head.findIndex((_, i) => !used.has(i) && rows.slice(0, 30).filter(r => /^\d{3,}$/.test(cleanNo(r[i]))).length >= Math.min(10, rows.length * 0.6)); if (no >= 0) used.add(no); }
-  if (phone < 0) phone = byContent(v => /^\+?[\d\s./()-]{8,}$/.test(v) && v.replace(/\D/g, '').length >= 8);
-  if (name < 0) { name = head.findIndex((_, i) => !used.has(i) && rows.slice(0, 30).some(r => /[a-z]{3}/i.test(r[i] || ''))); if (name >= 0) used.add(name); }
-  return {no, name, ed, phone, email, city, contact, gsm, block, projno, byHeader};
-}
-// rijen [klantnr, naam, uitgave] → unieke klanten (dubbele samengevoegd per klantnr, anders per naam)
-function groupClientRows(rows) {
-  const groups = new Map(); let skipped = 0;
-  for (const [n0, n1, n2, ph, em, ci, co, gs, bl, pn] of rows) {
-    const no = cleanNo(n0), name = String(n1 || '').trim(), ed = String(n2 || '').trim();
-    if (!no && !name) { skipped++; continue; }
-    const key = no ? 'no:' + no : 'nm:' + normName(name);
-    let g = groups.get(key);
-    if (!g) groups.set(key, g = {no, name:'', eds:new Set(), rows:0, phone:'', mobile:'', email:'', city:'', contact:'', block:'', projNos:{}});
-    if (!g.name && name) g.name = name;
-    const tel = v => { let t = cleanNo(v); if (/^[1-9]\d{7,8}$/.test(t)) t = '0' + t; return t; };   // Excel laat de 0 vooraan vallen
-    if (!g.phone && String(ph ?? '').trim()) g.phone = tel(ph);
-    if (!g.mobile && String(gs ?? '').trim()) g.mobile = tel(gs);
-    if (!g.block && String(bl ?? '').trim()) g.block = String(bl).trim();
-    const pno = cleanNo(pn);
-    if (pno) { const nm = ed || ('Project ' + pno); g.eds.add(nm); if (!g.projNos[nm]) g.projNos[nm] = pno; }
-    if (!g.email && em) g.email = String(em).trim().toLowerCase();
-    if (!g.city && ci) g.city = String(ci).trim();
-    if (!g.contact && co) g.contact = String(co).trim();
-    if (ed) for (const e of ed.split(/\s*[;|\n]\s*/)) if (e) g.eds.add(e);
-    g.rows++;
-  }
-  const ix = clientIndex(); let isNew = 0, upd = 0;
-  const list = [];
-  for (const g of groups.values()) { const ex = (g.no && ix.byNo.get(g.no)) || (g.name && ix.byName.get(normName(g.name))); if (ex) upd++; else isNew++; list.push({no:g.no, name:g.name, eds:[...g.eds], ex:!!ex, rows:g.rows, phone:g.phone, mobile:g.mobile, email:g.email, city:g.city, contact:g.contact, block:g.block, projNos:g.projNos}); }
-  return {list, isNew, upd, skipped, rows:rows.length};
-}
-function runClientImport(plan) {
-  let added = 0, updated = 0, edAdded = 0;
-  const ix = clientIndex(), byNo = new Map(ix.byNo), byName = new Map(ix.byName), ts = now();
-  const shortId = () => 'c' + ts.toString(36).slice(-4) + Math.random().toString(36).slice(2, 9);
-  for (const g of plan.list) {
-    const ex = (g.no && byNo.get(g.no)) || (g.name && byName.get(normName(g.name)));
-    if (ex) {
-      let ch = false;
-      if (!ex.no && g.no) { ex.no = g.no; ch = true; }
-      if (!ex.company && g.name) { ex.company = g.name; ch = true; }
-      for (const k of ['phone', 'mobile', 'email', 'city', 'contact', 'block']) if (!ex[k] && g[k]) { ex[k] = g[k]; ch = true; }
-      for (const [nm, no] of Object.entries(g.projNos || {})) if (!ex.projNos?.[nm]) { ex.projNos = {...(ex.projNos || {}), [nm]:no}; ch = true; }
-      const set = new Set(editionsOf(ex));
-      for (const e of g.eds) if (!set.has(e)) { set.add(e); edAdded++; ch = true; }
-      if (ch) { ex.editions = [...set]; touch(ex); updated++; }
-    } else {
-      // compact bewaren: enkel wat ingevuld is (scheelt veel ruimte bij tienduizenden klanten)
-      const nc = {id:shortId(), u:ts, ...(g.no ? {no:g.no} : {}), ...(g.name ? {company:g.name} : {}), ...(g.eds.length ? {editions:g.eds} : {}),
-        ...(g.phone ? {phone:g.phone} : {}), ...(g.mobile ? {mobile:g.mobile} : {}), ...(g.email ? {email:g.email} : {}), ...(g.city ? {city:g.city} : {}), ...(g.contact ? {contact:g.contact} : {}),
-        ...(g.block ? {block:g.block} : {}), ...(Object.keys(g.projNos || {}).length ? {projNos:g.projNos} : {})};
-      data.clients.push(nc); if (g.no) byNo.set(g.no, nc); if (g.name) byName.set(normName(g.name), nc);
-      added++; edAdded += g.eds.length;
-    }
-  }
-  clientsChanged(); commit();
-  return {added, updated, edAdded};
-}
-function openClientImport() {
-  let src = null, hasHead = true, map = {no:-1, name:-1, ed:-1, phone:-1, email:-1, city:-1, contact:-1, gsm:-1, block:-1, projno:-1}, busy = false;
-  const fmt = n => n.toLocaleString('nl-BE');
-  const render = d => {
-    if (!src) { $('#ciBody', d).innerHTML = ''; $('#ciGo', d).disabled = true; return; }
-    const rows = src.preview, body = hasHead ? rows.slice(1) : rows;
-    const cols = hasHead ? rows[0] || [] : (rows[0] || []).map((_, i) => `Kolom ${String.fromCharCode(65 + i)}`);
-    const sel = (k, label) => `<label class="fl"><span>${label}</span><select data-map="${k}"><option value="-1">— geen —</option>${cols.map((c, i) => `<option value="${i}" ${map[k] === i ? 'selected' : ''}>${esc(c || `Kolom ${String.fromCharCode(65 + i)}`)}</option>`).join('')}</select></label>`;
-    const plan = groupClientRows(body.map(r => CI_KEYS.map(k => r[map[k]] ?? '')));
-    const all = src.total - (hasHead ? 1 : 0), partial = all > body.length || !!src.more;
-    $('#ciBody', d).innerHTML = `
-      <p class="muted small" style="margin:10px 0 6px">${esc(src.name)} · ${src.more ? 'meer dan ' + fmt(all) : (partial ? '± ' : '') + fmt(all)} rijen${partial ? ' (voorbeeld van de eerste ' + body.length + ')' : ''}</p>
-      <label class="chk" style="margin:0 0 8px"><input type="checkbox" id="ciHead" ${hasHead ? 'checked' : ''}> Eerste rij bevat de kolomnamen</label>
-      <div class="ci-map">${sel('no', 'Klantnr')}${sel('name', 'Bedrijfsnaam')}${sel('contact', 'Contactpersoon')}${sel('city', 'Gemeente')}${sel('phone', 'Telefoon')}${sel('gsm', 'Gsm')}${sel('email', 'E-mail')}${sel('block', 'Blokkeringscode')}${sel('ed', 'Uitgave / project')}${sel('projno', 'Projectnr.')}</div>
-      <div class="ci-sum">${partial ? `Alle ${src.more ? '' : fmt(all) + ' '}rijen worden bij het importeren verwerkt; dubbele klanten worden samengevoegd per klantnr.<br><span class="muted">In de eerste ${body.length} rijen: ${plan.list.length} unieke klanten, ${plan.isNew} nieuw, ${plan.upd} bestaand.</span>`
-        : `<b>${plan.list.length}</b> unieke klanten <span class="muted">(${plan.rows} rijen${plan.rows > plan.list.length ? ', dubbele samengevoegd' : ''})</span><br><span class="ok">${plan.isNew} nieuw</span> · ${plan.upd} bestaand (ontbrekende gegevens en uitgaves aangevuld, niets overschreven)${plan.skipped ? ` · ${plan.skipped} lege rijen overgeslagen` : ''}`}</div>
-      <div class="table-wrap ci-prev"><table class="pg-table"><thead><tr><th>Klantnr</th><th>Bedrijfsnaam</th><th>Contact</th><th>Telefoon</th><th>Gsm</th><th>Gemeente</th><th>Blok.</th><th>Projecten</th><th></th></tr></thead><tbody>
-        ${plan.list.slice(0, 8).map(g => `<tr><td class="mono">${esc(g.no)}</td><td>${esc(g.name)}</td><td>${esc(g.contact)}</td><td>${esc(g.phone)}</td><td>${esc(g.mobile)}</td><td>${esc(g.city)}</td><td>${esc(g.block)}</td><td>${g.eds.map(e => `<span class="fchip">${g.projNos?.[e] ? esc(g.projNos[e]) + ' · ' : ''}${esc(e)}</span>`).join(' ')}</td><td class="muted small">${g.ex ? 'bestaat' : 'nieuw'}</td></tr>`).join('')}
-      </tbody></table></div>
-      <div class="ci-prog" id="ciProg" hidden><progress max="100" value="0"></progress><span></span></div>`;
-    $('#ciGo', d).disabled = busy || (map.no < 0 && map.name < 0);
-    $('#ciGo', d).textContent = partial ? (src.more ? 'Alle rijen importeren' : `Alle ${fmt(all)} rijen importeren`) : plan.list.length ? `${plan.list.length} klanten importeren` : 'Importeren';
-  };
-  const setSource = (s, d) => {
-    src = s; const rows = s.preview;
-    const w = Math.max(0, ...rows.map(x => x.length)); s.preview = rows.map(x => Array.from({length:w}, (_, i) => x[i] ?? ''));
-    const head = s.preview[0] || [], g0 = guessCols(head, s.preview.slice(1));
-    hasHead = g0.byHeader > 0;
-    map = hasHead ? g0 : guessCols(head.map(() => ''), s.preview);
-    if (!hasHead && map.ed < 0) { const cand = head.findIndex((_, i) => i !== map.no && i !== map.name && s.preview.some(r => /[a-z]/i.test(r[i] || ''))); if (cand >= 0) map.ed = cand; }
-    render(d);
-  };
-  showDialog(`
-    <h3>Klanten importeren</h3>
-    <p class="muted small" style="margin:0 0 10px">Kies je Excel-bestand (.xlsx) of CSV — ook grote bestanden met tienduizenden rijen — of selecteer de kolommen in Excel, kopieer (Ctrl+C) en plak hieronder. Dubbele klanten worden samengevoegd per klantnr, met al hun uitgaves.</p>
-    <div class="ci-src"><label class="btn"><input type="file" id="ciFile" accept=".xlsx,.csv,.txt,.tsv" hidden>Bestand kiezen…</label><span class="muted small" id="ciState">of plak:</span></div>
-    <textarea id="ciPaste" rows="3" placeholder="Klantnr&#9;Bedrijfsnaam&#9;Uitgave&#10;261523&#9;Carremans Interieur BV&#9;Turnhout Deze Week" style="margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px"></textarea>
-    <p id="ciErr" class="err"></p>
-    <div id="ciBody"></div>
-    <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="ciCancel">Annuleren</button><button type="button" class="btn primary" id="ciGo" disabled>Importeren</button></div>`, d => {
-    $('#ciCancel', d).onclick = () => { if (!busy) dlg.close(); };
-    $('#ciFile', d).onchange = async e => {
-      const f = e.target.files[0]; if (!f) return; $('#ciErr', d).textContent = '';
-      $('#ciState', d).textContent = `Bezig met lezen van ${f.name} (${(f.size / 1048576).toFixed(1).replace('.', ',')} MB)…`;
-      try {
-        if (/\.xls$/i.test(f.name)) throw new Error('Oud .xls-formaat: bewaar het in Excel als .xlsx of CSV.');
-        const s = /\.xlsx$/i.test(f.name) ? await xlsxSource(f) : textSource(await f.text(), f.name);
-        if (!s.preview.length) throw new Error('Het bestand is leeg.');
-        setSource(s, d);
-      } catch (ex) { $('#ciErr', d).textContent = ex.message; }
-      $('#ciState', d).textContent = 'of plak:';
-    };
-    $('#ciPaste', d).oninput = e => { const s = textSource(e.target.value, 'Geplakte gegevens'); if (s.preview.length) setSource(s, d); };
-    $('#ciBody', d).addEventListener('change', e => {
-      if (e.target.id === 'ciHead') { hasHead = e.target.checked; const head = src.preview[0] || []; map = hasHead ? guessCols(head, src.preview.slice(1)) : guessCols(head.map(() => ''), src.preview); render(d); }
-      else if (e.target.dataset.map) { map[e.target.dataset.map] = +e.target.value; render(d); }
-    });
-    $('#ciGo', d).onclick = async () => {
-      busy = true; $('#ciGo', d).disabled = true; $('#ciCancel', d).disabled = true;
-      const prog = $('#ciProg', d), bar = prog.querySelector('progress'), lbl = prog.querySelector('span'); prog.hidden = false;
-      const total = src.more ? 0 : Math.max(1, src.total);
-      let lastPaint = 0;
-      const onProgress = (n, what) => {
-        const tnow = performance.now(); if (tnow - lastPaint < 250 && what === 'Rijen lezen') return; lastPaint = tnow;   // hooguit 4× per seconde hertekenen
-        if (total) { bar.value = Math.min(99, n / total * 100); lbl.textContent = `${what}… ${fmt(Math.min(n, total))} van ± ${fmt(total)}`; }
-        else { bar.removeAttribute('value'); lbl.textContent = `${what}… ${fmt(n)} rijen`; }
-      };
-      try {
-        const rows = await src.rows(map, hasHead, onProgress);
-        lbl.textContent = 'Klanten samenvoegen…'; await new Promise(res => setTimeout(res, 0));
-        const plan = groupClientRows(rows);
-        lbl.textContent = `${fmt(plan.list.length)} klanten opslaan…`; await new Promise(res => setTimeout(res, 0));
-        const res = runClientImport(plan);
-        bar.value = 100; dlg.close();
-        toast(`${fmt(res.added)} klanten toegevoegd, ${fmt(res.updated)} aangevuld · ${fmt(res.edAdded)} uitgaves`);
-        clLimit = 50; if (view.type !== 'clients') setView({type:'clients'}); else renderPage(true);
-      } catch (ex) {
-        busy = false; $('#ciCancel', d).disabled = false; $('#ciGo', d).disabled = false; prog.hidden = true;
-        $('#ciErr', d).textContent = 'Importeren mislukt: ' + ex.message;
-      }
-    };
-  });
-}
-
-/* ---- Klantenfiche ---- */
-function clientHtml() {
-  if (clPending) return '<div class="pg-empty"><b>Klanten laden…</b></div>';
-  const c = clientById(view.id); if (!c) return '';
-  const sales = allSales(), g = clientAgg(c, sales), y = today().slice(0, 4);
-  const fin = st => g.tasks.filter(t => t.done && t.stage === st).length;
-  const posSt = stageById('positive'), negSt = stageById('negative');
-  const field = (k, label, type = 'text', extra = '') => `<label class="fl"><span>${label}</span><input type="${type}" data-cf="${k}" value="${esc(c[k] || '')}" ${extra}></label>`;
-  const tasks = [...g.tasks].sort((a, b) => (a.done - b.done) || ((b.doneAt || b.createdAt || 0) - (a.doneAt || a.createdAt || 0)));
-  const ss = [...g.sales].sort((a, b) => b.date.localeCompare(a.date) || (b.row.order || 0) - (a.row.order || 0));
-  return `
-    <div class="pg-bar">
-      ${c.no ? `<button type="button" class="btn cl-no" data-copy="${esc(c.no)}" title="Klantnummer kopiëren (voor Navision)"><span class="muted">Klantnr</span> <b class="mono">${esc(c.no)}</b> ${I.copy || ''}</button>` : ''}
-      ${c.block ? `<span class="cl-block" title="Blokkeringscode uit Navision">Geblokkeerd · ${esc(c.block)}</span>` : ''}
-      ${c.phone ? `<a class="btn" href="tel:${esc(telHref(c.phone))}">${I.phone}Bellen</a>` : ''}
-      ${c.mobile ? `<a class="btn" href="tel:${esc(telHref(c.mobile))}">${I.phone}${c.phone ? 'Gsm' : 'Bellen'}</a>` : ''}
-      ${c.email ? `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Mailen</a>` : ''}
-      <button type="button" class="btn primary" id="clTask">+ Deal</button>
-      <span class="grow"></span>
-      <button type="button" class="icon-btn" id="clMenu2" title="Meer" aria-label="Meer acties" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
-    </div>
-    <div class="sales-head">
-      <div class="sales-stat"><span>Omzet totaal</span><b>${eur(g.total)}</b></div>
-      <div class="sales-stat"><span>Omzet ${y}</span><b>${eur(g.year)}</b></div>
-      <div class="sales-stat"><span>Verkopen</span><b>${g.count}</b></div>
-      <div class="sales-stat"><span>Open deals</span><b>${g.open}</b></div>
-      ${posSt && negSt ? `<div class="sales-stat"><span>${esc(posSt.label)} / ${esc(negSt.label)}</span><b>${fin('positive')} / ${fin('negative')}</b></div>` : ''}
-      <div class="sales-stat"><span>Laatste contact</span><b>${relDay(g.last)}</b></div>
-    </div>
-    ${editionsOf(c).length ? `<div class="cl-edrow"><span class="muted small">Meegewerkt aan</span>${editionsOf(c).map(e => `<button type="button" class="fchip" data-edfilter="${esc(e)}" title="Alle klanten van ${esc(e)}">${c.projNos?.[e] ? `<span class="mono pj-no">${esc(c.projNos[e])}</span>` : ''}${esc(e)}</button>`).join('')}</div>` : ''}
-    <div class="cl-grid">
-      <section class="pg-card">
-        <h3>Gegevens</h3>
-        <div class="cl-form">
-          ${field('company', 'Firma', 'text', 'placeholder="bv. Carremans Interieur BV" autocomplete="organization"')}
-          <label class="fl"><span>Klantnr <small class="muted">(Navision)</small></span><span class="inline"><input type="text" data-cf="no" value="${esc(c.no || '')}" inputmode="numeric" placeholder="bv. 261523" class="mono"><button type="button" class="icon-btn" data-copy-field="no" title="Klantnummer kopiëren" aria-label="Klantnummer kopiëren">${I.copy}</button></span></label>
-          ${field('contact', 'Contactpersoon', 'text', 'autocomplete="name"')}
-          ${field('phone', 'Telefoon', 'tel', 'autocomplete="tel"')}
-          ${field('mobile', 'Gsm', 'tel', 'autocomplete="tel"')}
-          ${field('email', 'E-mail', 'email', 'autocomplete="email"')}
-          ${field('city', 'Gemeente', 'text', 'autocomplete="address-level2"')}
-          ${field('block', 'Blokkeringscode', 'text', 'placeholder="leeg = niet geblokkeerd"')}
-          <label class="fl cl-notes"><span>Meegewerkt aan <small class="muted">(uitgaves, één per regel)</small></span><textarea data-cf="editions" rows="2" placeholder="bv. Turnhout Deze Week">${esc(editionsOf(c).join('\n'))}</textarea></label>
-          <label class="fl cl-notes"><span>Notities</span><textarea data-cf="notes" rows="3" placeholder="Afspraken, voorkeuren, budget, beslisser…">${esc(c.notes || '')}</textarea></label>
-        </div>
-      </section>
-      <section class="pg-card">
-        <h3>Deals <span class="muted">${tasks.length}</span></h3>
-        ${tasks.length ? `<ul class="pg-list">${tasks.map(t => { const st = stageById(t.stage);
-          return `<li><button type="button" data-task="${t.id}" class="${t.done ? 'done' : ''}"><span class="dot" style="background:${st?.color || 'var(--muted)'}"></span><span class="nm">${esc(t.title)}</span><span class="meta">${esc(st?.label || '')}${t.done && t.doneAt ? ' · ' + relDay(tsYmd(t.doneAt)) : t.due ? ' · ' + esc(dueLabel(t.due)) + (t.time ? ' ' + esc(t.time) : '') : ''}</span></button></li>`; }).join('')}</ul>` : '<p class="muted small">Nog geen deals voor deze klant.</p>'}
-      </section>
-      <section class="pg-card">
-        <h3>Verkopen <span class="muted">${ss.length}</span>${ss.length ? `<span class="grow"></span><b>${eur(g.total)}</b>` : ''}</h3>
-        ${ss.length ? `<ul class="pg-list">${ss.map(x => `<li><button type="button" data-salespage="${x.page.id}"><span class="nm">${x.date ? dayLabel(x.date) : '—'} ${x.formats.map(f => `<span class="fchip ${f === 'Annulatie' ? 'neg' : ''}">${esc(f)}</span>`).join('')}</span><span class="meta">${esc(x.page.title)}</span><b class="amt">${eur(x.amount)}</b></button></li>`).join('')}</ul>`
-          : `<p class="muted small">Nog geen verkopen gekoppeld. Vul op een verkooppagina in de kolom “Klant” de naam${c.no ? ' of het klantnummer' : ''} in.</p>`}
-      </section>
-    </div>`;
 }
 
 /* ---- Grafiekjes (één reeks, één kleur; waarde via hover/tik en in de tabel) ---- */
@@ -4756,7 +3907,7 @@ function agendaHtml() {
 function openEventDialog(ev, date) {
   const isNew = !ev;
   const st = {date:ev?.date || date || today(), month:(ev?.date || date || today()).slice(0, 7), type:ev?.type || 'druk'};
-  const eds = [...new Set(data.clients.flatMap(editionsOf))].sort((a, b) => nlCollator.compare(a, b));
+  const eds = [];
   const projs = sortedProjects().filter(p => p.id !== 'inbox');
   const mini = () => {
     const [y, mo] = st.month.split('-').map(Number), first = new Date(y, mo - 1, 1), start = new Date(first); start.setDate(1 - (first.getDay() + 6) % 7);
@@ -4861,78 +4012,8 @@ $('#pageView').addEventListener('click', e => {
   const b = e.target.closest('[data-btw-rate]'); if (!b) return;
   btwState[b.dataset.btwFor + 'Rate'] = +b.dataset.btwRate; btwOut();
 });
-/* ---- Notitieblok: pagina's met een titel en vrije tekst ---- */
-let noteSel = null, noteOpen = false, noteQ = '';
-const notesSorted = () => [...data.notes].sort((a, b) => (b.order || 0) - (a.order || 0));
-const noteTitle = n => (n.title || '').trim() || 'Naamloze pagina';
-const notePreview = n => (n.body || '').replace(/\s+/g, ' ').trim().slice(0, 90);
-function notesFiltered() {
-  const q = normName(noteQ); if (!q) return notesSorted();
-  return notesSorted().filter(n => normName(n.title + ' ' + n.body).includes(q));
-}
-function noteItemHtml(n) {
-  return `<li><button type="button" data-note="${n.id}" class="${n.id === noteSel ? 'on' : ''}"><b>${esc(noteTitle(n))}</b><span>${esc(notePreview(n)) || '<i>Leeg</i>'}</span><time>${esc(stamp(n.u || n.createdAt || now()))}</time></button></li>`;
-}
-function notesHtml() {
-  const list = notesFiltered();
-  if (!data.notes.some(n => n.id === noteSel)) noteSel = list[0]?.id || null;
-  const n = data.notes.find(x => x.id === noteSel);
-  return `<div class="nb ${noteOpen && n ? 'nb-open' : ''}">
-    <aside class="nb-list" aria-label="Pagina’s">
-      <div class="nb-tools"><input id="nbSearch" type="search" value="${esc(noteQ)}" placeholder="Zoek in notities…" aria-label="Zoek in notities" autocomplete="off"><button type="button" class="btn primary" id="nbNew">+ Pagina</button></div>
-      <ul id="nbItems">${list.map(noteItemHtml).join('') || `<li class="nb-none">${data.notes.length ? 'Niets gevonden.' : 'Nog geen pagina’s.'}</li>`}</ul>
-    </aside>
-    <section class="nb-page">${n ? `
-      <div class="nb-bar"><button type="button" class="btn nb-back" id="nbBack">← Alle pagina’s</button><span class="grow"></span><span class="muted small" id="nbStamp">Bewerkt ${esc(stamp(n.u || n.createdAt || now()))}</span><button type="button" class="icon-btn" id="nbDel" title="Pagina verwijderen" aria-label="Pagina verwijderen">${I.trash}</button></div>
-      <input id="nbTitle" class="nb-title" type="text" value="${esc(n.title || '')}" placeholder="Titel" aria-label="Titel van de pagina" autocomplete="off">
-      <textarea id="nbBody" class="nb-body" placeholder="Begin te typen…" aria-label="Tekst van de pagina">${esc(n.body || '')}</textarea>`
-      : `<div class="pg-empty"><b>Een leeg notitieblok</b><p class="muted">Maak je eerste pagina voor ideeën, afspraken of gespreksnotities.</p><button type="button" class="btn primary" id="nbNew2">+ Nieuwe pagina</button></div>`}
-    </section></div>`;
-}
-function newNote() {
-  const n = touch({id:uid(), title:'', body:'', order:now(), createdAt:now()});
-  data.notes.push(n); noteSel = n.id; noteOpen = true; noteQ = '';
-  save(); renderNav();
-  if (view.type !== 'notes') setView({type:'notes'}); else renderPage(true);
-  renderHead();
-  $('#nbTitle')?.focus();
-  setTimeout(() => { if (view.type === 'notes' && !$('#pageView').contains(document.activeElement)) $('#nbTitle')?.focus(); }, 60);
-}
-function deleteNote(id) {
-  const n = data.notes.find(x => x.id === id); if (!n) return;
-  const copy = {...n}, list = notesSorted(), i = list.findIndex(x => x.id === id);
-  data.notes = data.notes.filter(x => x.id !== id); tombstone(id);
-  noteSel = (list[i + 1] || list[i - 1])?.id || null; noteOpen = false;
-  save(); renderNav(); renderPage(true); renderHead();
-  toast('Pagina verwijderd', () => { delete data.deleted[id]; data.notes.push(touch(copy)); noteSel = id; save(); renderNav(); renderPage(true); renderHead(); });
-}
-{
-  const pvn = $('#pageView');
-  pvn.addEventListener('click', e => {
-    if (view.type !== 'notes') return;
-    const it = e.target.closest('[data-note]');
-    if (it) { noteSel = it.dataset.note; noteOpen = true; renderPage(true); return; }
-    if (e.target.closest('#nbNew, #nbNew2')) { newNote(); return; }
-    if (e.target.closest('#nbBack')) { noteOpen = false; renderPage(true); return; }
-    if (e.target.closest('#nbDel')) deleteNote(noteSel);
-  });
-  pvn.addEventListener('input', e => {
-    if (view.type !== 'notes') return;
-    if (e.target.id === 'nbSearch') {
-      noteQ = e.target.value; const list = notesFiltered();
-      $('#nbItems').innerHTML = list.map(noteItemHtml).join('') || '<li class="nb-none">Niets gevonden.</li>'; return;
-    }
-    const n = data.notes.find(x => x.id === noteSel); if (!n) return;
-    if (e.target.id === 'nbTitle') n.title = e.target.value; else if (e.target.id === 'nbBody') n.body = e.target.value; else return;
-    touch(n); save(true);
-    const row = $(`#nbItems [data-note="${n.id}"]`); if (row) row.parentNode.outerHTML = noteItemHtml(n);
-    const st = $('#nbStamp'); if (st) st.textContent = 'Bewerkt ' + stamp(n.u);
-    $('#toolNav [data-view="notes"] .cnt') && ($('#toolNav [data-view="notes"] .cnt').textContent = data.notes.length);
-  });
-}
 const pv = $('#pageView');
 pv.addEventListener('click', e => {
-  { const b = e.target.closest('[data-clsort]'); if (b) { setClientSort(b.dataset.clsort); return; } }
   const t = e.target;
   if (t.closest('#evNew')) { openEventDialog(null, agendaSel || (agendaMonth === today().slice(0, 7) ? today() : agendaMonth + '-01')); return; }
   const evb = t.closest('[data-ev]'); if (evb) { const ev = data.events.find(x => x.id === evb.dataset.ev); if (ev) openEventDialog(ev); return; }
@@ -4940,46 +4021,14 @@ pv.addEventListener('click', e => {
   const am = t.closest('[data-amonth]'); if (am) { const k = +am.dataset.amonth; if (!k) { agendaMonth = today().slice(0, 7); agendaSel = today(); } else { const [y, m] = agendaMonth.split('-').map(Number); agendaMonth = ymd(new Date(y, m - 1 + k, 1)).slice(0, 7); } renderPage(true); return; }
   const dayEl = t.closest('[data-day]');
   if (dayEl) { const k = dayEl.dataset.day; if (agendaSel === k && !matchMedia('(max-width:860px)').matches) { openEventDialog(null, k); return; } agendaSel = k; if (k.slice(0, 7) !== agendaMonth) agendaMonth = k.slice(0, 7); renderPage(true); return; }
-  if (t.closest('#clNew')) { newClient(); return; }
-  if (t.closest('#clTask')) { addTaskForClient(view.id); return; }
-  if (t.closest('#clDel')) { const c = clientById(view.id); if (c) deleteClient(c); return; }
-  if (t.closest('#clImportFile')) { openClientImport(); return; }
-  { const m = t.closest('#clMenu'); if (m) { const n = +m.dataset.unmatched || 0; menuAt(m, [{label:'Importeren (Excel/CSV)…', attrs:'id="clImportFile"', run:() => openClientImport()}, n ? {label:`Klanten uit verkopen halen (${n})`, attrs:'id="clFromSales"', run:() => clientsFromSales()} : null]); return; } }
-  { const m = t.closest('#clMenu2'); if (m) { const c = clientById(view.id); if (c) menuAt(m, [c.no ? {label:'Klantnummer kopiëren', run:() => copyText(String(c.no), 'Klantnummer')} : null, c.no ? '-' : null, {label:'Klant verwijderen…', danger:true, attrs:'id="clDel"', run:() => deleteClient(c)}]); return; } }
-  if (t.closest('#clMore')) { clLimit += 100; applyClientFilter(); return; }
-  const edf = t.closest('[data-edfilter]'); if (edf) { clEdition = edf.dataset.edfilter; clQuery = ''; setView({type:'clients'}); return; }
-  if (t.closest('#clFromSales')) { clientsFromSales(); return; }
-
-  const cp = t.closest('[data-copy]'); if (cp) { copyText(cp.dataset.copy, 'Klantnummer'); return; }
-  const cf = t.closest('[data-copy-field]'); if (cf) { const c = clientById(view.id); if (c?.[cf.dataset.copyField]) copyText(String(c[cf.dataset.copyField]), 'Klantnummer'); else toast('Nog geen klantnummer ingevuld'); return; }
-  if (t.closest('a[href^="tel:"], a[href^="mailto:"]')) return;
-  const oc = t.closest('[data-openclient]'); if (oc) { e.preventDefault(); setView({type:'client', id:oc.dataset.openclient}); return; }
-  const row = t.closest('tr[data-client]'); if (row) { setView({type:'client', id:row.dataset.client}); return; }
   const tk = t.closest('[data-task]'); if (tk) { openTask(tk.dataset.task); return; }
   const sp = t.closest('[data-salespage]'); if (sp) { setView({type:'sales', id:sp.dataset.salespage}); return; }
 });
-pv.addEventListener('change', e => { if (e.target.id === 'clSort') { const [k, d] = e.target.value.split(':'); setClientSort(k, +d); return; } if (e.target.id === 'clEd') { clEdition = e.target.value; clLimit = 100; applyClientFilter(); } });
 pv.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const day = e.target.closest?.('[data-day]'); if (day && e.target === day) { e.preventDefault(); openEventDialog(null, day.dataset.day); return; }
-  const row = e.target.closest?.('tr[data-client], tr[data-salespage]');
+  const row = e.target.closest?.('tr[data-salespage]');
   if (row && e.target === row) { e.preventDefault(); row.click(); }
-});
-pv.addEventListener('input', e => {
-  const t = e.target;
-  if (t.id === 'clSearch') { clQuery = t.value; clLimit = 50; clearTimeout(applyClientFilter.t); applyClientFilter.t = setTimeout(applyClientFilter, data.clients.length > 3000 ? 140 : 0); return; }
-  const k = t.dataset.cf; if (!k) return;
-  const c = clientById(view.id); if (!c) return;
-  if (k === 'editions') c.editions = [...new Set(t.value.split(/\n|;/).map(x => x.trim()).filter(Boolean))];
-  else c[k] = t.value;
-  touch(c); save(true); clientsChanged();
-  if (t.tagName === 'TEXTAREA') autosize(t);
-  if (k === 'company' || k === 'contact' || k === 'no') { renderHead(); renderNav(); }
-});
-pv.addEventListener('focusout', e => {
-  // na het bewerken van de fiche: knoppen (bellen/mailen/klantnr) bijwerken zodra je het formulier verlaat
-  if (!e.target.dataset?.cf) return;
-  setTimeout(() => { if (view.type === 'client' && !pv.contains(document.activeElement)) renderPage(true); }, 0);
 });
 // hover-/tiklabel voor de grafieken
 
@@ -5162,3 +4211,6 @@ document.addEventListener('error', e => { const i = e.target; if (i && i.tagName
   new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) { if (n.matches?.('input,textarea') && !n.hasAttribute('autocomplete') && !n.closest('#lock') && n.type !== 'password') n.setAttribute('autocomplete', 'off'); off(n); } }).observe(document.body, {childList: true, subtree: true});
   off(document);
 })();
+
+// oude lokale klantenblokken (IndexedDB) wissen: de klantendatabase bestaat niet meer
+(async () => { try { const db = await idbOpen(), st = db.transaction('kv', 'readwrite').objectStore('kv'); st.openKeyCursor().onsuccess = e => { const c = e.target.result; if (c) { if (String(c.key).startsWith(CL_KEY)) st.delete(c.key); c.continue(); } }; } catch {} })();

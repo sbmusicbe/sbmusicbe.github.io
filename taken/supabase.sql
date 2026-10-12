@@ -38,3 +38,6 @@ begin
 end $$;
 revoke all on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- Optioneel, eenmalig: wist de oude klantenkolom voor alle gebruikers meteen (de app wist hem anders bij de eerstvolgende keer opslaan).
+-- update vaults set clients = null, clients_rev = null;
