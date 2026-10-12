@@ -5,7 +5,7 @@ Updates van de app komen vanzelf mee, want het programma laadt de site. Een ande
 
 ## .exe bouwen
 GitHub → Actions → **Klose voor Windows** → *Run workflow*. Na ±5 minuten staat onder *Artifacts* `Klose-Windows`
-met een installer (`Klose-1.0.0-nsis.exe`) en een draagbare versie (`Klose-1.0.0-portable.exe`).
+met een installer (`Klose-Setup-1.0.0.exe`) en een draagbare versie (`Klose-Portable-1.0.0.exe`).
 Een tag `desktop-v1.0.0` maakt er ook een Release van.
 
 ## Lokaal proberen
