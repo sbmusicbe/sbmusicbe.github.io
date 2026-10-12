@@ -3703,13 +3703,16 @@ function renderCalc() {
   if (p.calc.target === undefined) { p.calc = {target:p.calc.togo || '', current:'', pk:p.calc.pk || ''}; touch(p); save(true); }
   if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); return; }
   el.dataset.pid = p.id;
-  el.innerHTML = `<div class="pc-head"><span class="pc-title">Prijsberekening</span><button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button></div>
-    <div class="pc-fields">
-      <label class="fl">Streef (€)<input id="pcTarget" type="text" inputmode="decimal" value="${esc(p.calc.target || '')}" placeholder="bv. 13.000" autocomplete="off"></label>
-      <label class="fl">Huidig verkoopcijfer (€)<input id="pcCur" type="text" inputmode="decimal" value="${esc(p.calc.current || '')}" placeholder="bv. 6.204" autocomplete="off"></label>
-      <label class="fl">Beschikbaar 1/8<input id="pcPk" type="text" inputmode="decimal" value="${esc(p.calc.pk || '')}" placeholder="bv. 4,5" autocomplete="off"></label>
+  el.innerHTML = `<div class="pc-row">
+      <span class="pc-title">Prijsberekening</span>
+      <div class="pc-fields">
+        <label class="fl">Streef (€)<input id="pcTarget" type="text" inputmode="decimal" value="${esc(p.calc.target || '')}" placeholder="13.000" autocomplete="off"></label>
+        <label class="fl">Huidig (€)<input id="pcCur" type="text" inputmode="decimal" value="${esc(p.calc.current || '')}" placeholder="6.204" autocomplete="off"></label>
+        <label class="fl">Beschikbaar 1/8<input id="pcPk" type="text" inputmode="decimal" value="${esc(p.calc.pk || '')}" placeholder="4,5" autocomplete="off"></label>
+      </div>
+      <p class="pc-togo">${calcTogoHtml(p.calc)}</p>
+      <button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button>
     </div>
-    <p class="pc-togo">${calcTogoHtml(p.calc)}</p>
     <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>`;
 }
 $('#projCalc').addEventListener('input', e => {
