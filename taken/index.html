@@ -2338,6 +2338,43 @@ input:focus,select:focus,textarea:focus{border-color:var(--bronze-9)!important;b
 #updBar button{border:0;border-radius:9px;padding:8px 14px;font:600 14px system-ui,sans-serif;cursor:pointer;background:#fff;color:#111}
 #updBar button.x{background:none;color:#aab;padding:4px 8px;font-size:20px;line-height:1}
 @media (max-width:700px){#updBar{left:16px;right:16px;bottom:calc(78px + env(safe-area-inset-bottom));justify-content:space-between}}
+
+/* ---------- Vlotter, properder en mooier: beweging en lay-out ---------- */
+:root{--t-fast:.14s;--t-med:.24s;--out:cubic-bezier(.22,1,.36,1)}
+html{scroll-behavior:smooth}
+/* één taal voor alle klikbare dingen: zacht kleur wisselen, voelbare druk */
+.btn,.icon-btn,.nav-item,.chip,.tb-toggle button,.top-btn,.top-search,input,select,textarea,.card,.col,.sw,.foot-btn{
+  transition:background-color var(--t-fast) ease,color var(--t-fast) ease,border-color var(--t-fast) ease,box-shadow var(--t-med) var(--out),transform var(--t-med) var(--out),opacity var(--t-fast) ease}
+.btn:active,.icon-btn:active,.nav-item:active,.tb-toggle button:active{transform:scale(.97)}
+@media (hover:hover){
+  .card:hover{transform:translateY(-1px);box-shadow:0 1px 2px rgba(0,0,0,.06),0 8px 20px rgba(0,0,0,.08)!important}
+  .card:active{transform:scale(.99)}
+  .btn.primary:hover{filter:brightness(1.08)}
+}
+/* netter bord: rustiger kolommen */
+.board{scroll-snap-type:x proximity;scroll-padding:0 16px}
+.col{scroll-snap-align:start}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* deal-paneel en melding schuiven vloeiender in */
+#detail{transition:transform .38s var(--out),opacity .22s ease}
+#toast,#updBar{animation:rise .3s var(--out) both}
+dialog[open]{animation:dlgIn .24s var(--out) both}
+dialog::backdrop{animation:fadeIn .24s ease both}
+/* nette focusring en scrollbalken */
+:focus-visible{outline:2px solid color-mix(in srgb,var(--accent,#e8590c) 70%,transparent);outline-offset:2px;border-radius:8px}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0}
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,currentColor 22%,transparent) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,currentColor 20%,transparent);border-radius:10px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,currentColor 34%,transparent)}
+/* tekst die niet meer in beeld "danst" */
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+.main-head h2{text-wrap:balance}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  #toast,#updBar,dialog[open],dialog::backdrop{animation:none!important}
+  .card:hover,.btn:active,.icon-btn:active{transform:none!important}
+}
 </style>
 </head>
 <body>
