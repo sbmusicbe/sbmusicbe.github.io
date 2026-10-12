@@ -1,6 +1,6 @@
 # Klose
 
-**Open source CRM voor wie hard moet verkopen.** Deals, klanten, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server, geen abonnement, geen account: je gegevens blijven versleuteld op je eigen toestel, met optionele synchronisatie tussen al je toestellen.
+**Open source CRM voor wie hard moet verkopen.** Deals, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server, geen abonnement, geen account: je gegevens blijven versleuteld op je eigen toestel, met optionele synchronisatie tussen al je toestellen.
 
 > De app heet **Klose** (de map en het adres blijven `taken/`). De code staat in deze map (`taken/`) en draait op elke statische hosting, bijvoorbeeld GitHub Pages.
 
@@ -8,8 +8,7 @@
 
 | Onderdeel | Wat je ermee doet |
 |---|---|
-| **Deals** | Projecten met een bord (kolommen) of een lijst. Deadline en uur, extra gegevens, opmerkingen, archief. Een deal zonder deadline staat altijd bovenaan. |
-| **Klanten** | Een klantenfiche per klant (firma, klantnummer, contact, telefoon, gsm, e-mail, gemeente, uitgaves, projectnummers). Import uit Excel (`.xlsx`), CSV of plakken uit Excel, ook met tienduizenden rijen. Deals koppel je aan een klant; maak je vanuit een deal een nieuwe klant, dan worden de gegevens uit de deal al ingevuld. |
+| **Deals** | Projecten met een bord (kolommen), een prijsberekening en extra gegevens per deal. Deadline en uur, extra gegevens, opmerkingen, archief. Een deal zonder deadline staat altijd bovenaan. |
 | **Verkopen** | Een pagina per maand met een tabel van verkopen (kolommen zelf in te stellen), doelstelling, bedrag per dag dat nog nodig is, commissie en bonus. Een nieuwe regel krijgt standaard aantal 1. |
 | **Prijsberekening** | Bovenaan een project: vul het bedrag in dat nog verkocht moet worden (*To go*) en het aantal 1/8-ruimtes (*PK*), en de app rekent de prijs per formaat uit: 1/1, 1/2, 1/4, 1/8, 1/12, 1/16 en 1/32 (naar boven afgerond). |
 | **BTW-calculator** | Reken een bedrag om van of naar inclusief btw (6, 9, 12 of 21%). |
@@ -33,12 +32,12 @@ De hele app is één bestand (`index.html`) in gewone HTML, CSS en JavaScript, z
 ### Versleuteld opgeslagen
 
 - Je kiest bij de eerste keer een wachtwoord. Daaruit wordt met **PBKDF2** (310.000 rondes) een sleutel afgeleid. Alles wordt met **AES-GCM** versleuteld, zodat zonder wachtwoord niemand het kan lezen, ook jij niet.
-- Lokaal staat een kleine kern (deals, projecten, verkopen) in `localStorage` en de grote klantenlijst apart in IndexedDB. Het versleutelen en ontsleutelen gebeurt in een achtergrondproces (Web Worker), zodat de pagina soepel blijft, ook met zeventigduizend klanten.
+- Lokaal staat de versleutelde kluis (deals, projecten, verkopen) in `localStorage`, en in IndexedDB als ze groter wordt. Het versleutelen en ontsleutelen gebeurt in een achtergrondproces (Web Worker), zodat de pagina soepel blijft, ook met zeventigduizend klanten.
 - Na een tijd zonder activiteit (standaard 30 minuten) vergrendelt de app zichzelf.
 
 ### Eenvoudig beginnen
 
-Bij het eerste gebruik vraagt de app **waarvoor je Klose gebruikt**: enkel deals, of ook Klanten, Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel deals, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
+Bij het eerste gebruik vraagt de app **waarvoor je Klose gebruikt**: enkel deals, of ook Agenda, Verkopen en een BTW-rekenmachine. Wat je niet kiest, blijft verborgen in het menu en kun je later aanzetten onder **Instellingen → Functies**. Kies je enkel deals, dan krijg je rustige stappen (*Te doen, Bezig, Klaar*) in plaats van het verkoopproces. Bestaande gebruikers zien alles zoals voorheen. Daarna volgt een korte rondleiding; de knop **?** rechtsboven opent de hulp.
 
 ### Synchroniseren tussen toestellen
 
@@ -64,13 +63,12 @@ Zet je de optionele accountdienst aan, dan logt iedereen in met een **eigen e-ma
 
 **Noodcode.** Bij het aanmaken van je account toont de app een **noodcode** (32 tekens). Bewaar die op een veilige plek: zonder wachtwoord én zonder noodcode zijn je gegevens echt weg, want niemand anders kan ze lezen. De kluis is versleuteld met een willekeurige datasleutel die twee keer is ingepakt: met je wachtwoord en met de noodcode. Gevolgen:
 
-- **Wachtwoord wijzigen** (Instellingen → Beveiliging) is snel, ook met tienduizenden klanten: enkel de datasleutel wordt opnieuw ingepakt.
+- **Wachtwoord wijzigen** (Instellingen → Beveiliging) is snel: enkel de datasleutel wordt opnieuw ingepakt.
 - **Wachtwoord vergeten?** Kies op het inlogscherm *Wachtwoord vergeten?*, vul je e-mailadres in en open de link in de mail. Vul daarna je noodcode in en kies een nieuw wachtwoord; al je gegevens blijven behouden. Heb je de sleutel niet meer, dan kun je alleen met een lege kluis opnieuw beginnen.
 - **Nieuwe noodcode** maken kan in de instellingen (de oude werkt dan niet meer).
 - **Account verwijderen** (Instellingen → Account) wist je account en je online kluis definitief. Dit werkt na het (opnieuw) uitvoeren van `supabase.sql`, dat de functie `delete_my_account` toevoegt.
 - Accounts van de eerste versie krijgen bij de eerstvolgende login automatisch een noodcode.
 
-**Zeer grote kluizen.** Staat het script `supabase.sql` in je project, dan bewaart de dienst de klanten apart van de rest. Een gewone wijziging (een deal afvinken) uploadt dan enkel de kleine kern; de klantenlijst gaat alleen mee als die veranderd is. Zonder dat script blijft alles gewoon in één stuk werken.
 
 **Let op:** bewaar ook af en toe een versleutelde back-up (**Instellingen → Back-up**). Een gratis Supabase-project kan na een periode zonder gebruik gepauzeerd worden; de repository bevat een geplande wekelijkse ping die dat voorkomt.
 
@@ -110,7 +108,7 @@ Je app staat nu op:
 
 1. Open het adres. Je ziet het welkomstscherm.
 2. Kies een **sterk wachtwoord** (minstens 8 tekens) en bevestig het, en klik op **Aan de slag**. Dit wachtwoord versleutelt al je gegevens. **Het is niet te herstellen**; schrijf het ergens veilig op.
-3. Klaar: je kunt meteen deals, klanten en verkopen toevoegen. Op dit moment staan je gegevens alleen op dit toestel. Met een account (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)) werk je op al je toestellen.
+3. Klaar: je kunt meteen deals en verkopen toevoegen. Op dit moment staan je gegevens alleen op dit toestel. Met een account (zie [Meerdere gebruikers](#meerdere-gebruikers-accounts)) werk je op al je toestellen.
 
 ### 5. Op meerdere toestellen werken
 
@@ -126,7 +124,6 @@ Ontgrendelen met **Face ID of Touch ID** zet je aan in **Instellingen → Beveil
 
 ### 7. Gegevens importeren
 
-- **Klanten:** open **Klanten → ⋯ → Importeren** en kies je Excel-bestand (`.xlsx`) of CSV, of plak de kolommen uit Excel. Herkende kolommen: klantnummer, firma, contact, plaats, telefoon, gsm, e-mail, uitgave en projectnummer.
 - **Verkopen:** maak onder **Verkopen** een maandpagina en plak je notities of voeg regels toe.
 - **Back-up terug zetten:** **Instellingen → Back-up → Importeren**.
 
@@ -176,3 +173,7 @@ Bijdragen zijn welkom: meld een probleem of stuur een pull request. De app is be
 ## Licentie
 
 Nog niet vastgelegd. Voeg een `LICENSE`-bestand toe (bijvoorbeeld MIT) voordat je het project officieel als open source deelt.
+
+## Beveiliging
+
+Zie [SECURITY.md](SECURITY.md) voor wat Klose beschermt, wat niet, en wat je in Supabase zelf instelt.
