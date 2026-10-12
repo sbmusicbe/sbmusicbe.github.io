@@ -1655,7 +1655,8 @@ dialog{box-shadow:0 0 0 1px rgba(0,0,0,.08),0 30px 80px rgba(0,0,0,.28),0 8px 24
   .main-head .view-sub{font-size:13px;color:var(--muted);margin:0;white-space:nowrap}
   .main-head #editProject{align-self:center}
   /* deal open in het bord: het detailpaneel ligt over de rechterkant, dus de werkbalk schuift mee op */
-  #app.board-mode.with-detail .main-inner>.toolbar{margin-right:calc(var(--detail-w,400px) + 24px)}
+  #app.board-mode.with-detail .main-inner>.toolbar{grid-column:1;grid-row:2;justify-content:flex-start;margin:8px calc(var(--detail-w,400px) + 24px) 0 0;flex-wrap:wrap}
+  #app.board-mode.with-detail .main-head h2{flex-shrink:0;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #app.board-mode.with-detail .main-head #editProject{margin-right:calc(var(--detail-w,400px) + 24px)}
   .topbar{height:40px;padding:0 20px}
   .tb-date{font-size:12.5px}
