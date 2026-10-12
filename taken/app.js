@@ -2856,8 +2856,6 @@ function renderSales(force) {
       ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
       <div class="sales-stat count"><span>Aantal regels</span><b data-count>${rows.length}</b></div>
       <span class="grow"></span>
-      <div class="sales-actions">
-      </div>
     </div>
     <div id="spPace">${paceHtml(pg, main)}</div>
     <div id="spPay">${payHtml(pg, main)}</div>
