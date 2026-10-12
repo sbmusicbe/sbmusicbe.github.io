@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Klose</title>
-<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F1EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,9 +16,6 @@
 <link rel="icon" href="favicon-32.png?v=3" type="image/png" sizes="32x32">
 <link rel="icon" href="favicon-48.png?v=3" type="image/png" sizes="48x48">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
 <script>try{var t=localStorage.getItem("taken.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
@@ -2376,63 +2373,180 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
   .card:hover,.btn:active,.icon-btn:active{transform:none!important}
 }
 
+
+/* lettertypen staan in de app zelf (geen Google nodig, ook offline) */
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/bricolage-grotesque-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/hanken-grotesk-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/hanken-grotesk-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/hanken-grotesk-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/hanken-grotesk-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+
 /* =====================================================================
-   Nieuw ontwerp (naar voorbeeld): witte afgeronde app op een grijze achtergrond, zachte pastelglans bovenaan,
-   grote lichte titel, zwarte actieve tab, blauw-violette hoofdknop, kolommen met ruime witte kaarten.
+   KLOSE HUISSTIJL v1 — platte vlakken, harde randen, één oranje signaal per scherm.
+   Papier (#F4F1EA) als pagina, wit voor kaarten en velden, inkt (#111318) voor tekst.
+   Lettertypen: Bricolage Grotesque 800 (koppen), Hanken Grotesk (tekst), IBM Plex Mono (cijfers).
    ===================================================================== */
-:root{--ink:#0d0e11;--indigo:#4f46e5;--indigo-2:#4338ca;--backdrop:#e3e4e5;--page:#ffffff;--col-bg:#f5f5f6;--edge:rgba(13,14,17,.08);--r-xl:28px;--r-lg:18px;--r-md:12px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#f3f4f6;--backdrop:#08090b;--page:#121316;--col-bg:#191a1e;--edge:rgba(255,255,255,.09);--indigo:#6366f1;--indigo-2:#5558e6}}
-:root[data-theme="dark"]{--ink:#f3f4f6;--backdrop:#08090b;--page:#121316;--col-bg:#191a1e;--edge:rgba(255,255,255,.09);--indigo:#6366f1;--indigo-2:#5558e6}
-
-/* knoppen: afgeronde rechthoeken i.p.v. pillen, wit met fijne rand en zachte schaduw */
-#app .btn,#app .tb-toggle,#app .top-btn{border-radius:var(--r-md)!important;background:var(--panel)!important;color:var(--text)!important;box-shadow:0 0 0 1px var(--edge),0 1px 2px rgba(0,0,0,.05)!important;border:0!important;font-weight:500}
-#app .btn:hover,#app .tb-toggle:hover{box-shadow:0 0 0 1px var(--edge),0 4px 12px rgba(0,0,0,.08)!important}
-#app .btn.primary,#app .tb-add{background:var(--indigo)!important;color:#fff!important;box-shadow:0 6px 16px color-mix(in srgb,var(--indigo) 35%,transparent)!important}
-#app .btn.primary:hover,#app .tb-add:hover{background:var(--indigo-2)!important;filter:none}
-/* Bord/Lijst als tabs: de actieve is zwart */
-#app .seg{background:transparent!important;box-shadow:none!important;padding:0;gap:4px;border-radius:0!important}
-#app .seg button{border-radius:var(--r-md)!important;padding:9px 16px;color:var(--muted)!important;background:transparent!important;box-shadow:none!important;font-weight:500}
-#app .seg button.on{background:var(--ink)!important;color:var(--page)!important}
-/* titel groot en licht */
-#app .main-head h2{font-size:clamp(34px,3.6vw,48px)!important;font-weight:400!important;letter-spacing:-.035em!important;line-height:1.08!important}
-#app .main-head h2 .dot{display:none}
-#app .main-head .view-sub{font-size:14px;color:var(--faint)}
-/* zijbalk: rustig, actieve rij als lichtgrijze blok */
-#side .nav-item{border-radius:var(--r-md)!important;padding:10px 12px!important;font-size:15px!important;font-weight:400!important;color:var(--text);gap:12px}
-#side .nav-item .ico{color:var(--muted)}
-#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"]{background:var(--col-bg)!important;color:var(--text)!important;font-weight:500!important}
-#side .nav-item,#side .nav-item:hover,#side .nav-item.active{border:0!important;box-shadow:none!important;outline:0}
-#side .nav-item:hover{background:var(--col-bg)!important}
-#app .main-head,#app .main-head.scrolled{background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:0!important}
-#app .main-head h2{background:transparent!important}
-@media (min-width:861px){#app .main-head{min-width:0;overflow:hidden}#app .main-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1}#app .main-head .view-sub{flex-shrink:0}}
-#side .side-section{font-size:11.5px!important;letter-spacing:.1em!important;color:var(--faint)!important;padding:26px 12px 8px!important}
-#side .foot-btn{border-radius:var(--r-md)!important}
-/* kolommen en kaarten */
-#app .col{background:var(--col-bg)!important;border:0!important;border-radius:22px!important;padding:12px!important}
-#app .col>header .nm{font-size:15px;font-weight:450;color:var(--muted)}
-#app .col>header .count{background:var(--panel);color:var(--text);border-radius:8px;padding:2px 9px;font-weight:600;font-size:13px;box-shadow:0 0 0 1px var(--edge)}
-#app .board{gap:16px!important;padding:4px 2px 20px!important}
-#app .card{background:var(--panel)!important;border:0!important;border-radius:var(--r-lg)!important;padding:16px 18px!important;box-shadow:0 0 0 1px var(--edge),0 1px 3px rgba(0,0,0,.04)!important}
-#app .card .t-title{font-size:17px;font-weight:450;letter-spacing:-.015em;line-height:1.3}
-#app .card .t-ico{border-radius:8px;font-size:12px;font-weight:600}
-@media (hover:hover){#app .card:hover{box-shadow:0 0 0 1px var(--edge),0 10px 28px rgba(0,0,0,.09)!important;transform:translateY(-2px)}}
-/* deal-paneel en dialogen */
-#app #detail{border-radius:24px!important}
-dialog{border-radius:22px!important}
-
-/* grote schermen: de app als witte afgeronde kaart op een grijze achtergrond, met pastelglans */
-@media (min-width:1100px){
-  html,body{background:var(--backdrop)!important}
-  body{padding:20px;box-sizing:border-box;height:100dvh}
-  #app{height:calc(100dvh - 40px)!important;border-radius:var(--r-xl);background:var(--page)!important;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.05);position:relative}
-  #side{background:transparent!important;border:0!important;padding:22px 16px 18px!important}
-  #app.board-mode #detail{top:36px!important;right:36px!important;bottom:36px!important;max-width:calc(100vw - 330px)}
-  .main-inner{padding:20px 36px 56px!important;background:radial-gradient(900px 360px at 88% -120px,rgba(255,213,128,.30),rgba(255,160,200,.18) 45%,transparent 72%)}
-  #qaToggle,.topbar{background:transparent!important}
+:root{
+  --surface:#F4F1EA;--raised:#FFFFFF;--sunken:#E9E5DB;--b-line:#D9D4C6;--b-border:#7A7667;
+  --ink:#111318;--ink-muted:#4D5059;--signal:#FF4B1F;--signal-hover:#FF6A42;--on-signal:#111318;
+  --signal-text:#C2380F;--signal-soft:#FFE3DA;--won:#1E5BC6;--won-soft:#DCE7FB;--focus:#111318;
+  --f-display:'Bricolage Grotesque','Hanken Grotesk',system-ui,sans-serif;
+  --f-text:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* de oudere lagen lezen deze namen: ze krijgen nu de merkkleuren */
+  --bg:var(--surface);--panel:var(--raised);--card:var(--raised);--side:var(--surface);--col:var(--raised);--seg-on:var(--raised);
+  --text:var(--ink);--muted:var(--ink-muted);--faint:var(--ink-muted);
+  --line:var(--b-line);--hairline:var(--b-line);--hover:var(--sunken);--sel:var(--sunken);--fill:var(--sunken);--group:var(--sunken);
+  --accent:var(--signal-text);--accent-2:var(--signal-text);--on-accent:#fff;--accent-soft:var(--signal-soft);--accent-line:var(--signal);--sel-task:var(--signal-soft);
+  --danger:var(--signal-text);--ok:var(--won);
+  --material:var(--raised);--material-strong:var(--raised);--glass:var(--raised);--glass-strong:var(--raised);--glass-edge:var(--b-line);
+  --glass-shadow:none;--glass-blur:none;--wallpaper:none;--shadow:none;--shadow-card:none;--shadow-lift:none;
+  --ctl-r:10px;--r-card:14px;--ctl-h:44px;--ctl-fs:15px;--ctl-px:16px;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main-inner{background:radial-gradient(900px 360px at 88% -120px,rgba(99,102,241,.16),transparent 70%)!important}}
-:root[data-theme="dark"] .main-inner{background:radial-gradient(900px 360px at 88% -120px,rgba(99,102,241,.16),transparent 70%)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --surface:#111318;--raised:#1A1D24;--sunken:#0B0C10;--b-line:#272B34;--b-border:#6B707C;
+  --ink:#F4F1EA;--ink-muted:#A8ABB4;--signal-text:#FF4B1F;--signal-soft:#3A1D14;--won:#86AEFF;--won-soft:#14233F;--focus:#F4F1EA;--on-accent:#111318}}
+:root[data-theme="dark"]{
+  --surface:#111318;--raised:#1A1D24;--sunken:#0B0C10;--b-line:#272B34;--b-border:#6B707C;
+  --ink:#F4F1EA;--ink-muted:#A8ABB4;--signal-text:#FF4B1F;--signal-soft:#3A1D14;--won:#86AEFF;--won-soft:#14233F;--focus:#F4F1EA;--on-accent:#111318}
+
+html,body{background:var(--surface)!important;color:var(--ink);background-image:none!important}
+body,button,input,select,textarea{font-family:var(--f-text)!important;letter-spacing:0!important;font-size:15px;line-height:22px}
+body{padding:0!important;height:100%!important}
+/* geen schaduwen, geen glas, geen verlopen */
+#side,#detail,.d-head,dialog,#toast,#updBar,.lock-card,.card,.col,.btn,.icon-btn,.chip,.seg,.top-search,.top-btn,.tb-toggle,.sales-stat,.pace,.box,.table-wrap,.pg-card,.props,ul.comments li,#banner,#tabBar,#fab,#ctxMenu,#datePop,#timePop,#fmtPop,.main-head,.topbar,.main-inner,#quickAdd,.d-more,.feat{
+  box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;text-shadow:none!important}
+.main-inner{background:none!important}
+#app{height:100%!important;border-radius:0!important;background:var(--surface)!important;box-shadow:none!important;overflow:visible}
+
+/* koppen: Bricolage Grotesque 800; verder alles Hanken Grotesk */
+h1,.lock-card h1,.lock-card h2,.main-head h2,.brand,#lockTitle{font-family:var(--f-display)!important;font-weight:800!important;letter-spacing:-.04em!important}
+.main-head h2,#dTitle,dialog h3,h3{color:var(--ink)}
+#app .main-head h2{font-size:clamp(32px,3.6vw,48px)!important;line-height:1.08!important;text-wrap:balance}
+#app .main-head h2 .dot{display:none}
+#app .main-head .view-sub{font-family:var(--f-text);font-size:13px;line-height:18px;color:var(--ink-muted)}
+dialog h3,.d-sec h3{font-family:var(--f-text)!important;font-weight:700!important;font-size:20px!important;line-height:28px!important;letter-spacing:0!important}
+#dTitle{font-family:var(--f-text)!important;font-weight:700!important;font-size:20px;line-height:28px;letter-spacing:0!important}
+/* wordmerk: "Klose" met oranje punt, 20% afstand tot de tegel */
+.brand,#lockTitle{color:var(--ink)}
+.brand::after,#lockTitle::after{content:".";color:var(--signal)}
+.brand{font-size:26px!important;line-height:1;gap:.2em!important}
+.lock-tag{margin:2px 0 14px;color:var(--ink-muted);font-size:15px;text-align:center}
+#lockTitle{font-size:48px!important;line-height:52px!important;text-align:center;margin:8px 0 0}
+/* labels: hoofdletters met 0,06 em */
+.side-section,.side-section>span,.eyebrow,.d-sec>span,.prop>span,label.fl,.fl,.pg-table th,table.sales th,.lbl{
+  font-family:var(--f-text)!important;font-size:12px!important;line-height:16px!important;font-weight:600!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:var(--ink-muted)!important}
+.side-section>span::before,.d-sec>span::before,.eyebrow::before{display:none!important}
+/* cijfers in mono, zodat ze onder elkaar uitlijnen */
+.mono,.sales-stat b,.pace b,table.sales td,.pg-table td.num,.cnt,.count,.cl-no,.cl-no-mini,#dTime,#dDue,input[type=tel],input[inputmode=numeric],input[inputmode=decimal],.calc-v,.num{font-family:var(--f-mono)!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
+.sales-stat b{font-size:28px!important;line-height:32px!important;font-weight:500!important}
+
+/* zijbalk */
+#side{background:var(--surface)!important;border:0!important;border-right:1px solid var(--b-line)!important;padding:20px 14px 16px!important}
+#side .nav-item,#side .foot-btn{min-height:44px;border-radius:10px!important;padding:10px 12px!important;font-size:15px!important;font-weight:400!important;color:var(--ink)!important;background:transparent!important;border:0!important;gap:12px}
+#side .nav-item .ico,#side .foot-btn svg{color:var(--ink-muted)}
+#side .nav-item:hover,#side .foot-btn:hover{background:var(--sunken)!important}
+#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"]{background:var(--sunken)!important;font-weight:600!important}
+#side .nav-item.active .cnt,#side .nav-item.on .cnt{color:var(--ink)}
+#side .side-section{padding:24px 12px 8px!important}
+/* knoppen */
+#app .btn,#app .tb-toggle,#app .top-btn{min-height:44px;padding:10px 18px!important;border-radius:10px!important;background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;font-weight:600!important;font-size:15px!important}
+#app .btn:hover,#app .tb-toggle:hover{background:var(--sunken)!important}
+#app .btn.primary,#app .tb-add,#app #lockBtn{background:var(--signal)!important;color:var(--on-signal)!important;border-color:var(--signal)!important}
+#app .btn.primary:hover,#app .tb-add:hover{background:var(--signal-hover)!important;border-color:var(--signal-hover)!important}
+#app .btn.danger,#app .btn.danger:hover{color:var(--signal-text)!important;border-color:var(--signal-text)!important;background:transparent!important}
+#qaBtn,#quickAdd .btn{background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important}
+.link,a.link,button.link{color:var(--signal-text)!important;font-weight:600}
+.icon-btn{border-radius:10px!important;color:var(--ink)}
+.main-head .icon-btn,.toolbar .icon-btn,.d-head .icon-btn,.topbar .icon-btn{min-width:44px;min-height:44px}
+.icon-btn:hover{background:var(--sunken)!important}
+/* Bord/Lijst: gewone knoppen, de gekozen is inkt */
+#app .seg{background:transparent!important;gap:6px;padding:0;border:0!important}
+#app .seg button{min-height:44px;padding:10px 18px!important;border-radius:10px!important;border:1px solid var(--b-border)!important;color:var(--ink)!important;background:transparent!important;font-weight:600!important}
+#app .seg button.on{background:var(--ink)!important;color:var(--surface)!important;border-color:var(--ink)!important}
+/* velden */
+input,select,textarea,.top-search{background:var(--raised)!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:10px!important;min-height:44px;font-size:15px}
+textarea{min-height:88px}
+input::placeholder,textarea::placeholder{color:var(--ink-muted);opacity:1}
+input[type=checkbox],input[type=radio]{min-height:0;accent-color:var(--ink)}
+:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px!important;border-radius:10px}
+/* bord: platte kolommen, kaarten met rand */
+#app .board{gap:16px!important}
+#app .col{background:var(--sunken)!important;border:1px solid var(--b-line)!important;border-top:1px solid var(--b-line)!important;border-radius:14px!important;padding:12px!important}
+#app .col>header .nm{font-size:15px;font-weight:600;color:var(--ink)}
+#app .col>header .dot{width:10px;height:10px;border-radius:50%}
+#app .col>header .count{background:var(--raised);color:var(--ink);border:1px solid var(--b-line);border-radius:999px;padding:0 9px;font-size:13px;font-weight:500;line-height:20px}
+#app .card{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important;padding:14px 16px!important;transform:none}
+#app .card:hover{border-color:var(--b-border)!important;transform:none;box-shadow:none!important}
+#app .card.sel{border:2px solid var(--ink)!important;padding:13px 15px!important}
+#app .card.due-late,#app .card.due-today,#app .card.due-soon{border:1px solid var(--signal)!important}
+#app .card .t-title{font-size:15px;line-height:22px;font-weight:600;letter-spacing:0;color:var(--ink)}
+#app .card .t-ico{border-radius:6px;background:var(--sunken)!important;color:var(--ink)!important;font-size:12px;font-weight:600}
+.col-empty{color:var(--ink-muted)}
+/* status en badges: altijd met een woord, stipje in de kleur van de stap */
+.chip{background:var(--sunken)!important;color:var(--ink)!important;border:0;border-radius:999px;font-size:13px;line-height:18px;font-weight:500;padding:3px 10px}
+.chip.opt{background:var(--sunken)!important;color:var(--ink)!important;display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.chip.opt::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 25%,transparent)!important}
+.chip.due{background:none!important;padding:0!important;color:var(--ink-muted)!important}
+.chip.due.today,.chip.due.late,.chip.due.soon{color:var(--signal-text)!important;font-weight:600}
+.chip.due.today::before,.chip.due.late::before,.chip.due.soon::before{content:"";width:8px;height:8px;background:var(--signal);display:inline-block;margin-right:6px}
+/* lijstrijen */
+.task{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
+.task.sel{border:2px solid var(--ink)!important}
+/* paneel, dialogen, popovers: rand in plaats van schaduw */
+#app #detail{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
+#app.board-mode #detail{top:12px!important;right:12px!important;bottom:12px!important;border:1px solid var(--b-border)!important}
+#detail .d-head{background:var(--raised)!important;border-radius:14px 14px 0 0!important;border-bottom:1px solid var(--b-line)!important}
+.props,#dNotes,ul.comments li,.d-more .props{background:var(--sunken)!important;border:0!important;border-radius:10px!important}
+dialog{background:var(--raised)!important;color:var(--ink);border:1px solid var(--b-border)!important;border-radius:14px!important}
+dialog::backdrop{background:rgba(17,19,24,.55)!important}
+#ctxMenu,#datePop,#timePop,#fmtPop{background:var(--raised)!important;border:1px solid var(--b-border)!important;border-radius:10px!important}
+.sales-stat,.pace,.box,.table-wrap,.pg-card{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
+table.sales thead th,.pg-table thead th{background:var(--sunken)!important}
+/* melding en toast: inkt met lichte tekst; de actie is oranje op inkt */
+#toast,#updBar{background:var(--ink)!important;color:var(--surface)!important;border-radius:10px!important;border:0!important}
+#toast button,#updBar .x{color:var(--surface)!important}
+#updBar #updGo{background:var(--signal)!important;color:var(--on-signal)!important;border:0!important;min-height:44px}
+/* mobiel: tabbalk en de ene knop */
+#tabBar{background:var(--surface)!important;border-top:1px solid var(--b-line)!important}
+#tabBar button{color:var(--ink-muted)}#tabBar button.on,#tabBar button.active{color:var(--ink);font-weight:600}
+#fab{background:var(--signal)!important;color:var(--on-signal)!important;border:0!important}
+/* aanmelden */
+.lock{background:var(--surface)!important}
+.lock-card{background:var(--raised)!important;border:1px solid var(--b-line)!important;border-radius:14px!important}
+/* beweging blijft rustig: geen opheffen, geen schaduw */
+@media (hover:hover){#app .card:hover{transform:none!important}}
+/* verfijning */
+#app .btn,#app .btn.primary,#app .tb-add,#app .seg button,.lock .btn,#lockBtn,#app .top-btn{background-image:none!important;box-shadow:none!important;filter:none!important;text-shadow:none!important;border-bottom-width:1px!important}
+.lock .btn.primary,#lockBtn,#app .btn.primary,#app .tb-add{background:var(--signal)!important;color:var(--on-signal)!important;border:1px solid var(--signal)!important}
+.lock .btn:not(.primary){background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important}
+:is(#app,.lock,dialog,#detail) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]){background:var(--raised)!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;border-radius:10px!important;box-shadow:none!important}
+:is(#app,.lock,dialog,#detail) :is(input,select,textarea):focus{border-color:var(--ink)!important}
+#app #dTitle{background:transparent!important;border-color:transparent!important;min-height:0;padding-left:4px}
+#app #dTitle:hover{border-color:var(--b-line)!important}
+#app .main-head,#app .main-head.scrolled,#app .topbar,#app .main-inner>.main-head h2{background:transparent!important;border:0!important}
+#app .topbar{height:56px!important}
+#side .nav-item.active,#side .nav-item.on,#side .nav-item[aria-current="page"],#side #nav .nav-item,#side #salesNav .nav-item,#side #projNav .nav-item{border:0!important;box-shadow:none!important}
+#app .seg::after,#app .seg::before,#app .toolbar::after,#app .toolbar::before{display:none!important}
+#app .col>header .dot,.chip.opt::before{box-sizing:border-box;border:1.5px solid var(--ink-muted);box-shadow:none!important}
+#app .col>header .dot{width:12px;height:12px}
+/* knoppen ook in dialogen en meldingen; werkbalk onder de titel */
+:is(dialog,#detail,#toast) .btn{min-height:44px;padding:10px 18px!important;border-radius:10px!important;background:transparent!important;color:var(--ink)!important;border:1px solid var(--b-border)!important;font-weight:600!important;background-image:none!important;box-shadow:none!important;filter:none!important}
+:is(dialog,#detail) .btn:hover{background:var(--sunken)!important}
+:is(dialog,#detail) .btn.primary{background:var(--signal)!important;color:var(--on-signal)!important;border-color:var(--signal)!important}
+:is(dialog,#detail) .btn.primary:hover{background:var(--signal-hover)!important}
+:is(dialog,#detail) .btn.danger{color:var(--signal-text)!important;border-color:var(--signal-text)!important}
+.feat,label.feat{border:1px solid var(--b-line)!important;background:var(--raised)!important;border-radius:10px!important}
+@media (min-width:861px){
+  #app .main-inner>.toolbar{grid-column:1/-1!important;grid-row:2!important;justify-content:flex-start!important;margin:12px 0 0!important;flex-wrap:wrap!important}
+  #app.board-mode.with-detail .main-inner>.toolbar{margin-right:calc(var(--detail-w,400px) + 24px)!important}
+  #app .main-head{grid-column:1/-1!important}
+  #app.board-mode.with-detail .main-head{margin-right:calc(var(--detail-w,400px) + 24px)!important}
+  #app .main-head h2{white-space:normal!important;overflow:visible!important}
+}
+#app .seg{height:auto!important;overflow:visible!important;align-items:stretch}
 </style>
 </head>
 <body>
@@ -2442,6 +2556,7 @@ dialog{border-radius:22px!important}
   <form id="lockForm" class="lock-card" autocomplete="on">
     <div class="lock-logo has-img"><img src="icon.svg" alt="" onerror="this.parentNode.classList.remove('has-img')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
     <h1 id="lockTitle">Klose</h1>
+    <p class="lock-tag">De CRM voor hardsales.</p>
     <p id="lockSub" class="muted"></p>
     <input type="text" name="username" autocomplete="username" value="taken" hidden>
     <div id="lockFields"></div>
@@ -2541,13 +2656,15 @@ const MONTHS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov
 // Kanban-kolommen (standaard). Kaarten in een kolom met done:true gelden als afgewerkt.
 // De kolommen zelf staan in data.stages en zijn aan te passen via "Kolommen".
 const DEFAULT_STAGES = [
-  {id:'callback', label:'Terugbellen', color:'#eb8909', done:false, order:0},
-  {id:'mail', label:'Antwoord op mail', color:'#246fe0', done:false, order:1},
-  {id:'positive', label:'Positief', color:'#3aa655', done:true, order:2},
-  {id:'negative', label:'Negatief', color:'#d1453b', done:true, order:3},
+  {id:'callback', label:'Terugbellen', color:'#FF4B1F', done:false, order:0},
+  {id:'mail', label:'Offerte', color:'#4D5059', done:false, order:1},
+  {id:'positive', label:'Gewonnen', color:'#1E5BC6', done:true, order:2},
+  {id:'negative', label:'Verloren', color:'#111318', done:true, order:3},
 ];
+// vroegere standaardstappen (groen tegenover rood is niet toegankelijk): alleen omzetten als de gebruiker ze niet aanpaste
+const OLD_STAGES = {callback:['Terugbellen', '#eb8909'], mail:['Antwoord op mail', '#246fe0'], positive:['Positief', '#3aa655'], negative:['Negatief', '#d1453b']};
 // extra sneltoetsen voor snel toevoegen, naast @<kolomnaam>
-const STAGE_ALIASES = {callback:['bellen'], mail:['mail']};
+const STAGE_ALIASES = {callback:['bellen'], mail:['mail', 'offerte'], positive:['gewonnen', 'positief'], negative:['verloren', 'negatief']};
 const sortStages = list => [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
 const stages = () => sortStages(data.stages);
 // Verkopen: maandpagina's met een tabel. De kolommen gelden voor alle pagina's.
@@ -2836,6 +2953,10 @@ function normalize(d) {
   if (d.settings.autolock === undefined) d.settings.autolock = 30;
   if (d.settings.sync === undefined) d.settings.sync = null;
   if (!d.stages?.length) d.stages = DEFAULT_STAGES.map(x => ({...x, u:0}));
+  for (const st of d.stages) {
+    const o = OLD_STAGES[st.id], n = DEFAULT_STAGES.find(x => x.id === st.id);
+    if (o && n && st.label === o[0] && String(st.color).toLowerCase() === o[1]) { st.label = n.label; st.color = n.color; }
+  }
   d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.clients ||= []; d.events ||= []; d.notes ||= [];
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
   for (const r of d.sales) r.values ||= {};
@@ -3619,7 +3740,7 @@ function askFeatures() {
 // Alleen deals: rustige stappen in plaats van het verkoopproces (enkel zolang er nog geen deals zijn)
 function neutralStages() {
   if (data.tasks.length) return;
-  const set = {callback:['Te doen', '#eb8909', false], mail:['Bezig', '#246fe0', false], positive:['Klaar', '#3aa655', true]};
+  const set = {callback:['Te doen', '#FF4B1F', false], mail:['Bezig', '#4D5059', false], positive:['Klaar', '#1E5BC6', true]};
   for (const st of data.stages) { const n = set[st.id]; if (n) { st.label = n[0]; st.color = n[1]; st.done = n[2]; touch(st); } }
   const neg = data.stages.find(x => x.id === 'negative'); if (neg) { data.stages = data.stages.filter(x => x !== neg); tombstone(neg.id); }
 }
@@ -3922,7 +4043,7 @@ function taskRow(t) {
 }
 function taskCard(t) {
   const ds = t.time ? dueState(t) : '';
-  return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' ? 'due-' + ds : ''}" data-id="${t.id}">
+  return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' || ds === 'today' ? 'due-' + ds : ''}" data-id="${t.id}">
     ${taskIcon(t)}<div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>${taskMeta(t)}</article>`;
 }
 function renderList() {
@@ -3937,7 +4058,7 @@ function renderList() {
       <ul class="tasks">${(cut ? g.tasks.slice(0, LIST_LIMIT) : g.tasks).map(taskRow).join('')}</ul>${cut ? `<button type="button" class="link list-more" data-lmore="${esc(gk)}">Toon alle ${g.tasks.length}</button>` : ''}</section>`;
   }
   if (!open.length) {
-    const msg = searchQ || p.fv ? 'Geen deals gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag. Geniet ervan!' : 'Nog geen deals hier.';
+    const msg = searchQ || p.fv ? 'Geen deals gevonden.' : view.type === 'today' ? 'Niets meer voor vandaag.' : 'Nog geen deals hier.';
     html = `<div class="empty">${I.done}<div>${msg}</div></div>`;
   }
   if (p.showDone && done.length) html += `<details class="done-sec" open><summary>Afgewerkt (${done.length})</summary><ul class="tasks">${done.map(taskRow).join('')}</ul></details>`;
@@ -4087,7 +4208,7 @@ function renderWelcome() {
   const el = $('#banner'); if (!el) return;
   const empty = !data.tasks.length && view.type === 'all';
   el.hidden = !empty;
-  el.innerHTML = empty ? '<span><b>Welkom!</b> Begin met je eerste deal: klik op de knop, typ wat je wilt doen en druk op Enter. Je kunt er later een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
+  el.innerHTML = empty ? '<span><b>Nog geen deals.</b> Voeg je eerste deal toe: typ de naam en druk op Enter. Je kunt er later een deadline, een klant of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
 }
 function renderHead() {
   renderWelcome();
@@ -5468,7 +5589,7 @@ function salesPace(pg, total) {
 }
 function paceHtml(pg, total) {
   const p = salesPace(pg, total); if (!p) return '';
-  if (p.left <= 0) return `<div class="pace hit"><b>🎉 Doel behaald!</b><span>${eur(-p.left)} boven de doelstelling · ${p.n} werkdagen</span></div>`;
+  if (p.left <= 0) return `<div class="pace hit"><b>Doel behaald.</b><span>${eur(-p.left)} boven de doelstelling · ${p.n} werkdagen</span></div>`;
   if (p.past || !p.remaining) return `<div class="pace behind"><b>Nog ${eur(p.left)} tekort</b><span>maand afgelopen · ${p.n} werkdagen</span></div>`;
   const sched = p.elapsed ? (p.diff >= 0 ? `<em class="ahead">${eur(p.diff)} vóór op schema</em>` : `<em class="behind">${eur(-p.diff)} achter op schema</em>`) : '';
   if (!p.after) return `<div class="pace behind"><div><b>Nog ${eur(p.left)} te gaan</b><span>vandaag is de laatste werkdag van de maand</span></div>${sched ? `<div>${sched}</div>` : ''}</div>`;
