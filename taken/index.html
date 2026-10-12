@@ -2743,6 +2743,61 @@ html body #tour .tour-card .tour-n,html body #tour .tour-card .tour-x{color:#4D5
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body #tour .tour-card{background:linear-gradient(145deg,rgba(40,44,54,.97),rgba(24,27,34,.95))!important;color:#fff}:root:not([data-theme="light"]) body #tour .tour-card :is(.tour-n,.tour-x){color:#A8ABB4}}
 :root[data-theme="dark"] body #tour .tour-card{background:linear-gradient(145deg,rgba(40,44,54,.97),rgba(24,27,34,.95))!important;color:#fff}
 :root[data-theme="dark"] body #tour .tour-card :is(.tour-n,.tour-x){color:#A8ABB4}
+
+/* ---- compactere dichtheid op computer (muis): kleinere knoppen, kaarten en koppen; op touch blijft alles 44px ---- */
+@media (min-width:861px) and (pointer:fine){
+  html body,html body button,html body input,html body select,html body textarea{font-size:14px;line-height:20px}
+  html body #app{grid-template-columns:248px minmax(0,1fr)!important}
+  html body #app.with-detail{grid-template-columns:248px minmax(0,1fr) var(--detail-w,400px)!important}
+  html body #app.board-mode.with-detail{grid-template-columns:248px 1fr!important}
+  html body #app #side{padding:16px 10px 12px!important;border-radius:28px!important;margin:10px 0 10px 10px!important;height:calc(100% - 20px)!important}
+  html body #side .nav-item,html body #side .side-section{font-size:14px!important}
+  html body #side .nav-item{min-height:36px!important;padding:6px 12px!important}
+  html body #side .side-section{padding:18px 12px 6px!important}
+  html body .brand{font-size:22px!important}
+  html body #app .main-inner{padding:18px 28px 48px!important}
+  html body #app .main-head h2{font-size:clamp(26px,2.6vw,34px)!important}
+  html body #app .topbar{height:52px!important}
+  html body #app .btn,html body #app .tb-toggle,html body :is(dialog,#detail) .btn{min-height:36px!important;padding:0 16px!important;font-size:14px!important}
+  html body :is(#app,.lock,dialog,#detail) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]){min-height:36px;font-size:14px}
+  html body #app .top-search{min-height:38px!important;padding:0 14px!important}
+  html body #app #topHelp,html body #app .topbar .top-btn{width:38px!important;height:38px!important;min-width:38px!important}
+  html body #side .foot-row .foot-btn{width:38px!important;height:38px!important;min-width:38px!important}
+  html body .side-section .icon-btn,html body .col>header .icon-btn,html body .col-right .icon-btn{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important}
+  html body #app .board{gap:14px!important}
+  html body #app .col>header .nm{font-size:13px}
+  html body #app .card{padding:14px 16px!important;border-radius:20px!important}
+  html body #app .card.sel{padding:13px 15px!important}
+  html body #app .card .t-title{font-size:14px;line-height:20px}
+  html body .col-add input:not([type=checkbox]){min-height:36px!important;padding:0 14px!important}
+  html body #projCalc.pcalc{padding:16px 18px 18px!important;margin-bottom:20px!important;border-radius:24px!important}
+  html body #projCalc .pc-fields input{font-size:15px;min-height:36px}
+  html body #projCalc .pc-togo{margin:16px 0 12px!important;padding-top:12px}
+  html body #projCalc .pc-togo b{font-size:24px;line-height:28px}
+  html body #projCalc .pc-out li{padding:9px 12px!important;border-radius:16px!important}
+  html body #projCalc .pc-out li b{font-size:16px;line-height:20px}
+  html body #detail .d-body{padding:6px 22px 24px!important}
+  html body .props{padding:2px 14px!important}
+  html body .props .prop{min-height:0}
+  html body .sales-stat{padding:10px 14px}
+  html body .sales-stat b{font-size:22px!important;line-height:26px!important}
+  html body #salesPage table.sales td,html body #salesPage table.sales th{padding-top:6px;padding-bottom:6px}
+  html body #salesPage .cell{min-height:32px!important}
+  html body #app .seg button{min-height:32px!important;padding:0 14px!important}
+  dialog.st-dlg{width:min(900px,92vw)!important;height:min(640px,88vh)!important}
+  .st-wrap{grid-template-columns:208px minmax(0,1fr)}
+  .st-pane{padding:26px 32px 30px}
+  .st-pane h2{font-size:26px;line-height:30px}
+  .st-tab{min-height:36px;padding:0 14px;font-size:14px}
+  .st-row{padding:12px 16px}
+  .st-nav h3{font-size:22px!important;line-height:26px!important}
+  html body .chip{padding:3px 10px;font-size:12px}
+}
+@media (min-width:861px) and (pointer:fine){
+  html body :is(#app,.lock,dialog,#detail) :is(input,select):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]){height:36px!important;min-height:36px!important;padding-top:0!important;padding-bottom:0!important}
+  html body #projCalc .pc-fields input{height:38px!important;min-height:38px!important}
+  html body #qaInput{height:36px!important}
+}
 </style>
 </head>
 <body>
