@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Klose",
   "short_name": "Klose",
-  "description": "Klose: deals, kanban en verkopen – versleuteld en gesynchroniseerd.",
+  "description": "Klose, de CRM voor hardsales. Deals, opvolging en verkopen, versleuteld en gesynchroniseerd.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -16,8 +16,8 @@
       "auto"
     ]
   },
-  "background_color": "#fcfcfc",
-  "theme_color": "#13151a",
+  "background_color": "#F4F1EA",
+  "theme_color": "#111318",
   "icons": [
     {
       "src": "icon.svg?v=3",
