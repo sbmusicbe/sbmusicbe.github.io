@@ -27,19 +27,19 @@ test('JSON-LD: Organization met contactPoint en PostalAddress', () => {
   assert.equal(node('WebSite').url, 'https://sbmusic.be/');
 });
 
-test('trust pages: /about, /contact, /privacy hebben ≥500 tekens', () => {
-  for (const f of ['about.html', 'contact.html', 'privacy.html']) {
+test('privacy-pagina bestaat en heeft ≥500 tekens', () => {
+  for (const f of ['privacy.html', 'voorwaarden.html']) {
     assert.ok(existsSync(new URL('../' + f, import.meta.url)), f);
     assert.ok(text(read(f)).length >= 500, f);
   }
 });
 
-test('footer linkt naar trust pages en ze staan in de sitemap', () => {
+test('footer linkt naar privacy/voorwaarden en ze staan in de sitemap', () => {
   const sm = read('sitemap.xml');
-  for (const f of ['about.html', 'contact.html', 'privacy.html', 'voorwaarden.html']) {
+  for (const f of ['privacy.html', 'voorwaarden.html']) {
     assert.ok(sm.includes(`https://sbmusic.be/${f}`), f);
   }
-  for (const f of ['about.html', 'contact.html', 'privacy.html', 'voorwaarden.html']) assert.ok(home.includes(`href="${f}"`), f);
+  for (const f of ['privacy.html', 'voorwaarden.html']) assert.ok(home.includes(`href="${f}"`), f);
 });
 
 test('llms.txt heeft when-to-use sectie en wijst naar Markdown-versies', () => {
@@ -52,7 +52,7 @@ test('llms.txt heeft when-to-use sectie en wijst naar Markdown-versies', () => {
 });
 
 test('Markdown-bestanden en 404.md zijn niet leeg en 404.md bevat links', () => {
-  for (const f of ['index.md', 'about.md', 'contact.md']) assert.ok(read(f).length > 200, f);
+  for (const f of ['index.md']) assert.ok(read(f).length > 200, f);
   const nf = read('404.md');
   assert.ok(nf.length >= 20);
   assert.match(nf, /sitemap\.xml/);
@@ -61,4 +61,12 @@ test('Markdown-bestanden en 404.md zijn niet leeg en 404.md bevat links', () => 
 
 test('homepage verwijst naar Markdown-alternatief', () => {
   assert.match(home, /<link rel="alternate" type="text\/markdown" href="\/index\.md"/);
+});
+
+test('link in bio: formulier-popup en socials op de homepage', () => {
+  assert.match(home, /id="openForm"/);
+  assert.match(home, /role="dialog" aria-modal="true"/);
+  assert.match(home, /formsubmit\.co\/ajax\/hey@sbmusic\.be/);
+  for (const u of ['instagram.com/sbmusicbe', 'tiktok.com/@sbmusicbe', 'facebook.com/sbmusicbe']) assert.ok(home.includes(u), u);
+  for (const f of ['assets/sb-avatar.jpg', 'assets/logo-sb-white.png']) assert.ok(existsSync(new URL('../' + f, import.meta.url)), f);
 });

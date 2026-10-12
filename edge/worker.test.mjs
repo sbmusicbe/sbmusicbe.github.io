@@ -5,8 +5,6 @@ import worker, { prefersMarkdown } from './worker.js';
 const FILES = {
   '/': ['text/html; charset=utf-8', '<html>home</html>', 200],
   '/index.md': ['text/markdown', '# Home markdown', 200],
-  '/about.md': ['text/markdown', '# Over SB', 200],
-  '/about.html': ['text/html; charset=utf-8', '<html>about</html>', 200],
   '/privacy.html': ['text/html; charset=utf-8', '<html>privacy</html>', 200],
   '/404.md': ['text/markdown', '# 404 — Pagina niet gevonden\n\nBekijk /llms.txt en /sitemap.xml.', 200],
 };
@@ -42,14 +40,6 @@ test('homepage: HTML blijft HTML, ook met Vary: Accept', async () => {
     assert.match(r.headers.get('vary'), /accept-encoding/);
     assert.match(r.headers.get('vary'), /Accept/);
     assert.equal(await r.text(), '<html>home</html>');
-  }
-});
-
-test('/about en /about.html geven Markdown', async () => {
-  for (const p of ['/about', '/about.html']) {
-    FILES['/about'] = FILES['/about.html'];
-    const r = await get(p, 'text/markdown');
-    assert.equal(await r.text(), '# Over SB');
   }
 });
 

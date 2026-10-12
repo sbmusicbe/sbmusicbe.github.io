@@ -5,10 +5,6 @@
 export const MARKDOWN_PAGES = {
   '/': '/index.md',
   '/index.html': '/index.md',
-  '/about': '/about.md',
-  '/about.html': '/about.md',
-  '/contact': '/contact.md',
-  '/contact.html': '/contact.md',
 };
 const NOT_FOUND_MD = '/404.md';
 

@@ -22,9 +22,7 @@ Niet geschikt voor: productie- of masteringwerk, muziekles, of het verhuren van 
 
 ## Pagina's
 
-- [Home](https://sbmusic.be/): overzicht, sets en events, stijlen, cijfers. Markdown-versie: https://sbmusic.be/index.md
-- [Over SB](https://sbmusic.be/about.html): wie SB is, hoe een set eruitziet. Markdown: https://sbmusic.be/about.md
-- [Contact](https://sbmusic.be/contact.html): e-mail, socials, hoe je aanvraagt. Markdown: https://sbmusic.be/contact.md
+- [Home / link in bio](https://sbmusic.be/): foto, socials en het aanvraagformulier. Markdown-versie: https://sbmusic.be/index.md
 - [Privacyverklaring](https://sbmusic.be/privacy.html)
 - [Algemene voorwaarden](https://sbmusic.be/voorwaarden.html)
 
