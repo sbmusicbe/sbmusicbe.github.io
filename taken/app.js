@@ -2852,6 +2852,7 @@ function renderSales(force) {
   const target = toNum(pg.target), main = moneyCols[0] ? tot.per[moneyCols[0].id] : 0;
   const pct = target ? Math.round(main / target * 100) : 0;
   el.innerHTML = `
+    <section class="pcalc sp-card">
     <div class="sales-head">
       ${moneyCols.map(c => `<div class="sales-stat"><span>${esc(c.name)} totaal</span><b data-total="${c.id}">${eur(tot.per[c.id])}</b></div>`).join('')}
       ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
@@ -2860,6 +2861,7 @@ function renderSales(force) {
     </div>
     <div id="spPace">${paceHtml(pg, main)}</div>
     <div id="spPay">${payHtml(pg, main)}</div>
+    </section>
     <button type="button" class="btn primary" id="spAdd" style="margin-bottom:12px">+ Verkoop toevoegen</button>
     <div class="table-wrap"><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
