@@ -16,8 +16,8 @@
     "directories": { "buildResources": "build", "output": "dist" },
     "files": ["main.js", "offline.html"],
     "win": { "icon": "build/icon.png", "target": ["nsis", "portable"] },
-    "nsis": { "oneClick": true, "perMachine": false },
-    "artifactName": "Klose-${version}-${target}.${ext}"
+    "nsis": { "oneClick": true, "perMachine": false, "artifactName": "Klose-Setup-${version}.${ext}" },
+    "portable": { "artifactName": "Klose-Portable-${version}.${ext}" }
   },
   "devDependencies": {
     "electron": "33.2.1",
