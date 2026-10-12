@@ -67,7 +67,7 @@ test('link in bio: formulier-popup en socials op de homepage', () => {
   assert.match(home, /id="openForm"/);
   assert.match(home, /role="dialog" aria-modal="true"/);
   assert.match(home, /formsubmit\.co\/ajax\/hey@sbmusic\.be/);
-  for (const u of ['instagram.com/sbmusicbe', 'tiktok.com/@sbmusicbe', 'facebook.com/sbmusicbe']) assert.ok(home.includes(u), u);
+  for (const u of ['instagram.com/sbmusicbe', 'tiktok.com/@sbmusicbe', 'facebook.com/sbmusicbe', 'soundcloud.com/sbmusicbe']) assert.ok(home.includes(u), u);
   for (const f of ['assets/sb-avatar.jpg', 'assets/logo-sb-white.png']) assert.ok(existsSync(new URL('../' + f, import.meta.url)), f);
 });
 
