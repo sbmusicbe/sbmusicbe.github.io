@@ -1,6 +1,6 @@
 # Multi-user voor Klose: uitwerking
 
-> **Status:** alles uit dit plan is gebouwd en staat aan zodra `taken/cloud.json` bestaat: accounts met e-mail en wachtwoord, een versleutelde kluis per account met datasleutel en **herstelsleutel**, **snelle wachtwoordwijziging**, **wachtwoord vergeten** via een herstelmail, synchronisatie met versiecontrole, het **splitsen van zeer grote kluizen** (klanten apart) en het meenemen van bestaande gegevens. Het SQL-script staat nu in [`supabase.sql`](supabase.sql). Opmerking: in de praktijk staan de ingepakte datasleutels in de kluis zelf (`blob.w`); de kolom `wrapped` blijft leeg en ongebruikt.
+> **Status:** alles uit dit plan is gebouwd en staat aan zodra `taken/cloud.json` bestaat: accounts met e-mail en wachtwoord, een versleutelde kluis per account met datasleutel en **herstelsleutel**, **snelle wachtwoordwijziging**, **wachtwoord vergeten** via een herstelmail, synchronisatie met versiecontrole, het meenemen van bestaande gegevens. Het SQL-script staat nu in [`supabase.sql`](supabase.sql). Opmerking: in de praktijk staan de ingepakte datasleutels in de kluis zelf (`blob.w`); de kolom `wrapped` blijft leeg en ongebruikt.
 
 Doel: **aparte accounts**. Iedereen logt in met een eigen e-mailadres en wachtwoord en ziet alleen zijn eigen gegevens. Zonder GitHub-token, zonder sleutelbestand, zonder zelf een gist aan te maken. Het wachtwoord blijft de sleutel van de versleuteling: de dienst bewaart alleen versleutelde gegevens (*zero-knowledge*).
 
@@ -82,7 +82,7 @@ Wie nu lokaal of met een gist werkt, logt in of maakt een account aan en kiest *
 
 - **Afhankelijkheid van een dienst.** Gegevens zijn versleuteld en te exporteren (bestaande back-upfunctie), dus overstappen blijft mogelijk.
 - **Gratis plan.** Pauzeren bij weinig gebruik en een beperkt aantal e-mails per uur: gebruik een geplande ping en schakel bevestigingsmails uit of koppel een eigen mailserver.
-- **Grote kluizen.** Bij zeer veel klanten kan de kluis tientallen MB groot worden. Daarom splitsen we (zoals lokaal al gebeurt) de klantenlijst in een apart bestand in Storage.
+- **Grote kluizen.** De klantendatabase bestaat niet meer, dus het splitsen van de kluis is verwijderd; de kolommen `clients` en `clients_rev` blijven leeg.
 - **Wachtwoordkwaliteit.** Omdat het wachtwoord de enige sleutel is, eisen we minstens 10 tekens en tonen we een sterktemeter.
 - **Delen binnen een team** (gezamenlijke klanten) is bewust *niet* inbegrepen: dat vraagt gedeelde sleutels per team. Mogelijk als vervolgstap.
 

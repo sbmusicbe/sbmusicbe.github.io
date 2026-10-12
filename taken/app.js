@@ -167,26 +167,6 @@ function wkCall(msg) {
   } catch (e) { wkBroken = true; return Promise.reject(e); }
 }
 const concatBytes = parts => { const out = new Uint8Array(parts.reduce((a, p) => a + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out; };
-// Klanten (tienduizenden) worden in blokken van 1000 omgezet naar tekst en bewaard zolang ze niet veranderen.
-// Een blok is de inhoud van een JSON-lijst zonder haken; blokken worden gescheiden door ",\n" (komt in JSON-tekst nooit voor).
-const CL_MARK = '"@@clients@@"';
-let clCache = null, persistCount = 0, forceFull = false;
-const clientsSig = arr => { let sum = 0, mx = 0; for (const c of arr) { const u = c.u || 0; sum += u; if (u > mx) mx = u; } return arr.length + ':' + mx + ':' + sum + ':' + clientsVer; };
-function clientBytes(arr, full) {
-  const sg = clientsSig(arr);
-  if (full || !clCache || clCache.arr !== arr || clCache.sig !== sg) {
-    const parts = []; for (let i = 0; i < arr.length; i += 1000) parts.push(JSON.stringify(arr.slice(i, i + 1000)).slice(1, -1));
-    clCache = {arr, sig:sg, bytes:te.encode(parts.join(',\n'))};
-  }
-  return clCache.bytes;
-}
-// volledige kluis (zoals in de online kluis en in back-ups): alle gegevens inclusief klanten in één stuk
-function encodeParts(obj, full) {
-  if (obj !== data || !obj.clients || obj.clients.length < 500) return [te.encode(JSON.stringify(obj))];
-  const cb = clientBytes(obj.clients, full);
-  const head = JSON.stringify({...obj, clients:'@@clients@@'}), i = head.indexOf(CL_MARK);
-  return [te.encode(head.slice(0, i) + '['), cb, te.encode(']' + head.slice(i + CL_MARK.length))];
-}
 async function sealBytes(k, parts) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const len = parts.reduce((a, p) => a + p.length, 0), zip = len > 200000 && 'CompressionStream' in window;   // grote kluis eerst samendrukken
@@ -198,7 +178,7 @@ async function sealBytes(k, parts) {
   }
   return {v:1, kdf:'PBKDF2-SHA256', iter:k.iter, salt:b64(k.salt), iv:b64(iv), ct, ...(zip ? {z:'gzip'} : {}), ...(k.w ? {w:k.w} : {})};
 }
-const seal = (k, obj, full) => sealBytes(k, encodeParts(obj, full));
+const seal = (k, obj) => sealBytes(k, [te.encode(JSON.stringify(obj))]);
 async function unsealText(key, blob) {
   try { return (await wkCall({op:'open', ct:blob.ct, iv:blob.iv, zip:blob.z === 'gzip', key})).text; }
   catch (e) {
@@ -370,50 +350,19 @@ const VIEW_FEATURE = {agenda:'agenda', btw:'btw', sales:'sales'};
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
-/* Op het toestel staat de kluis in twee delen: een kleine kern (deals, verkopen, instellingen) en de klanten apart (IndexedDB).
-   Een gewone wijziging schrijft enkel de kern; de klanten enkel als ze veranderd zijn. Bij het ontgrendelen opent de app
-   meteen met de kern en laden de klanten daarna op de achtergrond. De online kluis en back-ups blijven één volledige kluis. */
-const CL_KEY = 'taken.clients.';
-let clPending = false, clFailed = false, clRev = null, clSigSaved = null, clReadyP = Promise.resolve();
 function persist() {
   persistChain = persistChain.then(async () => {
-    const full = forceFull || ++persistCount % 25 === 0; forceFull = false;
-    if (clPending || data.clients.length >= 500) {
-      try {
-        let rev = clRev;
-        if (!clPending) {
-          const stamp = clientsSig(data.clients) + '|' + b64(K.salt);
-          if (!rev || stamp !== clSigSaved) {
-            rev = uid();
-            const cb = await sealBytes(K, [clientBytes(data.clients, full)]);
-            cb.n = data.clients.length; cb.rev = rev;
-            await idbKV('set', CL_KEY + rev, cb);
-            clSigSaved = stamp;
-          }
-        }
-        const core = await sealBytes(K, [te.encode(JSON.stringify({...data, clients:[]}))]);
-        core.split = 1; core.clv = rev;
-        await storeVault(core);
-        if (clRev && clRev !== rev) idbKV('del', CL_KEY + clRev).catch(() => {});
-        clRev = rev;
-        return core;
-      } catch (e) { if (clPending) throw e; console.warn('Gesplitste opslag mislukt, terug naar één kluis', e); }
-    }
-    const blob = await seal(K, data, full);   // klein, of gesplitste opslag niet beschikbaar: één kluis zoals vroeger
+    const blob = await seal(K, data);
     await storeVault(blob);
-    if (clRev) { idbKV('del', CL_KEY + clRev).catch(() => {}); clRev = null; clSigSaved = null; }
     return blob;
   }).catch(e => { console.error(e); toast('Opslaan mislukt: ' + e.message); });
   return persistChain;
 }
-// volledige kluis voor de dienst, een back-up of een controle (bevat alle klanten)
+// volledige kluis voor de dienst of een back-up
 async function persistFull() {
-  await persist(); await clReadyP;
-  if (clPending) throw new Error('de klanten zijn nog niet geladen');
+  await persist();
   return seal(K, data);
 }
-async function readClients() { return []; }   // de klantendatabase is verwijderd: oude blobs worden niet meer gelezen
-function startClientLoad() { clPending = false; clFailed = false; clRev = null; clReadyP = Promise.resolve(); }   // de klantendatabase bestaat niet meer: er valt niets te laden
 let saveTimer = null;
 function save(soon) {
   data.updatedAt = now();
@@ -490,36 +439,26 @@ async function cloudToken() {
   throw new Error('Sessie verlopen. Vergrendel en log opnieuw in.');
 }
 const conflictError = () => Object.assign(new Error('De online kluis is intussen gewijzigd.'), {conflict:true});
-// Zeer grote kluizen staan in twee delen: de kern in kolom blob, de klanten apart in kolom clients (zie supabase.sql).
-// Ontbreken die kolommen (script nog niet uitgevoerd), dan blijft alles in één stuk in blob zitten.
-let cloudSplit = null, cloudClientsRev = null, cloudClientsBlob = null;
+// Bestaan de kolommen clients/clients_rev online (zie supabase.sql), dan worden oude klantengegevens bij het opslaan gewist.
+let cloudSplit = null;
 // kluis ophalen: null = nog geen kluis, NOT_MODIFIED = niets veranderd sinds meta.ifNoneMatch (de versie dient als etag)
 async function cloudGet(s, meta) {
   const ss = await cloudToken(), q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
   let head;
   try { head = await sb(q + '&select=rev,clients_rev', {token:ss.token}); cloudSplit = true; }
   catch (e) { if (!/42703|clients_rev|does not exist/i.test((e.code || '') + e.message) || e.status !== 400) throw e; cloudSplit = false; head = await sb(q + '&select=rev', {token:ss.token}); }
-  if (!head.length) { cloudRev = null; cloudClientsRev = null; if (meta) meta.etag = null; return null; }
-  cloudRev = head[0].rev; cloudClientsRev = head[0].clients_rev || null; if (meta) meta.etag = String(cloudRev);
+  if (!head.length) { cloudRev = null; if (meta) meta.etag = null; return null; }
+  cloudRev = head[0].rev; if (meta) meta.etag = String(cloudRev);
   if (meta?.ifNoneMatch && meta.ifNoneMatch === String(cloudRev)) return NOT_MODIFIED;
   const full = await sb(q + '&select=blob,rev', {token:ss.token});
   if (!full.length) { cloudRev = null; return null; }
   cloudRev = full[0].rev; if (meta) meta.etag = String(cloudRev);
-  const blob = JSON.parse(full[0].blob);
-  if (blob.split) {   // de klanten staan apart; enkel opnieuw downloaden als ze veranderd zijn
-    blob.clientsBlob = null;   // oude klantengegevens worden niet meer opgehaald
-  }
-  return blob;
+  return JSON.parse(full[0].blob);
 }
 // opslaan met versiecontrole: alleen als niemand anders intussen opsloeg (anders volgt samenvoegen)
 async function cloudPut(s, blob, meta) {
-  const ss = await cloudToken(), {clientsBlob, ...core} = blob, q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
-  const extra = {};
-  if (cloudSplit) {
-    if (clientsBlob) { extra.clients = JSON.stringify(clientsBlob); extra.clients_rev = core.clv; }
-    else if (!core.split) { extra.clients = null; extra.clients_rev = null; }
-  }
-  const body = {blob:JSON.stringify(core), ...extra};
+  const ss = await cloudToken(), q = '/rest/v1/vaults?user_id=eq.' + encodeURIComponent(ss.userId);
+  const body = {blob:JSON.stringify(blob), ...(cloudSplit ? {clients:null, clients_rev:null} : {})};
   let rows;
   if (cloudRev == null) {
     try { rows = await sb('/rest/v1/vaults', {method:'POST', token:ss.token, headers:{Prefer:'return=representation'}, body:{user_id:ss.userId, wrapped:{}, rev:1, ...body}}); }
@@ -529,40 +468,17 @@ async function cloudPut(s, blob, meta) {
     if (!rows?.length) throw conflictError();
   }
   cloudRev = rows[0].rev; if (meta) meta.etag = String(cloudRev);
-  if (cloudSplit) {
-    if (clientsBlob) { cloudClientsRev = core.clv; cloudClientsBlob = clientsBlob; }
-    else if (!core.split) { cloudClientsRev = null; cloudClientsBlob = null; }
-  }
 }
-// de online kluis volledig ontsleutelen (kern + eventueel apart bewaarde klanten)
-async function unsealRemote(key, blob) {
-  const core = await unseal(key, blob);
-  if (blob.split) {
-    core.clients = [];
-  }
-  return core;
-}
-// wat naar de dienst gaat: een volledige kluis, of (grote kluis, dienst klaar voor splitsen) kern + klanten apart
-async function persistCloud() {
-  if (!cloudSplit) return persistFull();
-  const core = await persist(); await clReadyP;
-  if (clPending) throw new Error('de klanten zijn nog niet geladen');
-  if (!core) return persistFull();
-  if (!core.split) return core;   // klein: één volledige kluis
-  if (clRev) {
-    const out = {...core};
-    if (cloudClientsRev !== clRev) { out.clientsBlob = await idbKV('get', CL_KEY + clRev); if (!out.clientsBlob) return persistFull(); }
-    return out;
-  }
-  return persistFull();
-}
+const unsealRemote = unseal;
+// wat naar de dienst gaat: de volledige versleutelde kluis
+const persistCloud = async () => (await persist()) || persistFull();
 const persistRemote = () => persistCloud();
 const remoteGet = cloudGet, remotePut = cloudPut;
 
 let syncTimer = null, syncing = false, syncAgain = false, syncState = {state:'idle'}, syncEtag = null;
 function scheduleSync(delay) {
   if (!data?.settings.sync) return;
-  if (delay === undefined) delay = data.clients.length > 5000 ? 5000 : 1500;   // grote kluis: minder vaak uploaden
+  if (delay === undefined) delay = 1500;
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => syncNow(), delay);
 }
@@ -573,7 +489,7 @@ async function syncNow(pw) {
   if (syncing) { syncAgain = true; return; }
   syncing = true; setSync('busy');
   try {
-    await persistChain; await clReadyP;
+    await persistChain;
     const dirtyAtStart = syncDirty; syncDirty = false;
     const gmeta = {ifNoneMatch:syncEtag};
     const remoteBlob = await remoteGet(s, gmeta);
@@ -598,7 +514,6 @@ async function syncNow(pw) {
       merged.settings.sync = s;
       if (sig(merged) !== sig(data) || differentSalt || wNew) {
         data = merged;
-        if (clPending && merged.clients.length) { clPending = false; clFailed = false; clSigSaved = null; }   // klanten ontbraken op dit toestel: die komen nu uit de gist
         await persist();
         renderAll();
       }
@@ -780,7 +695,6 @@ function askLegacyPassword(blob, wrong) {
 // kluis van dit toestel volledig openen (bij gesplitste opslag ook de klanten uit IndexedDB)
 async function openLocalFull(local, key) {
   const d = await unseal(key, local);
-  if (local.split) { const b = await idbKV('get', CL_KEY + local.clv); if (b) d.clients = await readClients(b, key); }
   return normalize(d);
 }
 async function legacyData(local, pw) {
@@ -809,7 +723,6 @@ async function unlockCloud(emailRaw, pw) {
       const kk = await openKey(pw, local), ld = normalize(await unseal(kk.key, local));
       K = kk; data = ld; data.settings.sync = cloudSettings(email);
       cloudAuth = {email, secret:await secretP};
-      if (local.split) startClientLoad(local, K.key);
       enterApp(); syncNow(pw);
       return true;
     } catch { return false; }   // ander wachtwoord of elders gewijzigd: online verder
@@ -838,7 +751,7 @@ async function unlockCloud(emailRaw, pw) {
   }
   data.settings.sync = cloudSettings(email);
   try { localStorage.setItem(CLOUD_USER, email); } catch {}
-  syncDirty = true; clSigSaved = null;
+  syncDirty = true;
   await persist();
   if (rblob && !K.w) newRec = await upgradeEnvelope(pw);   // oudere accountkluis: voeg datasleutel en noodcode toe
   enterApp(); syncNow(pw);
@@ -848,10 +761,10 @@ async function unlockCloud(emailRaw, pw) {
 async function upgradeEnvelope(pw) {
   const old = K, env = await newEnvelope(pw);
   try {
-    K = env.K; clSigSaved = null; forceFull = true; await persist();
+    K = env.K; await persist();
     await remotePut(data.settings.sync, await persistRemote(data.settings.sync));
     return env.rec;
-  } catch (e) { console.warn('Noodcode nog niet toegevoegd', e); K = old; clSigSaved = null; await persist(); return null; }
+  } catch (e) { console.warn('Noodcode nog niet toegevoegd', e); K = old; await persist(); return null; }
 }
 // Account wissen: de databasefunctie delete_my_account (zie supabase.sql) verwijdert de gebruiker en via cascade de kluis
 async function deleteAccount() {
@@ -918,7 +831,7 @@ async function resetCloud(rk, pw, pw2, fresh) {
   try { await cloudSignIn(email, nsec); } catch {}
   K = nK; data = nData; data.settings.sync = st;
   try { localStorage.setItem(CLOUD_USER, email); localStorage.removeItem(BIO_KEY); } catch {}
-  syncDirty = true; clSigSaved = null; forceFull = true;
+  syncDirty = true;
   await persist();
   try { await remotePut(st, await persistRemote(st)); syncDirty = false; } catch (e) { if (!e.conflict) throw e; }
   enterApp(); syncNow(pw);
@@ -1113,7 +1026,6 @@ const wco = navigator.windowControlsOverlay;
 const syncWco = () => document.documentElement.classList.toggle('wco', !!wco?.visible);
 if (wco) { syncWco(); wco.addEventListener('geometrychange', syncWco); }
 async function lock() {
-  forceFull = true;
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); }
   await persistChain;
   location.reload();
@@ -2561,7 +2473,6 @@ function openSettings() {
           catch { err.textContent = 'Wachtwoord klopt niet.'; hold.reset(); return; }
           try { await deleteAccount(); }
           catch (ex) { err.textContent = ex.message; hold.reset(); return; }
-          if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
           try { localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); localStorage.removeItem(REM_KEY); } catch {}
           idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
         });
@@ -2600,7 +2511,6 @@ function openSettings() {
       const cl = data.settings.sync?.cloud;
       if (n1.length < (cl ? CLOUD_MINPW : 8)) { err.textContent = `Gebruik minstens ${cl ? CLOUD_MINPW : 8} tekens.`; return; }
       if (n1 !== n2) { err.textContent = 'De nieuwe wachtwoorden komen niet overeen.'; return; }
-      await clReadyP; if (clPending) { err.textContent = 'De klanten zijn nog niet geladen. Probeer zo meteen opnieuw.'; return; }
       try { await persist(); const kk = await openKey(o, vaultBlob()); await unseal(kk.key, vaultBlob()); }
       catch { err.textContent = 'Huidig wachtwoord klopt niet.'; return; }
       if (cl) {   // eerst het login-geheim bij de dienst vervangen; lukt dat niet, dan blijft alles zoals het was
@@ -2628,7 +2538,6 @@ function openSettings() {
     };
     $('#stExpEnc', d).onclick = async () => { try { download(`taken-backup-${today()}.json`, await persistFull()); } catch (ex) { toast('Back-up mislukt: ' + ex.message); } };
     $('#stExpPlain', d).onclick = () => {
-      if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); return; }
       if (!confirm('De leesbare export is NIET versleuteld. Bewaar het bestand veilig. Doorgaan?')) return;
       const copy = JSON.parse(JSON.stringify(data)); copy.settings.sync = null;
       download(`taken-export-${today()}.json`, copy);
@@ -2636,7 +2545,6 @@ function openSettings() {
     $('#stImp', d).onclick = () => $('#stFile', d).click();
     $('#stFile', d).onchange = async e => {
       const file = e.target.files[0]; if (!file) return;
-      if (clPending) { toast('Klanten worden nog geladen, probeer zo meteen opnieuw'); return; }
       try {
         const obj = JSON.parse(await file.text());
         let incoming;
@@ -2655,7 +2563,6 @@ function openSettings() {
     $('#stWipe', d).onclick = () => {
       if (!confirm('Alle deals op dit toestel wissen? Dit kan niet ongedaan gemaakt worden .')) return;
       if (prompt('Typ WISSEN om te bevestigen') !== 'WISSEN') return;
-      if (clRev) idbKV('del', CL_KEY + clRev).catch(() => {});
       localStorage.removeItem(VAULT); localStorage.removeItem(BIO_KEY); localStorage.removeItem(CLOUD_USER); localStorage.removeItem(REM_KEY);
       idbKV('del', VAULT).catch(() => {}).finally(() => location.reload());
     };
@@ -4030,10 +3937,10 @@ function startTimers() {
   document.addEventListener('visibilitychange', () => {
     check();
     if (document.visibilityState === 'visible') syncNow();
-    else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; forceFull = true; persist(); scheduleSync(0); }
+    else if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); scheduleSync(0); }
   });
   setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30000);
-  addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; forceFull = true; persist(); } });
+  addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; persist(); } });
   addEventListener('online', () => syncNow());
   addEventListener('offline', () => { if (data?.settings.sync) setSync('offline'); });
 }
