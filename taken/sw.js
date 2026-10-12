@@ -2,8 +2,8 @@
    Bewaart de app zelf (HTML, iconen, logo) op het toestel, zodat Klose meteen
    opent, ook zonder internet. Je gegevens staan al versleuteld in de browser;
    cloud.json en de accountdienst worden nooit gecachet en gaan altijd naar het netwerk. */
-const CACHE = 'taken-app-v39';
-const ASSETS = ['./', 'klose-k.svg', 'klose-k-licht.svg', 'klose-k-transparant.svg', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
+const CACHE = 'taken-app-v40';
+const ASSETS = ['./', 'app.js', 'theme.js', 'klose-k.svg', 'klose-k-licht.svg', 'klose-k-transparant.svg', 'manifest.webmanifest', 'icon.svg', 'favicon-32.png', 'favicon-48.png',
   'apple-touch-icon.png', 'icon-192.png', 'icon-512.png',
   'fonts/geist-latin-400-normal.woff2', 'fonts/geist-latin-500-normal.woff2', 'fonts/geist-latin-600-normal.woff2', 'fonts/geist-latin-700-normal.woff2',
   'fonts/geist-mono-latin-400-normal.woff2', 'fonts/geist-mono-latin-500-normal.woff2'];
