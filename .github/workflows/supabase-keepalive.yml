@@ -1,0 +1,20 @@
+# Een gratis Supabase-project wordt gepauzeerd na een periode zonder gebruik.
+# Deze taak roept de dienst elke week even aan (met de publieke sleutel uit taken/cloud.json), zodat dat niet gebeurt.
+name: Supabase wakker houden
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dienst aanroepen
+        run: |
+          if [ ! -f taken/cloud.json ]; then echo "Geen taken/cloud.json: niets te doen"; exit 0; fi
+          URL=$(jq -r .url taken/cloud.json); KEY=$(jq -r .key taken/cloud.json)
+          curl -fsS --max-time 30 "$URL/auth/v1/settings" -H "apikey: $KEY" > /dev/null
+          curl -sS --max-time 30 -o /dev/null -w "REST: HTTP %{http_code}\n" "$URL/rest/v1/vaults?select=user_id&limit=1" -H "apikey: $KEY"
