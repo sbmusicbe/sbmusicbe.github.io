@@ -46,6 +46,20 @@ Ook handig:
 
 ## Snel starten
 
+### Opvolging en verkoopdashboard
+
+- **Vandaag doen** is het startscherm: achterstallige acties, acties van vandaag, deadlines en offertes zonder geplande toekomstige opvolging. Eén deal kan in meerdere lijsten staan; het totaal telt unieke deals. Via **Alle deals** ga je naar het volledige bord.
+- **Volgende actie** staat bij elke deal, los van de deadline: bellen, mailen, offerte opvolgen, afspraak of anders, met datum en notitie. **Uitgevoerd** bewaart een contactmoment en rondt alleen de actie af, niet de deal.
+- **Contacthistoriek** bewaart contactdatum, soort, uitkomst en notities. Bij een contact kun je de oude actie afronden en meteen de volgende plannen. Bestaande opmerkingen blijven bewaard en verschijnen ook in de tijdlijn. Contactmomenten worden als losse items versleuteld opgeslagen en gesynchroniseerd.
+- **Stilgevallen** toont open deals uit lopende projecten zonder contact, opmerking of statuswijziging sinds 7, 14 of 30 dagen (standaard 14). Sorteren of andere gegevens bewerken telt niet als contactactiviteit.
+- **Verliesreden** wordt gevraagd wanneer een deal naar een afgewerkte, niet-positieve stap gaat. Je kunt die later bij de deal aanpassen. Het dashboard groepeert deze redenen.
+- **Duplicaatwaarschuwing** vergelijkt bedrijfsnamen/titels, e-mailadressen en telefoonnummers, ook tussen projecten. Belgische lokale en internationale telefoonnummers worden herkend. Een waarschuwing blokkeert niets en voegt niets automatisch samen.
+- **Dashboard** toont omzet, gemiddelde verkoopprijs, conversie, open pijplijn, projectresultaten en omzet per maand. Je kunt filteren op maand en project en resultaten exporteren als CSV. Omzet gebruikt het eerste bedragveld en de maandpagina van de verkoop. Gemiddelden sluiten ontbrekende bedragen uit. Conversie gebruikt de afrondingsdatum van gewonnen/verloren deals; open deals tellen niet mee. Bestaande deals zonder afrondingsdatum tellen alleen bij alle maanden.
+- **Project per verkoop**: gewonnen deals nemen hun project mee. Voor een handmatig toegevoegde verkoop kies je het project onder de klantnaam in de verkooptabel. Verkopen zonder project blijven zichtbaar in het totale dashboard.
+- **Minimumprijs en korting**: open het onderdeel onder de prijsberekening. Het minimum is per 1/8 en schaalt mee met ieder formaat. Het voorstel wordt naar boven afgerond en nooit lager dan het minimum; je ziet de richtprijs, het voorstel, het minimum en de resterende onderhandelingsruimte. Deze gegevens gaan mee bij kopiëren en afdrukken. Zonder ingevulde onderhandelingsinstellingen blijven de bestaande prijzen hetzelfde.
+
+Alle functies werken lokaal en blijven in de bestaande versleutelde kluis. Er is geen AI, geen nieuwe externe dienst en geen databasewijziging nodig. Gebruik na de update de nieuwste appversie op al je toestellen. Maak zoals altijd eerst een back-up voordat je een oudere versie terugzet.
+
 Klose heeft geen installatie of build nodig. Serveer de map `taken/` met een willekeurige statische server:
 
 ```bash
@@ -102,6 +116,7 @@ Daarna opent Klose in een eigen venster, werkt het offline en toont het rechtson
 taken/
   index.html          pagina en beveiligingsregels (CSP)
   app.js              alle logica: gegevens, versleuteling, synchronisatie, schermen
+  crm.js              opvolgacties, contacthistoriek, duplicaten en dashboard
   style.css             het hele ontwerp
   theme.js              thema vooraf instellen (geen flits) en anti-frame-beveiliging
   sw.js                 service worker voor offline gebruik en updatemelding

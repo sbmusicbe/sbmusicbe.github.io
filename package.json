@@ -2,6 +2,6 @@
   "name": "sbmusic-be",
   "private": true,
   "scripts": {
-    "test": "node --test edge/worker.test.mjs scripts/site.test.mjs taken/app.test.mjs"
+    "test": "node --test edge/worker.test.mjs scripts/site.test.mjs taken/app.test.mjs taken/crm.test.mjs"
   }
 }
