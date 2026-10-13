@@ -975,3 +975,27 @@ body.sheet-open #miniBar{opacity:0}
 @media (display-mode:standalone) and (pointer:fine),(display-mode:window-controls-overlay) and (pointer:fine){
 button,.nav-item,.card,.seg button,select{cursor:default}
 }
+
+/* Drie rustige taakonderdelen, met hetzelfde gebruik op telefoon en computer. */
+.crm-detail-tabs{display:flex;border-bottom:1px solid var(--line);margin:22px 0 20px;gap:0}
+.crm-detail-tabs button{flex:1;min-width:0;min-height:44px;padding:10px 4px;border:0;border-bottom:2px solid transparent;background:none;color:var(--ink-muted);font:500 14px/22px var(--f-sans);cursor:pointer}
+.crm-detail-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.crm-detail-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;border-radius:4px}
+[data-crm-panel][hidden]{display:none!important}
+.crm-note-composer>label:first-child{display:block;font-size:15px;font-weight:500;margin-bottom:10px}
+.crm-note-composer>textarea{display:block;width:100%;box-sizing:border-box;font:400 15px/1.6 var(--f-sans);min-height:112px;padding:12px;resize:vertical}
+.crm-note-tools{margin:10px 0 18px}
+.crm-note-tools .btn,.crm-note-save{min-height:44px;font-size:14px}
+.crm-note-date{font-size:14px;max-width:100%;margin-bottom:6px}
+.crm-note-date input{min-height:44px;font-size:15px}
+.crm-note-save{width:100%}
+.crm-notes-heading{font-size:15px;font-weight:500;margin:28px 0 16px}
+#crmPanel-data .prop{font-size:14px}
+#crmPanel-notes .crm-history p{font-size:14px;line-height:1.65}
+#crmPanel-notes .crm-history-head b{font-size:14px}
+#crmPanel-notes .crm-history-head time{font-size:12px}
+
+.crm-legacy-note{padding:16px;background:var(--raised);border-radius:10px;margin-top:24px}
+.crm-legacy-note h3{font-size:14px;margin:0 0 8px;font-weight:500}
+.crm-legacy-note p,.crm-focus-action-note{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.6}
+.crm-legacy-note .link{font-size:13px;min-height:36px}

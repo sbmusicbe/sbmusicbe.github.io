@@ -205,10 +205,38 @@ test('Focus shows one deadline editor and a single main contact action',()=>{
   assert.match(html,/Offerte opvolgen/);assert.doesNotMatch(html,/Deadline bewerken|gebruikt de deadline/);
 });
 
-test('Focus keeps comments in the history once and starts history collapsed',()=>{
+test('Notes show legacy history once with a single simple composer',()=>{
   const r=runtime();r("data.tasks=[makeTask('a')];data.comments=[{id:'c',taskId:'a',at:now(),text:'Historische notitie'}]");
   const html=r('crmDetailHtml(data.tasks[0])');
   assert.equal((html.match(/Historische notitie/g)||[]).length,1);
-  assert.match(html,/id="crmHistory" >/);assert.match(html,/data-cid="c"/);
-  assert.match(html,/Opmerking of bijlage toevoegen/);
+  assert.match(html,/data-cid="c"/);
+  assert.match(html,/Wat is er besproken/);assert.doesNotMatch(html,/<details|ccType|ccOutcome|ccDone/);
+});
+
+
+test('simple notes preserve deadlines and record first contact without overwriting earlier contact',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:'2026-10-15',time:'09:00'})]");
+  r("crmSaveNote(data.tasks[0],' Gesproken. ',[], '')");
+  assert.equal(r('data.tasks[0].due'),'2026-10-15');assert.equal(r('data.tasks[0].time'),'09:00');
+  assert.equal(r('data.comments[0].text'),'Gesproken.');assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'2026-10-13');
+  r("data.tasks[0].custom['f-eerste-contact']='2026-09-01';crmSaveNote(data.tasks[0],'Opnieuw gebeld',[],'2026-10-20')");
+  assert.equal(r('data.tasks[0].due'),'2026-10-20');assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'2026-09-01');
+});
+test('simple note validation is atomic and supports image-only notes',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{stage:'mail',due:today()})]");
+  assert.throws(()=>r("crmSaveNote(data.tasks[0],'  ',[],'2026-10-20')"),/notitie/);
+  assert.throws(()=>r("crmSaveNote(data.tasks[0],'Gesproken',[],'2026-02-30')"),/geldige datum/);
+  assert.equal(r('data.comments.length'),0);assert.equal(r('data.tasks[0].due'),r('today()'));
+  r("crmSaveNote(data.tasks[0],'',['data:image/jpeg;base64,YQ=='])");assert.equal(r('data.comments[0].imgs.length'),1);
+});
+test('task tabs expose three accessible panels with Overview as default',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a')]");const html=r('crmTabsHtml(data.tasks[0])');
+  assert.equal((html.match(/role="tab"/g)||[]).length,3);
+  assert.match(html,/data-crm-tab="overview"[^>]*aria-selected="true"/);
+  r("crmDetailTabs.a='notes'");assert.match(r('crmTabsHtml(data.tasks[0])'),/data-crm-tab="notes"[^>]*aria-selected="true"/);
+});
+
+test('existing contact details and task notes remain visible in the new notes tab',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a',{notes:'Oude taaknotitie'})];data.activities=[{id:'old',taskId:'a',type:'call',at:now(),outcome:'Interesse',text:'Oud gesprek',nextAction:{type:'quote',date:'2026-10-20',note:'Offerte sturen'}}]");
+ const html=r('crmDetailHtml(data.tasks[0])');for(const text of ['Oude taaknotitie','Interesse','Oud gesprek','Offerte sturen','20/10/2026'])assert.ok(html.includes(text));
 });
