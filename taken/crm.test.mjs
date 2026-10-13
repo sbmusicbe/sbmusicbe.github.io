@@ -157,10 +157,10 @@ test('invalid discount and minimum return errors; absent settings preserve base 
   assert.equal(r("calcNegotiation({target:'',pk:''}).rows[0].offer"),null);
 });
 
-test('configured negotiation is included in copy and print without leaking HTML',()=>{
+test('copy and print show the same prices without the removed duplicate block',()=>{
   const r=runtime();r("let p={name:'<Project>',calc:{target:'1000',current:'0',pk:'10',minPrice:'90',discount:'20'}}");
-  assert.match(r('calcPrintHtml(p)'),/Minimumprijs en korting/);assert.match(r('calcPrintHtml(p)'),/&lt;Project&gt;/);
-  assert.match(r('calcText(p.calc)'),/minimum toegepast/);
+  assert.doesNotMatch(r('calcPrintHtml(p)'),/Minimumprijs en korting/);assert.match(r('calcPrintHtml(p)'),/&lt;Project&gt;/);
+  assert.doesNotMatch(r('calcText(p.calc)'),/minimum toegepast|Minimum per|Korting/);assert.match(r('calcText(p.calc)'),/1\/8 - 100/);
 });
 
 test('dashboard CSV escapes spreadsheet formulas and quotes',()=>{
