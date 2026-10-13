@@ -221,7 +221,13 @@ async function newEnvelope(pw, raw) {
 async function openKey(pw, blob, viaRec) {
   if (!blob.w) return {key:await deriveKey(pw, unb64(blob.salt), blob.iter), salt:unb64(blob.salt), iter:blob.iter};
   const raw = await unwrapRaw(viaRec ? blob.w.rec : blob.w.pw, viaRec ? recNorm(pw) : pw);
-  return envelopeK(raw, blob.w, unb64(blob.salt));
+  const k = await envelopeK(raw, blob.w, unb64(blob.salt));
+  if (blob.pendingW) k.pendingW = blob.pendingW;   // nog niet online bevestigde wijzigingen op dit toestel
+  return k;
+}
+function setKeyWrap(name, wrapped) {
+  K = {...K, w:{...K.w, [name]:wrapped}, pendingW:{...K.pendingW, [name]:wrapped}};
+  syncDirty = true; syncEtag = null;
 }
 /* Kluis op het toestel: localStorage (klein en snel), IndexedDB als ze daar te groot voor wordt (> ± 3 MB). */
 let vaultCache = null;
@@ -332,7 +338,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + JSON.stringify(Object.keys(d.deleted).sort());
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + JSON.stringify(Object.entries(d.deleted).sort(([a], [b]) => a.localeCompare(b))) + JSON.stringify(d.settings) + JSON.stringify(d.prefs);
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -356,8 +362,8 @@ const VIEW_FEATURE = {agenda:'agenda', btw:'btw', sales:'sales'};
 let persistChain = Promise.resolve();
 function persist() {
   persistChain = persistChain.then(async () => {
-    const blob = await seal(K, data);
-    await storeVault(blob);
+    const key = K, blob = await seal(key, data);
+    await storeVault(key.pendingW ? {...blob, pendingW:key.pendingW} : blob);
     return blob;
   }).catch(e => { console.error(e); toast('Opslaan mislukt: ' + e.message); });
   return persistChain;
@@ -473,6 +479,13 @@ async function cloudPut(s, blob, meta) {
     if (!rows?.length) throw conflictError();
   }
   cloudRev = rows[0].rev; if (meta) meta.etag = String(cloudRev);
+  // Alleen de daadwerkelijk geüploade sleutelwijzigingen bevestigen. Een latere wijziging blijft pending.
+  if (K?.pendingW && blob.salt === b64(K.salt)) {
+    const pending = {...K.pendingW};
+    for (const name of Object.keys(pending)) if (JSON.stringify(pending[name]) === JSON.stringify(blob.w?.[name])) delete pending[name];
+    K = {...K, pendingW:Object.keys(pending).length ? pending : undefined};
+    await persist();
+  }
 }
 const unsealRemote = unseal;
 // wat naar de dienst gaat: de volledige versleutelde kluis
@@ -514,7 +527,10 @@ async function syncNow(pw) {
       catch (e) { throw new Error(/ontbreken/.test(e.message) ? e.message : 'Je gegevens kunnen niet geopend worden met dit wachtwoord.'); }
       let wNew = false;
       if (differentSalt) K = rK;
-      else if (remoteBlob.w && JSON.stringify(remoteBlob.w) !== JSON.stringify(K.w)) { K = {...K, w:remoteBlob.w}; wNew = true; }   // wachtwoord of noodcode op een ander toestel gewijzigd
+      else if (remoteBlob.w) {
+        const wrapped = {...remoteBlob.w, ...K.pendingW};
+        if (JSON.stringify(wrapped) !== JSON.stringify(K.w)) { K = {...K, w:wrapped}; wNew = true; }
+      }   // eigen onbevestigde wijzigingen behouden, overige online wijzigingen overnemen
       const merged = merge(data, remote);
       merged.settings.sync = s;
       if (sig(merged) !== sig(data) || differentSalt || wNew) {
@@ -522,7 +538,7 @@ async function syncNow(pw) {
         await persist();
         renderAll();
       }
-      if (sig(merged) !== sig(remote) || differentSalt) { const pm = {}; await remotePut(s, await persistRemote(s), pm); syncEtag = pm.etag; }
+      if (sig(merged) !== sig(remote) || differentSalt || K.pendingW) { const pm = {}; await remotePut(s, await persistRemote(s), pm); syncEtag = pm.etag; }
       else syncEtag = gmeta.etag;
     } else {
       const pm = {}; await remotePut(s, await persistRemote(s), pm); syncEtag = pm.etag;
@@ -835,6 +851,7 @@ async function resetCloud(rk, pw, pw2, fresh) {
   cloudAuth = {email, secret:nsec};
   try { await cloudSignIn(email, nsec); } catch {}
   K = nK; data = nData; data.settings.sync = st;
+  if (rblob && !fresh) setKeyWrap('pw', nK.w.pw);
   try { localStorage.setItem(CLOUD_USER, email); localStorage.removeItem(BIO_KEY); } catch {}
   syncDirty = true;
   await persist();
@@ -2257,7 +2274,8 @@ function openStagesDialog() {
   const read = d => $$('.st-row', d).forEach((row, i) => {
     draft[i].label = $('input[type=text]', row).value;
     draft[i].done = $('input[type=checkbox]', row).checked;
-    draft[i].positive = draft[i].done && !!$('.st-pos input', row)?.checked;
+    const positive = $('.st-pos input', row);
+    draft[i].positive = draft[i].done && (positive ? positive.checked : !!draft[i].positive);
   });
   const draw = () => showDialog(`
     <h3>Stappen</h3>
@@ -2579,7 +2597,7 @@ function openSettings() {
           const pw = $('#rnPw', dd).value, err = $('#rnErr', dd); err.textContent = ''; e.target.disabled = true;
           try { await unwrapRaw(K.w.pw, pw); } catch { err.textContent = 'Wachtwoord klopt niet.'; e.target.disabled = false; return; }
           const rec = newRecoveryKey();
-          K = {...K, w:{...K.w, rec:await wrapRaw(K.raw, recNorm(rec), REC_ITER)}};
+          setKeyWrap('rec', await wrapRaw(K.raw, recNorm(rec), REC_ITER));
           try { await persist(); syncDirty = true; await syncNow(pw); } catch {}
           showRecoveryKey(rec, true);
         };
@@ -2610,7 +2628,7 @@ function openSettings() {
           cloudAuth = {email:data.settings.sync.email, secret:nsec};
         } catch (ex) { err.textContent = 'Wachtwoord niet gewijzigd: ' + ex.message; return; }
       }
-      if (K.w) K = {...K, w:{...K.w, pw:await wrapRaw(K.raw, n1, ITER)}};   // snel: enkel de datasleutel opnieuw inpakken
+      if (K.w) setKeyWrap('pw', await wrapRaw(K.raw, n1, ITER));   // snel: enkel de datasleutel opnieuw inpakken
       else { const salt = crypto.getRandomValues(new Uint8Array(16)); K = {key:await deriveKey(n1, salt, ITER), salt, iter:ITER}; }
       await persist(); const blob = await persistRemote(data.settings.sync);
       forgetPw();
@@ -2726,7 +2744,7 @@ function syncWins() {
   }
   return changed;
 }
-const toNum = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+const toNum = v => parseNl(v);
 // Werkdagen: ma–vr zonder Belgische wettelijke feestdagen.
 function easter(y) {
   const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
