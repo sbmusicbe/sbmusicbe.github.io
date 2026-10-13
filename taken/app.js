@@ -1656,12 +1656,14 @@ function renderDetail(force) {
       </div>
       <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
       <select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select>
+      ${crmTabsHtml(t)}
+      <section id="crmPanel-overview" role="tabpanel" aria-labelledby="crmTab-overview" data-crm-panel="overview" ${crmDetailTabs[t.id] && crmDetailTabs[t.id]!=='overview' ? 'hidden' : ''}>
       ${crmFocusHtml(t)}
       ${crmContactSummaryHtml(t)}
       ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
-      ${crmDetailHtml(t)}
-      <details class="d-more" id="dMore" ${moreOpen[t.id] ? 'open' : ''}>
-        <summary>Dealgegevens</summary>
+      </section>
+      <section id="crmPanel-notes" role="tabpanel" aria-labelledby="crmTab-notes" data-crm-panel="notes" ${crmDetailTabs[t.id]==='notes' ? '' : 'hidden'}>${crmDetailHtml(t)}</section>
+      <section id="crmPanel-data" role="tabpanel" aria-labelledby="crmTab-data" data-crm-panel="data" ${crmDetailTabs[t.id]==='data' ? '' : 'hidden'}>
         <div class="props">
         ${t.notes ? `<label class="prop"><span>Notities</span><textarea id="dNotes" rows="2" aria-label="Notities">${esc(t.notes)}</textarea></label>` : ''}
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
@@ -1672,11 +1674,9 @@ function renderDetail(force) {
         <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
           `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
         <div class="crm-focus-danger"><button type="button" class="btn danger" data-act="deletetask">Deal verwijderen</button><p class="muted small">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}</p></div>
-      </details>
+      </section>
     </div>`;
   autosize($('#dTitle'));
-  $('#dMore')?.addEventListener('toggle', e => { if (e.target.isConnected) moreOpen[t.id] = e.target.open; });
-  $('#crmHistory')?.addEventListener('toggle', e => { if (e.target.isConnected) crmFocusOpen.history[t.id] = e.target.open; });
   $('#crmDeadlineEdit')?.addEventListener('toggle', e => { if (e.target.isConnected) crmFocusOpen.deadline[t.id] = e.target.open; });
   if (keep) restoreFocus(el, keep);
 }
@@ -1694,7 +1694,7 @@ function restoreFocus(root, k) {
   n.focus({preventScroll:true});
   try { if (k.pos && n.setSelectionRange) n.setSelectionRange(k.pos[0], k.pos[1]); } catch {}
 }
-const commentDrafts = {}, moreOpen = {};
+const commentDrafts = {};
 /* ---- Afbeeldingen bij opmerkingen: verkleind en als JPEG in de versleutelde kluis bewaard (metadata zoals locatie verdwijnt) ---- */
 const pendingImgs = {}, IMG_MAX = 6, IMG_EDGE = 1600;
 const IMG_OK = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
@@ -1708,18 +1708,25 @@ async function shrinkImage(file) {
   return cv.toDataURL('image/jpeg', 0.82);
 }
 async function attachImages(t, files) {
+  crmImageLoading[t.id] = (crmImageLoading[t.id] || 0) + 1;
+  const updateSave = () => {
+    if (selectedId !== t.id) return;
+    const button = $('#detail [data-act="addcomment"]');
+    if (button) { button.disabled = !!crmImageLoading[t.id]; button.textContent = button.disabled ? 'Afbeelding verwerken…' : 'Notitie bewaren'; }
+  };
+  updateSave();
+  try {
   const list = pendingImgs[t.id] ||= [];
   for (const f of files) {
     if (!/^image\//.test(f.type)) continue;
     if (list.length >= IMG_MAX) { toast(`Maximaal ${IMG_MAX} afbeeldingen per opmerking`); break; }
-    try { list.push(await shrinkImage(f)); } catch { toast('Deze afbeelding kan niet gelezen worden'); }
+    try { const image = await shrinkImage(f); if (list.length < IMG_MAX) list.push(image); } catch { toast('Deze afbeelding kan niet gelezen worden'); }
   }
   const el = $('#dPending'); if (el && selectedId === t.id) el.innerHTML = pendingHtml(t.id);
   if (list.length && selectedId === t.id) {
-    const history = $('#crmHistory'), composer = $('.crm-focus-note');
-    if (history) history.open = true;
-    if (composer) composer.open = true;
+    crmSelectDetailTab('notes');
   }
+  } finally { crmImageLoading[t.id]--; updateSave(); }
 }
 function openLightbox(imgs, i) {
   const ok = imgs.filter(u => IMG_OK.test(u)); if (!ok.length) return;
@@ -1741,12 +1748,13 @@ function openLightbox(imgs, i) {
   document.body.appendChild(lb); show(i); lb.querySelector('.lb-x').focus();
 }
 function addComment(t) {
-  const ta = $('#dComment'), text = ta?.value.trim(), imgs = pendingImgs[t.id] || [];
-  if (!text && !imgs.length) { ta?.focus(); return; }
-  data.comments.push(touch({id:uid(), taskId:t.id, text, at:now(), ...(imgs.length ? {imgs:[...imgs]} : {})}));
-  delete commentDrafts[t.id]; delete pendingImgs[t.id];
-  save(); renderMain(); renderDetail(true);
-  const list = $('#detail .comments'); list?.lastElementChild?.scrollIntoView({block:'nearest'});
+  if (crmImageLoading[t.id]) return;
+  const ta = $('#dComment'), imgs = pendingImgs[t.id] || [];
+  try { crmSaveNote(t, ta?.value, imgs, $('#crmNoteDate')?.value || ''); }
+  catch(e) { $('#crmNoteError').textContent = e.message; ta?.focus(); return; }
+  delete commentDrafts[t.id]; delete pendingImgs[t.id]; delete crmNoteDates[t.id];
+  save(); renderNav(); renderMain(); renderDetail(true);
+  $('#crmNoteSaved').textContent = 'Notitie bewaard.';
   $('#dComment')?.focus();
 }
 function deleteComment(cid) {
