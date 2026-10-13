@@ -1082,7 +1082,6 @@ function setView(v) {
 }
 function viewTitle() {
   if (view.type === 'today') return 'Vandaag doen';
-  if (view.type === 'stalled') return 'Stilgevallen deals';
   if (view.type === 'dashboard') return 'Verkoopdashboard';
   if (view.type === 'project') return proj(view.id).name;
   if (view.type === 'agenda') return 'Agenda';
@@ -1210,8 +1209,8 @@ function dueState(t) {
 }
 function taskMeta(t) {
   const meta = [];
-  if (!t.done && t.nextAction?.date) meta.push(`<span class="chip ${t.nextAction.date < today() ? 'crm-late' : ''}">${esc(crmActionLabel(t.nextAction.type))} · ${esc(dueLabel(t.nextAction.date))}</span>`);
-  if (!t.done && crmIdleDays(t) >= crmStaleDays()) meta.push(`<span class="chip crm-stale">${crmIdleDays(t)} dagen stil</span>`);
+  const action = crmEffectiveAction(t);
+  if (!t.done && !crmDeadlineActionType(t) && action?.date) meta.push(`<span class="chip ${action.date < today() ? 'crm-late' : ''}">${esc(crmActionLabel(action.type))} · ${esc(dueLabel(action.date))}</span>`);
   if (t.due) {
     meta.push(`<span class="chip due ${dueState(t)}">${I.cal} ${esc(dueLabel(t.due))}${t.time ? ' ' + esc(t.time) : ''}</span>`);
   }
@@ -1350,7 +1349,7 @@ function renderNav() {
       + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
-  $('#toolNav').innerHTML = [['today', 'Vandaag doen', I.today, new Set(Object.values(crmDayGroups()).slice(0,4).flat().map(t => t.id)).size || ''], ['all', 'Alle deals', I.all, open.length || ''], ['stalled', 'Stilgevallen', I.note, crmStalledTasks().length || ''], ['dashboard', 'Dashboard', I.sales, ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
+  $('#toolNav').innerHTML = [['today', 'Vandaag doen', I.today, new Set(Object.values(crmDayGroups()).slice(0,4).flat().map(t => t.id)).size || ''], ['all', 'Alle deals', I.all, open.length || ''], ['dashboard', 'Dashboard', I.sales, ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
     .filter(([k]) => !VIEW_FEATURE[k] || feat(VIEW_FEATURE[k]))
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
@@ -1360,7 +1359,6 @@ function renderNav() {
 function viewSubtitle() {
   const t = view.type;
   if (t === 'today') return 'Opvolgacties, deadlines en offertes op één plek.';
-  if (t === 'stalled') return `Zonder activiteit sinds minstens ${crmStaleDays()} dagen.`;
   if (t === 'dashboard') return 'Omzet, conversie en resultaten per project.';
   if (['all', 'project', 'inbox', 'today', 'upcoming'].includes(t)) {
     const open = viewTasks(false).filter(x => !x.done), late = open.filter(x => x.due && x.due < today()).length;
@@ -1410,7 +1408,7 @@ function placeTabIndicator() {
 }
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
-  const t = view.type === 'today' ? (feat('sales') ? 'more' : 'today') : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : ['btw','stalled','dashboard'].includes(view.type) ? 'more' : 'all';
+  const t = view.type === 'today' ? (feat('sales') ? 'more' : 'today') : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : ['btw','dashboard'].includes(view.type) ? 'more' : 'all';
   const slot = $('#tabSlot'), sOn = feat('sales');
   slot.dataset.tab = sOn ? 'sales' : 'today'; slot.querySelector('.ti').innerHTML = sOn ? I.sales : I.today; slot.lastElementChild.textContent = sOn ? 'Verkopen' : 'Vandaag';
   $('#tabBar [data-tab="agenda"]').hidden = !feat('agenda');
@@ -1671,7 +1669,7 @@ function renderDetail(force) {
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         </div>
         <div class="d-sec"><span>Extra gegevens</span><button class="link" data-act="fields">Extra gegevens beheren</button></div>
-        <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
+        <div class="props">${fs.filter(f => f.id !== crmFirstContact(t).field?.id).map(f => fieldInput(f, t)).join('') ||
           `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
       </details>
       <div class="d-sec"><span>Opmerkingen${commentsOf(t.id).length ? ` <b class="c-count">${commentsOf(t.id).length}</b>` : ''}</span></div>
@@ -2853,7 +2851,11 @@ function cellInput(c, r) {
   if (c.type === 'format') return `<button type="button" ${a} aria-haspopup="true">${fmtChips(v)}</button>`;
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
   const input = `<input type="text" ${a} value="${esc(v)}">`;
-  if (c.id === winCols().client?.id) return `<div class="crm-sales-client">${input}<select data-sales-project="${esc(r.id)}" aria-label="Project van deze verkoop"><option value="">Zonder project</option>${sortedProjects().map(p => `<option value="${esc(p.id)}" ${p.id === r.projectId ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div>`;
+  if (c.id === winCols().client?.id) {
+    const pid = r.projectId !== undefined ? r.projectId : taskById(r.dealId || (r.id.startsWith('w_') ? r.id.slice(2) : ''))?.projectId || '';
+    const name = pid ? data.projects.find(p => p.id === pid)?.name || 'Verwijderd project' : 'Project koppelen';
+    return `<div class="crm-sales-client">${input}<button type="button" class="crm-sales-project-btn" data-crm-sales-project="${esc(r.id)}" title="Project aanpassen" aria-label="Project aanpassen: ${esc(name)}">${esc(name)}<span aria-hidden="true">⌄</span></button></div>`;
+  }
   return input;
 }
 // Weeknummer binnen de maand zoals je het zelf noteert: week 1 = de (eventueel onvolledige) eerste week.
@@ -3041,11 +3043,6 @@ sp.addEventListener('input', e => {
   touch(r); save(true); updateSalesTotals();
 });
 sp.addEventListener('change', e => {
-  if (e.target.dataset.salesProject) {
-    const r = data.sales.find(x => x.id === e.target.dataset.salesProject);
-    if (r) { r.projectId = e.target.value; delete r.dealId; touch(r); save(); }
-    return;
-  }
   if (e.target.matches('.cell.t-date')) setTimeout(() => renderSales(true), 0);
 });
 sp.addEventListener('focusout', e => {
@@ -3947,7 +3944,7 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['agenda', 'btw', 'today', 'stalled', 'dashboard'];
+const PAGE_VIEWS = ['agenda', 'btw', 'today', 'dashboard'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
 async function copyText(txt, label) {
   try { await navigator.clipboard.writeText(txt); toast(`${label} gekopieerd`); }
@@ -3960,7 +3957,7 @@ function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'today' ? crmTodayHtml() : view.type === 'stalled' ? crmStalledHtml() : view.type === 'dashboard' ? crmDashboardHtml() : view.type === 'btw' ? btwHtml() : agendaHtml();
+  el.innerHTML = view.type === 'today' ? crmTodayHtml() : view.type === 'dashboard' ? crmDashboardHtml() : view.type === 'btw' ? btwHtml() : agendaHtml();
   if (view.type === 'btw') btwOut();
 }
 

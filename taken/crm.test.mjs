@@ -30,11 +30,13 @@ function runtime() {
     const monthTitle=m=>m;
     const salesCols=()=>data.salesCols;
     const dueLabel=s=>s,stamp=n=>ymd(new Date(n));
+    const fmtDateInp=s=>s?s.split('-').reverse().join('/'):'';
     const I={trash:'x'};
     let undo=null;const commit=()=>{};const toast=(m,fn)=>{undo=fn;};
     ${crm}
     data=newData();data.projects.push({id:'p',name:'Project P'},{id:'q',name:'Project Q'},{id:'finished',name:'Afgewerkt',finished:true});
-    const makeTask=(id,values={})=>({id,title:id,projectId:'p',stage:'callback',done:false,custom:{},createdAt:parseYmd('2026-09-01').getTime(),...values});
+    data.stages.push({id:'other',label:'Andere',done:false});
+    const makeTask=(id,values={})=>({id,title:id,projectId:'p',stage:'other',done:false,custom:{},createdAt:parseYmd('2026-09-01').getTime(),...values});
   `,ctx);
   return code=>vm.runInContext(code,ctx);
 }
@@ -50,18 +52,22 @@ test('next actions require a real date and supported type; clearing does not com
 });
 
 test('today separates overdue actions, today actions, deadlines and unplanned quotes',()=>{
-  const r=runtime();r(`data.tasks=[makeTask('overdue',{nextAction:{type:'call',date:'2026-10-12'}}),makeTask('today',{nextAction:{type:'email',date:today()},due:today()}),makeTask('future',{nextAction:{type:'quote',date:'2026-10-14'},stage:'mail'}),makeTask('quote',{stage:'mail'}),makeTask('done',{done:true,due:today()}),makeTask('archived',{projectId:'finished',due:today()})]`);
+  const r=runtime();r(`data.tasks=[makeTask('overdue',{nextAction:{type:'call',date:'2026-10-12'}}),makeTask('today',{nextAction:{type:'email',date:today()},due:today()}),makeTask('future',{due:'2026-10-14',nextAction:{type:'quote',date:'2026-10-14'},stage:'mail'}),makeTask('quote',{stage:'mail'}),makeTask('done',{done:true,due:today()}),makeTask('archived',{projectId:'finished',due:today()})]`);
   const g=plain(r('crmDayGroups()'));
   assert.deepEqual(g.overdue.map(t=>t.id),['overdue']);assert.deepEqual(g.actions.map(t=>t.id),['today']);
   assert.deepEqual(g.deadlines.map(t=>t.id),['today']);assert.deepEqual(g.quotes.map(t=>t.id),['quote']);
   assert.deepEqual(g.unplanned.map(t=>t.id),['quote']);
 });
 
-test('idle threshold uses contacts/comments/status activity, not sorting edits',()=>{
-  const r=runtime();r(`data.tasks=[makeTask('old',{u:now()}),makeTask('recent')];data.activities=[{id:'contact',taskId:'recent',at:now(),u:now()}]`);
-  assert.equal(r("crmIdleDays(data.tasks[0])"),42);assert.equal(r('crmIdleDays(data.tasks[1])'),0);
-  assert.deepEqual(plain(r('crmStalledTasks().map(t=>t.id)')),['old']);
-  r("data.comments.push({taskId:'old',at:now()})");assert.equal(r('crmIdleDays(data.tasks[0])'),0);
+test('callback and mail follow their deadline, ignoring a separate old action date',()=>{
+  const r=runtime();r(`data.tasks=[makeTask('call',{stage:'callback',due:today(),nextAction:{type:'call',date:'2026-11-01'}}),makeTask('quote',{stage:'mail',due:'2026-10-12',nextAction:{type:'email',date:'2026-11-01'}})]`);
+  assert.equal(r('crmEffectiveAction(data.tasks[0]).date'),r('today()'));
+  assert.equal(r('crmEffectiveAction(data.tasks[1]).type'),'quote');
+  assert.deepEqual(plain(r('crmDayGroups().actions.map(t=>t.id)')),['call']);
+  assert.deepEqual(plain(r('crmDayGroups().overdue.map(t=>t.id)')),['quote']);
+  assert.equal(r('crmDayGroups().deadlines.length'),0);
+  r("data.tasks[0].due='2026-10-20'");assert.equal(r('crmDayGroups().actions.length'),0);
+  r("data.tasks[0].due=null");assert.equal(r('crmEffectiveAction(data.tasks[0])'),null);
 });
 
 test('contact logging validates before mutating; saves outcome and subsequent action',()=>{
@@ -159,4 +165,33 @@ test('configured negotiation is included in copy and print without leaking HTML'
 test('dashboard CSV escapes spreadsheet formulas and quotes',()=>{
   const r=runtime();assert.equal(r("crmCsvCell('=HYPERLINK(\"bad\")')"),'"\'=HYPERLINK(""bad"")"');
   assert.equal(r("crmCsvCell('normaal;bedrijf')"),'"normaal;bedrijf"');
+});
+
+test('custom column labels map to deadline follow-up without relying on fixed ids',()=>{
+  const r=runtime();r("data.stages.push({id:'customcall',label:'Terugbellen',done:false},{id:'custommail',label:'Antwoord op mail',done:false});data.tasks=[makeTask('a',{stage:'customcall',due:today()}),makeTask('b',{stage:'custommail',due:today()})]");
+  assert.equal(r('crmEffectiveAction(data.tasks[0]).type'),'call');assert.equal(r('crmEffectiveAction(data.tasks[1]).type'),'quote');
+  r("crmSetNextAction(data.tasks[1],{type:'call',date:'2026-10-16'})");assert.equal(r('data.tasks[1].due'),'2026-10-16');assert.equal(r('crmEffectiveAction(data.tasks[1]).type'),'quote');
+});
+
+test('completing linked follow-up clears deadline and undo restores deadline and time',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:today(),time:'14:30'})];crmCompleteAction(data.tasks[0])");
+  assert.equal(r('data.tasks[0].due'),null);assert.equal(r('data.tasks[0].time'),null);assert.equal(r('data.tasks[0].done'),false);
+  r('undo()');assert.equal(r('data.tasks[0].due'),r('today()'));assert.equal(r('data.tasks[0].time'),'14:30');
+  assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'');
+});
+
+test('first contact field appears in follow-up history without inventing a contact channel',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{custom:{'f-eerste-contact':'2026-09-10'}})]");
+  assert.equal(r('crmFirstContact(data.tasks[0]).date'),'2026-09-10');
+  const html=r('crmDetailHtml(data.tasks[0])');assert.match(html,/Eerste contactname/);assert.match(html,/10\/09\/2026/);assert.match(html,/Datum uit Eerste x contactname/);
+  assert.equal(r('data.activities.length'),0);
+});
+
+test('logging contacts fills the first-contact field and preserves an earlier known first contact',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a')];crmAddContact(data.tasks[0],{type:'call',at:now(),outcome:'Gesproken'})");
+  assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),r('today()'));
+  r("crmAddContact(data.tasks[0],{type:'email',at:parseYmd('2026-09-10').getTime(),outcome:'Eerste mail'})");
+  assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'2026-09-10');
+  r("crmAddContact(data.tasks[0],{type:'call',at:now(),outcome:'Opnieuw gebeld'})");
+  assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'2026-09-10');
 });
