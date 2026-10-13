@@ -3765,8 +3765,7 @@ function calcNegotiationHtml(c, printing = false) {
 const calcNum = n => n == null ? '—' : n.toLocaleString('nl-BE');
 function calcText(c) {
   const togo = calcTogo(c);
-  const n = calcNegotiation(c), extra = n.configured ? n.error ? ['',n.error] : ['',`Minimum per 1/8 - € ${calcNum(n.floor)}`,`Korting - ${calcNum(n.discount)} %`,...n.rows.map(r => `${r.format} voorstel - ${r.offer == null ? '—' : '€ '+calcNum(r.offer)} · minimum € ${calcNum(r.minimum)}${r.limited ? ' (minimum toegepast)' : ''}`)] : [];
-  return [`Streef - ${c.target ?? c.togo ?? ''}`, `Huidig verkoopcijfer - ${c.current || ''}`, `Nog te verkopen - ${togo == null ? '' : calcNum(togo)}`, `Beschikbaar 1/8 - ${c.pk || ''}`, '', ...calcPrices(c).map(([l, n]) => `${l} - ${n == null ? '' : n}`),...extra].join('\n');
+  return [`Streef - ${c.target ?? c.togo ?? ''}`, `Huidig verkoopcijfer - ${c.current || ''}`, `Nog te verkopen - ${togo == null ? '' : calcNum(togo)}`, `Beschikbaar 1/8 - ${c.pk || ''}`, '', ...calcPrices(c).map(([l, n]) => `${l} - ${n == null ? '' : n}`)].join('\n');
 }
 function calcTogoHtml(c) { const t = calcTogo(c); return t == null ? 'Vul het streefcijfer in' : t === 0 ? 'Streefcijfer bereikt: <b>€ 0</b> nog te verkopen' : `Nog te verkopen: <b>€ ${calcNum(t)}</b>`; }
 function calcOut(c) {
@@ -3783,8 +3782,7 @@ function calcPrintHtml(p) {
       </div>
       <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(c)}</ul>
     </section>
-    <p class="pc-print-note">Prijzen per formaat · afgerond naar boven op hele euro’s</p>
-    ${calcNegotiation(c).configured ? `<section class="pc-print-neg"><h2>Minimumprijs en korting</h2>${calcNegotiationHtml(c,true)}</section>` : ''}`;
+    <p class="pc-print-note">Prijzen per formaat · afgerond naar boven op hele euro’s</p>`;
 }
 let calcPrintCleanup = null;
 async function printCalc(p) {
@@ -3816,7 +3814,7 @@ function renderCalc() {
   el.hidden = false;
   // oude berekening (To go): omzetten naar streef + huidig verkoopcijfer
   if (p.calc.target === undefined) { p.calc = {...p.calc,target:p.calc.togo || '', current:p.calc.current || '', pk:p.calc.pk || ''}; touch(p); save(true); }
-  if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); $('.pc-neg-result',el).innerHTML=calcNegotiationHtml(p.calc); return; }
+  if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); return; }
   el.dataset.pid = p.id;
   el.innerHTML = `<div class="pc-row">
       <span class="pc-title">Prijsberekening</span>
@@ -3830,16 +3828,12 @@ function renderCalc() {
       <button type="button" class="btn" id="pcPrint" title="Afdrukken of bewaren als PDF">Afdrukken</button>
     </div>
     <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>
-    <details class="pc-negotiation" ${calcNegotiation(p.calc).configured ? 'open' : ''}><summary>Minimumprijs en korting</summary>
-      <div class="pc-neg-fields"><label class="fl">Minimumprijs per 1/8 (€)<input id="pcMinPrice" type="text" inputmode="decimal" value="${esc(p.calc.minPrice ?? '')}" placeholder="0" autocomplete="off"></label><label class="fl">Korting (%)<input id="pcDiscount" type="text" inputmode="decimal" value="${esc(p.calc.discount ?? '')}" placeholder="0" autocomplete="off"></label></div>
-      <p class="muted small">Het minimum schaalt mee met het formaat. Voorstellen worden naar boven afgerond en nooit onder het minimum gezet. De richtprijzen hierboven veranderen niet.</p>
-      <div class="pc-neg-result">${calcNegotiationHtml(p.calc)}</div></details>`;
+`;
 }
 $('#projCalc').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
-  if (e.target.id === 'pcTarget') p.calc.target = e.target.value; else if (e.target.id === 'pcCur') p.calc.current = e.target.value; else if (e.target.id === 'pcPk') p.calc.pk = e.target.value; else if (e.target.id === 'pcMinPrice') p.calc.minPrice = e.target.value; else if (e.target.id === 'pcDiscount') p.calc.discount = e.target.value; else return;
+  if (e.target.id === 'pcTarget') p.calc.target = e.target.value; else if (e.target.id === 'pcCur') p.calc.current = e.target.value; else if (e.target.id === 'pcPk') p.calc.pk = e.target.value; else return;
   touch(p); save(true); $('#projCalc .pc-out').innerHTML = calcOut(p.calc); $('#projCalc .pc-togo').innerHTML = calcTogoHtml(p.calc);
-  $('#projCalc .pc-neg-result').innerHTML = calcNegotiationHtml(p.calc);
 });
 $('#projCalc').addEventListener('click', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
