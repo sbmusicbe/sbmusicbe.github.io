@@ -25,6 +25,7 @@ Ook handig:
 
 - **Opmerkingen met afbeeldingen**: toevoegen met de knop, plakken of slepen; aanklikken om te vergroten. Afbeeldingen worden in de browser verkleind en zitten in de versleutelde kluis (metadata zoals locatie verdwijnt).
 - **Licht en donker**, volgens je toestel of zelf gekozen.
+- **Prijsberekening afdrukken**: klik bij een project op *Afdrukken* om de berekening in de stijl van Klose op papier te zetten of als PDF te bewaren, zonder je andere deals mee af te drukken.
 - **Werkt offline** en is te installeren als app (PWA) op telefoon en computer, zonder app store.
 - **Ontgrendelen met Face ID of Touch ID** op toestellen die dat ondersteunen.
 - **Rondleiding** en hulp bij het eerste gebruik; functies die je niet nodig hebt (agenda, verkopen, btw) zet je uit in de instellingen.

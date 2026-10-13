@@ -147,3 +147,43 @@ test('hidden sales checkbox preserves stage flags; visible checkbox still applie
   vm.runInContext('checkbox={checked:true};read({})',ctx); assert.equal(vm.runInContext('draft[0].positive',ctx),true);
   vm.runInContext('done=false;checkbox=null;read({})',ctx); assert.equal(vm.runInContext('draft[0].positive',ctx),false);
 });
+
+test('print calculation contains the project and all seven current prices', () => {
+  const ctx = vm.createContext({});
+  vm.runInContext(section('const esc =', 'const escRe =') + section('const CALC_FORMATS =', 'function renderCalc('), ctx);
+  const html = vm.runInContext("calcPrintHtml({name:'Kempen Info',calc:{target:'9700',current:'2505',pk:'26.5'}})", ctx);
+  assert.match(html, /<h1>Kempen Info<\/h1>/);
+  assert.match(html, /Nog te verkopen: <b>€ 7\.195<\/b>/);
+  assert.equal((html.match(/<li class=/g) || []).length, 7);
+  assert.match(html, /class="base"><span>1\/8<\/span><b>€ 272<\/b>/);
+  assert.match(html, /<span>1\/32<\/span><b>€ 68<\/b>/);
+  assert.doesNotMatch(html, /<input|<button/);
+});
+
+test('print calculation escapes project names and shows missing prices clearly', () => {
+  const ctx = vm.createContext({});
+  vm.runInContext(section('const esc =', 'const escRe =') + section('const CALC_FORMATS =', 'function renderCalc('), ctx);
+  const html = vm.runInContext("calcPrintHtml({name:'<script> & bedrijf',calc:{target:'',current:'',pk:''}})", ctx);
+  assert.match(html, /&lt;script&gt; &amp; bedrijf/);
+  assert.doesNotMatch(html, /<script>/);
+  assert.equal((html.match(/<li class="[^"]*"><span>[^<]+<\/span><b>—<\/b>/g) || []).length, 7);
+  assert.match(html, /Vul het streefcijfer in/);
+});
+
+test('printing waits for fonts and restores the app after the print dialog closes', async () => {
+  const events = new Map(), classes = new Set();
+  let sheet, printed = false, removed = false;
+  const document = {title:'Klose', fonts:{ready:Promise.resolve()},
+    createElement:() => ({remove(){removed=true;}}),
+    body:{append(el){sheet=el;},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c)}}};
+  const window = {print(){printed=true;},addEventListener:(e,f)=>events.set(e,f),removeEventListener:e=>events.delete(e)};
+  const ctx = vm.createContext({document,window,toast:()=>{},calcPrintHtml:()=>'<p>calculation</p>'});
+  vm.runInContext(section('let calcPrintCleanup =', 'function renderCalc('),ctx);
+  await vm.runInContext("printCalc({name:'Kempen Info'})",ctx);
+  assert.equal(printed,true); assert.equal(sheet.id,'calcPrint');
+  assert.equal(document.title,'Prijsberekening - Kempen Info');
+  assert.equal(classes.has('printing-calc'),true);
+  events.get('afterprint')();
+  assert.equal(removed,true); assert.equal(document.title,'Klose');
+  assert.equal(classes.has('printing-calc'),false);
+});

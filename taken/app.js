@@ -3727,6 +3727,37 @@ function calcTogoHtml(c) { const t = calcTogo(c); return t == null ? 'Vul het st
 function calcOut(c) {
   return calcPrices(c).map(([l, n]) => `<li class="${l === '1/8' ? 'base' : ''}"><span>${l}</span><b>${n == null ? '—' : '€ ' + calcNum(n)}</b></li>`).join('');
 }
+function calcPrintHtml(p) {
+  const c = p.calc, field = (label, value) => `<div class="pc-print-field"><span>${label}</span><b>${esc(calcNum(value))}</b></div>`;
+  return `<header class="pc-print-head"><span class="pc-print-brand">Klose</span><span>Prijsberekening · ${esc(new Date().toLocaleDateString('nl-BE'))}</span></header>
+    <h1>${esc(p.name)}</h1>
+    <section class="pcalc">
+      <div class="pc-row"><span class="pc-title">Prijsberekening</span>
+        <div class="pc-fields">${field('Streef (€)', parseNl(c.target ?? c.togo))}${field('Huidig (€)', parseNl(c.current) || 0)}${field('Beschikbaar 1/8', parseNl(c.pk))}</div>
+        <p class="pc-togo">${calcTogoHtml(c)}</p>
+      </div>
+      <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(c)}</ul>
+    </section>
+    <p class="pc-print-note">Prijzen per formaat · afgerond naar boven op hele euro’s</p>`;
+}
+let calcPrintCleanup = null;
+async function printCalc(p) {
+  calcPrintCleanup?.();
+  const sheet = document.createElement('section'), oldTitle = document.title;
+  sheet.id = 'calcPrint'; sheet.innerHTML = calcPrintHtml(p);
+  document.body.append(sheet); document.body.classList.add('printing-calc');
+  document.title = 'Prijsberekening - ' + p.name;
+  const cleanup = () => {
+    sheet.remove(); document.body.classList.remove('printing-calc'); document.title = oldTitle;
+    window.removeEventListener('afterprint', cleanup); calcPrintCleanup = null;
+  };
+  calcPrintCleanup = cleanup;
+  window.addEventListener('afterprint', cleanup, {once:true});
+  try {
+    if (document.fonts) await document.fonts.ready;
+    window.print();
+  } catch { cleanup(); toast('Afdrukken is niet beschikbaar op dit toestel.'); }
+}
 function renderCalc() {
   const el = $('#projCalc'), p = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
   // projecten met "To go" en "PK" in de notities krijgen de berekening één keer automatisch, met die waarden ingevuld
@@ -3750,6 +3781,7 @@ function renderCalc() {
       </div>
       <p class="pc-togo">${calcTogoHtml(p.calc)}</p>
       <button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button>
+      <button type="button" class="btn" id="pcPrint" title="Afdrukken of bewaren als PDF">Afdrukken</button>
     </div>
     <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>`;
 }
@@ -3759,8 +3791,9 @@ $('#projCalc').addEventListener('input', e => {
   touch(p); save(true); $('#projCalc .pc-out').innerHTML = calcOut(p.calc); $('#projCalc .pc-togo').innerHTML = calcTogoHtml(p.calc);
 });
 $('#projCalc').addEventListener('click', e => {
-  if (!e.target.closest('#pcCopy')) return;
-  const p = data.projects.find(x => x.id === view.id); if (p?.calc) copyText(calcText(p.calc), 'Prijzen');
+  const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
+  if (e.target.closest('#pcCopy')) copyText(calcText(p.calc), 'Prijzen');
+  else if (e.target.closest('#pcPrint')) printCalc(p);
 });
 /* ---- Projecten in de zijbalk handmatig rangschikken: slepen (muis: gewoon slepen, aanraken: even ingedrukt houden), Alt+↑/↓ of via het menu ---- */
 const navActiveIds = () => sortedProjects().filter(p => p.id !== 'inbox' && !p.finished).map(p => p.id);
