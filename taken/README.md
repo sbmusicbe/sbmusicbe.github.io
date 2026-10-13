@@ -1,6 +1,6 @@
 # Klose
 
-**De CRM voor hardsales.** Deals, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server nodig, geen abonnement: je gegevens blijven **versleuteld op je eigen toestel**, met optionele synchronisatie tussen al je toestellen.
+**Je klanten en opvolging op één plek.** Klanten, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server nodig, geen abonnement: je gegevens blijven **versleuteld op je eigen toestel**, met optionele synchronisatie tussen al je toestellen.
 
 Klose is gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. Hosten is niets meer dan de map uploaden.
 
@@ -15,9 +15,9 @@ Klose is gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. 
 
 | Onderdeel | Wat je ermee doet |
 |---|---|
-| **Deals** | Projecten met een bord met vaste stappen (*Terugbellen, Offerte, Gewonnen, Verloren*, aanpasbaar). Sleep kaarten tussen kolommen. Per deal: deadline en uur, eigen velden, opmerkingen met afbeeldingen, archief. |
-| **Prijsberekening** | Bovenaan elk project. Vul het streefbedrag, wat al verkocht is en de beschikbare 1/8-ruimtes in; Klose rekent de prijs per formaat uit (1/1 t/m 1/32) en wat er nog te verkopen is. |
-| **Verkopen** | Een pagina per maand met een tabel (kolommen zelf in te stellen), doelstelling, bedrag per dag dat nog nodig is, tempo ten opzichte van het schema, en commissie en bonus. Importeren uit notities en export naar CSV. | Een deal die je op **Gewonnen** zet, komt automatisch als regel in de maand van die dag: titel → klant, veld *Prijs* → bedrag, veld *Formaat* → formaat. In *Instellingen → Deals → Stappen* kies je welke stap als verkoop telt.
+| **Klanten** | Een leesbare lijst met naam, project, status en opvolgdatum. Zoek op naam, telefoonnummer of notitie. Klik op een klant voor Overzicht, Notities en Gegevens. De kolommenweergave blijft beschikbaar. |
+| **Prijsberekening** | Open Prijsberekening bovenaan een project wanneer je die nodig hebt. Vul het streefbedrag, wat al verkocht is en de beschikbare 1/8-ruimtes in; Klose rekent de prijs per formaat uit (1/1 t/m 1/32) en wat er nog te verkopen is. |
+| **Verkopen** | Een overzicht per maand met een leesbare kaart per verkoop en een formulier om toe te voegen of te bewerken. Tabel bewerken blijft beschikbaar. Voortgang, dagdoel, commissie, bonus en maandnotities staan in optionele onderdelen. Importeren uit notities en export naar CSV. | Een deal die je op **Gewonnen** zet, komt automatisch als regel in de maand van die dag: titel → klant, veld *Prijs* → bedrag, veld *Formaat* → formaat. In *Instellingen → Klanten → Stappen* kies je welke stap als verkoop telt.
 | **Agenda** | Drukdata, deadlines en afspraken, met herhaling en Belgische feestdagen. |
 | **BTW** | Reken een bedrag om van of naar inclusief btw (6, 9, 12 of 21 %). |
 
@@ -37,7 +37,7 @@ Ook handig:
 |---|---|
 | `N` of `Q`, `Ctrl/⌘ K` | Nieuwe deal |
 | `/`, `Ctrl/⌘ F` | Zoeken |
-| `Ctrl/⌘ 1` | Alle deals |
+| `Ctrl/⌘ 1` | Klanten |
 | `Ctrl/⌘ 5` | Verkopen (laatste maand) |
 | `Ctrl/⌘ ,` | Instellingen |
 | `Delete` | Open deal verwijderen |
@@ -48,15 +48,15 @@ Ook handig:
 
 ### Opvolging en verkoopdashboard
 
-- **Vandaag doen** is het startscherm: te late opvolging en de opvolging voor vandaag. Overige deadlines en offertes zonder deadline verschijnen alleen als er gegevens voor zijn. Via **Alle deals** ga je naar het volledige bord.
+- **Vandaag doen** is het startscherm: één lijst met klanten die vandaag of eerder opgevolgd moeten worden, zonder dubbeltelling. Klanten zonder opvolgdatum staan in een optioneel onderdeel. Via **Klanten** ga je naar de volledige lijst. Op mobiel is Vandaag rechtstreeks beschikbaar.
 - **Opvolging via deadline**: in Terugbellen is de deadline de beldatum; in Antwoord op mail/Offerte is de deadline de datum om de offerte op te volgen. Er is geen tweede opvolgdatum nodig. De vaste kolommen worden ook na hernoemen herkend; gelijknamige aangepaste kolommen werken eveneens. Andere kolommen kunnen een aparte volgende actie krijgen.
 - **Taken met tabbladen** toont Overzicht, Notities en Gegevens. Overzicht bevat de volgende stap, deadline en directe knoppen om te bellen en mailen. Gegevens bevat alle klant- en projectvelden. De tabbladen werken ook met de pijltoetsen, Home en End.
-- **Uitgevoerd** in het dagoverzicht bewaart een contactmoment en rondt de actie af, niet de deal. In het dealpaneel gebruik je *Notitie toevoegen*: je schrijft wat er besproken is en kunt optioneel een nieuwe opvolgdatum invullen. Voor deadline-opvolging worden bij afronden de deadline en het uur gewist. Ongedaan maken herstelt die gegevens, tenzij er intussen al een nieuwe actie gepland is.
+- **Klant toevoegen** opent een kort formulier met naam en project. Contactgegevens en opvolging zijn optioneel. Annuleren maakt geen lege klant aan. In het dagoverzicht open je de klant om het gesprek vast te leggen. In het dealpaneel gebruik je *Notitie toevoegen*: je schrijft wat er besproken is en kunt optioneel een nieuwe opvolgdatum invullen. Voor deadline-opvolging worden bij afronden de deadline en het uur gewist. Ongedaan maken herstelt die gegevens, tenzij er intussen al een nieuwe actie gepland is.
 - **Eerste contactname** gebruikt je bestaande veld *Eerste x contactname*. De datum verschijnt bij Notities en is te bewerken in het tabblad Gegevens. Een nieuw contactmoment vult het veld in als het leeg is; een eerder contactmoment kan de datum vervroegen. Een bekende eerdere datum blijft bewaard.
 - **Contactnotities**: klik op *Notitie toevoegen*, schrijf wat er besproken is en klik op *Notitie bewaren*. Contactsoort en uitkomst zijn niet verplicht. Afbeeldingen kun je toevoegen of plakken. Een optionele nieuwe opvolgdatum past de planning aan; leeg laten behoudt de bestaande deadline. De eerste contactname wordt automatisch ingevuld als die nog ontbreekt. Eerdere contactmomenten, opmerkingen en bijlagen blijven samen zichtbaar, met de nieuwste bovenaan.
 - **Verliesreden** wordt gevraagd wanneer een deal naar een afgewerkte, niet-positieve stap gaat. Je kunt die later bij de deal aanpassen. Het dashboard groepeert deze redenen.
 - **Duplicaatwaarschuwing** vergelijkt bedrijfsnamen/titels, e-mailadressen en telefoonnummers, ook tussen projecten. Belgische lokale en internationale telefoonnummers worden herkend. Een waarschuwing blokkeert niets en voegt niets automatisch samen.
-- **Dashboard** toont omzet, gemiddelde verkoopprijs, conversie, open pijplijn, projectresultaten en omzet per maand. Je kunt filteren op maand en project en resultaten exporteren als CSV. Omzet gebruikt het eerste bedragveld en de maandpagina van de verkoop. Gemiddelden sluiten ontbrekende bedragen uit. Conversie gebruikt de afrondingsdatum van gewonnen/verloren deals; open deals tellen niet mee. Bestaande deals zonder afrondingsdatum tellen alleen bij alle maanden.
+- **Resultaten** toont omzet, gemiddelde verkoopprijs, percentage gewonnen klanten, klanten om op te volgen, projectresultaten en omzet per maand. Je kunt filteren op maand en project en resultaten exporteren als CSV. Omzet gebruikt het eerste bedragveld en de maandpagina van de verkoop. Gemiddelden sluiten ontbrekende bedragen uit. Conversie gebruikt de afrondingsdatum van gewonnen/verloren deals; open deals tellen niet mee. Bestaande deals zonder afrondingsdatum tellen alleen bij alle maanden.
 - **Project per verkoop**: gewonnen deals nemen hun project mee. Onder de klantnaam staat een kleine projectnaam. Klik erop om het project in een apart venster te wijzigen; er staan geen grote selectievakken meer in de verkooptabel. Verkopen zonder project blijven zichtbaar in het totale dashboard.
 
 Alle functies werken lokaal en blijven in de bestaande versleutelde kluis. Er is geen AI, geen nieuwe externe dienst en geen databasewijziging nodig. Gebruik na de update de nieuwste appversie op al je toestellen. Maak zoals altijd eerst een back-up voordat je een oudere versie terugzet.
@@ -117,7 +117,8 @@ Daarna opent Klose in een eigen venster, werkt het offline en toont het rechtson
 taken/
   index.html          pagina en beveiligingsregels (CSP)
   app.js              alle logica: gegevens, versleuteling, synchronisatie, schermen
-  crm.js              opvolgacties, contacthistoriek, duplicaten en dashboard
+  crm.js              opvolgacties, contactnotities, duplicaten en resultaten
+  usability.js        klantenlijsten, eenvoudige formulieren en verkoopoverzicht
   style.css             het hele ontwerp
   theme.js              thema vooraf instellen (geen flits) en anti-frame-beveiliging
   sw.js                 service worker voor offline gebruik en updatemelding
@@ -144,3 +145,5 @@ Nog niet gekozen. Zonder licentie blijft alle code van de eigenaar; voeg een `LI
 ## Een probleem melden
 
 Veiligheidsproblemen: zie [`SECURITY.md`](SECURITY.md). Stuur nooit wachtwoorden of herstelsleutels mee.
+
+De dagelijkse bediening gebruikt knoppen met een naam, grotere invoervelden en leesbare tekst. In de lijst staan filters en volgorde bij Filteren. Wijzigingen in het klantpaneel en de invoertabel worden automatisch bewaard; notities en toevoegformulieren hebben een expliciete bewaarknop. Bij een verkoop blijven alle bestaande kolommen bewerkbaar, ook onbekende opgeslagen velden blijven behouden.

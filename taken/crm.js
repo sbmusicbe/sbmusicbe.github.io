@@ -1,6 +1,6 @@
 'use strict';
 /* CRM-workflow. Alles blijft in de bestaande versleutelde kluis; geen AI of externe dienst. */
-const CRM_ACTIONS = [['call', 'Bellen'], ['email', 'Mailen'], ['quote', 'Offerte opvolgen'], ['meeting', 'Afspraak'], ['other', 'Anders']];
+const CRM_ACTIONS = [['call', 'Bellen'], ['email', 'Mailen'], ['quote', 'Offerte opvolgen'], ['meeting', 'Afspraak'], ['other', 'Opvolgen']];
 const CRM_LOSS_REASONS = ['Prijs', 'Geen interesse', 'Verkeerde timing', 'Concurrent gekozen', 'Niet bereikbaar', 'Anders'];
 let crmReport = {month:null, projectId:''};
 const crmActionLabel = type => CRM_ACTIONS.find(x => x[0] === type)?.[1] || 'Opvolgen';
@@ -179,6 +179,7 @@ function crmFocusHtml(t) {
     ${!t.done ? linked ? `<details id="crmDeadlineEdit" class="crm-focus-date" ${crmFocusOpen.deadline[t.id] ? 'open' : ''}><summary><span class="${action?.date < today() ? 'crm-late' : ''}">${when}</span><span class="crm-focus-change">Wijzigen</span></summary>${crmDeadlineFieldsHtml(t)}<button type="button" class="link" data-crm-date-done="${esc(t.id)}">Gereed</button></details>` : `<button type="button" class="crm-focus-date-button" data-crm-action="${esc(t.id)}">${when}<span>Wijzigen</span></button>` : ''}
     ${action?.note ? `<p class="crm-focus-action-note">${esc(action.note)}</p>` : ''}
     <button type="button" class="btn primary crm-focus-primary" data-crm-contact="${esc(t.id)}">Notitie toevoegen</button>
+    ${action?`<button type="button" class="link crm-complete-link" data-crm-complete="${esc(t.id)}">Opvolging afronden</button>`:''}
   </section>`;
 }
 function crmContactSummaryHtml(t) {
@@ -207,14 +208,17 @@ function crmDetailHtml(t) {
 
 }
 function crmTaskRows(list, mode='action') {
-  return list.length ? `<div class="crm-task-list">${list.map(t=>{const a=crmEffectiveAction(t);return `<article class="crm-task-row"><button type="button" class="crm-task-open" data-crm-open="${esc(t.id)}"><b>${esc(t.title)}</b><span>${esc(proj(t.projectId)?.name || 'Inbox')} · ${esc(stageById(t.stage)?.label || '')}</span><small>${mode==='deadline'?`Deadline ${esc(dueLabel(t.due))}`:a?`${esc(crmActionLabel(a.type))} · ${esc(dueLabel(a.date))}`:crmDeadlineActionType(t)?'Nog geen deadline':'Nog geen volgende actie'}${a?.note?` · ${esc(a.note)}`:''}</small></button><div class="crm-row-actions"><button type="button" class="btn" data-crm-action="${esc(t.id)}">${crmDeadlineActionType(t)?'Deadline':'Plannen'}</button>${a?`<button type="button" class="btn" data-crm-complete="${esc(t.id)}">Uitgevoerd</button>`:''}</div></article>`;}).join('')}</div>` : '<p class="muted small crm-empty">Niets in deze lijst.</p>';
+  return list.length ? `<div class="crm-task-list">${list.map(t=>{const a=crmEffectiveAction(t),date=mode==='deadline'?t.due:a?.date || t.due;return `<article class="crm-task-row"><button type="button" class="crm-task-open" data-crm-open="${esc(t.id)}"><b>${esc(t.title)}</b><span>${esc(proj(t.projectId)?.name || 'Inbox')} · ${esc(stageById(t.stage)?.label || '')}</span><small class="${date && date<today()?'crm-late':''}">${date?`${date<today()?'Te laat · ':''}${esc(a?crmActionLabel(a.type):'Deadline')} · ${esc(dueLabel(date))}`:'Kies een opvolgdatum'}${a?.note?' · '+esc(a.note):''}</small></button><button type="button" class="btn" data-crm-open="${esc(t.id)}">Openen</button></article>`;}).join('')}</div>` : '<p class="muted crm-empty">Niets te doen in deze lijst.</p>';
+}
+function crmAttentionTasks() {
+  const g=crmDayGroups();
+  return [...new Map([...g.overdue,...g.actions,...g.deadlines].map(t=>[t.id,t])).values()].sort((a,b)=>(crmEffectiveAction(a)?.date || a.due).localeCompare(crmEffectiveAction(b)?.date || b.due));
 }
 function crmTodayHtml() {
-  const g=crmDayGroups(),unique=new Set([...g.overdue,...g.actions,...g.deadlines,...g.quotes].map(t=>t.id));
-  const block=(title,list,mode)=>`<section class="crm-card"><h3>${title} <span class="crm-count">${list.length}</span></h3>${crmTaskRows(list,mode)}</section>`;
-  return `<div class="crm-page"><p class="crm-lead">${unique.size} ${unique.size===1?'deal vraagt':'deals vragen'} aandacht. Terugbellen en offerte opvolgen volgen automatisch de deadline van hun kolom.</p>
-    <div class="crm-work-grid">${block('Te laat',g.overdue)}${block('Vandaag opvolgen',g.actions)}${g.deadlines.length?block('Overige deadlines',g.deadlines,'deadline'):''}${g.quotes.length?block('Offertes zonder deadline',g.quotes):''}</div>
-    <details class="crm-card"><summary>Nog te plannen <span class="crm-count">${g.unplanned.length}</span></summary>${crmTaskRows(g.unplanned)}</details></div>`;
+  const g=crmDayGroups(),attention=crmAttentionTasks(),unplanned=g.unplanned.filter(t=>!t.due);
+  return `<div class="crm-page"><p class="crm-lead">${attention.length?`Begin met deze ${attention.length} ${attention.length===1?'klant':'klanten'}. Open de klant om te bellen, te mailen of een notitie te bewaren.`:'Alles voor vandaag is opgevolgd. Je kunt alvast een volgende klant plannen.'}</p>
+    <section class="crm-card"><h3>Vandaag opvolgen <span class="crm-count">${attention.length}</span></h3>${attention.length?crmTaskRows(attention):'<p class="muted">Geen klanten met een deadline vandaag of eerder.</p><button type="button" class="btn" data-crm-all-customers>Klanten bekijken</button>'}</section>
+    <details class="crm-card crm-today-unplanned"><summary>Nog geen opvolgdatum <span class="crm-count">${unplanned.length}</span></summary><p class="muted">Open een klant en kies wanneer je contact wilt opnemen.</p>${crmTaskRows(unplanned)}</details></div>`;
 }
 function crmSalesReport(month, projectId) {
   const amount=winCols().amount, dateCol=winCols().date;
@@ -244,13 +248,13 @@ function crmDashboardHtml() {
   if(crmReport.projectId && !data.projects.some(p=>p.id===crmReport.projectId))crmReport.projectId='';
   const r=crmSalesReport(crmReport.month,crmReport.projectId),metric=(label,value,note)=>`<article class="crm-metric"><span>${label}</span><b>${value}</b><small>${note}</small></article>`;
   const table=(headers,rows)=>`<div class="crm-table-wrap"><table class="crm-table"><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(cells=>`<tr>${cells.map(x=>`<td>${x}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${headers.length}" class="muted">Nog geen gegevens voor deze selectie.</td></tr>`}</tbody></table></div>`;
-  return `<div class="crm-page"><div class="crm-page-tools"><label>Maand <input type="month" id="crmReportMonth" value="${esc(crmReport.month)}"></label><button type="button" class="btn" id="crmReportAll">Alle maanden</button><label>Project <select id="crmReportProject"><option value="">Alle projecten</option>${sortedProjects().map(p=>`<option value="${esc(p.id)}" ${p.id===crmReport.projectId?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label><button type="button" class="btn" id="crmReportCsv">Export CSV</button></div>
-    <p class="crm-lead">${crmReport.month?esc(monthTitle(crmReport.month)):'Alle maanden'} · omzet uit verkoopregels, bedragveld: ${esc(r.amount?.name || 'geen bedragveld')}. De maandpagina bepaalt de verkoopmaand.</p>
-    <div class="crm-metrics">${metric('Omzet',eur(r.revenue),`${r.count} verkoopregels`)}${metric('Gemiddelde verkoopprijs',r.average===null?'—':eur(r.average),'Per verkoopregel met bedrag')}${metric('Conversie',r.conversion===null?'—':`${calcNum(round2(r.conversion))} %`,`${r.won} gewonnen · ${r.lost} verloren`)}${metric('Open pijplijn',String(crmOpenTasks().filter(t=>!crmReport.projectId || t.projectId===crmReport.projectId).length),'Actuele open deals, alle datums')}</div>
+  return `<div class="crm-page"><div class="crm-page-tools"><label>Maand <input type="month" id="crmReportMonth" value="${esc(crmReport.month)}"></label><button type="button" class="btn" id="crmReportAll">Alle maanden</button><label>Project <select id="crmReportProject"><option value="">Alle projecten</option>${sortedProjects().map(p=>`<option value="${esc(p.id)}" ${p.id===crmReport.projectId?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label><button type="button" class="btn" id="crmReportCsv">Download overzicht</button></div>
+    <p class="crm-lead">${crmReport.month?esc(monthTitle(crmReport.month)):'Alle maanden'} · ${r.count} verkopen in dit overzicht.</p>
+    <div class="crm-metrics">${metric('Omzet',eur(r.revenue),`${r.count} verkoopregels`)}${metric('Gemiddelde verkoopprijs',r.average===null?'—':eur(r.average),'Per verkoopregel met bedrag')}${metric('Gewonnen klanten',r.conversion===null?'—':`${calcNum(round2(r.conversion))} %`,`${r.won} gewonnen · ${r.lost} verloren`)}${metric('Nog op te volgen',String(crmOpenTasks().filter(t=>!crmReport.projectId || t.projectId===crmReport.projectId).length),'Alle klanten die nog niet afgerond zijn')}</div>
     ${r.missing?`<p class="crm-warning">${r.missing} verkoopregel(s) zonder geldig bedrag; niet meegerekend in het gemiddelde.</p>`:''}${r.unassigned?`<p class="muted small">${r.unassigned} verkoopregel(s) zonder project. Koppel deze in de verkooptabel om ze in een projectfilter te zien.</p>`:''}
     <div class="crm-work-grid"><section class="crm-card"><h3>Resultaten per project</h3>${table(['Project','Verkopen','Omzet'],[...r.byProject].sort((a,b)=>b[1].revenue-a[1].revenue).map(([id,v])=>[esc(id?proj(id)?.name || 'Verwijderd project':'Zonder project'),v.count,eur(v.revenue)]))}</section><section class="crm-card"><h3>Waarom deals verloren gaan</h3>${table(['Reden','Deals'],[...r.reasons].sort((a,b)=>b[1]-a[1]).map(([label,n])=>[esc(label),n]))}</section></div>
     <section class="crm-card"><h3>Omzet per maand</h3>${table(['Maand','Omzet'],[...r.byMonth].sort((a,b)=>b[0].localeCompare(a[0])).map(([m,n])=>[esc(monthTitle(m)),eur(n)]))}</section>
-    <p class="muted small">Conversie = gewonnen / afgeronde deals, op basis van de afrondingsdatum. Bestaande deals zonder afrondingsdatum tellen alleen bij “Alle maanden”.</p></div>`;
+    <p class="muted small">Het percentage gewonnen klanten is het aantal gewonnen klanten gedeeld door alle afgeronde klanten in deze periode. Bestaande deals zonder afrondingsdatum tellen alleen bij “Alle maanden”.</p></div>`;
 }
 function crmCsvCell(value) {let s=String(value ?? '');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function crmExportReport() {
