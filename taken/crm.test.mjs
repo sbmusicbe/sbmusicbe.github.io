@@ -1,0 +1,162 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+
+const app=readFileSync(new URL('./app.js',import.meta.url),'utf8');
+const crm=readFileSync(new URL('./crm.js',import.meta.url),'utf8');
+const section=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
+function runtime() {
+  const ctx=vm.createContext({console,structuredClone,setTimeout,clearTimeout});
+  vm.runInContext(`
+    ${section('const VAULT =','const I =')}
+    ${section('const esc =','const escRe =')}
+    const pad=n=>String(n).padStart(2,'0');
+    const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    const parseYmd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+    const today=()=> '2026-10-13'; const now=()=>new Date('2026-10-13T12:00:00').getTime();
+    const daysBetween=(a,b)=>Math.round((parseYmd(b)-parseYmd(a))/864e5);
+    let sequence=0;const uid=()=> 'new-'+(++sequence);
+    let data=null;
+    ${section('const DEFAULT_FIELDS =','const proj =')}
+    ${section('const proj =','/* Functies die')}
+    ${section('const isWinStage =','function syncWins(')}
+    ${section('function setStage(','function undoFor(')}
+    ${section('const CALC_FORMATS =','function renderCalc(')}
+    const projArchived=id=>!!data.projects.find(p=>p.id===id)?.finished;
+    const commentsOf=id=>data.comments.filter(x=>x.taskId===id);
+    const round2=n=>Math.round(n*100)/100,cap=s=>s[0].toUpperCase()+s.slice(1);
+    const eur=n=>'€ '+n.toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const monthTitle=m=>m;
+    const salesCols=()=>data.salesCols;
+    const dueLabel=s=>s,stamp=n=>ymd(new Date(n));
+    const I={trash:'x'};
+    let undo=null;const commit=()=>{};const toast=(m,fn)=>{undo=fn;};
+    ${crm}
+    data=newData();data.projects.push({id:'p',name:'Project P'},{id:'q',name:'Project Q'},{id:'finished',name:'Afgewerkt',finished:true});
+    const makeTask=(id,values={})=>({id,title:id,projectId:'p',stage:'callback',done:false,custom:{},createdAt:parseYmd('2026-09-01').getTime(),...values});
+  `,ctx);
+  return code=>vm.runInContext(code,ctx);
+}
+const plain=x=>JSON.parse(JSON.stringify(x));
+
+test('next actions require a real date and supported type; clearing does not complete a deal',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a')]");
+  assert.throws(()=>r("crmSetNextAction(data.tasks[0],{type:'call',date:'2026-02-30'})"),/geldige datum/);
+  assert.throws(()=>r("crmSetNextAction(data.tasks[0],{type:'invalid',date:'2026-10-14'})"));
+  r("crmSetNextAction(data.tasks[0],{type:'call',date:'2026-10-14',note:' bellen '})");
+  assert.deepEqual(plain(r('data.tasks[0].nextAction')),{type:'call',date:'2026-10-14',note:'bellen'});
+  r('crmSetNextAction(data.tasks[0],null)');assert.equal(r('data.tasks[0].done'),false);
+});
+
+test('today separates overdue actions, today actions, deadlines and unplanned quotes',()=>{
+  const r=runtime();r(`data.tasks=[makeTask('overdue',{nextAction:{type:'call',date:'2026-10-12'}}),makeTask('today',{nextAction:{type:'email',date:today()},due:today()}),makeTask('future',{nextAction:{type:'quote',date:'2026-10-14'},stage:'mail'}),makeTask('quote',{stage:'mail'}),makeTask('done',{done:true,due:today()}),makeTask('archived',{projectId:'finished',due:today()})]`);
+  const g=plain(r('crmDayGroups()'));
+  assert.deepEqual(g.overdue.map(t=>t.id),['overdue']);assert.deepEqual(g.actions.map(t=>t.id),['today']);
+  assert.deepEqual(g.deadlines.map(t=>t.id),['today']);assert.deepEqual(g.quotes.map(t=>t.id),['quote']);
+  assert.deepEqual(g.unplanned.map(t=>t.id),['quote']);
+});
+
+test('idle threshold uses contacts/comments/status activity, not sorting edits',()=>{
+  const r=runtime();r(`data.tasks=[makeTask('old',{u:now()}),makeTask('recent')];data.activities=[{id:'contact',taskId:'recent',at:now(),u:now()}]`);
+  assert.equal(r("crmIdleDays(data.tasks[0])"),42);assert.equal(r('crmIdleDays(data.tasks[1])'),0);
+  assert.deepEqual(plain(r('crmStalledTasks().map(t=>t.id)')),['old']);
+  r("data.comments.push({taskId:'old',at:now()})");assert.equal(r('crmIdleDays(data.tasks[0])'),0);
+});
+
+test('contact logging validates before mutating; saves outcome and subsequent action',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a')]");
+  assert.throws(()=>r("crmAddContact(data.tasks[0],{type:'call',at:now(),outcome:'Ja'},{type:'call',date:'bad'})"));
+  assert.equal(r('data.activities.length'),0);assert.equal(r('data.tasks[0].nextAction'),undefined);
+  assert.throws(()=>r("crmAddContact(data.tasks[0],{type:'call',at:now(),text:'',outcome:''})"));
+  r("crmAddContact(data.tasks[0],{type:'call',at:now(),outcome:'Interesse',text:'Offerte gevraagd'},{type:'quote',date:'2026-10-14'})");
+  assert.equal(r('data.activities[0].outcome'),'Interesse');assert.equal(r('data.activities[0].nextAction.type'),'quote');
+  assert.equal(r('data.tasks[0].nextAction.date'),'2026-10-14');
+});
+
+test('completed action gets a contact record; undo preserves a newer follow-up',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{nextAction:{type:'email',date:today(),note:'Offerte'}})];crmCompleteAction(data.tasks[0])");
+  assert.equal(r('data.tasks[0].nextAction'),null);assert.equal(r('data.activities.length'),1);
+  r("crmSetNextAction(data.tasks[0],{type:'call',date:'2026-10-15'});undo()");
+  assert.equal(r('data.activities.length'),0);assert.equal(r('data.tasks[0].nextAction.date'),'2026-10-15');
+  assert.ok(r('Object.keys(data.deleted).length'));
+});
+
+test('parallel contact histories merge as independent items and respect deletions',()=>{
+  const r=runtime();r("let a=newData(),b=newData();a.activities=[{id:'a',taskId:'t',u:now(),at:now()}];b.activities=[{id:'b',taskId:'t',u:now(),at:now()}]");
+  assert.equal(r('merge(a,b).activities.length'),2);
+  r("b.deleted.a=now()");assert.deepEqual(plain(r('merge(a,b).activities.map(x=>x.id)')),['b']);
+  r('delete b.activities');assert.equal(r('merge(a,b).activities.length'),0);
+});
+
+test('old backups normalize without losing deals or inventing contact history',()=>{
+  const r=runtime();r("let old={tasks:[makeTask('old')],projects:[],fields:[]};normalize(old)");
+  assert.equal(r('old.tasks.length'),1);assert.equal(r('old.activities.length'),0);
+});
+
+test('duplicate detection normalizes company, e-mail and Belgian phone numbers across projects',()=>{
+  const r=runtime();r(`data.tasks=[makeTask('a',{title:'Café Martin',custom:{'f-email':'TEST@EXAMPLE.BE','f-telefoon':'0471 12 34 56'}}),makeTask('b',{title:'Cafe Martin',projectId:'q',custom:{'f-email':'test@example.be','f-telefoon':'+32 471 12 34 56'}}),makeTask('c',{title:'Other',custom:{'f-telefoon':'123'}})]`);
+  const d=plain(r('crmDuplicates(data.tasks[0])'));assert.equal(d.length,1);assert.equal(d[0].task.id,'b');
+  assert.deepEqual(d[0].reasons,['e-mailadres','telefoonnummer','bedrijfsnaam']);
+  assert.equal(r('data.tasks.length'),3);
+});
+
+test('default placeholder titles are not treated as duplicate companies',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{title:'Nieuwe deal'}),makeTask('b',{title:'Nieuwe deal'})]");
+  assert.equal(r('crmDuplicates(data.tasks[0]).length'),0);
+});
+
+test('sales report handles month/project filters, decimals, refunds and missing prices',()=>{
+  const r=runtime();r(`data.salesPages=[{id:'oct',month:'2026-10'},{id:'sep',month:'2026-09'}];data.sales=[{id:'one',pageId:'oct',projectId:'p',values:{sc_amount:1234.56}},{id:'refund',pageId:'oct',projectId:'p',values:{sc_amount:-34.56}},{id:'unknown',pageId:'oct',values:{}},{id:'sep',pageId:'sep',projectId:'p',values:{sc_amount:999}}]`);
+  assert.equal(r("crmSalesReport('2026-10','').revenue"),1200);
+  assert.equal(r("crmSalesReport('2026-10','').average"),600);
+  assert.equal(r("crmSalesReport('2026-10','').missing"),1);
+  assert.equal(r("crmSalesReport('2026-10','p').count"),2);
+  assert.equal(r("crmSalesReport('','p').revenue"),2199);
+  assert.equal(r("crmSalesReport('2026-10','q').count"),0);
+});
+
+test('legacy linked sales can be attributed and a manual empty project is respected',()=>{
+  const r=runtime();r(`data.tasks=[makeTask('deal')];data.salesPages=[{id:'oct',month:'2026-10'}];data.sales=[{id:'w_deal',pageId:'oct',values:{sc_amount:100}}]`);
+  assert.equal(r("crmSalesReport('2026-10','p').count"),1);
+  r("data.sales[0].projectId=''");assert.equal(r("crmSalesReport('2026-10','p').count"),0);
+});
+
+test('conversion and loss reasons use completion month rather than all open deals',()=>{
+  const r=runtime();r(`data.tasks=[makeTask('won',{stage:'positive',done:true,doneAt:parseYmd('2026-10-10').getTime()}),makeTask('lost',{stage:'negative',done:true,doneAt:parseYmd('2026-10-11').getTime(),lostReason:'Prijs'}),makeTask('old',{stage:'negative',done:true,doneAt:parseYmd('2026-09-10').getTime()}),makeTask('open')]`);
+  assert.equal(r("crmSalesReport('2026-10','').conversion"),50);
+  assert.equal(r("crmSalesReport('2026-10','').reasons.get('Prijs')"),1);
+  assert.equal(r("crmSalesReport('2026-10','').lost"),1);
+});
+
+test('switching a completed deal to another outcome updates its completion date',()=>{
+  const r=runtime();r("data.tasks=[makeTask('deal',{stage:'negative',done:true,doneAt:parseYmd('2026-09-10').getTime()})];setStage(data.tasks[0],'positive')");
+  assert.equal(r('data.tasks[0].doneAt'),r('now()'));
+  assert.equal(r("crmSalesReport('2026-10','').won"),1);
+});
+
+test('discount scales minimum per format and never undercuts it',()=>{
+  const r=runtime();const result=plain(r("calcNegotiation({target:'9700',current:'2505',pk:'26.5',minPrice:'250',discount:'20'})"));
+  const eighth=result.rows.find(x=>x.format==='1/8');assert.equal(eighth.base,272);assert.equal(eighth.minimum,250);assert.equal(eighth.offer,250);assert.equal(eighth.limited,true);
+  const full=result.rows[0];assert.equal(full.minimum,2000);assert.equal(full.offer,2000);
+  assert.ok(result.rows.every(x=>x.offer>=x.minimum && x.room>=0));
+});
+
+test('invalid discount and minimum return errors; absent settings preserve base prices',()=>{
+  const r=runtime();
+  for(const settings of ["minPrice:'-1'","discount:'101'","discount:'abc'"])assert.ok(r(`calcNegotiation({target:'1000',current:'0',pk:'10',${settings}}).error`));
+  assert.equal(r("calcNegotiation({target:'1000',current:'0',pk:'10'}).configured"),false);
+  assert.equal(r("calcNegotiation({target:'1000',current:'0',pk:'10'}).rows[3].offer"),100);
+  assert.equal(r("calcNegotiation({target:'',pk:''}).rows[0].offer"),null);
+});
+
+test('configured negotiation is included in copy and print without leaking HTML',()=>{
+  const r=runtime();r("let p={name:'<Project>',calc:{target:'1000',current:'0',pk:'10',minPrice:'90',discount:'20'}}");
+  assert.match(r('calcPrintHtml(p)'),/Minimumprijs en korting/);assert.match(r('calcPrintHtml(p)'),/&lt;Project&gt;/);
+  assert.match(r('calcText(p.calc)'),/minimum toegepast/);
+});
+
+test('dashboard CSV escapes spreadsheet formulas and quotes',()=>{
+  const r=runtime();assert.equal(r("crmCsvCell('=HYPERLINK(\"bad\")')"),'"\'=HYPERLINK(""bad"")"');
+  assert.equal(r("crmCsvCell('normaal;bedrijf')"),'"normaal;bedrijf"');
+});

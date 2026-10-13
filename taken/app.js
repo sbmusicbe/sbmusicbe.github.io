@@ -292,7 +292,7 @@ function normalize(d) {
   }
   // een "positieve" stap maakt van een deal automatisch een verkoop; bestaande gewonnen stappen worden eenmalig herkend
   for (const st of d.stages) if (st.positive === undefined) st.positive = st.id === 'positive' || (!!st.done && /gewonnen|positief|verkocht/i.test(st.label));
-  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.events ||= []; delete d.notes;
+  d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.events ||= []; d.activities ||= []; delete d.notes;
   // de klantendatabase bestaat niet meer: alles wat er nog van over is (ook van oudere toestellen) wordt gewist
   d.clients = []; for (const t of d.tasks) delete t.clientId;
   if (!d.salesCols?.length) d.salesCols = DEFAULT_SALES_COLS.map(x => ({...x, u:0}));
@@ -319,9 +319,9 @@ function merge(a, b) {
   const out = {...newer, prefs:{...newer.prefs}, settings:{...newer.settings}};
   const del = {...a.deleted};
   for (const [k, v] of Object.entries(b.deleted)) del[k] = Math.max(del[k] || 0, v);
-  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients', 'events']) {
+  for (const col of ['projects', 'fields', 'tasks', 'stages', 'salesPages', 'sales', 'salesCols', 'comments', 'clients', 'events', 'activities']) {
     const m = new Map();
-    for (const it of [...a[col], ...b[col]]) {
+    for (const it of [...(a[col] || []), ...(b[col] || [])]) {
       const cur = m.get(it.id);
       if (!cur || (it.u || 0) > (cur.u || 0)) m.set(it.id, it);
     }
@@ -338,7 +338,7 @@ function merge(a, b) {
 }
 function sig(d) {
   const s = arr => JSON.stringify([...arr].sort((x, y) => x.id < y.id ? -1 : 1));
-  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + JSON.stringify(Object.entries(d.deleted).sort(([a], [b]) => a.localeCompare(b))) + JSON.stringify(d.settings) + JSON.stringify(d.prefs);
+  return s(d.projects) + s(d.fields) + s(d.tasks) + s(d.stages) + s(d.salesPages) + s(d.sales) + s(d.salesCols) + s(d.comments) + s(d.clients || []) + s(d.events || []) + s(d.activities || []) + JSON.stringify(Object.entries(d.deleted).sort(([a], [b]) => a.localeCompare(b))) + JSON.stringify(d.settings) + JSON.stringify(d.prefs);
 }
 
 const proj = id => data.projects.find(p => p.id === id) || data.projects.find(p => p.id === 'inbox');
@@ -356,7 +356,7 @@ const FEATURES = [
   ['btw', 'BTW-rekenmachine', 'Een bedrag omrekenen van of naar inclusief btw'],
 ];
 const feat = k => { const f = data?.settings.features; return !f || f[k] !== false; };
-const VIEW_FEATURE = {agenda:'agenda', btw:'btw', sales:'sales'};
+const VIEW_FEATURE = {agenda:'agenda', btw:'btw', sales:'sales', dashboard:'sales'};
 
 /* ---------------- Persistence ---------------- */
 let persistChain = Promise.resolve();
@@ -1018,7 +1018,7 @@ function maybeTour() {
   startTour();
 }
 function enterApp() {
-  { const fp = sortedProjects().find(p => p.id !== 'inbox' && !p.finished); if (view.type === 'all' && fp) view = {type:'project', id:fp.id}; }
+  if (view.type === 'all') view = {type:'today'};
   $('#lock').hidden = true;
   $('#app').hidden = false;
   document.title = 'Klose';
@@ -1081,6 +1081,9 @@ function setView(v) {
   document.startViewTransition(apply);
 }
 function viewTitle() {
+  if (view.type === 'today') return 'Vandaag doen';
+  if (view.type === 'stalled') return 'Stilgevallen deals';
+  if (view.type === 'dashboard') return 'Verkoopdashboard';
   if (view.type === 'project') return proj(view.id).name;
   if (view.type === 'agenda') return 'Agenda';
   if (view.type === 'btw') return 'BTW';
@@ -1207,6 +1210,8 @@ function dueState(t) {
 }
 function taskMeta(t) {
   const meta = [];
+  if (!t.done && t.nextAction?.date) meta.push(`<span class="chip ${t.nextAction.date < today() ? 'crm-late' : ''}">${esc(crmActionLabel(t.nextAction.type))} · ${esc(dueLabel(t.nextAction.date))}</span>`);
+  if (!t.done && crmIdleDays(t) >= crmStaleDays()) meta.push(`<span class="chip crm-stale">${crmIdleDays(t)} dagen stil</span>`);
   if (t.due) {
     meta.push(`<span class="chip due ${dueState(t)}">${I.cal} ${esc(dueLabel(t.due))}${t.time ? ' ' + esc(t.time) : ''}</span>`);
   }
@@ -1345,8 +1350,8 @@ function renderNav() {
       + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
-  $('#toolNav').innerHTML = [['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
-    .filter(([k]) => feat(k))
+  $('#toolNav').innerHTML = [['today', 'Vandaag doen', I.today, new Set(Object.values(crmDayGroups()).slice(0,4).flat().map(t => t.id)).size || ''], ['all', 'Alle deals', I.all, open.length || ''], ['stalled', 'Stilgevallen', I.note, crmStalledTasks().length || ''], ['dashboard', 'Dashboard', I.sales, ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
+    .filter(([k]) => !VIEW_FEATURE[k] || feat(VIEW_FEATURE[k]))
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
   const tOn = [...$('#toolNav').children].length > 0; $('#toolNav').previousElementSibling.hidden = !tOn;
@@ -1354,6 +1359,9 @@ function renderNav() {
 }
 function viewSubtitle() {
   const t = view.type;
+  if (t === 'today') return 'Opvolgacties, deadlines en offertes op één plek.';
+  if (t === 'stalled') return `Zonder activiteit sinds minstens ${crmStaleDays()} dagen.`;
+  if (t === 'dashboard') return 'Omzet, conversie en resultaten per project.';
   if (['all', 'project', 'inbox', 'today', 'upcoming'].includes(t)) {
     const open = viewTasks(false).filter(x => !x.done), late = open.filter(x => x.due && x.due < today()).length;
     if (!open.length) return 'Geen open deals.';
@@ -1402,7 +1410,7 @@ function placeTabIndicator() {
 }
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
-  const t = view.type === 'today' ? 'today' : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : view.type === 'btw' ? 'more' : 'all';
+  const t = view.type === 'today' ? (feat('sales') ? 'more' : 'today') : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : ['btw','stalled','dashboard'].includes(view.type) ? 'more' : 'all';
   const slot = $('#tabSlot'), sOn = feat('sales');
   slot.dataset.tab = sOn ? 'sales' : 'today'; slot.querySelector('.ti').innerHTML = sOn ? I.sales : I.today; slot.lastElementChild.textContent = sOn ? 'Verkopen' : 'Vandaag';
   $('#tabBar [data-tab="agenda"]').hidden = !feat('agenda');
@@ -1505,7 +1513,7 @@ function createTask(r, stage, top) {
     id:uid(), title:r.title, notes:'', projectId,
     due:r.due || (view.type === 'today' ? today() : null), time:r.time || null,
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
-    createdAt:now(), order:now(), custom:r.custom,
+    createdAt:now(), crmActivityAt:now(), order:now(), custom:r.custom,
   });
   // een deal zonder deadline komt helemaal bovenaan de kolom (nieuw werk dat nog opgepakt moet worden); met deadline onderaan zoals voorheen
   if (top || !t.due) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
@@ -1521,18 +1529,21 @@ function createTask(r, stage, top) {
   }
   data.tasks.push(t);
   commit();
+  if (crmDuplicates(t).length) toast('Mogelijk dubbele deal: bekijk de waarschuwing bij de deal.');
   if (!r.silent && !viewTasks(true).some(x => x.id === t.id)) toast(`Toegevoegd aan ${proj(projectId).name}`);
   return t;
 }
 /* ---------------- Task actions ---------------- */
 // Verplaatst een kaart naar een kolom.
 function setStage(t, st) {
-  if (isDoneStage(st) && !t.done) t.doneAt = now();
+  const wasLost = crmLostStage(t.stage), changed = t.stage !== st;
+  if (isDoneStage(st) && (!t.done || changed)) t.doneAt = now();
   if (!isDoneStage(st)) t.doneAt = null;
-  t.stage = st; t.done = isDoneStage(st); touch(t);
+  t.stage = st; t.done = isDoneStage(st); if (changed) t.crmActivityAt = now(); touch(t);
+  if (changed && !wasLost && crmLostStage(st) && !t.lostReason) setTimeout(() => { if (taskById(t.id) && crmLostStage(t.stage) && !dlg.open) crmOpenLossDialog(t); }, 0);
 }
 function undoFor(t) {
-  const id = t.id, prev = {stage:t.stage, done:t.done, due:t.due, doneAt:t.doneAt, order:t.order};
+  const id = t.id, prev = {stage:t.stage, done:t.done, due:t.due, doneAt:t.doneAt, order:t.order, crmActivityAt:t.crmActivityAt, lostReason:t.lostReason, lostNote:t.lostNote};
   return () => { const x = taskById(id); if (x) { Object.assign(x, prev); touch(x); commit(); } };
 }
 function stageToast(t, res, undo) {
@@ -1645,12 +1656,14 @@ function renderDetail(force) {
         <button class="check ${t.done ? 'on' : ''}" data-act="toggle" aria-label="Voltooien">${I.check}</button>
         <textarea id="dTitle" rows="1" aria-label="Titel">${esc(t.title)}</textarea>
       </div>
+      <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
       <div class="props">
         <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
       </div>
       ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
+      ${crmDetailHtml(t)}
       <details class="d-more" id="dMore" ${moreOpen[t.id] === false ? '' : 'open'}>
         <summary>Meer gegevens</summary>
         <div class="props">
@@ -2711,6 +2724,7 @@ function winCols() {
 }
 function fillWinRow(r, t) {
   let c = winCols(); const v = winValues(t); let changed = false;
+  if (r.projectId !== t.projectId) { r.projectId = t.projectId; changed = true; }
   if (v.format && !c.format) {   // de verkopentabel heeft nog geen kolom Formaat: die komt er nu bij, achter het bedrag
     const top = Math.max(0, ...data.salesCols.map(x => x.order || 0));
     data.salesCols.push(touch({id:uid(), name:'Formaat', type:'format', fmtMig:true, order:top + 1})); c = winCols();
@@ -2838,7 +2852,9 @@ function cellInput(c, r) {
   if (c.type === 'date') return `<input type="text" ${a} value="${esc(fmtDateInp(v))}" data-iso="${esc(v)}" placeholder="dd/mm/jjjj" autocomplete="off">`;
   if (c.type === 'format') return `<button type="button" ${a} aria-haspopup="true">${fmtChips(v)}</button>`;
   if (c.type === 'money' || c.type === 'number') return `<input type="text" inputmode="decimal" ${a} value="${esc(v === '' ? '' : fmtCell(c, v))}" placeholder="${c.type === 'money' ? '€ 0,00' : '0'}">`;
-  return `<input type="text" ${a} value="${esc(v)}">`;
+  const input = `<input type="text" ${a} value="${esc(v)}">`;
+  if (c.id === winCols().client?.id) return `<div class="crm-sales-client">${input}<select data-sales-project="${esc(r.id)}" aria-label="Project van deze verkoop"><option value="">Zonder project</option>${sortedProjects().map(p => `<option value="${esc(p.id)}" ${p.id === r.projectId ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div>`;
+  return input;
 }
 // Weeknummer binnen de maand zoals je het zelf noteert: week 1 = de (eventueel onvolledige) eerste week.
 function weekOfMonth(dateStr) {
@@ -3025,6 +3041,11 @@ sp.addEventListener('input', e => {
   touch(r); save(true); updateSalesTotals();
 });
 sp.addEventListener('change', e => {
+  if (e.target.dataset.salesProject) {
+    const r = data.sales.find(x => x.id === e.target.dataset.salesProject);
+    if (r) { r.projectId = e.target.value; delete r.dealId; touch(r); save(); }
+    return;
+  }
   if (e.target.matches('.cell.t-date')) setTimeout(() => renderSales(true), 0);
 });
 sp.addEventListener('focusout', e => {
@@ -3702,6 +3723,7 @@ function taskMenuItems(t) {
 const CALC_FORMATS = [['1/1', 8], ['1/2', 4], ['1/4', 2], ['1/8', 1], ['1/12', 2 / 3], ['1/16', .5], ['1/32', .25]];
 // 1.514 = duizendtal, 4,5 en 4.5 = decimaal
 function parseNl(v) {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
   let t = String(v ?? '').replace(/[€\s]/g, '');
   if (!t) return null;
   if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
@@ -3718,10 +3740,34 @@ function calcPrices(c) {
   const togo = calcTogo(c), pk = parseNl(c?.pk);
   return CALC_FORMATS.map(([label, f]) => [label, togo != null && pk > 0 ? Math.ceil(Math.round(togo / pk * f * 1e6) / 1e6) : null]);
 }
+function calcNegotiation(c) {
+  const rawMin = c?.minPrice, rawDiscount = c?.discount;
+  const floor = rawMin === '' || rawMin == null ? 0 : parseNl(rawMin), discount = rawDiscount === '' || rawDiscount == null ? 0 : parseNl(rawDiscount);
+  const configured = (rawMin !== '' && rawMin != null) || (rawDiscount !== '' && rawDiscount != null);
+  if (floor == null || floor < 0 || discount == null || discount < 0 || discount > 100) return {configured, error:'Gebruik een minimumprijs vanaf € 0 en een korting tussen 0 en 100 %.', rows:[]};
+  const prices = calcPrices(c);
+  const rows = CALC_FORMATS.map(([format,factor],i) => {
+    const base = prices[i][1], minimum = Math.ceil(Math.round(floor * factor * 1e6) / 1e6);
+    const requested = base == null ? null : Math.ceil(Math.round(base * (1-discount/100) * 1e6) / 1e6);
+    const offer = requested == null ? null : Math.max(minimum, requested);
+    return {format,base,minimum,requested,offer,room:offer==null?null:offer-minimum,limited:requested!=null && requested<minimum};
+  });
+  return {configured, floor, discount, rows, error:null};
+}
+function calcNegotiationHtml(c, printing = false) {
+  const n = calcNegotiation(c);
+  if (printing && !n.configured) return '';
+  if (n.error) return `<p class="err pc-neg-error" role="status">${esc(n.error)}</p>`;
+  const price = v => v == null ? '—' : '€ ' + calcNum(v);
+  return `<div class="pc-neg-summary"><span>Minimum per 1/8: <b>${price(n.floor)}</b></span><span>Korting: <b>${calcNum(n.discount)} %</b></span></div>
+    ${n.rows.some(r => r.limited) ? '<p class="pc-neg-warning" role="status">Het voorstel is bij de gemarkeerde formaten verhoogd tot de minimumprijs.</p>' : ''}
+    <div class="pc-neg-scroll"><table class="pc-neg-table"><thead><tr><th>Formaat</th><th>Richtprijs</th><th>Voorstel</th><th>Minimum</th><th>Ruimte tot minimum</th></tr></thead><tbody>${n.rows.map(r => `<tr class="${r.limited ? 'limited' : ''}"><th>${r.format}</th><td>${price(r.base)}</td><td><b>${price(r.offer)}</b>${r.limited?'<small>Minimum toegepast</small>':''}</td><td>${price(r.minimum)}</td><td>${price(r.room)}</td></tr>`).join('')}</tbody></table></div>`;
+}
 const calcNum = n => n == null ? '—' : n.toLocaleString('nl-BE');
 function calcText(c) {
   const togo = calcTogo(c);
-  return [`Streef - ${c.target ?? c.togo ?? ''}`, `Huidig verkoopcijfer - ${c.current || ''}`, `Nog te verkopen - ${togo == null ? '' : calcNum(togo)}`, `Beschikbaar 1/8 - ${c.pk || ''}`, '', ...calcPrices(c).map(([l, n]) => `${l} - ${n == null ? '' : n}`)].join('\n');
+  const n = calcNegotiation(c), extra = n.configured ? n.error ? ['',n.error] : ['',`Minimum per 1/8 - € ${calcNum(n.floor)}`,`Korting - ${calcNum(n.discount)} %`,...n.rows.map(r => `${r.format} voorstel - ${r.offer == null ? '—' : '€ '+calcNum(r.offer)} · minimum € ${calcNum(r.minimum)}${r.limited ? ' (minimum toegepast)' : ''}`)] : [];
+  return [`Streef - ${c.target ?? c.togo ?? ''}`, `Huidig verkoopcijfer - ${c.current || ''}`, `Nog te verkopen - ${togo == null ? '' : calcNum(togo)}`, `Beschikbaar 1/8 - ${c.pk || ''}`, '', ...calcPrices(c).map(([l, n]) => `${l} - ${n == null ? '' : n}`),...extra].join('\n');
 }
 function calcTogoHtml(c) { const t = calcTogo(c); return t == null ? 'Vul het streefcijfer in' : t === 0 ? 'Streefcijfer bereikt: <b>€ 0</b> nog te verkopen' : `Nog te verkopen: <b>€ ${calcNum(t)}</b>`; }
 function calcOut(c) {
@@ -3738,7 +3784,8 @@ function calcPrintHtml(p) {
       </div>
       <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(c)}</ul>
     </section>
-    <p class="pc-print-note">Prijzen per formaat · afgerond naar boven op hele euro’s</p>`;
+    <p class="pc-print-note">Prijzen per formaat · afgerond naar boven op hele euro’s</p>
+    ${calcNegotiation(c).configured ? `<section class="pc-print-neg"><h2>Minimumprijs en korting</h2>${calcNegotiationHtml(c,true)}</section>` : ''}`;
 }
 let calcPrintCleanup = null;
 async function printCalc(p) {
@@ -3769,8 +3816,8 @@ function renderCalc() {
   }
   el.hidden = false;
   // oude berekening (To go): omzetten naar streef + huidig verkoopcijfer
-  if (p.calc.target === undefined) { p.calc = {target:p.calc.togo || '', current:'', pk:p.calc.pk || ''}; touch(p); save(true); }
-  if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); return; }
+  if (p.calc.target === undefined) { p.calc = {...p.calc,target:p.calc.togo || '', current:p.calc.current || '', pk:p.calc.pk || ''}; touch(p); save(true); }
+  if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); $('.pc-neg-result',el).innerHTML=calcNegotiationHtml(p.calc); return; }
   el.dataset.pid = p.id;
   el.innerHTML = `<div class="pc-row">
       <span class="pc-title">Prijsberekening</span>
@@ -3783,12 +3830,17 @@ function renderCalc() {
       <button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button>
       <button type="button" class="btn" id="pcPrint" title="Afdrukken of bewaren als PDF">Afdrukken</button>
     </div>
-    <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>`;
+    <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>
+    <details class="pc-negotiation" ${calcNegotiation(p.calc).configured ? 'open' : ''}><summary>Minimumprijs en korting</summary>
+      <div class="pc-neg-fields"><label class="fl">Minimumprijs per 1/8 (€)<input id="pcMinPrice" type="text" inputmode="decimal" value="${esc(p.calc.minPrice ?? '')}" placeholder="0" autocomplete="off"></label><label class="fl">Korting (%)<input id="pcDiscount" type="text" inputmode="decimal" value="${esc(p.calc.discount ?? '')}" placeholder="0" autocomplete="off"></label></div>
+      <p class="muted small">Het minimum schaalt mee met het formaat. Voorstellen worden naar boven afgerond en nooit onder het minimum gezet. De richtprijzen hierboven veranderen niet.</p>
+      <div class="pc-neg-result">${calcNegotiationHtml(p.calc)}</div></details>`;
 }
 $('#projCalc').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
-  if (e.target.id === 'pcTarget') p.calc.target = e.target.value; else if (e.target.id === 'pcCur') p.calc.current = e.target.value; else if (e.target.id === 'pcPk') p.calc.pk = e.target.value; else return;
+  if (e.target.id === 'pcTarget') p.calc.target = e.target.value; else if (e.target.id === 'pcCur') p.calc.current = e.target.value; else if (e.target.id === 'pcPk') p.calc.pk = e.target.value; else if (e.target.id === 'pcMinPrice') p.calc.minPrice = e.target.value; else if (e.target.id === 'pcDiscount') p.calc.discount = e.target.value; else return;
   touch(p); save(true); $('#projCalc .pc-out').innerHTML = calcOut(p.calc); $('#projCalc .pc-togo').innerHTML = calcTogoHtml(p.calc);
+  $('#projCalc .pc-neg-result').innerHTML = calcNegotiationHtml(p.calc);
 });
 $('#projCalc').addEventListener('click', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
@@ -3895,7 +3947,7 @@ document.addEventListener('contextmenu', e => {
 });
 
 /* ================= Klanten, statistieken, jaaroverzicht ================= */
-const PAGE_VIEWS = ['agenda', 'btw'];
+const PAGE_VIEWS = ['agenda', 'btw', 'today', 'stalled', 'dashboard'];
 const isPageView = () => PAGE_VIEWS.includes(view.type);
 async function copyText(txt, label) {
   try { await navigator.clipboard.writeText(txt); toast(`${label} gekopieerd`); }
@@ -3908,7 +3960,7 @@ function renderPage(force) {
   const el = $('#pageView');
   const a = document.activeElement;
   if (!force && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
-  el.innerHTML = view.type === 'btw' ? btwHtml() : agendaHtml();
+  el.innerHTML = view.type === 'today' ? crmTodayHtml() : view.type === 'stalled' ? crmStalledHtml() : view.type === 'dashboard' ? crmDashboardHtml() : view.type === 'btw' ? btwHtml() : agendaHtml();
   if (view.type === 'btw') btwOut();
 }
 
@@ -4265,3 +4317,5 @@ if ('serviceWorker' in navigator) {
 
 // oude lokale klantenblokken (IndexedDB) wissen: de klantendatabase bestaat niet meer
 (async () => { try { const db = await idbOpen(), st = db.transaction('kv', 'readwrite').objectStore('kv'); st.openKeyCursor().onsuccess = e => { const c = e.target.result; if (c) { if (String(c.key).startsWith(CL_KEY)) st.delete(c.key); c.continue(); } }; } catch {} })();
+
+bindCrm();
