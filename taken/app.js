@@ -18,7 +18,7 @@ const MONTHS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov
 const DEFAULT_STAGES = [
   {id:'callback', label:'Terugbellen', color:'#FF4B1F', done:false, order:0},
   {id:'mail', label:'Offerte', color:'#4D5059', done:false, order:1},
-  {id:'positive', label:'Gewonnen', color:'#1E5BC6', done:true, order:2},
+  {id:'positive', label:'Gewonnen', color:'#1E5BC6', done:true, positive:true, order:2},
   {id:'negative', label:'Verloren', color:'#111318', done:true, order:3},
 ];
 // vroegere standaardstappen (groen tegenover rood is niet toegankelijk): alleen omzetten als de gebruiker ze niet aanpaste
@@ -284,6 +284,8 @@ function normalize(d) {
     const o = OLD_STAGES[st.id], n = DEFAULT_STAGES.find(x => x.id === st.id);
     if (o && n && st.label === o[0] && String(st.color).toLowerCase() === o[1]) { st.label = n.label; st.color = n.color; }
   }
+  // een "positieve" stap maakt van een deal automatisch een verkoop; bestaande gewonnen stappen worden eenmalig herkend
+  for (const st of d.stages) if (st.positive === undefined) st.positive = st.id === 'positive' || (!!st.done && /gewonnen|positief|verkocht/i.test(st.label));
   d.salesPages ||= []; d.sales ||= []; d.comments ||= []; d.events ||= []; delete d.notes;
   // de klantendatabase bestaat niet meer: alles wat er nog van over is (ook van oudere toestellen) wordt gewist
   d.clients = []; for (const t of d.tasks) delete t.clientId;
@@ -297,6 +299,7 @@ function normalize(d) {
     t.custom ||= {};
     if (!st.some(x => x.id === t.stage)) t.stage = t.done ? done.id : open.id;
     t.done = !!st.find(x => x.id === t.stage).done;
+    if (t.wonAt === undefined && st.find(x => x.id === t.stage).positive) t.wonAt = t.doneAt || t.createdAt || 1;   // al gewonnen vóór deze functie: geen verkoop achteraf
   }
   // archiveren bestaat niet meer: wat ooit gearchiveerd was, staat weer gewoon op zijn plaats
   for (const x of [...d.tasks, ...d.projects, ...d.salesPages]) if (x.archived) { x.archived = false; x.archivedAt = null; x.u = Date.now(); }
@@ -366,6 +369,7 @@ async function persistFull() {
 }
 let saveTimer = null;
 function save(soon) {
+  syncWins();
   data.updatedAt = now();
   clearTimeout(saveTimer);
   syncDirty = true;
@@ -1629,6 +1633,7 @@ function renderDetail(force) {
         <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
         <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
       </div>
+      ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
       <details class="d-more" id="dMore" ${moreOpen[t.id] === false ? '' : 'open'}>
         <summary>Meer gegevens</summary>
         <div class="props">
@@ -2122,6 +2127,7 @@ detail.addEventListener('click', e => {
     case 'attach': $('#dFile')?.click(); break;
     case 'unattach': (pendingImgs[t.id] || []).splice(+b.dataset.i, 1); $('#dPending').innerHTML = pendingHtml(t.id); break;
     case 'zoom': openLightbox(data.comments.find(x => x.id === b.closest('[data-cid]').dataset.cid)?.imgs || [], +b.dataset.i); break;
+    case 'gosales': { const r = data.sales.find(x => x.id === 'w_' + t.id); if (r) { closeDetail(); setView({type:'sales', id:r.pageId}); } break; }
     case 'delcomment': deleteComment(b.closest('[data-cid]').dataset.cid); break;
     case 'cleartime': t.time = null; touch(t); save(); renderMain(); renderDetail(true); break;
     case 'more': menuAt(b, taskMenuItems(t)); break;
@@ -2251,15 +2257,17 @@ function openStagesDialog() {
   const read = d => $$('.st-row', d).forEach((row, i) => {
     draft[i].label = $('input[type=text]', row).value;
     draft[i].done = $('input[type=checkbox]', row).checked;
+    draft[i].positive = draft[i].done && !!$('.st-pos input', row)?.checked;
   });
   const draw = () => showDialog(`
     <h3>Stappen</h3>
-    <p class="muted small" style="margin:0">Hernoem, herschik, kleur of voeg kolommen toe. Kaarten in een kolom met <b>afgewerkt</b> aangevinkt tellen als afgewerkt.</p>
+    <p class="muted small" style="margin:0">Hernoem, herschik, kleur of voeg kolommen toe. Kaarten in een kolom met <b>afgewerkt</b> aangevinkt tellen als afgewerkt. Bij <b>verkoop</b> komt een deal die hier belandt automatisch in het tabblad Verkopen, op die dag.</p>
     <div id="stRows" style="margin-top:12px">${draft.map((x, i) => `
       <div class="st-row">
         <button type="button" class="sw" style="--c:${x.color}" data-sc="${i}" title="Andere kleur" aria-label="Kleur wijzigen"></button>
         <input type="text" value="${esc(x.label)}" placeholder="Naam van de kolom" aria-label="Naam kolom ${i + 1}">
         <label class="chk st-done" title="Kaarten in deze kolom tellen als afgewerkt"><input type="checkbox" ${x.done ? 'checked' : ''}> afgewerkt</label>
+        ${feat('sales') ? `<label class="chk st-done st-pos" title="Een deal die in deze stap komt, wordt automatisch een verkoop in het tabblad Verkopen"><input type="checkbox" ${x.positive ? 'checked' : ''}> verkoop</label>` : ''}
         <button type="button" class="icon-btn" data-sm="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Naar links">${I.up}</button>
         <button type="button" class="icon-btn" data-sm="${i}" data-dir="1" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Naar rechts">${I.down}</button>
         <button type="button" class="icon-btn" data-sr="${i}" aria-label="Stap verwijderen" title="${count(x.id) ? 'Verwijderen (' + count(x.id) + ' kaarten worden verplaatst)' : 'Verwijderen'}">${I.trash}</button>
@@ -2305,8 +2313,8 @@ function openStagesDialog() {
       // kolommen bijwerken
       draft.forEach((x, i) => {
         const cur = data.stages.find(y => y.id === x.id);
-        if (!cur) { data.stages.push(touch({id:x.id, label:x.label, color:x.color, done:x.done, order:i})); delete data.deleted[x.id]; }
-        else if (cur.label !== x.label || cur.color !== x.color || cur.done !== x.done || cur.order !== i) Object.assign(cur, {label:x.label, color:x.color, done:x.done, order:i}, {u:now()});
+        if (!cur) { data.stages.push(touch({id:x.id, label:x.label, color:x.color, done:x.done, positive:!!x.positive, order:i})); delete data.deleted[x.id]; }
+        else if (cur.label !== x.label || cur.color !== x.color || cur.done !== x.done || !!cur.positive !== !!x.positive || cur.order !== i) Object.assign(cur, {label:x.label, color:x.color, done:x.done, positive:!!x.positive, order:i}, {u:now()});
       });
       for (const x of removed) { tombstone(x.id); }
       data.stages = data.stages.filter(x => !removed.includes(x));
@@ -2662,6 +2670,62 @@ const sortedSalesPages = () => [...data.salesPages].sort((a, b) => (b.month || '
 const salesCols = () => [...data.salesCols].sort((a, b) => (a.order || 0) - (b.order || 0));
 const salesRows = pid => data.sales.filter(r => r.pageId === pid).sort((a, b) => (a.order || 0) - (b.order || 0));
 const monthTitle = m => { const [y, mo] = m.split('-').map(Number); return `${cap(MONTHS_LONG[mo - 1])} ${y}`; };
+/* ---- Gewonnen deals worden vanzelf een verkoop: op de dag dat de deal op "positief" kwam, in het verkooptabblad van die maand.
+   Titel → Klant, veld Prijs → Bedrag, veld Formaat → Formaat. De regel volgt de deal tot je hem zelf bewerkt; gaat de deal terug naar een andere stap, dan verdwijnt hij. ---- */
+const isWinStage = id => !!data.stages.find(x => x.id === id)?.positive;
+function fieldText(f, v) {
+  if (f.type === 'select') return f.options.find(o => o.id === v)?.label ?? '';
+  if (f.type === 'multiselect') return (Array.isArray(v) ? v : []).map(id => f.options.find(o => o.id === id)?.label).filter(Boolean).join(', ');
+  return v == null ? '' : String(v);
+}
+function winValues(t) {
+  const fs = fieldsFor(t.projectId), by = rx => fs.find(f => rx.test(f.name.trim()));
+  const pf = by(/^prijs$/i) || by(/prijs/i), ff = by(/^formaat$/i) || by(/formaat/i);
+  const price = pf ? (pf.type === 'number' && typeof t.custom[pf.id] === 'number' ? t.custom[pf.id] : parseNl(fieldText(pf, t.custom[pf.id]))) : null;
+  let format = ff ? fieldText(ff, t.custom[ff.id]) : '';
+  const known = formatList(format); if (known.length) format = known.join(', ');
+  return {title:(t.title || '').trim(), price, format};
+}
+function winCols() {
+  const cols = salesCols(), texts = cols.filter(c => c.type === 'text');
+  return {date:cols.find(c => c.type === 'date'), client:texts.find(c => /klant|bedrijf|naam/i.test(c.name)) || texts[0],
+    amount:cols.find(c => c.type === 'money'), format:cols.find(c => c.type === 'format'), qty:cols.find(c => c.type === 'number' && /aantal|stuks|#/i.test(c.name))};
+}
+function fillWinRow(r, t) {
+  let c = winCols(); const v = winValues(t); let changed = false;
+  if (v.format && !c.format) {   // de verkopentabel heeft nog geen kolom Formaat: die komt er nu bij, achter het bedrag
+    const top = Math.max(0, ...data.salesCols.map(x => x.order || 0));
+    data.salesCols.push(touch({id:uid(), name:'Formaat', type:'format', fmtMig:true, order:top + 1})); c = winCols();
+  }
+  const put = (col, val) => { if (!col) return; const same = val == null || val === '' ? r.values[col.id] === undefined : r.values[col.id] === val; if (same) return; if (val == null || val === '') delete r.values[col.id]; else r.values[col.id] = val; changed = true; };
+  put(c.client, v.title); put(c.amount, v.price); put(c.format, v.format);
+  return changed;
+}
+function syncWins() {
+  if (!data || !data.stages || !feat('sales')) return false;
+  let changed = false, byId = null;
+  for (const t of data.tasks) {
+    const win = isWinStage(t.stage);
+    if (!win && !t.wonAt) continue;
+    byId ||= new Map(data.sales.map(r => [r.id, r]));
+    const rid = 'w_' + t.id, row = byId.get(rid);
+    if (win && !t.wonAt) {
+      t.wonAt = now(); touch(t); changed = true;
+      const month = ymd(new Date(t.wonAt)).slice(0, 7), c = winCols();
+      let pg = data.salesPages.find(x => x.month === month);
+      if (!pg) { pg = touch({id:uid(), title:monthTitle(month), month, notes:'', target:null, workdays:null, order:now()}); data.salesPages.push(pg); }
+      if (row) continue;
+      const r = touch({id:rid, pageId:pg.id, order:now(), values:{}, dealId:t.id});
+      if (c.date) r.values[c.date.id] = ymd(new Date(t.wonAt));
+      if (c.qty) r.values[c.qty.id] = 1;
+      fillWinRow(r, t); delete data.deleted[rid]; data.sales.push(r); byId.set(rid, r);
+    } else if (!win && t.wonAt) {
+      t.wonAt = null; touch(t); changed = true;
+      if (row && row.dealId === t.id) { data.sales = data.sales.filter(x => x !== row); tombstone(rid); }
+    } else if (win && row && row.dealId === t.id && fillWinRow(row, t)) { touch(row); changed = true; }
+  }
+  return changed;
+}
 const toNum = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(n) ? null : n; };
 // Werkdagen: ma–vr zonder Belgische wettelijke feestdagen.
 function easter(y) {
@@ -2906,6 +2970,7 @@ function openFormatPop(cell) {
     else { const o = b.dataset.fmt; cur = cur.includes(o) ? cur.filter(x => x !== o) : [...cur, o]; }
     const nv = FORMATS.filter(o => cur.includes(o)).join(', ');
     if (nv) r.values[colId] = nv; else delete r.values[colId];
+    delete r.dealId;
     touch(r); save(true); draw();
     const live = $(`tr[data-row="${r.id}"] .cell[data-col="${colId}"]`); if (live) live.innerHTML = fmtChips(r.values[colId]);
   });
@@ -2938,6 +3003,7 @@ sp.addEventListener('input', e => {
   const c = data.salesCols.find(x => x.id === cell.dataset.col);
   const v = c.type === 'money' || c.type === 'number' ? toNum(cell.value) : cell.value;
   if (v === null || v === '') delete r.values[c.id]; else r.values[c.id] = v;
+  delete r.dealId;   // handmatig aangepast: de regel volgt de deal niet meer
   touch(r); save(true); updateSalesTotals();
 });
 sp.addEventListener('change', e => {
