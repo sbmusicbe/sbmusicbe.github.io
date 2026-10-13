@@ -335,6 +335,7 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none!impor
 .multi{display:flex;flex-wrap:wrap;gap:6px}
 .multi button{height:26px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r-pill);background:none;font:600 12px var(--f-sans)}
 .multi button.on{background:color-mix(in srgb,var(--c) 16%,var(--canvas));border-color:var(--c)}
+.d-sale{margin:10px 2px 0}
 .d-more{margin:14px 0 0}
 .d-more>summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:6px 0;font:600 13px/18px var(--f-sans);color:var(--ink-muted)}
 .d-more>summary::-webkit-details-marker{display:none}

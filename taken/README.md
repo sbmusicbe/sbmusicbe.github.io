@@ -17,7 +17,7 @@ Klose is gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. 
 |---|---|
 | **Deals** | Projecten met een bord met vaste stappen (*Terugbellen, Offerte, Gewonnen, Verloren*, aanpasbaar). Sleep kaarten tussen kolommen. Per deal: deadline en uur, eigen velden, opmerkingen met afbeeldingen, archief. |
 | **Prijsberekening** | Bovenaan elk project. Vul het streefbedrag, wat al verkocht is en de beschikbare 1/8-ruimtes in; Klose rekent de prijs per formaat uit (1/1 t/m 1/32) en wat er nog te verkopen is. |
-| **Verkopen** | Een pagina per maand met een tabel (kolommen zelf in te stellen), doelstelling, bedrag per dag dat nog nodig is, tempo ten opzichte van het schema, en commissie en bonus. Importeren uit notities en export naar CSV. |
+| **Verkopen** | Een pagina per maand met een tabel (kolommen zelf in te stellen), doelstelling, bedrag per dag dat nog nodig is, tempo ten opzichte van het schema, en commissie en bonus. Importeren uit notities en export naar CSV. | Een deal die je op **Gewonnen** zet, komt automatisch als regel in de maand van die dag: titel → klant, veld *Prijs* → bedrag, veld *Formaat* → formaat. In *Instellingen → Deals → Stappen* kies je welke stap als verkoop telt.
 | **Agenda** | Drukdata, deadlines en afspraken, met herhaling en Belgische feestdagen. |
 | **BTW** | Reken een bedrag om van of naar inclusief btw (6, 9, 12 of 21 %). |
 
