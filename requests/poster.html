@@ -5,30 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Verzoekjes · Poster</title>
-<link rel="icon" href="../assets/logo-sb-black.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+@font-face{font-family:'Onest';font-weight:400;font-display:swap;src:url(/assets/fonts/onest-400.woff2) format('woff2')}
+@font-face{font-family:'Onest';font-weight:500;font-display:swap;src:url(/assets/fonts/onest-500.woff2) format('woff2')}
+@font-face{font-family:'Onest';font-weight:600;font-display:swap;src:url(/assets/fonts/onest-600.woff2) format('woff2')}
+</style>
 <script src="vendor/qrcode.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#f1f0ee;color:#111;font-family:'Onest',sans-serif;-webkit-font-smoothing:antialiased}
-.bar{position:sticky;top:0;z-index:2;display:flex;gap:.5rem;justify-content:center;align-items:center;padding:1rem;flex-wrap:wrap;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e6e5e2}
-.bar input{font:inherit;font-size:.875rem;padding:.75rem 1.125rem;border-radius:9999px;border:1px solid #e6e5e2;background:rgba(241,240,238,.5);color:#111;outline:none;width:min(22rem,100%)}
-.bar input:focus{border-color:rgba(17,17,17,.3);background:#fff}
+html,body{background:radial-gradient(90% 60% at 50% 0%,#1f3d2d 0%,rgba(10,10,10,0) 70%),#0a0a0a;color:#fff;min-height:100vh;font-family:'Onest',sans-serif;-webkit-font-smoothing:antialiased}
+.bar{position:sticky;top:0;z-index:2;display:flex;gap:.5rem;justify-content:center;align-items:center;padding:1rem;flex-wrap:wrap;background:rgba(10,10,10,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+.bar input{font:inherit;font-size:.875rem;padding:.75rem 1.125rem;border-radius:9999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;outline:none;width:min(22rem,100%)}
+.bar input:focus{border-color:rgba(255,255,255,.3)}
 .pill{display:inline-block;transition:transform .35s cubic-bezier(.2,.8,.2,1);cursor:pointer;border:0;background:none;font:inherit}
 .pill-in{display:inline-flex;align-items:center;gap:.75rem;border-radius:9999px;font-size:.875rem;font-weight:500;padding:.375rem .375rem .375rem 1.5rem;white-space:nowrap}
 .pill.no-ar .pill-in{padding:.875rem 1.75rem}
-.pill--dark .pill-in{background:#0a0a0a;color:#fff}
-.pill--light .pill-in{background:#f1f0ee;color:#111;box-shadow:inset 0 0 0 1px #e6e5e2}
-.pill-ar{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:#fff;color:#0a0a0a}
+.pill--dark .pill-in{background:#f1f0ee;color:#111}
+.pill--light .pill-in{background:rgba(255,255,255,.05);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.pill-ar{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:#0a0a0a;color:#fff}
 .pill-ar svg{width:1em;height:1em}
 .pill:disabled{opacity:.5;cursor:default}
 @media (hover:hover){.pill:not(:disabled):hover{transform:scale(1.04)}}
-.hint{text-align:center;font-size:.8125rem;color:#8d8d8d;padding:1rem 1rem 1.25rem}
-.sheet{display:block;width:min(210mm,calc(100vw - 2rem));height:auto;margin:0 auto 2.5rem;border-radius:.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);background:#fff}
+.hint{text-align:center;font-size:.8125rem;color:rgba(255,255,255,.55);padding:1rem 1rem 1.25rem}
+.sheet{display:block;width:min(210mm,calc(100vw - 2rem));height:auto;margin:0 auto 2.5rem;border-radius:.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);background:#0a0a0a}
 #printImg{display:none}
 @media print{
   html,body{background:none}
@@ -61,7 +64,7 @@ const m = v => v * PX;
 const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
 const url = new URL('./?e=' + encodeURIComponent(id), location.href).href;
 const shortUrl = url.replace(/^https?:\/\//, '');
-const state = {event: null, photo: null, press: null, logoW: null, headline: $('#headline').value};
+const state = {event: null, photo: null, avatar: null, logoW: null, headline: $('#headline').value};
 
 const canvas = $('#sheet');
 canvas.width = m(W); canvas.height = m(H);
@@ -91,7 +94,7 @@ function fit(text, size, maxW, maxH, weight = 600) {
 }
 function drawLines(t, x, top, color) {
   ctx.font = FONT(t.size, t.weight); setTracking(-0.02, t.size); ctx.fillStyle = color;
-  t.lines.forEach((l, i) => ctx.fillText(l, x, top + m(t.size * (0.8 + i * 0.98))));
+  t.lines.forEach((l, i) => ctx.fillText(l, x, top + m(t.size * (0.8 + i * 0.98))));  // volgt ctx.textAlign
   setTracking(0, t.size);
 }
 function rrect(x, y, w, h, r) {
@@ -117,87 +120,77 @@ function arrowBadge(cx, cy, r, bg, fg, up = false) {
 }
 
 // ---- tekenen ----
+// Zoals sbmusic.be: zwart met groene gloed, ronde foto met groene ring, wit logo, naam en tagline,
+// QR-code op een witte kaart, warmwitte hoofdknop en glazen rijen; alles gecentreerd in één kolom.
 function draw() {
-  const X = 16, CW = W - 32;
+  const CX = m(W / 2), COL = 128, X = (W - COL) / 2;
   ctx.save();
-  ctx.fillStyle = C.white; ctx.fillRect(0, 0, m(W), m(H));
+  ctx.fillStyle = C.ink; ctx.fillRect(0, 0, m(W), m(H));
+  const g = ctx.createRadialGradient(CX, 0, 0, CX, 0, m(170));
+  g.addColorStop(0, '#1f3d2d'); g.addColorStop(1, 'rgba(10,10,10,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(190));
 
-  // Donker hero-vlak met afgeronde onderkant, foto in grijswaarden (event-foto of de presspic).
-  const HH = 150, R = m(10);
-  ctx.save(); rrect(0, 0, m(W), m(HH), [0, 0, R, R]); ctx.clip();
-  ctx.fillStyle = C.ink; ctx.fillRect(0, 0, m(W), m(HH));
-  const p = state.photo || state.press;
+  // ronde foto met groene ring (event-foto of de avatar van de site)
+  const AV = 46, ay = 22, acx = W / 2, acy = ay + AV / 2;
+  ctx.fillStyle = 'rgba(111,168,138,.18)'; ctx.beginPath(); ctx.arc(m(acx), m(acy), m(AV / 2 + 2.4), 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(m(acx), m(acy), m(AV / 2 + 1), 0, Math.PI * 2); ctx.fill();
+  const p = state.photo || state.avatar;
+  ctx.save(); ctx.beginPath(); ctx.arc(m(acx), m(acy), m(AV / 2), 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = '#1a1a1a'; ctx.fillRect(m(acx - AV / 2), m(ay), m(AV), m(AV));
   if (p) {
-    const s = Math.max(m(W) / p.naturalWidth, m(HH) / p.naturalHeight), dw = p.naturalWidth * s, dh = p.naturalHeight * s;
-    try { ctx.filter = 'grayscale(1) contrast(1.08) brightness(.92)'; } catch {}
-    ctx.drawImage(p, (m(W) - dw) / 2, (m(HH) - dh) * (state.photo ? 0.3 : 0.22), dw, dh);
-    ctx.filter = 'none';
+    const s = Math.max(m(AV) / p.naturalWidth, m(AV) / p.naturalHeight), dw = p.naturalWidth * s, dh = p.naturalHeight * s;
+    ctx.drawImage(p, m(acx) - dw / 2, m(acy) - dh * (state.photo ? 0.5 : 0.5), dw, dh);
   }
-  const g = ctx.createLinearGradient(0, 0, 0, m(HH));
-  g.addColorStop(0, 'rgba(10,10,10,.55)'); g.addColorStop(.4, 'rgba(10,10,10,.1)'); g.addColorStop(1, 'rgba(10,10,10,.72)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(HH));
-  // watermerk "SB"
-  ctx.font = FONT(96, 700); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.12)';
-  ctx.fillText('SB', m(W / 2), m(HH - 34)); ctx.textAlign = 'left';
   ctx.restore();
 
-  // logo en chip bovenaan
-  if (state.logoW) ctx.drawImage(state.logoW, m(X), m(14), m(20), m(20 * 770 / 1806));
-  ctx.font = FONT(2.8, 500); setTracking(.05, 2.8);
-  const chipT = 'VERZOEKJES', cw = ctx.measureText(chipT).width + m(8), chh = m(7.5);
-  ctx.fillStyle = 'rgba(255,255,255,.7)'; rrect(m(X + CW) - cw, m(13.5), cw, chh, m(2)); ctx.fill();
-  ctx.fillStyle = 'rgba(17,17,17,.75)'; ctx.fillText(chipT, m(X + CW) - cw + m(4), m(13.5) + chh / 2 + m(1)); setTracking(0, 2.8);
-
-  // eyebrow + eventnaam onderaan het hero-vlak
+  // logo, naam, tagline
+  let y = ay + AV + 10;
+  if (state.logoW) { const lw = 22, lh = lw * 770 / 1806; ctx.drawImage(state.logoW, m(acx - lw / 2), m(y), m(lw), m(lh)); y += lh + 7; }
   const name = state.event?.name || 'Verzoekjes';
-  const t = fit(name, 17, CW, 36);
-  const nameTop = HH - 14 - t.h;
-  eyebrow('Verzoekjes · Muziek op aanvraag', m(X), m(nameTop - 6), 'rgba(255,255,255,.8)', 'rgba(255,255,255,.7)');
-  drawLines(t, m(X), m(nameTop), C.white);
+  const t = fit(name, 11, COL + 20, 24);
+  ctx.textAlign = 'center'; drawLines(t, CX, m(y), C.white); ctx.textAlign = 'left';
+  // drawLines tekent links uitgelijnd vanaf x; voor centreren tekenen we opnieuw per regel
+  y += t.h + 5;
+  ctx.font = FONT(4.2, 500); ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.textAlign = 'center';
+  ctx.fillText('Verzoekjes · Muziek op aanvraag', CX, m(y + 3)); ctx.textAlign = 'left';
+  y += 12;
 
-  // Onder het hero-vlak: links titel en stappen, rechts de QR-kaart.
-  const top = HH + 16, qrW = 74, qx = X + CW - qrW, leftW = CW - qrW - 12;
-  eyebrow('Scan & stem mee', m(X), m(top + 3), 'rgba(17,17,17,.7)', C.accent);
-  const head = (state.headline || '').trim() || 'Vraag je nummer aan.';
-  const ht = fit(head, 13, leftW, 30);
-  drawLines(ht, m(X), m(top + 9), C.fg);
-
-  const steps = [['01', 'Scan de code'], ['02', 'Kies je nummer'], ['03', 'Stem op de wachtrij']];
-  const rowH = 12.5, sy = top + qrW + 8 - steps.length * rowH;
-  steps.forEach(([n, label], i) => {
-    const y = sy + i * rowH;
-    if (i) { ctx.strokeStyle = C.line; ctx.lineWidth = m(.3); ctx.beginPath(); ctx.moveTo(m(X), m(y)); ctx.lineTo(m(X + leftW), m(y)); ctx.stroke(); }
-    ctx.font = FONT(3.4, 500); ctx.fillStyle = 'rgba(17,17,17,.4)'; ctx.fillText(n, m(X), m(y + rowH / 2 + 1.2));
-    ctx.font = FONT(5, 500); setTracking(-0.01, 5); ctx.fillStyle = C.fg; ctx.fillText(label, m(X + 10), m(y + rowH / 2 + 1.8)); setTracking(0, 5);
-    arrowBadge(m(X + leftW - 4.5), m(y + rowH / 2), m(4), C.ink, C.white);
-  });
-
-  // QR-kaart (surface met grote afronding, QR op wit)
-  ctx.fillStyle = C.surface; rrect(m(qx), m(top), m(qrW), m(qrW + 8), m(7)); ctx.fill();
-  const qi = 6, qs = qrW - 2 * qi;
-  ctx.fillStyle = C.white; rrect(m(qx + qi), m(top + qi), m(qs), m(qs), m(3.5)); ctx.fill();
+  // QR-code op een witte kaart
+  const q = 64, qx = (W - q) / 2;
+  ctx.fillStyle = C.white; rrect(m(qx), m(y), m(q), m(q), m(6)); ctx.fill();
   if (window.qrcode) {
     const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-    const n = qr.getModuleCount(), pad = 3.5, inner = m(qs - 2 * pad), cell = inner / n, ox = m(qx + qi + pad), oy = m(top + qi + pad);
+    const n = qr.getModuleCount(), pad = 5, inner = m(q - 2 * pad), cell = inner / n, ox = m(qx + pad), oy = m(y + pad);
     ctx.fillStyle = C.ink;
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
       if (qr.isDark(r, c)) ctx.fillRect(Math.floor(ox + c * cell), Math.floor(oy + r * cell), Math.ceil(cell), Math.ceil(cell));
   }
-  ctx.font = FONT(3, 500); setTracking(.05, 3); ctx.fillStyle = 'rgba(17,17,17,.5)'; ctx.textAlign = 'center';
-  ctx.fillText('SCAN MET JE GSM-CAMERA', m(qx + qrW / 2), m(top + qrW + 3.2)); ctx.textAlign = 'left'; setTracking(0, 3);
+  y += q + 9;
 
-  // Zwarte voet met afgeronde bovenkant, zoals op de site.
-  const FT = H - 26;
-  ctx.save(); rrect(0, m(FT), m(W), m(H - FT), [R, R, 0, 0]); ctx.clip();
-  ctx.fillStyle = C.ink; ctx.fillRect(0, m(FT), m(W), m(H - FT));
-  ctx.font = FONT(40, 700); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillText('SB', m(W / 2), m(H + 4)); ctx.textAlign = 'left';
-  ctx.restore();
-  ctx.font = FONT(4.6, 600); setTracking(-0.02, 4.6); ctx.fillStyle = C.white;
-  ctx.fillText('Een feest of event op til? Laat SB draaien.', m(X), m(FT + 11)); setTracking(0, 4.6);
-  ctx.font = FONT(2.8, 400); ctx.fillStyle = 'rgba(255,255,255,.5)';
-  ctx.fillText(shortUrl, m(X), m(FT + 19));
-  ctx.textAlign = 'right'; ctx.fillText('© 2026 SB · sbmusic.be', m(X + CW), m(FT + 19)); ctx.textAlign = 'left';
-  arrowBadge(m(X + CW - 4.5), m(FT + 9.5), m(4.5), C.white, C.ink, true);
+  // hoofdknop (warmwit, zoals "Boek SB") met de titel
+  const head = (state.headline || '').trim() || 'Vraag je nummer aan.';
+  const bh = 14;
+  ctx.fillStyle = C.surface; rrect(m(X), m(y), m(COL), m(bh), m(4)); ctx.fill();
+  let hs = 5; ctx.font = FONT(hs, 600);
+  while (ctx.measureText(head).width > m(COL - 26) && hs > 3) { hs -= .2; ctx.font = FONT(hs, 600); }
+  ctx.fillStyle = C.fg; ctx.fillText(head, m(X + 6), m(y + bh / 2 + hs * .36));
+  arrowBadge(m(X + COL - 7.5), m(y + bh / 2), m(4), C.ink, C.white, true);
+  y += bh + 4;
+
+  // glazen rijen met de stappen
+  const steps = [['01', 'Scan de code met je gsm'], ['02', 'Kies je nummer'], ['03', 'Stem op de wachtrij']];
+  steps.forEach(([n, label]) => {
+    const rh = 12;
+    ctx.fillStyle = 'rgba(255,255,255,.05)'; rrect(m(X), m(y), m(COL), m(rh), m(4)); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = m(.3); rrect(m(X), m(y), m(COL), m(rh), m(4)); ctx.stroke();
+    ctx.font = FONT(3.2, 500); ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillText(n, m(X + 6), m(y + rh / 2 + 1.1));
+    ctx.font = FONT(4.4, 500); ctx.fillStyle = C.white; ctx.fillText(label, m(X + 15), m(y + rh / 2 + 1.55));
+    y += rh + 3;
+  });
+
+  // voet
+  ctx.font = FONT(2.8, 400); ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.textAlign = 'center';
+  ctx.fillText(shortUrl + '   ·   © 2026 SB', CX, m(H - 12)); ctx.textAlign = 'left';
   ctx.restore();
 }
 
@@ -220,13 +213,13 @@ $('#headline').oninput = e => { state.headline = e.target.value; draw(); };
   const fonts = document.fonts ? Promise.all([
     document.fonts.load('600 40px Onest'), document.fonts.load('500 20px Onest'), document.fonts.load('700 40px Onest'), document.fonts.load('400 20px Onest')
   ]).catch(() => {}) : Promise.resolve();
-  const logo = loadImg('../assets/logo-sb-white.png').then(i => { state.logoW = i; }).catch(() => {});
+  const logo = loadImg('/assets/logo-sb-white.png').then(i => { state.logoW = i; }).catch(() => {});
   const event = (configured && id ? api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`) : Promise.resolve([]))
     .then(async list => {
       state.event = list.map(parseEvent).find(e => e && e.id === id) || null;
       if (state.event?.photo) { const u = await loadPhoto(state.event.photo); if (u) state.photo = await loadImg(u); }
     }).catch(() => {});
-  const press = loadImg('../assets/presspic.jpg').then(i => { state.press = i; }).catch(() => {});
+  const press = loadImg('/assets/sb-avatar.jpg').then(i => { state.avatar = i; }).catch(() => {});
   await Promise.all([fonts, logo, event, press]);
   if (state.event) document.title = state.event.name + ' · Poster';
   draw();

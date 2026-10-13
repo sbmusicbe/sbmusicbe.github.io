@@ -1,162 +1,155 @@
-/* Verzoekjes in de stijl van sbmusic.be (2026): licht, Onest, donkergroen accent,
-   pilknoppen met pijl, donkere hero en voet met grote afronding, genummerde rijen. */
+/* Verzoekjes in de stijl van sbmusic.be ("link in bio"): donker met groene gloed, Onest (zelf gehost),
+   ronde avatar met groene ring, glazen knoppen, warmwitte hoofdknop en een wit pop-upvenster. */
+@font-face{font-family:'Onest';font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/onest-400.woff2) format('woff2')}
+@font-face{font-family:'Onest';font-weight:500;font-style:normal;font-display:swap;src:url(/assets/fonts/onest-500.woff2) format('woff2')}
+@font-face{font-family:'Onest';font-weight:600;font-style:normal;font-display:swap;src:url(/assets/fonts/onest-600.woff2) format('woff2')}
 :root{
-  --background:#fff; --foreground:#111; --ink:#0a0a0a; --muted:#8d8d8d; --subtle:#b6b6b6; --line:#e6e5e2;
-  --surface:#f1f0ee; --surface-2:#e3e2df; --accent:#2e5a43; --accent-from:#3f7a5c; --accent-to:#1f3d2d; --accent-soft:#6fa88a;
-  --danger:#8a2b1f;
-  --radius-pill:9999px; --radius-card:2rem; --radius-card-sm:1.25rem; --radius-control:.875rem;
-  --e1:cubic-bezier(.22,1,.36,1); --e2:cubic-bezier(.16,1,.3,1); --e3:cubic-bezier(.2,.8,.2,1);
-
-  /* aliassen voor de bestaande code */
-  --text:var(--foreground); --text-secondary:rgba(17,17,17,.6); --faint:rgba(17,17,17,.45); --hairline:var(--line); --hover:var(--surface);
-  color-scheme:light;
+  --ink:#0a0a0a; --bone:#f1f0ee; --bone-2:#e3e2df; --line:#e6e5e2; --fg:#111;
+  --accent:#2e5a43; --accent-deep:#1f3d2d; --accent-soft:#6fa88a;
+  --glass:rgba(255,255,255,.05); --glass-hover:rgba(255,255,255,.1); --glass-line:rgba(255,255,255,.14); --glass-line-hover:rgba(255,255,255,.3);
+  --t1:#fff; --t2:rgba(255,255,255,.85); --t3:rgba(255,255,255,.55); --t4:rgba(255,255,255,.4);
+  --danger:#e8a091;
+  --e:cubic-bezier(.2,.8,.2,1); --e2:cubic-bezier(.16,1,.3,1);
+  color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px;-webkit-font-smoothing:antialiased}
-body{background:#fff;color:#111;font-family:'Onest',system-ui,sans-serif;line-height:1.55;overflow-x:hidden;min-height:100vh}
+html{-webkit-font-smoothing:antialiased;background:var(--ink)}
+body{min-height:100svh;background:radial-gradient(90% 60% at 50% 0%,#1f3d2d 0%,rgba(10,10,10,0) 70%),#0a0a0a;color:#fff;font-family:'Onest',system-ui,sans-serif;line-height:1.5}
 a{color:inherit;text-decoration:none}
-img{display:block;max-width:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:none}
 ul{list-style:none}
+img{display:block;max-width:100%}
 [hidden]{display:none!important}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.on-dark :focus-visible{outline-color:var(--accent-soft)}
-.muted{color:var(--muted)} .small{font-size:.8125rem} .grow{flex:1}
-.tab{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-svg.i{width:1em;height:1em;flex:none}
-.shell{max-width:88rem;margin-inline:auto;padding-inline:1.25rem}
-@media (min-width:640px){.shell{padding-inline:2rem}}
+svg.i{width:1.25rem;height:1.25rem;flex:none}
+.muted{color:var(--t3)} .small{font-size:.8125rem} .grow{flex:1} .tab{font-variant-numeric:tabular-nums}
+code{font-size:.85em;background:rgba(255,255,255,.08);padding:.1em .4em;border-radius:.375rem}
 
-/* ---------- typografie ---------- */
-h1,h2,.display{font-weight:600;letter-spacing:-.02em;line-height:.98}
-h2.h{font-size:2.25rem}
-@media (min-width:640px){h2.h{font-size:3rem}}
-h3{font-weight:500;letter-spacing:-.01em}
-.eyebrow,.idx{display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:500;color:rgba(17,17,17,.7)}
-.eyebrow::before,.idx::before{content:"";width:.375rem;height:.375rem;border-radius:9999px;background:rgba(17,17,17,.5)}
-.eyebrow--light{color:rgba(255,255,255,.75)}
-.eyebrow--light::before{background:rgba(255,255,255,.6)}
-.eyebrow--accent::before,.idx.accent::before{background:var(--accent)}
-.mono,.cap{font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:rgba(17,17,17,.5)}
-code{font-size:.85em;background:var(--surface);padding:.1em .4em;border-radius:.375rem}
+/* ---------- koppen en labels ---------- */
+h1,h2{font-weight:600;letter-spacing:-.01em;line-height:1.15}
+.label{font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--t4)}
+.k{display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:500;color:var(--t3)}
+.k::before{content:"";width:.375rem;height:.375rem;border-radius:9999px;background:var(--accent-soft)}
 
-/* ---------- logo ---------- */
-.logo{display:block;height:1.75rem;width:auto}
-
-/* ---------- pillen (zoals .pill op de site) ---------- */
-.pill{display:inline-block;transition:transform .35s var(--e3);text-decoration:none}
-.pill-in{display:inline-flex;align-items:center;gap:.75rem;border-radius:9999px;font-size:.875rem;font-weight:500;padding:.375rem .375rem .375rem 1.5rem;border:1px solid transparent;white-space:nowrap}
-.pill.no-ar .pill-in{padding:.875rem 1.75rem}
-.pill--dark .pill-in{background:#0a0a0a;color:#fff}
-.pill--light .pill-in{background:#f1f0ee;color:#111}
-.pill--white .pill-in{background:#fff;color:#111}
-.pill--accent .pill-in{background:linear-gradient(to bottom right,var(--accent-from),var(--accent-to));color:#fff}
-.pill--outline .pill-in{border-color:#e6e5e2;background:transparent;color:#111}
-.pill--outlineLight .pill-in{border-color:rgba(255,255,255,.35);background:transparent;color:#fff}
-.pill-ar{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;font-size:1rem;background:#0a0a0a;color:#fff;overflow:hidden}
-.pill--dark .pill-ar,.pill--accent .pill-ar{background:#fff;color:#0a0a0a}
-.pill-ar svg{transition:transform .35s var(--e3)}
-.pill:disabled{opacity:.5;cursor:default}
+/* ---------- glazen knoppen (zoals de links op sbmusic.be) ---------- */
+.lnk{display:flex;align-items:center;gap:.875rem;width:100%;padding:.9rem 1.25rem;border-radius:1rem;font-size:1rem;font-weight:500;text-align:left;
+  border:1px solid var(--glass-line);background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:transform .35s var(--e),background .25s,border-color .25s}
+.lnk > span{flex:1;min-width:0}
+.lnk .go{width:1rem;height:1rem;opacity:.5;flex:none;transition:transform .35s var(--e),opacity .25s}
+.lnk--main{background:var(--bone);color:var(--fg);border-color:var(--bone);padding-block:1.05rem;font-weight:600}
+.lnk--main .go{opacity:.7}
 @media (hover:hover){
-  .pill:not(:disabled):hover{transform:scale(1.04)}
-  .pill:hover .pill-ar svg{transform:translate(3px,0)}
-  .pill[data-ar="up"]:hover .pill-ar svg{transform:translate(2px,-2px)}
+  .lnk:not(:disabled):hover{transform:translateY(-2px);background:var(--glass-hover);border-color:var(--glass-line-hover)}
+  .lnk--main:not(:disabled):hover{background:#fff;border-color:#fff}
+  .lnk:hover .go{transform:translate(2px,-2px);opacity:1}
 }
+.anim{opacity:0;transform:translateY(12px);animation:in .7s var(--e2) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+
+/* ---------- pillen (zoals de verstuurknop op de site) ---------- */
+.send{display:inline-flex;align-items:center;gap:.75rem;border-radius:9999px;background:var(--ink);color:#fff;font-size:.875rem;font-weight:500;padding:.375rem .375rem .375rem 1.5rem;white-space:nowrap;transition:transform .35s var(--e)}
+.send:disabled{opacity:.6;cursor:default}
+.send i{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:#fff;color:var(--ink);font-style:normal}
+.send svg{width:1rem;height:1rem}
+.send.plain{padding:.875rem 1.75rem}
+.send.bone{background:var(--bone);color:var(--fg)}
+.send.bone i{background:var(--ink);color:#fff}
+@media (hover:hover){.send:not(:disabled):hover{transform:scale(1.04)}}
 
 /* compacte knoppen (beheer) */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.625rem 1.125rem;border-radius:9999px;font-size:.875rem;font-weight:500;white-space:nowrap;
-  background:#f1f0ee;color:#111;border:1px solid transparent;text-decoration:none;transition:transform .35s var(--e3),background .2s}
-.btn:hover{background:#e3e2df}
-@media (hover:hover){.btn:not(:disabled):hover{transform:scale(1.04)}}
-.btn.primary,.btn.dark{background:#0a0a0a;color:#fff}
-.btn.primary:hover,.btn.dark:hover{background:#222}
-.btn.accent{background:linear-gradient(to bottom right,var(--accent-from),var(--accent-to));color:#fff}
-.btn.ghost,.btn.outline{background:transparent;border-color:#e6e5e2}
-.btn.ghost:hover,.btn.outline:hover{background:#f1f0ee}
-.btn.ok{color:var(--accent)} .btn.danger{color:var(--danger)}
+  border:1px solid var(--glass-line);background:var(--glass);color:#fff;text-decoration:none;transition:transform .35s var(--e),background .25s,border-color .25s}
+@media (hover:hover){.btn:not(:disabled):hover{transform:translateY(-1px);background:var(--glass-hover);border-color:var(--glass-line-hover)}}
+.btn.primary,.btn.bone{background:var(--bone);border-color:var(--bone);color:var(--fg);font-weight:600}
+.btn.primary:hover,.btn.bone:hover{background:#fff!important;border-color:#fff!important}
+.btn.ok{color:var(--accent-soft)} .btn.danger{color:var(--danger)}
 .btn.sm{padding:.5rem .875rem;font-size:.8125rem}
-.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn:disabled{opacity:.5;cursor:default}
 .btn svg{width:1rem;height:1rem;flex:none}
-.link{color:#111;font-weight:500;text-decoration:underline;text-underline-offset:3px}
-.link:hover{color:var(--accent)}
-.icon-btn{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:#f1f0ee;color:rgba(17,17,17,.6);flex:none;transition:background .2s,color .2s}
-.icon-btn:hover{background:#e3e2df;color:#111}
+.link{color:inherit;font-weight:500;text-decoration:underline;text-underline-offset:3px;opacity:.85}
+.link:hover{opacity:1}
+.icon-btn{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;border:1px solid var(--glass-line);background:var(--glass);color:var(--t2);flex:none;transition:background .2s,border-color .2s}
+.icon-btn:hover{background:var(--glass-hover);border-color:var(--glass-line-hover)}
 .icon-btn svg{width:1rem;height:1rem}
 
-/* chips en statuslabels */
-.chip{display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(230,229,226,.8);background:rgba(255,255,255,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border-radius:.875rem;color:rgba(17,17,17,.7);font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;padding:.5rem 1rem}
-.pill-tag,.pill.st{display:inline-flex}
-.status-pill,.tagp{display:inline-flex;align-items:center;gap:.375rem;border-radius:9999px;padding:.375rem .75rem;font-size:.75rem;font-weight:500;white-space:nowrap;background:#f1f0ee;color:rgba(17,17,17,.7)}
-.tagp.new{background:#f1f0ee;color:#111}
-.tagp.played,.tagp.live{background:var(--accent);color:#fff}
-.tagp.rejected{background:transparent;border:1px solid #e6e5e2;color:var(--muted)}
+/* statuslabels */
+.tagp{display:inline-flex;align-items:center;gap:.375rem;border-radius:9999px;padding:.3rem .7rem;font-size:.75rem;font-weight:500;white-space:nowrap;border:1px solid var(--glass-line);color:var(--t2)}
+.tagp.played,.tagp.live{background:var(--accent);border-color:var(--accent);color:#fff}
+.tagp.rejected{color:var(--t4)}
 .dot{width:.375rem;height:.375rem;border-radius:50%;background:currentColor;display:inline-block}
 .live .dot{animation:pulse 1.4s infinite}
 @keyframes pulse{50%{opacity:.3}}
 
 /* ---------- vlakken ---------- */
-.card{background:#fff;border-radius:2rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.12),0 0 0 1px #e6e5e2}
-.panel{border-radius:2rem;background:#0a0a0a;color:#fff}
-.art{width:3rem;height:3rem;background:#f1f0ee center/cover no-repeat;flex:none;display:grid;place-items:center;color:rgba(17,17,17,.35);border-radius:.875rem}
-.panel .art{background-color:rgba(255,255,255,.08);color:rgba(255,255,255,.4)}
-.art svg{width:1.25rem;height:1.25rem}
-.badge{width:2.5rem;height:2.5rem;display:grid;place-items:center;border-radius:9999px;background:#0a0a0a;color:#fff;flex:none;transition:transform .4s var(--e3)}
+.glass{border-radius:1rem;border:1px solid var(--glass-line);background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.art{width:2.75rem;height:2.75rem;background:rgba(255,255,255,.08) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--t4);border-radius:.75rem}
+.art svg{width:1.125rem;height:1.125rem}
+.err{color:var(--danger);font-size:.875rem;min-height:1.2em;margin-top:.5rem}
 
-/* ---------- formulieren (zoals het aanvraagvenster) ---------- */
-label{display:block;margin:1rem 0 .375rem;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.025em;color:rgba(17,17,17,.5)}
-label .opt{text-transform:none;letter-spacing:0;color:rgba(17,17,17,.4)}
-input[type=text],input[type=email],input[type=password],input[type=search],select,textarea{
-  width:100%;font:inherit;border:1px solid #e6e5e2;background:rgba(241,240,238,.5);border-radius:.875rem;padding:.75rem 1rem;font-size:1rem;outline:none;color:#111;transition:border-color .2s,background .2s}
-input::placeholder,textarea::placeholder{color:#8d8d8d}
-input:focus,select:focus,textarea:focus{border-color:rgba(17,17,17,.3);background:#fff}
-textarea{resize:vertical;min-height:6rem}
-.err{color:var(--danger);font-size:.875rem;min-height:1.2em;margin-top:.625rem}
-label.btn{margin:0;text-transform:none;letter-spacing:0;font-size:.8125rem;color:#111}
-.chk{display:flex;gap:.625rem;align-items:center;margin-top:.875rem;font-size:.9375rem;text-transform:none;letter-spacing:0;color:#111;font-weight:400}
-.chk input{width:1rem;height:1rem;margin:0;accent-color:var(--accent)}
-
-/* ---------- genummerde rijen (zoals "Eén DJ, elke avond") ---------- */
-.rows > li{border-top:1px solid #e6e5e2}
-.rows > li:first-child{border-top:none}
-.rowx{display:flex;align-items:center;gap:1rem;width:100%;text-align:left;border-radius:1.25rem;padding:1.25rem 1rem;background:rgba(241,240,238,0);transition:background .5s var(--e1),padding .5s var(--e1)}
-.rowx .n{width:1.75rem;font-size:.875rem;font-weight:500;color:rgba(17,17,17,.4);flex:none}
-@media (hover:hover){.rowx.hov:hover{background:#f1f0ee;padding-left:1.5rem;padding-right:.75rem}.rowx.hov:hover .badge{transform:translateX(5px)}}
-
-/* ---------- voet (zoals de site) ---------- */
-.site-foot{position:relative;overflow:hidden;border-radius:2rem 2rem 0 0;background:#0a0a0a;color:#fff;margin-top:5rem}
-.site-foot .f-in{position:relative;z-index:10;padding-block:4.5rem 2.5rem}
-.f-cta{display:flex;flex-direction:column;gap:2rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:3.5rem}
-@media (min-width:1024px){.f-cta{flex-direction:row;align-items:flex-end;justify-content:space-between}}
-.f-cta h2{max-width:16ch;font-size:2.25rem}
-@media (min-width:640px){.f-cta h2{font-size:3rem}}
-.legal{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:1rem;padding-top:2rem;font-size:.75rem;color:rgba(255,255,255,.45)}
-@media (min-width:640px){.legal{flex-direction:row}}
-.legal div{display:flex;gap:1.5rem}
-.legal a:hover{color:#fff}
-.wm{pointer-events:none;user-select:none;font-weight:700;line-height:1;font-size:13rem;text-align:center}
-.site-foot .wm{position:absolute;inset-inline:0;bottom:-1.5rem;z-index:0;color:rgba(255,255,255,.05)}
-
-/* ---------- meldingen, laden, dialogen ---------- */
-#toast{position:fixed;left:1rem;right:1rem;bottom:1rem;margin:0 auto;max-width:28rem;transform:translateY(160%);background:#0a0a0a;color:#fff;padding:1rem 1.25rem;border-radius:1.25rem;
-  font-size:.875rem;line-height:1.5;box-shadow:0 25px 50px -12px rgba(0,0,0,.35);transition:transform .45s var(--e2);z-index:250;text-align:center;pointer-events:none}
-#toast.on{transform:none}
-.setup{max-width:36rem;margin:12vh auto;padding:2rem}
-.setup h1{font-size:1.875rem;margin-bottom:.75rem}
-.spinner{display:block;width:4rem;height:1.75rem;margin:4rem auto;background:url("../assets/logo-sb-black.png") center/contain no-repeat;animation:lp 1.1s ease-in-out infinite}
-@keyframes lp{0%,100%{opacity:.3;transform:scale(.92)}50%{opacity:1;transform:none}}
-dialog{border:0;padding:0;background:transparent;color:#111;width:calc(100% - 2rem);max-width:32rem;max-height:calc(100svh - 2rem);overflow:visible;margin:auto}
-dialog::backdrop{background:rgba(17,17,17,.3);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-dialog .card{padding:2rem;max-height:calc(100svh - 2rem);overflow-y:auto}
-dialog h2{font-size:1.875rem;letter-spacing:-.01em;margin-bottom:.5rem}
+/* ---------- wit pop-upvenster (zoals het aanvraagvenster van de site) ---------- */
+.modal{visibility:hidden;opacity:0;transition:opacity .3s ease-out,visibility 0s .3s;position:fixed;inset:0;z-index:110;display:flex;align-items:flex-end;justify-content:center;padding:1rem;
+  background:rgba(10,10,10,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.modal.open{visibility:visible;opacity:1;transition:opacity .3s ease-out}
+@media (min-width:640px){.modal{align-items:center}}
+.mp,dialog .card{position:relative;width:100%;max-width:32rem;max-height:100%;overflow-y:auto;border-radius:2rem;background:#fff;color:var(--fg);padding:1.5rem;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.4),0 0 0 1px var(--line);color-scheme:light}
+.mp{transform:translateY(28px);transition:transform .45s var(--e2)}
+.modal.open .mp{transform:none}
+@media (min-width:640px){.mp,dialog .card{padding:2rem}}
+.mx{position:absolute;right:1rem;top:1rem;width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:var(--bone);color:rgba(17,17,17,.6);transition:background .2s,color .2s;z-index:2}
+.mx:hover{background:var(--bone-2);color:var(--fg)}
+.mx svg{width:1rem;height:1rem}
+.mh{margin-bottom:1.5rem;display:flex;flex-direction:column;gap:.375rem}
+.mh .k{color:rgba(17,17,17,.6)}
+.mh .k::before{background:var(--accent)}
+.mh h2{font-size:1.5rem;padding-right:2rem}
+@media (min-width:640px){.mh h2{font-size:1.875rem}}
+/* alles binnen het witte venster */
+.mp label,dialog label{display:block;margin:1rem 0 .375rem;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.025em;color:rgba(17,17,17,.5)}
+.mp label .opt,dialog label .opt{text-transform:none;letter-spacing:0;color:rgba(17,17,17,.4)}
+.mp input[type=text],.mp input[type=search],.mp textarea,
+dialog input[type=text],dialog input[type=password],dialog input[type=search],dialog textarea,dialog select{
+  width:100%;font:inherit;border:1px solid var(--line);background:rgba(241,240,238,.5);border-radius:.875rem;padding:.75rem 1rem;font-size:1rem;outline:none;color:var(--fg);transition:border-color .2s,background .2s}
+.mp input:focus,.mp textarea:focus,dialog input:focus,dialog textarea:focus,dialog select:focus{border-color:rgba(17,17,17,.3);background:#fff}
+.mp input::placeholder,.mp textarea::placeholder,dialog input::placeholder,dialog textarea::placeholder{color:#8d8d8d}
+.mp textarea,dialog textarea{resize:vertical;min-height:5.5rem}
+.mp .art,dialog .art{background-color:var(--bone);color:rgba(17,17,17,.35)}
+.mp .err,dialog .err{color:#8a2b1f}
+.mp .link,dialog .link{color:var(--fg)}
+.mp .muted,dialog .muted{color:rgba(17,17,17,.55)}
+.mp :focus-visible,dialog :focus-visible{outline-color:var(--accent)}
+dialog .btn{background:var(--bone);border-color:transparent;color:var(--fg)}
+@media (hover:hover){dialog .btn:not(:disabled):hover{background:var(--bone-2);border-color:transparent}}
+dialog .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+dialog .btn.primary:hover{background:#222!important;border-color:#222!important}
+dialog .btn.danger{color:#8a2b1f}
+dialog .chk{display:flex;gap:.625rem;align-items:center;margin-top:.875rem;font-size:.9375rem;text-transform:none;letter-spacing:0;color:var(--fg);font-weight:400}
+dialog .chk input{width:1rem;height:1rem;margin:0;accent-color:var(--accent)}
+dialog code{background:var(--bone)}
+dialog{border:0;padding:0;background:transparent;width:calc(100% - 2rem);max-width:32rem;max-height:calc(100svh - 2rem);overflow:visible;margin:auto}
+dialog::backdrop{background:rgba(10,10,10,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+dialog .card{max-height:calc(100svh - 2rem)}
+dialog h2{font-size:1.5rem;margin-bottom:.5rem}
 dialog[open] .card{animation:up .45s var(--e2)}
 @keyframes up{from{transform:translateY(28px);opacity:0}}
+label.btn{margin:0!important;text-transform:none!important;letter-spacing:0!important;font-size:.8125rem!important;color:var(--fg)!important}
 .row{display:flex;gap:.5rem;align-items:center}
 .actions{display:flex;gap:.625rem;justify-content:flex-end;margin-top:1.75rem;flex-wrap:wrap;align-items:center}
 
-/* binnenkomen zoals de site */
-.rv{animation:rv .8s var(--e2) both}
-@keyframes rv{from{opacity:0;transform:translateY(16px)}}
+/* ---------- meldingen en laden ---------- */
+#toast{position:fixed;left:1rem;right:1rem;bottom:1rem;margin:0 auto;max-width:28rem;transform:translateY(160%);background:var(--bone);color:var(--fg);padding:.9rem 1.25rem;border-radius:1rem;
+  font-size:.875rem;font-weight:500;line-height:1.45;box-shadow:0 25px 50px -12px rgba(0,0,0,.5);transition:transform .45s var(--e2);z-index:250;text-align:center;pointer-events:none}
+#toast.on{transform:none}
+.spinner{display:block;width:4rem;height:1.75rem;margin:3rem auto;background:url("/assets/logo-sb-white.png") center/contain no-repeat;animation:lp 1.1s ease-in-out infinite}
+@keyframes lp{0%,100%{opacity:.3;transform:scale(.92)}50%{opacity:1;transform:none}}
+.setup{margin-top:2rem;padding:1.5rem;text-align:center}
+.setup h1{font-size:1.25rem;margin-bottom:.5rem}
 
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+/* ---------- voet zoals de site ---------- */
+.foot{width:100%;max-width:28rem;margin:0 auto;padding:1.5rem 1.25rem 2rem;display:flex;justify-content:center;flex-wrap:wrap;gap:1.25rem;font-size:.75rem;color:var(--t4)}
+.foot a:hover{color:#fff}
+
+@media (prefers-reduced-motion: reduce){.anim{animation:none;opacity:1;transform:none}*{transition:none!important;animation:none!important}}

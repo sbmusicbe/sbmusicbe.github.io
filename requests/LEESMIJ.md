@@ -11,13 +11,14 @@ Een app waarmee gasten nummers aanvragen, zoals requestbox.app. Ze draait volled
 | `sbmusic.be/requests/beheer.html` | Jij (wachtwoord) |
 | `sbmusic.be/requests/poster.html?e=<event-code>` | Afdrukbare A4-poster met QR-code |
 
-De app ziet eruit zoals sbmusic.be en gebruikt dezelfde bouwstenen:
-- lichte pagina's in Onest, met een donkergroen accent;
-- de donkere hero met de foto in grijswaarden en het "SB"-watermerk. Zonder event-foto staat daar de presspic;
-- pilknoppen met pijl, en genummerde rijen;
-- de wachtrij in een zwart paneel;
-- het aanvraagformulier en de zwarte voet;
-- de logo's uit `assets/`.
+De app ziet eruit zoals sbmusic.be, een donkere "link in bio"-pagina, en gebruikt dezelfde bouwstenen:
+- een donkere achtergrond met een groene gloed bovenaan, en het lettertype Onest (uit `/assets/fonts/`);
+- bovenaan een ronde foto van het event met een groene rand. Zonder event-foto staat daar je avatar (`/assets/sb-avatar.jpg`);
+- daaronder het witte SB-logo, de eventnaam en knoppen zoals op de site:
+  *Vraag een nummer aan* (licht), *Stem op de wachtrij* en *Boek SB voor jouw feest*;
+- het aanvraagformulier opent in een wit venster, net als het boekingsvenster op de site;
+- de wachtrij en *Mijn verzoekjes* in glazen rijen;
+- het beheer in dezelfde donkere stijl, met witte vensters.
 
 De stijl staat in `style.css`.
 
@@ -73,8 +74,8 @@ Later een nieuw token of wachtwoord? Open `beheer.html?setup` en herhaal stap 3 
   Een Issues-token kan namelijk geen bestanden uploaden.
 - **QR & link**: toont de link en de QR-code, met knoppen om de QR-code als PNG te downloaden en de poster te openen.
 - **Poster (PDF)**: A4 in de huisstijl van sbmusic.be.
-  - Bovenaan staat een donker vlak met de foto van het event (of je presspic) en de eventnaam.
-  - Daaronder de titel, drie stappen en de QR-code, en onderaan een zwarte voet.
+  - Donker, zoals de site: de ronde foto van het event (of je avatar), het SB-logo en de eventnaam.
+  - Daaronder de QR-code op een witte kaart, de titel als lichte knop en drie stappen.
   - De titel pas je bovenaan aan.
   - Klik **Download PDF** voor een A4-bestand, of **Afdrukken**.
   - De PDF- en QR-code-bibliotheken staan in `vendor/` (MIT-licentie).
