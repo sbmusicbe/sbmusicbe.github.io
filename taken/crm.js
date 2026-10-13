@@ -75,6 +75,7 @@ function crmCompleteAction(t) {
 function crmOpenActionDialog(t) {
   if (crmDeadlineActionType(t)) {
     openTask(t.id);
+    const editor = $('#crmDeadlineEdit'); if (editor) editor.open = true;
     const input = $('#dDue'); input?.focus(); if (input) openDatePop(input);
     return;
   }
@@ -154,20 +155,39 @@ function crmDuplicates(t) {
 }
 function crmDuplicateHtml(t) {
   const dup=crmDuplicates(t);
-  return dup.length ? `<div class="crm-warning" role="status"><b>Mogelijk dubbele deal</b><p>Dezelfde klant in meerdere projecten kan terecht zijn. Er wordt niets automatisch samengevoegd.</p>${dup.slice(0,5).map(({task,reasons})=>`<button type="button" class="link" data-crm-open="${esc(task.id)}">${esc(task.title)} · ${esc(proj(task.projectId)?.name || 'Inbox')} <span>(${esc(reasons.join(', '))})</span></button>`).join('')}${dup.length>5?`<p>En nog ${dup.length-5} overeenkomsten.</p>`:''}</div>` : '';
+  return dup.length ? `<details class="crm-warning crm-focus-duplicates"><summary>Mogelijk dubbele deal <span>(${dup.length})</span></summary><p>Dezelfde klant in meerdere projecten kan terecht zijn. Er wordt niets automatisch samengevoegd.</p>${dup.slice(0,5).map(({task,reasons})=>`<button type="button" class="link" data-crm-open="${esc(task.id)}">${esc(task.title)} · ${esc(proj(task.projectId)?.name || 'Inbox')} <span>(${esc(reasons.join(', '))})</span></button>`).join('')}${dup.length>5?`<p>En nog ${dup.length-5} overeenkomsten.</p>`:''}</details>` : '';
+}
+const crmFocusOpen = {history:{}, deadline:{}};
+function crmDeadlineFieldsHtml(t) {
+  return `<div class="props crm-focus-date-fields"><label class="prop"><span>Datum</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-label="Deadline" aria-haspopup="dialog" aria-expanded="false"></label><label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-label="Uur" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label></div>`;
+}
+function crmFocusHtml(t) {
+  const action = t.done ? null : crmEffectiveAction(t), linked = crmDeadlineActionType(t);
+  const title = t.done ? isWinStage(t.stage) ? 'Deal gewonnen' : 'Deal afgerond' : action ? crmActionLabel(action.type) : linked ? crmActionLabel(linked) : 'Plan je volgende actie';
+  const when = action ? esc(dueLabel(action.date)) + (linked && t.time ? ' · ' + esc(t.time) : '') : 'Datum kiezen';
+  return `<section class="crm-focus-next"><span class="crm-focus-label">${t.done ? 'Afgerond' : 'Volgende stap'}</span><h3>${esc(title)}</h3>
+    ${!t.done ? linked ? `<details id="crmDeadlineEdit" class="crm-focus-date" ${crmFocusOpen.deadline[t.id] ? 'open' : ''}><summary><span class="${action?.date < today() ? 'crm-late' : ''}">${when}</span><span class="crm-focus-change">Wijzigen</span></summary>${crmDeadlineFieldsHtml(t)}<button type="button" class="link" data-crm-date-done="${esc(t.id)}">Gereed</button></details>` : `<button type="button" class="crm-focus-date-button" data-crm-action="${esc(t.id)}">${when}<span>Wijzigen</span></button>` : ''}
+    <button type="button" class="btn primary crm-focus-primary" data-crm-contact="${esc(t.id)}">Contact vastleggen</button>
+  </section>`;
+}
+function crmContactSummaryHtml(t) {
+  const fs = fieldsFor(t.projectId), get = rx => { const f=fs.find(f=>f.type==='text' && rx.test(f.name));return f?String(t.custom?.[f.id] || '').trim():''; };
+  const name=get(/^(naam|contactpersoon)$/i), phone=get(/telefoon|gsm|mobiel/i), email=get(/e.?mail/i);
+  const tel=phone.replace(/[^+0-9]/g,'');
+  if(!name && !tel && !email)return '';
+  return `<section class="crm-focus-person"><div><span class="crm-focus-label">Contactpersoon</span>${name?`<b>${esc(name)}</b>`:phone?`<b>${esc(phone)}</b>`:''}</div><div>${tel?`<a href="tel:${esc(tel)}">Bellen</a>`:''}${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?`<a href="mailto:${esc(encodeURIComponent(email))}">Mailen</a>`:''}</div></section>`;
 }
 function crmDetailHtml(t) {
-  const a=crmEffectiveAction(t), linkedType=crmDeadlineActionType(t), first=crmFirstContact(t), history=data.activities.filter(x=>x.taskId===t.id).map(x=>({...x,source:'contact'}));
-  if (first.date && !history.some(x => ymd(new Date(x.at)) === first.date)) history.push({id:'first_'+t.id,at:parseYmd(first.date).getTime(),source:'first',text:'Datum uit Eerste x contactname.'});
-  for(const c of commentsOf(t.id))history.push({id:c.id,at:c.at,type:'note',text:c.text || 'Opmerking met afbeelding',source:'comment'});
+  const first=crmFirstContact(t), history=data.activities.filter(x=>x.taskId===t.id).map(x=>({...x,source:'contact'}));
+  if(first.date && !history.some(x=>ymd(new Date(x.at))===first.date))history.push({id:'first_'+t.id,at:parseYmd(first.date).getTime(),source:'first'});
+  for(const c of commentsOf(t.id))history.push({...c,source:'comment'});
   history.sort((a,b)=>b.at-a.at);
-  return `<section class="crm-detail"><div class="d-sec"><span>Opvolging</span><button type="button" class="link" data-crm-action="${esc(t.id)}">${linkedType ? 'Deadline bewerken' : a?'Bewerken':'Actie plannen'}</button></div>
-    ${first.field ? `<label class="crm-first-contact"><span>Eerste contactname</span><input type="text" class="date-inp" data-field="${esc(first.field.id)}" value="${esc(fmtDateInp(first.date))}" placeholder="dd/mm/jjjj" autocomplete="off" aria-label="Eerste contactname" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>` : ''}
-    ${linkedType ? `<p class="muted small crm-deadline-note">${linkedType === 'call' ? 'Terugbellen' : 'Offerte opvolgen'} gebruikt de deadline hierboven.</p>` : ''}
-    ${a?`<div class="crm-action-summary"><div><b>${esc(crmActionLabel(a.type))}</b><span class="${a.date<today()?'crm-late':''}">${esc(dueLabel(a.date))}${linkedType && t.time ? ' · '+esc(t.time) : ''}</span>${a.note?`<p>${esc(a.note)}</p>`:''}</div>${!t.done?`<button type="button" class="btn" data-crm-complete="${esc(t.id)}">Uitgevoerd</button>`:''}</div>`:`<p class="muted small">${linkedType ? 'Vul een deadline in om de opvolging te plannen.' : 'Nog geen volgende actie gepland.'}</p>`}
-    ${crmLostStage(t.stage)?`<div class="crm-loss"><b>Verliesreden: ${esc(t.lostReason || 'Nog niet opgegeven')}</b>${t.lostNote?`<p>${esc(t.lostNote)}</p>`:''}<button type="button" class="link" data-crm-loss="${esc(t.id)}">Reden aanpassen</button></div>`:''}
-    <div class="d-sec"><span>Contacthistoriek</span><button type="button" class="link" data-crm-contact="${esc(t.id)}">+ Contactmoment</button></div>
-    <ol class="crm-history">${history.map(x=>`<li><div class="crm-history-head"><b>${x.source==='first'?'Eerste contactname':x.source==='comment'?'Opmerking':esc(crmActionLabel(x.type))}</b><time>${esc(x.source==='first'?fmtDateInp(first.date):stamp(x.at))}</time>${x.source==='contact'?`<button type="button" class="icon-btn" data-crm-delcontact="${esc(x.id)}" aria-label="Contactmoment verwijderen">${I.trash}</button>`:''}</div>${x.source==='contact' && ymd(new Date(x.at))===first.date?'<small>Eerste contactname</small>':''}${x.outcome?`<strong>${esc(x.outcome)}</strong>`:''}${x.text?`<p>${esc(x.text)}</p>`:''}${x.nextAction?`<small>Vervolg: ${esc(crmActionLabel(x.nextAction.type))} · ${esc(dueLabel(x.nextAction.date))}</small>`:''}</li>`).join('') || '<li class="muted small">Nog geen contactmomenten vastgelegd.</li>'}</ol></section>`;
+  const latest=history.find(x=>x.source!=='first');
+  const draft=commentDrafts[t.id] || '', pending=(pendingImgs[t.id] || []).length;
+  return `<details class="crm-focus-disclosure" id="crmHistory" ${crmFocusOpen.history[t.id] || draft || pending ? 'open' : ''}><summary>Contacthistoriek <span>${history.length} ${history.length===1?'moment':'momenten'}</span></summary>
+    <ol class="crm-history">${history.map(x=>`<li ${x.source==='comment'?`data-cid="${esc(x.id)}"`:''}><div class="crm-history-head"><b>${x.source==='first'?'Eerste contactname':x.source==='comment'?'Opmerking':esc(crmActionLabel(x.type))}</b><time>${esc(x.source==='first'?fmtDateInp(first.date):stamp(x.at))}</time>${x.source==='contact'?`<button type="button" class="icon-btn" data-crm-delcontact="${esc(x.id)}" aria-label="Contactmoment verwijderen">${I.trash}</button>`:x.source==='comment'?`<button type="button" class="icon-btn" data-act="delcomment" aria-label="Opmerking verwijderen">${I.trash}</button>`:''}</div>${x.source==='contact' && ymd(new Date(x.at))===first.date?'<small>Eerste contactname</small>':''}${x.outcome?`<strong>${esc(x.outcome)}</strong>`:''}${x.text?`<p>${esc(x.text)}</p>`:''}${x.source==='comment'?imgsHtml(x.imgs,'zoom'):''}${x.nextAction?`<small>Vervolg: ${esc(crmActionLabel(x.nextAction.type))} · ${esc(dueLabel(x.nextAction.date))}</small>`:''}</li>`).join('') || '<li class="muted small">Nog geen contactmomenten vastgelegd.</li>'}</ol>
+    <details class="crm-focus-note" ${draft || pending ? 'open' : ''}><summary>Opmerking of bijlage toevoegen</summary><div class="c-new"><div class="c-box"><textarea id="dComment" rows="2" placeholder="Schrijf een opmerking of plak een afbeelding…" aria-label="Nieuwe opmerking">${esc(draft)}</textarea><div class="c-pending" id="dPending">${pendingHtml(t.id)}</div><div class="c-tools"><button type="button" class="icon-btn" data-act="attach" aria-label="Afbeelding toevoegen">${I.image}</button><input type="file" id="dFile" accept="image/*" multiple hidden></div></div><button type="button" class="btn" data-act="addcomment">Plaatsen</button></div></details>
+  </details>${latest?`<p class="crm-focus-latest">Laatste contact: ${esc(stamp(latest.at))} · ${latest.source==='comment'?'opmerking':esc(crmActionLabel(latest.type).toLowerCase())}</p>`:''}`;
 }
 function crmTaskRows(list, mode='action') {
   return list.length ? `<div class="crm-task-list">${list.map(t=>{const a=crmEffectiveAction(t);return `<article class="crm-task-row"><button type="button" class="crm-task-open" data-crm-open="${esc(t.id)}"><b>${esc(t.title)}</b><span>${esc(proj(t.projectId)?.name || 'Inbox')} · ${esc(stageById(t.stage)?.label || '')}</span><small>${mode==='deadline'?`Deadline ${esc(dueLabel(t.due))}`:a?`${esc(crmActionLabel(a.type))} · ${esc(dueLabel(a.date))}`:crmDeadlineActionType(t)?'Nog geen deadline':'Nog geen volgende actie'}${a?.note?` · ${esc(a.note)}`:''}</small></button><div class="crm-row-actions"><button type="button" class="btn" data-crm-action="${esc(t.id)}">${crmDeadlineActionType(t)?'Deadline':'Plannen'}</button>${a?`<button type="button" class="btn" data-crm-complete="${esc(t.id)}">Uitgevoerd</button>`:''}</div></article>`;}).join('')}</div>` : '<p class="muted small crm-empty">Niets in deze lijst.</p>';
@@ -231,6 +251,8 @@ function crmOpenSalesProjectDialog(r) {
 function bindCrm() {
   document.addEventListener('click',async e=>{
     if(!data || $('#app').hidden)return;
+    const done=e.target.closest('[data-crm-date-done]');
+    if(done){crmFocusOpen.deadline[done.dataset.crmDateDone]=false;const editor=$('#crmDeadlineEdit');if(editor)editor.open=false;closeDatePop();closeTimePop();renderDetail(true);return;}
     const b=e.target.closest('[data-crm-open],[data-crm-action],[data-crm-complete],[data-crm-contact],[data-crm-loss],[data-crm-delcontact],[data-crm-first-contact],[data-crm-sales-project]');
     if(b){
       const d=b.dataset,t=taskById(d.crmOpen || d.crmAction || d.crmComplete || d.crmContact || d.crmLoss || d.crmFirstContact);
