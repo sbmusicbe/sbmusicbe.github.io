@@ -1655,40 +1655,29 @@ function renderDetail(force) {
         <textarea id="dTitle" rows="1" aria-label="Titel">${esc(t.title)}</textarea>
       </div>
       <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
-      <div class="props">
-        <label class="prop"><span>Status</span><select id="dStage">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}${x.done ? ' (afgewerkt)' : ''}</option>`).join('')}</select></label>
-        <label class="prop"><span>Deadline</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-haspopup="dialog" aria-expanded="false"></label>
-        <label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" title="Uur wissen" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label>
-      </div>
+      <select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select>
+      ${crmFocusHtml(t)}
+      ${crmContactSummaryHtml(t)}
       ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
       ${crmDetailHtml(t)}
-      <details class="d-more" id="dMore" ${moreOpen[t.id] === false ? '' : 'open'}>
-        <summary>Meer gegevens</summary>
+      <details class="d-more" id="dMore" ${moreOpen[t.id] ? 'open' : ''}>
+        <summary>Dealgegevens</summary>
         <div class="props">
         ${t.notes ? `<label class="prop"><span>Notities</span><textarea id="dNotes" rows="2" aria-label="Notities">${esc(t.notes)}</textarea></label>` : ''}
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
         </div>
+        ${!crmDeadlineActionType(t) ? crmDeadlineFieldsHtml(t) : ''}
+        ${crmLostStage(t.stage) ? `<div class="crm-loss"><b>Verliesreden: ${esc(t.lostReason || 'Nog niet opgegeven')}</b>${t.lostNote ? `<p>${esc(t.lostNote)}</p>` : ''}<button type="button" class="link" data-crm-loss="${esc(t.id)}">Reden aanpassen</button></div>` : ''}
         <div class="d-sec"><span>Extra gegevens</span><button class="link" data-act="fields">Extra gegevens beheren</button></div>
-        <div class="props">${fs.filter(f => f.id !== crmFirstContact(t).field?.id).map(f => fieldInput(f, t)).join('') ||
+        <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
           `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
+        <div class="crm-focus-danger"><button type="button" class="btn danger" data-act="deletetask">Deal verwijderen</button><p class="muted small">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}</p></div>
       </details>
-      <div class="d-sec"><span>Opmerkingen${commentsOf(t.id).length ? ` <b class="c-count">${commentsOf(t.id).length}</b>` : ''}</span></div>
-      <ul class="comments">${commentsOf(t.id).map(c => `
-        <li data-cid="${c.id}"><div class="c-meta"><span>${esc(stamp(c.at))}</span><button type="button" class="icon-btn c-del" data-act="delcomment" title="Opmerking verwijderen" aria-label="Opmerking verwijderen">${I.trash}</button></div>
-        ${c.text ? `<div class="c-text">${esc(c.text)}</div>` : ''}${imgsHtml(c.imgs, 'zoom')}</li>`).join('')}</ul>
-      <div class="c-new">
-        <div class="c-box">
-          <textarea id="dComment" rows="2" placeholder="Schrijf een opmerking of plak een afbeelding…" aria-label="Nieuwe opmerking">${esc(commentDrafts[t.id] || '')}</textarea>
-          <div class="c-pending" id="dPending">${pendingHtml(t.id)}</div>
-          <div class="c-tools"><button type="button" class="icon-btn" data-act="attach" title="Afbeelding toevoegen (of plak / sleep)" aria-label="Afbeelding toevoegen">${I.image}</button><input type="file" id="dFile" accept="image/*" multiple hidden></div>
-        </div>
-        <button type="button" class="btn primary" data-act="addcomment">Plaatsen</button>
-      </div>
-      <div style="margin-top:22px"><button type="button" class="btn danger" data-act="deletetask">Deal verwijderen</button></div>
-      <p class="muted small" style="margin-top:16px">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}${t.done && t.doneAt ? ` · voltooid op ${new Date(t.doneAt).getDate()} ${MONTHS[new Date(t.doneAt).getMonth()]}` : ''}</p>
     </div>`;
   autosize($('#dTitle'));
-  $('#dMore')?.addEventListener('toggle', e => { moreOpen[t.id] = e.target.open; });
+  $('#dMore')?.addEventListener('toggle', e => { if (e.target.isConnected) moreOpen[t.id] = e.target.open; });
+  $('#crmHistory')?.addEventListener('toggle', e => { if (e.target.isConnected) crmFocusOpen.history[t.id] = e.target.open; });
+  $('#crmDeadlineEdit')?.addEventListener('toggle', e => { if (e.target.isConnected) crmFocusOpen.deadline[t.id] = e.target.open; });
   if (keep) restoreFocus(el, keep);
 }
 // Sleutel van het element met focus: id, veld of knop; zo vinden we het na het hertekenen terug
@@ -1726,6 +1715,11 @@ async function attachImages(t, files) {
     try { list.push(await shrinkImage(f)); } catch { toast('Deze afbeelding kan niet gelezen worden'); }
   }
   const el = $('#dPending'); if (el && selectedId === t.id) el.innerHTML = pendingHtml(t.id);
+  if (list.length && selectedId === t.id) {
+    const history = $('#crmHistory'), composer = $('.crm-focus-note');
+    if (history) history.open = true;
+    if (composer) composer.open = true;
+  }
 }
 function openLightbox(imgs, i) {
   const ok = imgs.filter(u => IMG_OK.test(u)); if (!ok.length) return;

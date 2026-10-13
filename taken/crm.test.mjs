@@ -32,6 +32,7 @@ function runtime() {
     const dueLabel=s=>s,stamp=n=>ymd(new Date(n));
     const fmtDateInp=s=>s?s.split('-').reverse().join('/'):'';
     const I={trash:'x'};
+    const commentDrafts={},pendingImgs={},pendingHtml=()=>'',imgsHtml=()=>'';
     let undo=null;const commit=()=>{};const toast=(m,fn)=>{undo=fn;};
     ${crm}
     data=newData();data.projects.push({id:'p',name:'Project P'},{id:'q',name:'Project Q'},{id:'finished',name:'Afgewerkt',finished:true});
@@ -183,7 +184,7 @@ test('completing linked follow-up clears deadline and undo restores deadline and
 test('first contact field appears in follow-up history without inventing a contact channel',()=>{
   const r=runtime();r("data.tasks=[makeTask('a',{custom:{'f-eerste-contact':'2026-09-10'}})]");
   assert.equal(r('crmFirstContact(data.tasks[0]).date'),'2026-09-10');
-  const html=r('crmDetailHtml(data.tasks[0])');assert.match(html,/Eerste contactname/);assert.match(html,/10\/09\/2026/);assert.match(html,/Datum uit Eerste x contactname/);
+  const html=r('crmDetailHtml(data.tasks[0])');assert.match(html,/Eerste contactname/);assert.match(html,/10\/09\/2026/);
   assert.equal(r('data.activities.length'),0);
 });
 
@@ -194,4 +195,20 @@ test('logging contacts fills the first-contact field and preserves an earlier kn
   assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'2026-09-10');
   r("crmAddContact(data.tasks[0],{type:'call',at:now(),outcome:'Opnieuw gebeld'})");
   assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'2026-09-10');
+});
+
+test('Focus shows one deadline editor and a single main contact action',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{stage:'mail',due:today(),time:'09:00'})]");
+  const html=r('crmFocusHtml(data.tasks[0])');
+  assert.equal((html.match(/id="dDue"/g)||[]).length,1);
+  assert.equal((html.match(/data-crm-contact=/g)||[]).length,1);
+  assert.match(html,/Offerte opvolgen/);assert.doesNotMatch(html,/Deadline bewerken|gebruikt de deadline/);
+});
+
+test('Focus keeps comments in the history once and starts history collapsed',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a')];data.comments=[{id:'c',taskId:'a',at:now(),text:'Historische notitie'}]");
+  const html=r('crmDetailHtml(data.tasks[0])');
+  assert.equal((html.match(/Historische notitie/g)||[]).length,1);
+  assert.match(html,/id="crmHistory" >/);assert.match(html,/data-cid="c"/);
+  assert.match(html,/Opmerking of bijlage toevoegen/);
 });
