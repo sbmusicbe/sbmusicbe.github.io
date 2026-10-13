@@ -240,6 +240,30 @@ input[type=date],input[type=month],input[type=time]{font-variant-numeric:tabular
 .pc-out li.base{background:var(--accent-soft)}
 .pc-out li.base span{color:var(--accent)}
 
+/* Alleen de berekening afdrukken, met dezelfde kaart en formaatstrook als online. */
+#calcPrint{display:none}
+@media print{
+  @page{size:A4 portrait;margin:18mm 14mm}
+  html:has(body.printing-calc),body.printing-calc{height:auto!important;overflow:visible!important;background:#fff!important;color:#101010!important;color-scheme:light}
+  body.printing-calc>*:not(#calcPrint){display:none!important}
+  body.printing-calc #calcPrint{display:block;--canvas:#fff;--raised:#f6f6f7;--ink:#101010;--ink-muted:#616165;--line:#e8e8ea;--accent:#4b52f5;--accent-soft:#ecedff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #calcPrint .pc-print-head{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:16px;border-bottom:1px solid #e8e8ea;color:#616165;font-size:11px}
+  #calcPrint .pc-print-brand{font:600 20px/24px var(--f-sans);letter-spacing:-.04em;color:#101010}
+  #calcPrint h1{margin:24px 0 20px;font:600 28px/34px var(--f-sans);letter-spacing:-.04em;overflow-wrap:anywhere}
+  #calcPrint .pcalc{break-inside:avoid;margin:0;border-radius:20px}
+  #calcPrint .pc-row{gap:12px 18px;padding:16px}
+  #calcPrint .pc-title{order:initial;flex:0 0 auto}
+  #calcPrint .pc-fields{display:flex;order:initial;width:auto;flex-wrap:nowrap;gap:10px}
+  #calcPrint .pc-print-field{display:flex;flex-direction:column;gap:5px;color:#616165;font:500 11px/16px var(--f-sans)}
+  #calcPrint .pc-print-field b{min-width:92px;padding:6px 9px;border:1px solid #8a8a90;border-radius:12px;color:#101010;font:400 14px/20px var(--f-mono)}
+  #calcPrint .pc-togo{order:initial;width:auto;margin:0 0 0 auto;text-align:right;font-size:12px}
+  #calcPrint .pc-out{flex-wrap:nowrap}
+  #calcPrint .pc-out li{flex:1 1 0;min-width:0;padding:12px 9px;border-right:1px solid var(--line);border-bottom:0}
+  #calcPrint .pc-out li:last-child{border-right:0}
+  #calcPrint .pc-out li b{font-size:14px;white-space:normal;overflow-wrap:anywhere}
+  #calcPrint .pc-print-note{margin:14px 0 0;color:#616165;font-size:11px}
+}
+
 /* ---------- Bord ---------- */
 .board-bar{display:flex;flex-direction:column;gap:8px}
 .board-bar:empty{display:none}
