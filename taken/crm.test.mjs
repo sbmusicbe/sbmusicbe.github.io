@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const app=readFileSync(new URL('./app.js',import.meta.url),'utf8');
 const crm=readFileSync(new URL('./crm.js',import.meta.url),'utf8');
+const usability=readFileSync(new URL('./usability.js',import.meta.url),'utf8');
 const section=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
 function runtime() {
   const ctx=vm.createContext({console,structuredClone,setTimeout,clearTimeout});
@@ -14,6 +15,7 @@ function runtime() {
     const pad=n=>String(n).padStart(2,'0');
     const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
     const parseYmd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+    const addDays=(s,n)=>{const d=parseYmd(s);d.setDate(d.getDate()+n);return ymd(d);};
     const today=()=> '2026-10-13'; const now=()=>new Date('2026-10-13T12:00:00').getTime();
     const daysBetween=(a,b)=>Math.round((parseYmd(b)-parseYmd(a))/864e5);
     let sequence=0;const uid=()=> 'new-'+(++sequence);
@@ -35,6 +37,12 @@ function runtime() {
     const commentDrafts={},pendingImgs={},pendingHtml=()=>'',imgsHtml=()=>'';
     let undo=null;const commit=()=>{};const toast=(m,fn)=>{undo=fn;};
     ${crm}
+    let view={type:'all'},searchQ='';const viewKey=()=>view.type==='project'?'p:'+view.id:view.type;
+    ${section('function optOf(', '/* ---------------- Task list') }
+    ${section('function viewTasks(', '// Opmerkingen staan')}
+    ${section('function matchSearch(', '// Bij een actieve sortering')}
+    ${section('function sortFn(', "// '', 'today'")}
+    ${usability}
     data=newData();data.projects.push({id:'p',name:'Project P'},{id:'q',name:'Project Q'},{id:'finished',name:'Afgewerkt',finished:true});
     data.stages.push({id:'other',label:'Andere',done:false});
     const makeTask=(id,values={})=>({id,title:id,projectId:'p',stage:'other',done:false,custom:{},createdAt:parseYmd('2026-09-01').getTime(),...values});
@@ -239,4 +247,40 @@ test('task tabs expose three accessible panels with Overview as default',()=>{
 test('existing contact details and task notes remain visible in the new notes tab',()=>{
  const r=runtime();r("data.tasks=[makeTask('a',{notes:'Oude taaknotitie'})];data.activities=[{id:'old',taskId:'a',type:'call',at:now(),outcome:'Interesse',text:'Oud gesprek',nextAction:{type:'quote',date:'2026-10-20',note:'Offerte sturen'}}]");
  const html=r('crmDetailHtml(data.tasks[0])');for(const text of ['Oude taaknotitie','Interesse','Oud gesprek','Offerte sturen','20/10/2026'])assert.ok(html.includes(text));
+});
+
+
+test('daily attention excludes unplanned quotes and deduplicates action deadlines',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:today()}),makeTask('b',{due:today(),nextAction:{type:'call',date:today()}}),makeTask('c',{stage:'mail'}),makeTask('future',{due:'2026-10-20'})]");
+ assert.deepEqual(plain(r('crmAttentionTasks().map(t=>t.id)')),['a','b']);
+ assert.match(r('crmTodayHtml()'),/Vandaag opvolgen/);
+});
+test('customer filters keep archived and completed records available in the right scope',()=>{
+ const r=runtime();r("data.tasks=[makeTask('open'),makeTask('done',{done:true,stage:'positive'}),makeTask('archived',{projectId:'finished'})]");
+ assert.deepEqual(plain(r('crmFilteredTasks().map(t=>t.id)')),['open']);
+ r("crmListFilter().status='done'");assert.deepEqual(plain(r('crmFilteredTasks().map(t=>t.id)')),['done']);
+ r("view={type:'project',id:'finished'}");assert.deepEqual(plain(r('crmFilteredTasks().map(t=>t.id)')),['archived']);
+});
+test('customer search finds legacy conversations and follow-up notes',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')];data.activities=[{taskId:'a',outcome:'Budget ontbreekt',text:'Oud gesprek',nextAction:{note:'Vraag facturatie na'}}]");
+ for(const word of ['budget','gesprek','facturatie']){r(`searchQ='${word}'`);assert.equal(r('crmFilteredTasks().length'),1);}
+ r("searchQ='niet gevonden'");assert.equal(r('crmFilteredTasks().length'),0);
+});
+test('sale form parses Belgian amounts, preserves old fields and supports deliberate clearing',()=>{
+ const r=runtime();const previous={sc_client:'Oude klant',sc_amount:200,legacy:'Bewaren'};
+ const values=plain(r(`crmSaleValues({sc_client:'Nieuwe klant',sc_amount:'1.234,50',sc_date:'2026-10-13',sc_desc:''},${JSON.stringify(previous)})`));
+ assert.equal(values.sc_amount,1234.5);assert.equal(values.legacy,'Bewaren');assert.equal(values.sc_client,'Nieuwe klant');assert.equal(values.sc_desc,undefined);assert.equal(previous.sc_amount,200);
+});
+test('sale validation rejects incomplete new sales and impossible dates without mutation',()=>{
+ const r=runtime();r("const previousSale={sc_client:'Klant',sc_amount:200};");
+ for(const raw of [{sc_client:'Klant',sc_amount:'abc'},{sc_client:'Klant',sc_amount:'100',sc_date:'2026-02-30'},{sc_amount:'100'},{sc_client:'Klant'}])assert.throws(()=>r(`crmSaleValues(${JSON.stringify(raw)},previousSale,true)`));
+ assert.equal(r('previousSale.sc_amount'),200);
+ assert.equal(r("crmSaleValues({sc_client:'Klant',sc_amount:'0'}, {},true).sc_amount"),0);
+ assert.equal(r("crmSaleValues({sc_client:'Annulatie',sc_amount:'-100'}, {},true).sc_amount"),-100);
+});
+
+test('default customer search also finds completed clients without changing the normal open list',()=>{
+ const r=runtime();r("data.tasks=[makeTask('open'),makeTask('closed',{title:'Oude klant',done:true,stage:'positive'})]");
+ assert.equal(r('crmFilteredTasks().length'),1);r("searchQ='Oude klant'");assert.equal(r('crmFilteredTasks()[0].id'),'closed');
+ r("searchQ=''");assert.equal(r('crmFilteredTasks()[0].id'),'open');
 });

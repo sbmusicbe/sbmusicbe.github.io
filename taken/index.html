@@ -34,7 +34,7 @@
   <form id="lockForm" class="lock-card" autocomplete="on">
     <div class="lock-logo"><img class="k-mark k-light" src="klose-k-transparant.svg" alt=""><img class="k-mark k-dark" src="klose-k-licht.svg" alt=""></div>
     <h1 id="lockTitle">Klose</h1>
-    <p class="lock-tag">De CRM voor hardsales.</p>
+    <p class="lock-tag">Je klanten en opvolging op één plek.</p>
     <p id="lockSub" class="muted"></p>
     <input type="text" name="username" autocomplete="username" value="taken" hidden>
     <div id="lockFields"></div>
@@ -62,7 +62,7 @@
     <div class="side-section"><span>Verkopen</span><button id="addSales" class="icon-btn" title="Nieuwe maandpagina" aria-label="Nieuwe maandpagina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
     <nav id="salesNav"></nav>
     <div class="side-foot">
-      <div class="foot-row"><button type="button" class="icon-btn foot-btn" id="openSettings" title="Instellingen" aria-label="Instellingen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button><button type="button" class="icon-btn foot-btn" id="lockNow" title="Vergrendelen" aria-label="Vergrendelen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></button></div>
+      <div class="foot-row"><button type="button" class="icon-btn foot-btn" id="openSettings" title="Instellingen" aria-label="Instellingen"><span>Instellingen</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button><button type="button" class="icon-btn foot-btn" id="lockNow" title="Vergrendelen" aria-label="Vergrendelen"><span>Vergrendelen</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></button></div>
       <button id="syncStatus" type="button"></button>
     </div>
   </aside>
@@ -82,6 +82,7 @@
         <h2 id="viewTitle"></h2>
         <span id="viewSub" class="view-sub"></span>
         <span class="grow"></span>
+        <button type="button" class="btn primary" id="primaryAdd">+ Klant toevoegen</button>
         <button id="editProject" class="icon-btn" title="Project bewerken" aria-label="Project bewerken" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       </header>
       <section id="projCalc" class="pcalc" aria-label="Prijsberekening" hidden></section>
@@ -98,9 +99,9 @@
   <!-- iOS 27: compacte titelbalk, zwevende tabbalk en +-knop (alleen gsm) -->
   <div id="miniBar" aria-hidden="true"><span id="miniTitle"></span></div>
   <nav id="tabBar" aria-label="Hoofdnavigatie"><i class="tb-ind" aria-hidden="true"></i>
-    <button type="button" data-tab="all"><span class="ti"></span><span>Deals</span></button>
+    <button type="button" data-tab="today"><span class="ti"></span><span>Vandaag</span></button>
+    <button type="button" data-tab="all"><span class="ti"></span><span>Klanten</span></button>
     <button type="button" id="tabSlot" data-tab="sales"><span class="ti"></span><span>Verkopen</span></button>
-    <button type="button" data-tab="agenda"><span class="ti"></span><span>Agenda</span></button>
     <button type="button" data-tab="more"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Meer</span></button>
   </nav>
   <button type="button" id="fab" aria-label="Nieuwe deal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -110,6 +111,7 @@
 <div id="toast" hidden></div>
 
 <script src="crm.js"></script>
+<script src="usability.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

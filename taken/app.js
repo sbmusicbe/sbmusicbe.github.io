@@ -918,14 +918,12 @@ function tourSteps() {
   const navBy = rx => [...document.querySelectorAll('#toolNav .nav-item')].find(x => rx.test(x.textContent));
   const hasCalc = !!q('#projCalc:not([hidden])');
   return [
-    {title:'Welkom bij Klose', text:'In een minuut zie je waar alles staat. Je kunt de rondleiding overslaan en later opnieuw bekijken via Instellingen.'},
-    {el:() => mob ? q('#fab') : q('.col-add input'), title:'Een deal maken', text:mob ? 'Tik op + om een deal te maken. Vul de naam in en de rest komt daarna.' : 'Typ onderaan een kolom de naam van een deal en druk op Enter. Schrijf je “morgen 14u” erbij, dan staat de deadline er meteen op. Druk op N om alle gegevens in één keer in te vullen.'},
-    {el:() => q('.board .col') || q('#list'), title:'Stappen', text:'Elke kolom is een stap, bijvoorbeeld Terugbellen of Offerte. Sleep een deal naar de volgende kolom als je verder bent. Klik op een deal om alles te zien en aan te passen.'},
-    ...(!hasCalc ? [] : [{el:() => q('#projCalc'), title:'Prijsberekening', text:'Vul je streefcijfer, je huidige verkoopcijfer en de beschikbare 1/8-ruimtes in. Klose rekent de prijs per formaat voor je uit.'}]),
-    {el:() => q('#topSearch'), title:'Zoeken', text:'Zoek in al je deals op naam, notitie of opmerking. Druk op / om meteen te zoeken.'},
-    ...(!feat('sales') ? [] : [{el:() => mob ? q('#tabBar [data-tab=sales]') : q('#addSales'), title:'Verkopen', text:mob ? 'Houd je verkopen per maand bij en volg je doel op.' : 'Maak hier een pagina per maand om je verkopen bij te houden en je doel op te volgen.'}]),
-    {el:() => mob ? q('#tabBar [data-tab=more]') : q('#openSettings'), title:'Instellingen', text:'Alle opties staan op één plek: sorteren, stappen, extra gegevens, thema, back-up en beveiliging.'},
-    {title:'Klaar om te beginnen', text:'Maak je eerste deal aan en kijk hoe het werkt. Hulp nodig? Open Instellingen en kies Rondleiding bekijken.'},
+    {title:'Welkom bij Klose',text:'Je klanten, opvolging en verkopen op één plek. Dit zijn de belangrijkste stappen.'},
+    {el:()=>q('#primaryAdd'),title:'Klant toevoegen',text:'Klik op Klant toevoegen. Vul de naam in en bevestig. Je kunt contactgegevens later aanvullen.'},
+    {el:()=>mob?q('#tabBar [data-tab=today]'):navBy(/Vandaag/),title:'Wat doe ik vandaag?',text:'Open Vandaag voor klanten die je nu moet opvolgen. Open een klant om te bellen, te mailen of een notitie te bewaren.'},
+    {el:()=>mob?q('#tabBar [data-tab=all]'):navBy(/Klanten/),title:'Je klanten terugvinden',text:'Open Klanten. Je ziet een lijst met naam, status en opvolgdatum. Met het zoekveld vind je een klant snel terug.'},
+    {el:()=>q('#topHelp'),title:'Hulp is dichtbij',text:'Bij Hulp vind je korte uitleg. Instellingen en Back-ups staan in het menu.'},
+    {title:'Aan de slag',text:'Begin met een klant. In het klantpaneel staan Overzicht, Notities en Gegevens.'},
   ];
 }
 let tourOn = false;
@@ -979,7 +977,7 @@ function askFeatures() {
   return new Promise(resolve => {
     showDialog(`<h3>Waarvoor gebruik je Klose?</h3>
       <p class="muted small">Kies wat je nodig hebt. De rest blijft verborgen zodat het overzichtelijk blijft. Je kunt dit altijd aanpassen onder Instellingen.</p>
-      <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Deals</b><small>Je deals met deadline, notities en opmerkingen</small></span></label>${featureChecks({})}</div>
+      <div class="feat-list"><label class="feat"><input type="checkbox" checked disabled><span><b>Klanten en taken</b><small>Klanten opvolgen en gesprekken bewaren</small></span></label>${featureChecks({})}</div>
       <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="ftOk">Verder</button></div>`, d => {
       dlg.dataset.sticky = '1';
       d.addEventListener('cancel', e => e.preventDefault(), {once:true});
@@ -1057,12 +1055,12 @@ async function lock() {
 let view = {type:'all'};
 let selectedId = null;
 let searchQ = '';
-const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Alle deals']];
+const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Klanten']];
 const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === 'sales' ? 's:' + view.id : view.type;
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
   // weergave en sortering staan centraal in de instellingen; er is alleen nog een bord
-  return {group:'stage', showDone:false, ...saved, sort:data.settings.sort || 'manual', ff:'', fv:'', layout:'board'};
+  return {group:'stage', showDone:false, ...saved, sort:crmListFilter().sort, ff:'', fv:'', layout:data.settings.taskLayout || 'list'};
 }
 function setView(v) {
   const same = v.type === view.type && v.id === view.id;
@@ -1082,7 +1080,7 @@ function setView(v) {
 }
 function viewTitle() {
   if (view.type === 'today') return 'Vandaag doen';
-  if (view.type === 'dashboard') return 'Verkoopdashboard';
+  if (view.type === 'dashboard') return 'Verkoopresultaten';
   if (view.type === 'project') return proj(view.id).name;
   if (view.type === 'agenda') return 'Agenda';
   if (view.type === 'btw') return 'BTW';
@@ -1161,7 +1159,8 @@ function matchSearch(t, q) {
   if (!q) return true;
   q = q.toLowerCase();
   if (t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q)) return true;
-  if (data.comments.some(c => c.taskId === t.id && c.text.toLowerCase().includes(q))) return true;
+  if (data.comments.some(c => c.taskId === t.id && String(c.text || '').toLowerCase().includes(q))) return true;
+  if (data.activities.some(c=>c.taskId===t.id && [c.text,c.outcome,c.nextAction?.note].some(v=>String(v || '').toLowerCase().includes(q))))return true;
   return data.fields.some(f => displayValue(f, t.custom[f.id]).toLowerCase().includes(q));
 }
 // Bij een actieve sortering staan deals zonder deadline altijd bovenaan; de eigen (sleep)volgorde blijft zoals ze is
@@ -1239,7 +1238,7 @@ let tbOpen = false;
 const DONE_LIMIT = 30, COL_LIMIT = 60;
 function renderBoard() {
   const p = prefs();
-  const all = viewTasks(true).filter(t => matchSearch(t, searchQ));
+  const all = crmFilteredTasks();
   const sorter = taskSorter(p.sort), plainSorter = sortFn(p.sort);
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
@@ -1306,8 +1305,9 @@ function setHiddenCols(ids) {
 function renderMain() {
   if (view.type === 'sales' || isPageView()) return;
   $('.main-inner').classList.add('wide');
-  $('#app').classList.add('board-mode');
-  renderBoard();
+  const board = (data.settings.taskLayout || 'list') === 'board';
+  $('#app').classList.toggle('board-mode', board);
+  if (board) renderBoard(); else $('#list').innerHTML = crmCustomerListHtml();
 }
 
 /* ---------------- Sidebar / header / toolbar ---------------- */
@@ -1349,7 +1349,7 @@ function renderNav() {
       + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
-  $('#toolNav').innerHTML = [['today', 'Vandaag doen', I.today, new Set(Object.values(crmDayGroups()).slice(0,4).flat().map(t => t.id)).size || ''], ['all', 'Alle deals', I.all, open.length || ''], ['dashboard', 'Dashboard', I.sales, ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
+  $('#toolNav').innerHTML = [['today', 'Vandaag doen', I.today, crmAttentionTasks().length || ''], ['all', 'Klanten', I.all, open.length || ''], ['dashboard', 'Resultaten', I.sales, ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
     .filter(([k]) => !VIEW_FEATURE[k] || feat(VIEW_FEATURE[k]))
     .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
   const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
@@ -1358,12 +1358,12 @@ function renderNav() {
 }
 function viewSubtitle() {
   const t = view.type;
-  if (t === 'today') return 'Opvolgacties, deadlines en offertes op één plek.';
-  if (t === 'dashboard') return 'Omzet, conversie en resultaten per project.';
+  if (t === 'today') return 'Je klanten die vandaag aandacht nodig hebben.';
+  if (t === 'dashboard') return 'Je omzet en resultaten per project.';
   if (['all', 'project', 'inbox', 'today', 'upcoming'].includes(t)) {
     const open = viewTasks(false).filter(x => !x.done), late = open.filter(x => x.due && x.due < today()).length;
-    if (!open.length) return 'Geen open deals.';
-    return `${open.length} open ${open.length === 1 ? 'deal' : 'deals'}${late ? ` · ${late} te laat` : ''}`;
+    if (!open.length) return 'Geen klanten om op te volgen.';
+    return `${open.length} ${open.length === 1 ? 'klant' : 'klanten'} om op te volgen${late ? ` · ${late} te laat` : ''}`;
   }
   if (t === 'btw') return 'Reken een bedrag om van of naar inclusief btw.';
   if (t === 'agenda') { const n = eventsSoon(); return n ? `${n} ${n === 1 ? 'datum' : 'data'} de komende 7 dagen` : 'Niets gepland de komende 7 dagen.'; }
@@ -1374,7 +1374,7 @@ function renderWelcome() {
   const el = $('#banner'); if (!el) return;
   const empty = !data.tasks.length && view.type === 'all';
   el.hidden = !empty;
-  el.innerHTML = empty ? '<span><b>Nog geen deals.</b> Voeg je eerste deal toe. Je kunt er daarna een deadline of opmerkingen aan toevoegen.</span><button type="button" class="btn primary" data-qa>+ Eerste deal toevoegen</button>' : '';
+  el.innerHTML = empty ? '<span><b>Nog geen klanten.</b> Begin met een naam. Daarna kun je contactgegevens en notities aanvullen.</span><button type="button" class="btn primary" data-qa>+ Eerste klant toevoegen</button>' : '';
 }
 function renderHead() {
   renderWelcome();
@@ -1393,11 +1393,11 @@ function renderHead() {
   document.title = 'Klose';   // nooit projectnamen in de tabnaam (browsergeschiedenis, schermdelen)
   $('#tbTitle').textContent = `${viewTitle()} — Klose`;
   $('#miniTitle').textContent = viewTitle();
+  const add=$('#primaryAdd');add.hidden=['btw','dashboard'].includes(view.type);add.textContent=view.type==='sales'?'+ Verkoop toevoegen':view.type==='agenda'?'+ Datum toevoegen':'+ Klant toevoegen';
 }
 function renderToolbar() {
-  // de werkbalk is weg (opties staan in de instellingen); alleen het zoekveld verschijnt, na een tik op de zoekknop
-  $('#toolbar').classList.toggle('open', tbOpen || !!searchQ);
-  $('#toolbar').innerHTML = `<input class="search" id="tbSearch" type="search" placeholder="Zoek in je deals…" value="${esc(searchQ)}" aria-label="Zoeken" autocomplete="off">`;
+  $('#toolbar').classList.add('open');
+  $('#toolbar').innerHTML = crmToolbarHtml();
 }
 function placeTabIndicator() {
   const on = $('#tabBar button.on'), ind = $('#tabBar .tb-ind');
@@ -1408,14 +1408,10 @@ function placeTabIndicator() {
 }
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
-  const t = view.type === 'today' ? (feat('sales') ? 'more' : 'today') : view.type === 'sales' ? 'sales' : view.type === 'agenda' ? 'agenda' : ['btw','dashboard'].includes(view.type) ? 'more' : 'all';
-  const slot = $('#tabSlot'), sOn = feat('sales');
-  slot.dataset.tab = sOn ? 'sales' : 'today'; slot.querySelector('.ti').innerHTML = sOn ? I.sales : I.today; slot.lastElementChild.textContent = sOn ? 'Verkopen' : 'Vandaag';
-  $('#tabBar [data-tab="agenda"]').hidden = !feat('agenda');
-  $$('#tabBar [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  placeTabIndicator();
-  $('#fab').setAttribute('aria-label', view.type === 'sales' ? 'Verkoop toevoegen' : view.type === 'agenda' ? 'Datum toevoegen' : 'Nieuwe deal');
-  $('#fab').hidden = view.type === 'btw';
+  const type=view.type==='today'?'today':view.type==='sales'?'sales':view.type==='agenda'?'agenda':['btw','dashboard'].includes(view.type)?'more':'all';
+  const slot=$('#tabSlot'),sales=feat('sales');slot.dataset.tab=sales?'sales':'agenda';slot.querySelector('.ti').innerHTML=sales?I.sales:I.agenda;slot.lastElementChild.textContent=sales?'Verkopen':'Agenda';slot.hidden=!sales && !feat('agenda');
+  $$('#tabBar [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===type));placeTabIndicator();
+  $('#fab').hidden = true;
 }
 function renderAll() {
   if (!data) return;
@@ -1509,7 +1505,7 @@ function createTask(r, stage, top) {
   const projectId = r.projectId || (view.type === 'project' ? view.id : 'inbox');
   const t = touch({
     id:uid(), title:r.title, notes:'', projectId,
-    due:r.due || (view.type === 'today' ? today() : null), time:r.time || null,
+    due:r.noDefaultDue ? r.due || null : r.due || (view.type === 'today' ? today() : null), time:r.time || null,
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
     createdAt:now(), crmActivityAt:now(), order:now(), custom:r.custom,
   });
@@ -1651,11 +1647,10 @@ function renderDetail(force) {
     </div>
     <div class="d-body">
       <div class="d-title-row">
-        <button class="check ${t.done ? 'on' : ''}" data-act="toggle" aria-label="Voltooien">${I.check}</button>
-        <textarea id="dTitle" rows="1" aria-label="Titel">${esc(t.title)}</textarea>
+        <textarea id="dTitle" rows="1" aria-label="Naam van klant of taak">${esc(t.title)}</textarea>
       </div>
       <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
-      <select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select>
+      <label class="crm-status-label">Status<select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label><p class="crm-autosave-note">Wijzigingen worden automatisch bewaard.</p>
       ${crmTabsHtml(t)}
       <section id="crmPanel-overview" role="tabpanel" aria-labelledby="crmTab-overview" data-crm-panel="overview" ${crmDetailTabs[t.id] && crmDetailTabs[t.id]!=='overview' ? 'hidden' : ''}>
       ${crmFocusHtml(t)}
@@ -1673,7 +1668,7 @@ function renderDetail(force) {
         <div class="d-sec"><span>Extra gegevens</span><button class="link" data-act="fields">Extra gegevens beheren</button></div>
         <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
           `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
-        <div class="crm-focus-danger"><button type="button" class="btn danger" data-act="deletetask">Deal verwijderen</button><p class="muted small">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}</p></div>
+        <div class="crm-focus-danger"><button type="button" class="btn danger" data-act="deletetask">Klant verwijderen</button><p class="muted small">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}</p></div>
       </section>
     </div>`;
   autosize($('#dTitle'));
@@ -2209,16 +2204,13 @@ function openProjectDialog(p) {
   const fs = sortedFields();
   showDialog(`
     <h3>${isNew ? 'Nieuw project' : 'Project bewerken'}</h3>
-    <div class="pj-row">
-      <label class="fl pj-emo">Icoon<input id="pjEmoji" type="text" value="${esc(p?.emoji || '')}" maxlength="8" placeholder="🙂" aria-label="Emoji (optioneel)"></label>
-      <label class="fl grow">Naam<input id="pjName" type="text" value="${esc(p?.name || '')}" ${isInbox ? 'disabled' : 'autofocus'} placeholder="bv. Werk, Gigs, Thuis"></label>
-    </div>
-    <p class="muted small" style="margin:6px 0 0">Icoon is optioneel: plak of kies een emoji (Windows: <b>Win + .</b>, Mac: <b>Ctrl + Cmd + Spatie</b>).</p>
-    <div class="fl">Kleur<div class="swatches">${COLORS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="--c:${c}" data-c="${c}" aria-label="Kleur ${c}"></button>`).join('')}</div></div>
-    <div class="fl">Extra gegevens in dit project
+    <label class="fl">Naam<input id="pjName" type="text" value="${esc(p?.name || '')}" ${isInbox ? 'disabled' : 'autofocus'} placeholder="bv. B&W Diksmuide"></label>
+    <details class="crm-form-extra"><summary>Kleur en icoon kiezen (optioneel)</summary><label class="fl">Icoon<input id="pjEmoji" type="text" value="${esc(p?.emoji || '')}" maxlength="8" placeholder="Je kunt dit leeg laten"></label>
+    <div class="fl">Kleur<div class="swatches">${COLORS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="--c:${c}" data-c="${c}" aria-label="Kleur ${c}"></button>`).join('')}</div></div></details>
+    <details class="crm-form-extra"><summary>Gegevensvelden kiezen (optioneel)</summary><div class="fl">Extra gegevens in dit project
       ${fs.length ? `<div class="checks">${fs.map(f => `<label class="chk"><input type="checkbox" data-f="${f.id}" ${f.all || (p && f.projectIds.includes(p.id)) ? 'checked' : ''} ${f.all ? 'disabled' : ''}> ${esc(f.name)} <span class="muted small">${TYPES[f.type]}${f.all ? ' · in alle projecten' : ''}</span></label>`).join('')}</div>` : ''}
       <div style="margin-top:8px;font-weight:400"><button type="button" class="link" id="pjNewField">+ Extra gegeven toevoegen</button></div>
-    </div>
+    </div></details>
     <div class="dlg-actions">
       ${p && !isInbox ? `<button type="button" class="btn danger" id="pjDel">Verwijderen</button><button type="button" class="btn" id="pjFin">${p.finished ? 'Heropenen' : 'Afwerken'}</button>` : ''}
       <span class="grow"></span>
@@ -2487,7 +2479,7 @@ function holdToConfirm(btn, onDone, ms = 1100) {
 let settingsTab = 'algemeen';
 function openSettings() {
   const s = data.settings.sync;
-  const tabs = [['algemeen', 'Algemeen'], ['account', 'Account'], ['deals', 'Deals'], ['verkopen', 'Verkopen'], ['beveiliging', 'Beveiliging'], ['gegevens', 'Gegevens']].filter(([k]) => k !== 'verkopen' || feat('sales'));
+  const tabs = [['algemeen', 'Algemeen'], ['account', 'Account'], ['deals', 'Klanten'], ['verkopen', 'Verkopen'], ['beveiliging', 'Beveiliging'], ['gegevens', 'Back-ups']].filter(([k]) => k !== 'verkopen' || feat('sales'));
   const row = (title, desc, ctl) => `<div class="st-row"><div class="st-t"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</div><div class="st-c">${ctl}</div></div>`;
   const go = (id, label = 'Beheren') => `<button type="button" class="btn st-go" id="${id}">${label}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`;
   const sel = (id, opts, cur) => `<select id="${id}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
@@ -2526,10 +2518,10 @@ function openSettings() {
       </div>`}
         </section>
         <section data-pane="deals" role="tabpanel" hidden>
-          <h2>Deals</h2><p class="st-lead">Zo zien je pijplijn en je deals eruit.</p>
+          <h2>Klanten</h2><p class="st-lead">De statussen en gegevens bij je klanten.</p>
           <div class="st-card">
-            ${row('Sorteren in een kolom', 'Geldt voor alle projecten.', sel('stSort', sortOpts, data.settings.sort || 'manual'))}
-            ${row('Stappen', 'De kolommen van je pijplijn: namen, kleuren en volgorde.', go('stStages'))}
+            ${row('Standaardvolgorde', 'Geldt voor klantenlijsten en kolommen.', sel('stSort', sortOpts, data.settings.sort || 'due'))}
+            ${row('Stappen', 'Namen, kleuren en volgorde van je statussen.', go('stStages'))}
             ${row('Extra gegevens', 'Velden zoals formaat, telefoonnummer of kortingsprijs.', go('stFields'))}
           </div>
           <p class="st-note">De prijsberekening staat bij elk project en past zich aan wat je daar invult.</p>
@@ -2552,7 +2544,7 @@ function openSettings() {
       <button type="button" class="btn" id="stPwSave">Wachtwoord wijzigen</button>          </div>
         </section>
         <section data-pane="gegevens" role="tabpanel" hidden>
-          <h2>Gegevens</h2><p class="st-lead">Back-ups en wat er op dit toestel staat.</p>
+          <h2>Back-ups</h2><p class="st-lead">Een kopie bewaren of een eerdere kopie terugzetten.</p>
           <h4>Back-up</h4>
           <div class="st-card">
             ${row('Back-up maken', 'Een versleuteld bestand met al je gegevens.', '<button type="button" class="btn" id="stExpEnc">Maken</button>')}
@@ -2570,7 +2562,7 @@ function openSettings() {
     showTab(tabs.some(([k]) => k === settingsTab) ? settingsTab : 'algemeen');
     $('#stTheme', d).onchange = e => { if (e.target.value === 'auto') { delete document.documentElement.dataset.theme; try { localStorage.removeItem('taken.theme'); } catch {} paintThemeColor(); } else setTheme(e.target.value); };
     $('#stKeys', d).onclick = () => openShortcutsDialog();
-    $('#stSort', d).onchange = e => { data.settings.sort = e.target.value; commit(); };
+    $('#stSort', d).onchange = e => { data.settings.sort = e.target.value;for(const filter of Object.values(crmListFilters))filter.sort=e.target.value;commit(); };
     $('#stStages', d).onclick = () => openStagesDialog();
     $('#stFields', d).onclick = () => openFieldsDialog();
     $('#stSalesCols', d)?.addEventListener('click', () => openSalesColsDialog());
@@ -2911,23 +2903,25 @@ function renderSales(force) {
   const target = toNum(pg.target), main = moneyCols[0] ? tot.per[moneyCols[0].id] : 0;
   const pct = target ? Math.round(main / target * 100) : 0;
   el.innerHTML = `
+    ${crmSalesToolsHtml(pg)}
     <section class="pcalc sp-card">
     <div class="sales-head">
       ${moneyCols.map(c => `<div class="sales-stat"><span>${esc(c.name)} totaal</span><b data-total="${c.id}">${eur(tot.per[c.id])}</b></div>`).join('')}
       ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
-      <div class="sales-stat count"><span>Aantal regels</span><b data-count>${rows.length}</b></div>
+      <div class="sales-stat count"><span>Aantal verkopen</span><b data-count>${rows.length}</b></div>
       <span class="grow"></span>
     </div>
-    <div id="spPace">${paceHtml(pg, main)}</div>
-    <div id="spPay">${payHtml(pg, main)}</div>
+    ${target?`<details class="crm-optional" data-crm-disclosure="pace:${esc(pg.id)}" ${crmMoreOpen['pace:'+pg.id]?'open':''}><summary>Voortgang en dagdoel bekijken</summary><div id="spPace">${paceHtml(pg, main)}</div></details>`:'<div id="spPace"></div>'}
+    <details class="crm-optional" data-crm-disclosure="pay:${esc(pg.id)}" ${crmMoreOpen['pay:'+pg.id]?'open':''}><summary>Commissie en bonus bekijken</summary><div id="spPay">${payHtml(pg, main)}</div></details>
     </section>
-    <button type="button" class="btn primary" id="spAdd" style="margin-bottom:12px">+ Verkoop toevoegen</button>
-    <div class="table-wrap"><table class="sales ${grouped ? 'grouped' : ''}">
+    <p class="crm-screen-help">${crmSalesLayout==='table'?'Je wijzigingen in de tabel worden automatisch bewaard.':'Je verkopen staan hieronder. Klik op Bewerken om iets aan te passen.'}</p>
+    ${crmSalesLayout==='list'?crmSalesListHtml(pg,rows,cols):''}
+    <div class="table-wrap" ${crmSalesLayout==='list'?'hidden':''}><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
-      <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Voeg ze toe, of plak je notities via ⋯ bovenaan.</td></tr>`}</tbody>
+      <tbody>${body || `<tr class="empty-row"><td colspan="${span}">Nog geen verkopen deze maand. Klik op Verkoop toevoegen.</td></tr>`}</tbody>
       <tfoot><tr>${cols.map((c, i) => `<td class="t-${c.type}" data-foot="${c.id}">${c.type === 'money' ? eur(tot.per[c.id]) : c.type === 'number' ? numFmt.format(tot.per[c.id]) : i === 0 ? 'Totaal' : ''}</td>`).join('')}<td></td></tr></tfoot>
     </table></div>
-    <label class="fl" style="margin-top:26px">Notities<textarea id="spNotes" rows="3" placeholder="Doelen, opmerkingen…">${esc(pg.notes || '')}</textarea></label>`;
+    <details class="crm-optional" data-crm-disclosure="notes:${esc(pg.id)}" ${crmMoreOpen['notes:'+pg.id]?'open':''}><summary>Maandnotities${pg.notes?' · ingevuld':''}</summary><label class="fl">Notities<textarea id="spNotes" rows="3" placeholder="Doelen, opmerkingen…">${esc(pg.notes || '')}</textarea></label><p class="muted">Wordt automatisch bewaard.</p></details>`;
   if (focusedNotes) { const n = $('#spNotes'); n.focus(); n.selectionStart = n.selectionEnd = n.value.length; }
   if (focusCell) $(`tr[data-row="${focusCell.row}"] .cell[data-col="${focusCell.col}"]`)?.focus();
   autosize($('#spNotes'));
@@ -3017,21 +3011,7 @@ document.addEventListener('pointerdown', e => { if (fmtPop && !fmtPop.contains(e
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && fmtPop) { e.stopPropagation(); closeFormatPop(); } }, true);
 for (const t of [$('#main'), window]) t.addEventListener('scroll', () => fmtPop?.place(), {passive:true, capture:true});
 addEventListener('resize', () => fmtPop?.place());
-function addSalesRow() {
-  const pg = salesPageById(view.id); if (!pg) return;
-  const r = touch({id:uid(), pageId:pg.id, order:now(), values:{}});
-  const dateCol = salesCols().find(c => c.type === 'date');
-  if (dateCol) {
-    const last = salesRows(pg.id).map(x => x.values[dateCol.id]).filter(Boolean).sort().pop();
-    r.values[dateCol.id] = pg.month && today().startsWith(pg.month) ? today() : last || '';
-  }
-  const qtyCol = salesCols().find(c => c.type === 'number' && /aantal|stuks|#/i.test(c.name));   // een nieuwe verkoop is standaard 1 stuk
-  if (qtyCol) r.values[qtyCol.id] = 1;
-  data.sales.push(r);
-  save(); renderNav(); renderSales(true);
-  const first = $(`tr[data-row="${r.id}"] input:not([type=date])`) || $(`tr[data-row="${r.id}"] input`);
-  first?.focus();
-}
+function addSalesRow() { crmOpenSaleEditor(); }
 const sp = $('#salesPage');
 sp.addEventListener('input', e => {
   const pg = salesPageById(view.id); if (!pg) return;
@@ -3108,12 +3088,12 @@ function openSalesPageDialog(pg) {
   const n = pg ? salesRows(pg.id).length : 0;
   let titleTouched = !!pg;
   showDialog(`
-    <h3>${isNew ? 'Nieuwe maandpagina' : 'Pagina bewerken'}</h3>
+    <h3>${isNew ? 'Verkoopmaand toevoegen' : 'Verkoopmaand bewerken'}</h3>
     <label class="fl">Maand<input id="pgMonth" type="month" value="${esc(month || '')}"></label>
     <label class="fl">Titel<input id="pgTitle" type="text" value="${esc(pg?.title || (month ? monthTitle(month) : ''))}"></label>
     <label class="fl">Doelstelling (€) <span class="muted">(optioneel)</span><input id="pgTarget" type="text" inputmode="decimal" value="${esc(pg?.target ? moneyFmt.format(pg.target) : '')}" placeholder="bv. 13.881,21"></label>
-    <label class="fl">Werkdagen <span class="muted" id="pgWorkHint">(leeg = automatisch${month ? ': ' + workdaysOf(month).length : ''})</span><input id="pgWork" type="number" inputmode="numeric" min="1" max="31" value="${esc(pg?.workdays || '')}" placeholder="automatisch"></label>
-    <p class="muted small" style="margin:6px 0 0">Automatisch = maandag tot vrijdag, zonder Belgische feestdagen.</p>
+    <details class="crm-form-extra"><summary>Werkdagen aanpassen (optioneel)</summary><label class="fl">Werkdagen <span class="muted" id="pgWorkHint">(leeg = automatisch${month ? ': ' + workdaysOf(month).length : ''})</span><input id="pgWork" type="number" inputmode="numeric" min="1" max="31" value="${esc(pg?.workdays || '')}" placeholder="automatisch"></label>
+    <p class="muted small" style="margin:6px 0 0">Automatisch = maandag tot vrijdag, zonder Belgische feestdagen.</p></details>
     <div class="dlg-actions">
       ${pg ? `<button type="button" class="btn danger" id="pgDel">Verwijderen</button>` : ''}
       <span class="grow"></span>
@@ -3379,7 +3359,7 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
 });
 $('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
 
-$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Alle deals'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView({type:'all'}); });
+$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Vandaag'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView({type:'today'}); });
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#salesNav').addEventListener('click', e => { const b = e.target.closest('[data-sales]'); if (b) setView({type:'sales', id:b.dataset.sales}); });
@@ -3411,17 +3391,13 @@ $('#tabBar').addEventListener('click', e => {
   if (t === 'more') { $('#app').classList.add('side-open'); return; }
   if (t === 'sales') {
     const pg = sortedSalesPages()[0];
-    if (pg) setView({type:'sales', id:pg.id}); else { $('#app').classList.add('side-open'); toast('Maak eerst een maandpagina onder Verkopen'); }
+    if (pg) setView({type:'sales', id:pg.id}); else { $('#app').classList.add('side-open'); openSalesPageDialog(null); }
     return;
   }
   setView({type:t});
 });
 // Nieuwe deal: meteen een deal aanmaken en het paneel openen met de titel geselecteerd (de aparte invoerbalk is weg)
-function newDealNow() {
-  const t = createTask({title:'Nieuwe deal', custom:{}, silent:true});
-  openTask(t.id);
-  setTimeout(() => { const el = $('#dTitle'); if (el) { el.focus(); el.select(); } }, 80);
-}
+function newDealNow() { crmOpenNewCustomer(); }
 
 document.addEventListener('click', e => { if (e.target.closest('[data-qa]')) newDealNow(); });
 $('#fab').addEventListener('click', () => {
@@ -3650,10 +3626,12 @@ $('#topHelp').onclick = () => openHelp();
 function openHelp() {
   showDialog(`<h3>Hulp</h3>
     <ul class="help-list">
-      <li><b>Een deal maken</b><span>Typ onderaan een kolom de naam en druk op Enter, of druk op N voor alle velden.</span></li>
-      <li><b>Een deadline instellen</b><span>Typ het erbij: “Jan bellen morgen 14u” zet de deal op morgen om 14:00.</span></li>
-      <li><b>Verder in het proces</b><span>Sleep de deal naar de volgende stap, of kies de stap in het dealpaneel.</span></li>
-      <li><b>Een deal afronden</b><span>Klik op het rondje links van de deal.</span></li>
+      <li><b>Wat doe ik vandaag?</b><span>Open Vandaag. Klik op de klant die je wilt opvolgen.</span></li>
+      <li><b>Een klant toevoegen</b><span>Klik op Klant toevoegen, vul de naam in en bevestig. De rest kun je later aanvullen.</span></li>
+      <li><b>Een klant zoeken</b><span>Open Klanten en typ de naam, het telefoonnummer of een notitie in het zoekveld.</span></li>
+      <li><b>Een gesprek bewaren</b><span>Open een klant en klik op Notitie toevoegen. Schrijf wat er besproken is en klik op Notitie bewaren.</span></li>
+      <li><b>Opvolging plannen</b><span>Kies bij de klant een datum voor de volgende stap. Terugbellen en offerte opvolgen gebruiken diezelfde deadline.</span></li>
+      <li><b>Een verkoop bewaren</b><span>Open Verkopen en klik op Verkoop toevoegen. Bij een gewonnen klant verschijnt de verkoop automatisch.</span></li>
     </ul>
     <div class="dlg-actions"><button type="button" class="btn" id="hpTour">Rondleiding bekijken</button><button type="button" class="btn" id="hpKeys">Sneltoetsen</button><span class="grow"></span><button type="button" class="btn primary" id="hpClose">Sluiten</button></div>`, d => {
     $('#hpClose', d).onclick = () => dlg.close();
@@ -3675,8 +3653,8 @@ function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbS
 
 function openShortcutsDialog() {
   const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
-  const rows = [['N of Q', 'Nieuwe kaart'], [k + ' K', 'Nieuwe kaart (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
-    [k + ' 1', 'Alle deals'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
+  const rows = [['N of Q', 'Klant toevoegen'], [k + ' K', 'Klant toevoegen (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
+    [k + ' 1', 'Klanten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
     ['Delete', 'Open kaart verwijderen'], ['Esc', 'Sluiten'], ['Rechtsklik', 'Snelmenu op kaarten, projecten en pagina’s'], ['?', 'Deze lijst']];
   showDialog(`<h3>Sneltoetsen</h3><div class="kbd-list">${rows.map(([a, b]) => `<div><span>${esc(b)}</span><span>${a.split(' ').map(x => x === '…' || x === 'of' ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="kbOk">Sluiten</button></div>`, d => { $('#kbOk', d).onclick = () => dlg.close(); });
@@ -3816,7 +3794,7 @@ function renderCalc() {
   if (p.calc.target === undefined) { p.calc = {...p.calc,target:p.calc.togo || '', current:p.calc.current || '', pk:p.calc.pk || ''}; touch(p); save(true); }
   if (el.dataset.pid === p.id && el.contains(document.activeElement)) { $('.pc-out', el).innerHTML = calcOut(p.calc); $('.pc-togo', el).innerHTML = calcTogoHtml(p.calc); return; }
   el.dataset.pid = p.id;
-  el.innerHTML = `<div class="pc-row">
+  el.innerHTML = `<details class="crm-price-details" data-crm-disclosure="calc:${esc(p.id)}" ${crmMoreOpen['calc:'+p.id]?'open':''}><summary>Prijsberekening <span data-crm-price-preview>${calcPrices(p.calc)[3][1]===null?'Open om prijzen te berekenen':'1/8 · € '+calcNum(calcPrices(p.calc)[3][1])}</span></summary><div class="pc-row">
       <span class="pc-title">Prijsberekening</span>
       <div class="pc-fields">
         <label class="fl">Streef (€)<input id="pcTarget" type="text" inputmode="decimal" value="${esc(p.calc.target || '')}" placeholder="13.000" autocomplete="off"></label>
@@ -3827,13 +3805,13 @@ function renderCalc() {
       <button type="button" class="btn" id="pcCopy" title="Kopieer als lijst">Kopieer</button>
       <button type="button" class="btn" id="pcPrint" title="Afdrukken of bewaren als PDF">Afdrukken</button>
     </div>
-    <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul>
-`;
+    <ul class="pc-out" aria-label="Prijs per formaat">${calcOut(p.calc)}</ul></details>`;
 }
 $('#projCalc').addEventListener('input', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
   if (e.target.id === 'pcTarget') p.calc.target = e.target.value; else if (e.target.id === 'pcCur') p.calc.current = e.target.value; else if (e.target.id === 'pcPk') p.calc.pk = e.target.value; else return;
   touch(p); save(true); $('#projCalc .pc-out').innerHTML = calcOut(p.calc); $('#projCalc .pc-togo').innerHTML = calcTogoHtml(p.calc);
+  const preview=$('[data-crm-price-preview]');if(preview)preview.textContent=calcPrices(p.calc)[3][1]===null?'Open om prijzen te berekenen':'1/8 · € '+calcNum(calcPrices(p.calc)[3][1]);
 });
 $('#projCalc').addEventListener('click', e => {
   const p = data.projects.find(x => x.id === view.id); if (!p?.calc) return;
@@ -4014,7 +3992,7 @@ function agendaHtml() {
       <button type="button" class="btn" data-amonth="0">Vandaag</button>
       <span class="legend ag-legend">${EV_TYPES.map(([k, l]) => `<span><i class="lg-ev ev-${k}"></i>${l}</span>`).join('')}</span>
       <span class="grow"></span>
-      <button type="button" class="btn primary" id="evNew">+ Drukdatum</button>
+      <button type="button" class="btn primary" id="evNew">+ Datum toevoegen</button>
     </div>
     <div class="ag-wrap">
       <div class="ag-cal pg-card">
@@ -4023,7 +4001,7 @@ function agendaHtml() {
       </div>
       <aside class="ag-side">
         ${selList ? `<section class="pg-card"><h3>${cap(dayLabel(agendaSel))}<span class="grow"></span><button type="button" class="btn" data-newon="${agendaSel}">+ Toevoegen</button></h3>${selList.length ? `<ul class="pg-list ag-list">${selList.map(row).join('')}</ul>` : '<p class="muted small">Niets gepland op deze dag.</p>'}</section>` : ''}
-        <section class="pg-card"><h3>Komende data</h3>${soon.length ? `<ul class="pg-list ag-list">${soon.map(row).join('')}</ul>` : '<p class="muted small">Nog geen drukdata. Klik op een dag in de kalender of op “+ Drukdatum”.</p>'}</section>
+        <section class="pg-card"><h3>Komende data</h3>${soon.length ? `<ul class="pg-list ag-list">${soon.map(row).join('')}</ul>` : '<p class="muted small">Nog niets gepland. Klik op Datum toevoegen of kies een dag in de kalender.</p>'}</section>
       </aside>
     </div>`;
 }
@@ -4032,14 +4010,6 @@ function openEventDialog(ev, date) {
   const st = {date:ev?.date || date || today(), month:(ev?.date || date || today()).slice(0, 7), type:ev?.type || 'druk'};
   const eds = [];
   const projs = sortedProjects().filter(p => p.id !== 'inbox');
-  const mini = () => {
-    const [y, mo] = st.month.split('-').map(Number), first = new Date(y, mo - 1, 1), start = new Date(first); start.setDate(1 - (first.getDay() + 6) % 7);
-    let h = `<div class="dp-head"><button type="button" class="icon-btn" data-mnav="-1" aria-label="Vorige maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><b>${cap(MONTHS_LONG[mo - 1])} ${y}</b><button type="button" class="icon-btn" data-mnav="1" aria-label="Volgende maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="dp-grid">`;
-    h += ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map(d => `<span class="dp-wd">${d}</span>`).join('');
-    for (let i = 0; i < 42; i++) { const d = new Date(start); d.setDate(start.getDate() + i); const k = ymd(d);
-      h += `<button type="button" data-mdate="${k}" class="${k.slice(0, 7) !== st.month ? 'out ' : ''}${k === today() ? 'today ' : ''}${k === st.date ? 'sel ' : ''}${d.getDay() % 6 === 0 ? 'we' : ''}">${d.getDate()}</button>`; }
-    return h + '</div>';
-  };
   showDialog(`
     <h3>${isNew ? 'Nieuwe datum in de agenda' : 'Agenda-item bewerken'}</h3>
     <div class="seg ev-types" role="group" aria-label="Soort">${EV_TYPES.map(([k, l]) => `<button type="button" data-etype="${k}" class="${st.type === k ? 'on' : ''}">${l}</button>`).join('')}</div>
@@ -4048,10 +4018,9 @@ function openEventDialog(ev, date) {
       <label class="fl">Uitgave<input id="evEd" type="text" list="evEds" value="${esc(ev?.edition || '')}" placeholder="bv. Kempen Info" autocomplete="off"><datalist id="evEds">${eds.map(e => `<option value="${esc(e)}">`).join('')}</datalist></label>
       <label class="fl">Project<select id="evProj"><option value="">— geen —</option>${projs.map(p => `<option value="${p.id}" ${ev?.projectId === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>
     </div>
-    <div class="fl">Datum <b id="evDateLbl" class="ev-date-lbl">${dayLabel(st.date)}</b></div>
-    <div class="ev-mini" id="evMini">${mini()}</div>
-    ${isNew ? `<div class="ev-row"><label class="fl">Herhalen<select id="evRep"><option value="">Niet</option><option value="7">Elke week</option><option value="14">Om de 2 weken</option><option value="m">Elke maand</option></select></label>
-      <label class="fl" id="evCntWrap" hidden>Aantal keer<input id="evCnt" type="number" min="2" max="104" value="12" inputmode="numeric"></label></div>` : ''}
+    <label class="fl">Datum<input id="crmEventDate" type="date" value="${esc(st.date)}" required></label><p class="err" id="crmEventError" role="alert"></p>
+    ${isNew ? `<details class="crm-form-extra"><summary>Deze datum herhalen (optioneel)</summary><div class="ev-row"><label class="fl">Herhalen<select id="evRep"><option value="">Niet</option><option value="7">Elke week</option><option value="14">Om de 2 weken</option><option value="m">Elke maand</option></select></label>
+      <label class="fl" id="evCntWrap" hidden>Aantal keer<input id="evCnt" type="number" min="2" max="104" value="12" inputmode="numeric"></label></div></details>` : ''}
     <label class="fl">Notitie <span class="muted">(optioneel)</span><textarea id="evNote" rows="2" placeholder="bv. materiaal binnen tegen 12u">${esc(ev?.note || '')}</textarea></label>
     <div class="dlg-actions">
       ${ev ? '<button type="button" class="btn danger" id="evDel">Verwijderen</button>' : ''}
@@ -4060,15 +4029,10 @@ function openEventDialog(ev, date) {
       <button type="button" class="btn primary" id="evSave">${isNew ? 'Toevoegen' : 'Opslaan'}</button>
     </div>`, d => {
     d.querySelectorAll('[data-etype]').forEach(b => b.onclick = () => { st.type = b.dataset.etype; d.querySelectorAll('[data-etype]').forEach(x => x.classList.toggle('on', x === b)); });
-    $('#evMini', d).addEventListener('click', e => {
-      const nav = e.target.closest('[data-mnav]');
-      if (nav) { const [y, m] = st.month.split('-').map(Number); st.month = ymd(new Date(y, m - 1 + +nav.dataset.mnav, 1)).slice(0, 7); $('#evMini', d).innerHTML = mini(); return; }
-      const b = e.target.closest('[data-mdate]'); if (!b) return;
-      st.date = b.dataset.mdate; st.month = st.date.slice(0, 7); $('#evMini', d).innerHTML = mini(); $('#evDateLbl', d).textContent = dayLabel(st.date);
-    });
     $('#evRep', d)?.addEventListener('change', e => { $('#evCntWrap', d).hidden = !e.target.value; });
     $('#evCancel', d).onclick = () => dlg.close();
     $('#evSave', d).onclick = () => {
+      const date=$('#crmEventDate',d).value;if(!date || ymd(parseYmd(date))!==date){$('#crmEventError',d).textContent='Kies een geldige datum.';return;}st.date=date;
       const base = {title:$('#evTitle', d).value.trim(), edition:$('#evEd', d).value.trim(), projectId:$('#evProj', d).value || null, note:$('#evNote', d).value.trim(), type:st.type};
       if (ev) { Object.assign(ev, base, {date:st.date}); touch(ev); }
       else {
@@ -4312,3 +4276,5 @@ if ('serviceWorker' in navigator) {
 (async () => { try { const db = await idbOpen(), st = db.transaction('kv', 'readwrite').objectStore('kv'); st.openKeyCursor().onsuccess = e => { const c = e.target.result; if (c) { if (String(c.key).startsWith(CL_KEY)) st.delete(c.key); c.continue(); } }; } catch {} })();
 
 bindCrm();
+
+bindUsability();

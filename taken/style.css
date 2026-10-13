@@ -999,3 +999,136 @@ button,.nav-item,.card,.seg button,select{cursor:default}
 .crm-legacy-note h3{font-size:14px;margin:0 0 8px;font-weight:500}
 .crm-legacy-note p,.crm-focus-action-note{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.6}
 .crm-legacy-note .link{font-size:13px;min-height:36px}
+
+/* Dagelijks gebruik: leesbare tekst, herkenbare knoppen en één handeling per rij. */
+:root{--ctl:44px}
+body{font-size:15px;line-height:1.5}
+.fl{font:500 14px/21px var(--f-sans);letter-spacing:0;text-transform:none}
+.fl input,.fl select,.fl textarea{font:400 16px/24px var(--f-sans);min-height:44px}
+.small,.muted.small{font-size:13px;line-height:1.5}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.nav-item{min-height:44px;font-size:15px}
+.side-section{font-size:12px;letter-spacing:.04em}
+.foot-row{flex-direction:column;align-items:stretch;gap:4px}
+.foot-row .foot-btn{display:flex;justify-content:flex-start;gap:12px;width:100%;height:auto;min-height:40px;font-size:13px}
+.foot-btn span{order:1}
+.foot-btn svg{width:18px;height:18px;flex:none}
+.topbar{min-height:56px}
+.top-search{min-height:40px;font-size:14px}
+.top-btn{min-width:40px;min-height:40px}
+.main-head{flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.main-head .view-sub{font-size:14px;line-height:1.5}
+#primaryAdd{flex:none;min-height:44px}
+.toolbar.open{align-items:flex-start;gap:12px;margin-bottom:20px}
+.crm-search-label{flex:1;min-width:220px}
+.crm-search-label .search{width:100%;min-height:46px;padding:10px 14px;font-size:16px;border-radius:10px;border:1px solid var(--border-strong)}
+.crm-layout-switch{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--raised);padding:3px;gap:2px}
+.crm-layout-switch button{min-height:38px;padding:6px 12px;border:0;border-radius:7px;background:transparent;font-size:14px;color:var(--ink-muted)}
+.crm-layout-switch button[aria-pressed="true"]{background:var(--canvas);color:var(--ink);box-shadow:var(--shadow-card);font-weight:600}
+.crm-list-options{min-width:110px;max-width:100%;font-size:14px}
+.crm-list-options>summary{padding:10px 12px;min-height:46px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.crm-list-options>div{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+.crm-list-options label{display:flex;flex-direction:column;gap:4px}
+.crm-list-options select{max-width:100%;min-height:44px;font-size:14px}
+.crm-list-caption,.crm-screen-help{font-size:14px;color:var(--ink-muted);margin:0 0 14px}
+.crm-customer-list{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--canvas)}
+.crm-customer-row{width:100%;display:grid;grid-template-columns:minmax(150px,1fr) minmax(120px,180px) minmax(140px,180px) 16px;align-items:center;gap:18px;text-align:left;padding:18px 20px;min-height:88px;border:0;border-bottom:1px solid var(--line);background:var(--canvas);font-size:14px}
+.crm-customer-row:last-child{border-bottom:0}
+.crm-customer-row:hover{background:var(--raised)}
+.crm-customer-row.selected{background:var(--accent-soft)}
+.crm-customer-name{min-width:0}
+.crm-customer-name b{display:block;font-size:16px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.crm-customer-name small{display:block;color:var(--ink-muted);font-size:13px;margin-top:4px;overflow-wrap:anywhere}
+.crm-customer-status{font-size:14px;overflow-wrap:anywhere}
+.crm-customer-due{font-size:14px;color:var(--ink-muted);overflow-wrap:anywhere}
+.crm-row-arrow{font-size:24px;color:var(--ink-muted)}
+.crm-simple-empty{padding:36px 20px;text-align:center;border:1px solid var(--line);border-radius:14px}
+.crm-simple-empty h3{font-size:18px}
+.crm-simple-empty p{color:var(--ink-muted);font-size:15px;line-height:1.6}
+.crm-form-extra,.crm-optional{padding:16px 0;border-top:1px solid var(--line);margin-top:18px}
+.crm-form-extra>summary,.crm-optional>summary{cursor:pointer;font-size:15px;font-weight:500;min-height:28px}
+.crm-form-extra[open]>summary,.crm-optional[open]>summary{margin-bottom:16px}
+.crm-form-extra .fl{margin-top:14px}
+.crm-status-label{display:flex;align-items:center;gap:12px;font-size:14px;margin:12px 0 0}
+.crm-focus-status{margin:0;min-height:44px;padding:8px 30px 8px 12px;font-size:15px}
+.crm-autosave-note{font-size:12px;color:var(--ink-muted);margin:8px 0}
+.crm-focus-next{margin:20px 0}
+.crm-focus-next h3{font-size:22px;line-height:1.4}
+.crm-focus-label,.crm-focus-change,.crm-focus-date-button span{font-size:14px}
+.crm-focus-date>summary,.crm-focus-date-button{font-size:15px;min-height:36px}
+.crm-focus-primary{font-size:15px;min-height:46px}
+.crm-focus-person a{font-size:15px;min-height:36px;display:inline-flex;align-items:center}
+#detail .prop>span,.d-sec{font-size:14px}
+#detail .prop input,#detail .prop select{min-height:44px;font-size:16px}
+.crm-task-open b{font-size:17px;line-height:1.5}
+.crm-task-open span,.crm-task-open small{font-size:14px;line-height:1.6}
+.crm-task-row{padding:16px;gap:14px}
+.crm-task-open{min-height:64px}
+.crm-today-unplanned{margin-top:20px}
+.crm-today-unplanned>summary{cursor:pointer;font-size:16px;font-weight:500}
+.crm-sales-tools{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.crm-sales-tools>label{display:flex;flex-direction:column;gap:6px;min-width:180px;font-size:14px}
+.crm-sales-tools select{min-height:44px;font-size:15px}
+.crm-sales-tools .crm-layout-switch{margin-left:auto}
+.crm-sales-list{display:grid;gap:12px}
+.crm-sale-card{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border:1px solid var(--line);border-radius:14px;padding:20px;background:var(--canvas)}
+.crm-sale-card>div:first-child{min-width:0;flex:1}
+.crm-sale-card h3{font-size:17px;line-height:1.5;overflow-wrap:anywhere}
+.crm-sale-card p{color:var(--ink-muted);font-size:14px;margin:6px 0 0;overflow-wrap:anywhere}
+.crm-sale-card dl{margin:14px 0 0;font-size:14px;line-height:1.5}
+.crm-sale-card dl>div{display:flex;gap:10px;margin:6px 0}
+.crm-sale-card dt{color:var(--ink-muted);min-width:70px}
+.crm-sale-card dd{margin:0;overflow-wrap:anywhere}
+.crm-sale-card-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex:none}
+.crm-sale-card-actions>b{font-size:19px;font-weight:600;white-space:nowrap}
+#salesPage .sp-card{margin-bottom:20px}
+#salesPage .sp-card .crm-optional{margin:0;padding:14px 18px}
+.crm-price-details>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;min-height:56px;padding:12px 18px;cursor:pointer;font-size:15px;font-weight:500;list-style:none}
+.crm-price-details>summary::before{content:'+';font-size:20px;color:var(--ink-muted)}
+.crm-price-details[open]>summary::before{content:'−'}
+.crm-price-details>summary>span{margin-left:auto;font-size:14px;color:var(--ink-muted);font-weight:400}
+.crm-price-details>summary::-webkit-details-marker{display:none}
+.crm-metric>span,.crm-metric>small{font-size:14px;line-height:1.5}
+.crm-table{font-size:14px}
+.crm-table th{font-size:13px}
+.help-list b,.help-list span,.st-row .st-t span{font-size:14px;line-height:1.6}
+@media(min-width:861px){
+.with-detail .crm-customer-row{grid-template-columns:minmax(0,1fr) auto;gap:8px 14px}
+.with-detail .crm-customer-name{grid-column:1/-1}
+.with-detail .crm-customer-due{grid-column:1}
+.with-detail .crm-row-arrow{display:none}
+}
+@media(max-width:860px){
+.main-head h2{flex:1;min-width:0}
+.main-head .view-sub{flex-basis:100%;order:2;margin:0}
+#primaryAdd{order:3;flex-basis:100%;margin:4px 0}
+.main-head #editProject{order:1}
+.crm-search-label{flex-basis:100%;min-width:0}
+.crm-customer-row{grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;padding:16px;min-height:120px}
+.crm-customer-name{grid-column:1/-1}
+.crm-customer-due{grid-column:1;font-size:14px}
+.crm-row-arrow{display:none}
+.crm-layout-switch button{min-height:40px}
+.crm-sales-tools>label{flex:1;min-width:0}
+.crm-sales-tools .crm-layout-switch{margin-left:0;flex-basis:100%;justify-content:center}
+.crm-sales-tools .crm-layout-switch button{flex:1}
+.crm-sale-card{padding:16px;gap:12px;flex-wrap:wrap}
+.crm-sale-card-actions{flex-direction:row;align-items:center;justify-content:space-between;flex-basis:100%}
+.crm-task-row{align-items:flex-start;flex-wrap:wrap}
+.crm-task-row>.btn{margin-left:auto}
+.crm-price-details>summary{flex-wrap:wrap;padding:12px}
+.crm-price-details>summary>span{font-size:13px}
+#tabBar button{min-height:48px}
+#detail .d-title-row textarea{font-size:20px;line-height:1.4}
+#detail .prop{grid-template-columns:100px minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){button,input,select{transition:none!important}}
+/* Ook geërfde tekstkleuren moeten meteen meegaan bij een themawissel. */
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) body{color:var(--ink)}}
+:root[data-theme="dark"] body{color:var(--ink)}
+:root[data-theme="light"] body{color:var(--ink)}
+.side-section .icon-btn{opacity:1;width:36px;height:36px}
+#app,.lock{color:var(--ink)}
+.crm-complete-link{display:block;margin:14px auto 0;min-height:36px;font-size:14px}
+
+@media(max-width:860px){.main-head>.grow{display:none}}
