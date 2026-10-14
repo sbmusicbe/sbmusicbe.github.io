@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Klose",
   "short_name": "Klose",
-  "description": "Klose, de CRM voor hardsales. Deals, opvolging en verkopen, versleuteld en gesynchroniseerd.",
+  "description": "Klose: je projecten, klanten en verkopen op één plek.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -40,7 +40,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Nieuwe deal",
+      "name": "Nieuwe klant",
       "short_name": "Nieuw",
       "url": "./?new=1",
       "icons": [
@@ -52,8 +52,8 @@
       ]
     },
     {
-      "name": "Alle deals",
-      "url": "./?view=all",
+      "name": "Projecten",
+      "url": "./?view=projects",
       "icons": [
         {
           "src": "icon-192.png?v=5",

@@ -920,8 +920,8 @@ function tourSteps() {
   return [
     {title:'Welkom bij Klose',text:'Je klanten, opvolging en verkopen op één plek. Dit zijn de belangrijkste stappen.'},
     {el:()=>q('#primaryAdd'),title:'Klant toevoegen',text:'Klik op Klant toevoegen. Vul de naam in en bevestig. Je kunt contactgegevens later aanvullen.'},
-    {el:()=>mob?q('#tabBar [data-tab=today]'):navBy(/Vandaag/),title:'Wat doe ik vandaag?',text:'Open Vandaag voor klanten die je nu moet opvolgen. Open een klant om te bellen, te mailen of een notitie te bewaren.'},
-    {el:()=>mob?q('#tabBar [data-tab=all]'):navBy(/Klanten/),title:'Je klanten terugvinden',text:'Open Klanten. Je ziet een lijst met naam, status en opvolgdatum. Met het zoekveld vind je een klant snel terug.'},
+    {el:()=>mob?q('#tabBar [data-tab=projects]'):q('#projNav'),title:'Je projecten',text:'Open een project om je klanten en hun opvolgdatums te bekijken.'},
+    {el:()=>q('#tbSearch'),title:'Een klant terugvinden',text:'Zoek binnen je project op naam, telefoonnummer of notitie.'},
     {el:()=>q('#topHelp'),title:'Hulp is dichtbij',text:'Bij Hulp vind je korte uitleg. Instellingen en Back-ups staan in het menu.'},
     {title:'Aan de slag',text:'Begin met een klant. Overzicht en notities staan samen; Gegevens staat apart.'},
   ];
@@ -1016,7 +1016,7 @@ function maybeTour() {
   startTour();
 }
 function enterApp() {
-  if (view.type === 'all') view = {type:'today'};
+  view = crmHomeView();
   $('#lock').hidden = true;
   $('#app').hidden = false;
   document.title = 'Klose';
@@ -1031,7 +1031,8 @@ function applyLaunch(url) {
   const q = new URL(url, location.href).searchParams, v = q.get('view');
   if (location.search) history.replaceState(null, '', location.pathname);
   if (v === 'sales') { const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); }
-  else if (['today', 'all', 'upcoming', 'inbox'].includes(v)) setView({type:v});
+  else if (['projects','today','all','upcoming'].includes(v))setView(crmHomeView());
+  else if(v==='inbox')setView({type:'inbox'});
   if (q.get('new')) {
     if (view.type === 'sales') setView({type:'all'});
     setTimeout(newDealNow, 60);
@@ -1055,7 +1056,7 @@ async function lock() {
 let view = {type:'all'};
 let selectedId = null;
 let searchQ = '';
-const SMART = [['inbox','Inbox'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Klanten']];
+const SMART = [['inbox','Zonder project'],['today','Vandaag'],['upcoming','Komende 7 dagen'],['all','Klanten']];
 const viewKey = () => view.type === 'project' ? 'p:' + view.id : view.type === 'sales' ? 's:' + view.id : view.type;
 function prefs() {
   const saved = data.prefs[viewKey()] || {};
@@ -1081,7 +1082,8 @@ function setView(v) {
 function viewTitle() {
   if (view.type === 'today') return 'Vandaag doen';
   if (view.type === 'dashboard') return 'Verkoopresultaten';
-  if (view.type === 'project') return proj(view.id).name;
+  if (view.type === 'project') return view.id==='inbox'?'Zonder project':proj(view.id).name;
+  if (view.type === 'all') return crmNeedsProject()?'Projecten':'Zoeken in projecten';
   if (view.type === 'agenda') return 'Agenda';
   if (view.type === 'btw') return 'BTW';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
@@ -1217,10 +1219,8 @@ function taskMeta(t) {
     const p = proj(t.projectId);
     meta.push(`<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`);
   }
-  if (t.notes) meta.push(`<span class="chip" title="Heeft notities">${I.note}</span>`);
-  const nc = commentCount(t.id);
-  if (nc) meta.push(`<span class="chip" title="${nc} opmerking${nc === 1 ? '' : 'en'}">${I.comment} ${nc}</span>`);
-  return (meta.length ? `<div class="t-meta">${meta.join('')}</div>` : '') + fieldLines(t);
+
+  return meta.length ? `<div class="t-meta">${meta.join('')}</div>` : '';
 }
 // icoon links boven op de kaart: emoji van het project, anders de beginletter in de projectkleur
 function taskIcon(t) {
@@ -1230,7 +1230,7 @@ function taskIcon(t) {
 function taskCard(t) {
   const ds = t.time ? dueState(t) : '';
   return `<article class="card ${t.id === selectedId ? 'sel' : ''} ${ds === 'soon' || ds === 'late' || ds === 'today' ? 'due-' + ds : ''}" data-id="${t.id}">
-    ${taskIcon(t)}<div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>${taskMeta(t)}</article>`;
+    <div class="t-title">${esc(t.title) || '<span class="muted">(zonder titel)</span>'}</div>${taskMeta(t)}</article>`;
 }
 
 let boardExpanded = {}, listExpanded = {};
@@ -1243,11 +1243,11 @@ function renderBoard() {
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
   const hidden = new Set(p.hidden || []);
-  const vis = stages().filter(st => !hidden.has(st.id)), hid = stages().filter(st => hidden.has(st.id));
+  const available=crmBoardStages(),vis=available.filter(st=>!hidden.has(st.id)),hid=available.filter(st=>hidden.has(st.id));
   const count = id => all.filter(t => t.stage === id).length;
   const bar = `<div class="board-bar">
     ${vis.length > 1 ? `<div class="col-tabs" role="tablist">${vis.map(st => `<button type="button" data-jump="${st.id}" style="--c:${st.color}"><span class="dot"></span>${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
-    ${hid.length ? `<div class="hidden-cols"><span>Verborgen:</span>${hid.map(st => `<button type="button" data-showcol="${st.id}" style="--c:${st.color}" title="${esc(st.label)} weer tonen">${I.eye}${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div>` : ''}
+    ${hid.length ? `<details class="crm-hidden-cols"><summary>Verborgen kolommen</summary><div class="hidden-cols">${hid.map(st => `<button type="button" data-showcol="${st.id}" style="--c:${st.color}" title="${esc(st.label)} weer tonen">${I.eye}${esc(st.label)}<b>${count(st.id)}</b></button>`).join('')}</div></details>` : ''}
   </div>`;
   const colHtml = st => {
     let ts = all.filter(t => t.stage === st.id).sort(st.done ? (p.sort === 'manual' ? byDoneAt : plainSorter) : sorter);
@@ -1260,7 +1260,7 @@ function renderBoard() {
     }
     return `<section class="col ${st.done ? 'done-col' : ''}" data-stage="${st.id}" style="--c:${st.color}">
       <header><span class="dot"></span><span class="nm">${esc(st.label)}</span><span class="count">${total}</span><span class="grow"></span><span class="col-right">${st.done ? `<span class="badge" title="Kaarten in deze kolom tellen als afgewerkt" aria-label="afgewerkt">${I.check}</span>` : ''}<button type="button" class="icon-btn col-menu" data-colmenu="${st.id}" data-total="${total}" title="Meer" aria-label="Meer acties voor ${esc(st.label)}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><button type="button" class="icon-btn col-plus" data-addtop="${st.id}" title="Nieuwe kaart in ${esc(st.label)}" aria-label="Nieuwe kaart in ${esc(st.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></span></header>
-      <form class="col-add" data-stage="${st.id}" autocomplete="off"><input type="text" placeholder="+ Deal toevoegen" aria-label="Deal toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
+      <form class="col-add" data-stage="${st.id}" autocomplete="off" hidden><input type="text" placeholder="+ Deal toevoegen" aria-label="Deal toevoegen aan ${esc(st.label)}" enterkeyhint="done"></form>
       <div class="cards" data-stage="${st.id}">${ts.map(taskCard).join('')}${total ? '' : '<div class="col-empty">Sleep deals hierheen</div>'}</div>
       ${more}
     </section>`;
@@ -1341,6 +1341,7 @@ function renderNav() {
   const projs = sortedProjects().filter(p => p.id !== 'inbox'), pages = sortedSalesPages();
   $('#projNav').innerHTML = (projs.filter(p => !p.finished).map(projItem).join('') || '<div class="muted small" style="padding:4px 10px">Nog geen lopende projecten</div>')
     + archList('fin', projs.filter(p => p.finished), projItem, 'Afgewerkt');
+  if(cnt.inbox)$('#projNav').insertAdjacentHTML('afterbegin',projItem({...proj('inbox'),name:'Zonder project'}));
   const years = new Map();
   for (const pg of pages) { const y = (pg.month || '').slice(0, 4) || '—'; if (!years.has(y)) years.set(y, []); years.get(y).push(pg); }
   const yearHtml = [...years].map(([y, list]) => {
@@ -1349,11 +1350,12 @@ function renderNav() {
       + (open ? `<div class="year-list">${list.map(salesItem).join('')}</div>` : '');
   }).join('');
   $('#salesNav').innerHTML = (yearHtml || '<div class="muted small" style="padding:4px 10px">Nog geen maandpagina’s</div>');
-  $('#toolNav').innerHTML = [['today', 'Vandaag doen', I.today, crmAttentionTasks().length || ''], ['all', 'Klanten', I.all, open.length || ''], ['dashboard', 'Resultaten', I.sales, ''], ['agenda', 'Agenda', I.agenda, eventsSoon() || ''], ['btw', 'BTW', I.btw, '']]
-    .filter(([k]) => !VIEW_FEATURE[k] || feat(VIEW_FEATURE[k]))
-    .map(([k, label, ic, n]) => `<button class="nav-item ${view.type === k ? 'on' : ''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`).join('');
+  const navButton=([k,label,ic,n])=>`<button class="nav-item ${view.type===k?'on':''}" data-view="${k}"><span class="ico">${ic}</span><span class="nm">${label}</span><span class="cnt">${n}</span></button>`;
+  const extra=CRM_EXTRA_VIEWS.filter(([k])=>!VIEW_FEATURE[k] || feat(VIEW_FEATURE[k])).map(([k,label])=>[k,label,k==='agenda'?I.agenda:I.btw,'']);
+  $('#toolNav').innerHTML=(extra.length?`<details id="crmNavMore" class="crm-nav-more" ${crmFocusOpen.tools || extra.some(([k])=>k===view.type)?'open':''}><summary>Hulpmiddelen</summary>${extra.map(navButton).join('')}</details>`:'');
+  $('#crmNavMore')?.addEventListener('toggle',e=>{if(e.target.isConnected)crmFocusOpen.tools=e.target.open;});
   const sOn = feat('sales'); $('#addSales').closest('.side-section').hidden = !sOn; $('#salesNav').hidden = !sOn;
-  const tOn = [...$('#toolNav').children].length > 0; $('#toolNav').previousElementSibling.hidden = !tOn;
+  $('#toolNav').previousElementSibling.hidden = true;
   renderSync();
 }
 function viewSubtitle() {
@@ -1370,12 +1372,7 @@ function viewSubtitle() {
   return '';
 }
 // Eerste keer: nog geen enkele deal, dan een duidelijke uitnodiging
-function renderWelcome() {
-  const el = $('#banner'); if (!el) return;
-  const empty = !data.tasks.length && view.type === 'all';
-  el.hidden = !empty;
-  el.innerHTML = empty ? '<span><b>Nog geen klanten.</b> Begin met een naam. Daarna kun je contactgegevens en notities aanvullen.</span><button type="button" class="btn primary" data-qa>+ Eerste klant toevoegen</button>' : '';
-}
+function renderWelcome() {const el=$('#banner');if(el){el.hidden=true;el.innerHTML='';}}
 function renderHead() {
   renderWelcome();
   const isP = view.type === 'project' || view.type === 'inbox' || view.type === 'sales';
@@ -1384,6 +1381,7 @@ function renderHead() {
   $('#viewTitle').innerHTML = `${pr?.emoji ? `<span class="emo">${esc(pr.emoji)}</span>` : color ? `<span class="dot" style="background:${color}"></span>` : ''}<span>${esc(viewTitle())}</span>`;
   $('#topDate').textContent = cap(new Date().toLocaleDateString('nl-BE', {weekday:'long', day:'numeric', month:'long'}));
   $('#viewSub').textContent = viewSubtitle();
+  $('#viewSub').hidden = ['all','project','inbox','today'].includes(view.type);
   renderCalc();
   $('#editProject').hidden = !isP;
   const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
@@ -1394,9 +1392,10 @@ function renderHead() {
   $('#tbTitle').textContent = `${viewTitle()} — Klose`;
   $('#miniTitle').textContent = viewTitle();
   $('#topSearch').hidden = !isPageView() && view.type !== 'sales';
-  const add=$('#primaryAdd');add.hidden=['btw','dashboard'].includes(view.type);add.textContent=view.type==='sales'?'+ Verkoop toevoegen':view.type==='agenda'?'+ Datum toevoegen':'+ Klant toevoegen';
+  const add=$('#primaryAdd');add.hidden=view.type==='btw';add.textContent=crmNeedsProject()?'+ Project toevoegen':view.type==='sales'?'+ Verkoop toevoegen':view.type==='agenda'?'+ Datum toevoegen':'+ Klant toevoegen';
 }
 function renderToolbar() {
+  $('#toolbar').hidden=crmNeedsProject();
   $('#toolbar').classList.add('open');
   $('#toolbar').innerHTML = crmToolbarHtml();
 }
@@ -1409,16 +1408,17 @@ function placeTabIndicator() {
 }
 addEventListener('resize', () => placeTabIndicator());
 function renderTabBar() {
-  const type=view.type==='today'?'today':view.type==='sales'?'sales':view.type==='agenda'?'agenda':['btw','dashboard'].includes(view.type)?'more':'all';
-  const slot=$('#tabSlot'),sales=feat('sales');slot.dataset.tab=sales?'sales':'agenda';slot.querySelector('.ti').innerHTML=sales?I.sales:I.agenda;slot.lastElementChild.textContent=sales?'Verkopen':'Agenda';slot.hidden=!sales && !feat('agenda');
-  $$('#tabBar [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===type));placeTabIndicator();
-  $('#fab').hidden = true;
+  const type=view.type==='sales'?'sales':view.type==='agenda'?'agenda':view.type==='btw'?'more':'projects';
+  const slot=$('#tabSlot');slot.dataset.tab='sales';slot.querySelector('.ti').innerHTML=I.sales;slot.lastElementChild.textContent='Verkopen';slot.hidden=!feat('sales');
+  $('#tabBar [data-tab="agenda"]').hidden=!feat('agenda');
+  $$('#tabBar [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===type));placeTabIndicator();$('#fab').hidden=true;
 }
 function renderAll() {
   if (!data) return;
+  if(['today','dashboard','upcoming'].includes(view.type))view=crmHomeView();
   renderTabBar();
-  if (view.type === 'sales' && !salesPageById(view.id)) view = {type:'all'};
-  if (VIEW_FEATURE[view.type] && !feat(VIEW_FEATURE[view.type])) view = {type:'all'};
+  if (view.type === 'sales' && !salesPageById(view.id)) view = crmHomeView();
+  if (VIEW_FEATURE[view.type] && !feat(VIEW_FEATURE[view.type])) view = crmHomeView();
   const sales = view.type === 'sales';
   if (sales) selectedId = null;
   renderNav(); renderHead();
@@ -1650,8 +1650,7 @@ function renderDetail(force) {
       <div class="d-title-row">
         <textarea id="dTitle" rows="1" aria-label="Naam van klant of taak">${esc(t.title)}</textarea>
       </div>
-      <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
-      <label class="crm-status-label">Status<select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label><p class="crm-autosave-note">Wijzigingen worden automatisch bewaard.</p>
+      <label class="crm-status-label">Status<select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
       ${crmTabsHtml(t)}
       <section id="crmPanel-overview" role="tabpanel" aria-labelledby="crmTab-overview" data-crm-panel="overview" ${crmDetailTabs[t.id]==='data' ? 'hidden' : ''}>
       ${crmFocusHtml(t)}
@@ -1660,6 +1659,7 @@ function renderDetail(force) {
       ${crmDetailHtml(t)}
       </section>
       <section id="crmPanel-data" role="tabpanel" aria-labelledby="crmTab-data" data-crm-panel="data" ${crmDetailTabs[t.id]==='data' ? '' : 'hidden'}>
+        <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
         <div class="props">
         ${t.notes ? `<label class="prop"><span>Notities</span><textarea id="dNotes" rows="2" aria-label="Notities">${esc(t.notes)}</textarea></label>` : ''}
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
@@ -1670,6 +1670,7 @@ function renderDetail(force) {
         <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
           `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
         <div class="crm-focus-danger"><button type="button" class="btn danger" data-act="deletetask">Klant verwijderen</button><p class="muted small">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}</p></div>
+        <p class="crm-autosave-note">Wijzigingen worden automatisch bewaard.</p>
       </section>
     </div>`;
   autosize($('#dTitle'));
@@ -1720,7 +1721,7 @@ async function attachImages(t, files) {
   }
   const el = $('#dPending'); if (el && selectedId === t.id) el.innerHTML = pendingHtml(t.id);
   if (list.length && selectedId === t.id) {
-    crmSelectDetailTab('notes');
+    crmFocusOpen.note[t.id]=true;crmSelectDetailTab('overview');const editor=$('#crmNoteEditor');if(editor)editor.hidden=false;const button=$('[data-crm-contact]');if(button)button.hidden=true;
   }
   } finally { crmImageLoading[t.id]--; updateSave(); }
 }
@@ -1748,10 +1749,10 @@ function addComment(t) {
   const ta = $('#dComment'), imgs = pendingImgs[t.id] || [];
   try { crmSaveNote(t, ta?.value, imgs, $('#crmNoteDate')?.value || ''); }
   catch(e) { $('#crmNoteError').textContent = e.message; ta?.focus(); return; }
-  delete commentDrafts[t.id]; delete pendingImgs[t.id]; delete crmNoteDates[t.id];
+  delete commentDrafts[t.id]; delete pendingImgs[t.id]; delete crmNoteDates[t.id];crmFocusOpen.note[t.id]=false;
   save(); renderNav(); renderMain(); renderDetail(true);
-  $('#crmNoteSaved').textContent = 'Notitie bewaard.';
-  $('#dComment')?.focus();
+  toast('Notitie bewaard.');
+  $('[data-crm-contact]')?.focus();
 }
 function deleteComment(cid) {
   const c = data.comments.find(x => x.id === cid); if (!c) return;
@@ -2909,13 +2910,13 @@ function renderSales(force) {
     <div class="sales-head">
       ${moneyCols.map(c => `<div class="sales-stat"><span>${esc(c.name)} totaal</span><b data-total="${c.id}">${eur(tot.per[c.id])}</b></div>`).join('')}
       ${target ? `<div class="sales-stat target ${pct >= 100 ? 'hit' : ''}"><span>Doelstelling ${eur(target)}</span><b data-pct>${pct}% behaald</b><i class="bar"><i data-bar style="width:${Math.min(100, pct)}%"></i></i></div>` : ''}
-      <div class="sales-stat count"><span>Aantal verkopen</span><b data-count>${rows.length}</b></div>
+      <div class="sales-stat count" hidden><span>Aantal verkopen</span><b data-count>${rows.length}</b></div>
       <span class="grow"></span>
     </div>
     ${target?`<details class="crm-optional" data-crm-disclosure="pace:${esc(pg.id)}" ${crmMoreOpen['pace:'+pg.id]?'open':''}><summary>Voortgang en dagdoel bekijken</summary><div id="spPace">${paceHtml(pg, main)}</div></details>`:'<div id="spPace"></div>'}
     <details class="crm-optional" data-crm-disclosure="pay:${esc(pg.id)}" ${crmMoreOpen['pay:'+pg.id]?'open':''}><summary>Commissie en bonus bekijken</summary><div id="spPay">${payHtml(pg, main)}</div></details>
     </section>
-    <p class="crm-screen-help">${crmSalesLayout==='table'?'Je wijzigingen in de tabel worden automatisch bewaard.':'Je verkopen staan hieronder. Klik op Bewerken om iets aan te passen.'}</p>
+${crmSalesLayout==='table'?'<p class="crm-screen-help">Wijzigingen in de tabel worden automatisch bewaard.</p>':''}
     ${crmSalesLayout==='list'?crmSalesListHtml(pg,rows,cols):''}
     <div class="table-wrap" ${crmSalesLayout==='list'?'hidden':''}><table class="sales ${grouped ? 'grouped' : ''}">
       <thead><tr>${cols.map(c => `<th class="t-${c.type}">${esc(c.name)}</th>`).join('')}<th class="del"></th></tr></thead>
@@ -3126,7 +3127,7 @@ async function deleteSalesPage(pg) {
   for (const r of salesRows(pg.id)) tombstone(r.id);
   data.sales = data.sales.filter(r => r.pageId !== pg.id);
   data.salesPages = data.salesPages.filter(x => x.id !== pg.id); tombstone(pg.id);
-  view = {type:'all'}; commit(); return true;
+  view = crmHomeView(); commit(); return true;
 }
 /* ---- Notities plakken: je eigen notatie omzetten naar verkopen ----
    Week 2 - €4.665
@@ -3358,9 +3359,9 @@ for (const id of ['#projNav', '#salesNav']) $(id).addEventListener('click', e =>
   const a = e.target.closest('[data-navarch]'); if (!a) return;
   e.stopPropagation(); navArchOpen[a.dataset.navarch] = !navArchOpen[a.dataset.navarch]; renderNav();
 });
-$('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView({type:'project', id:b.dataset.project}); });
+$('#projNav').addEventListener('click', e => { if (Date.now() - navDragged < 400) return; const b = e.target.closest('[data-project]'); if (b) setView(b.dataset.project==='inbox'?{type:'inbox'}:{type:'project',id:b.dataset.project}); });
 
-$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Vandaag'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView({type:'today'}); });
+$('.brand').style.cursor = 'pointer'; $('.brand').title = 'Projecten'; $('.brand').addEventListener('click', () => { $('#app').classList.remove('side-open'); setView(crmHomeView()); });
 $('#addProject').onclick = () => openProjectDialog(null);
 $('#editProject').onclick = e => menuAt(e.currentTarget, view.type === 'sales' ? salesPageMenuItems(salesPageById(view.id), true) : projectMenuItems(proj(view.type === 'inbox' ? 'inbox' : view.id)));
 $('#salesNav').addEventListener('click', e => { const b = e.target.closest('[data-sales]'); if (b) setView({type:'sales', id:b.dataset.sales}); });
@@ -3383,13 +3384,14 @@ $('#syncStatus').onclick = () => data.settings.sync ? syncNow() : openSettings()
 $('#menuBtn').onclick = $('#topAvatar').onclick = () => $('#app').classList.add('side-open');
 // iOS 27 tabbalk
 $$('#tabBar [data-tab]').forEach(b => {
-  const icon = {all:I.all, today:I.today, sales:I.sales, agenda:I.agenda}[b.dataset.tab];
+  const icon = {projects:I.all, sales:I.sales, agenda:I.agenda}[b.dataset.tab];
   if (icon) b.querySelector('.ti').innerHTML = icon;
 });
 $('#tabBar').addEventListener('click', e => {
   const b = e.target.closest('[data-tab]'); if (!b) return;
   const t = b.dataset.tab;
-  if (t === 'more') { $('#app').classList.add('side-open'); return; }
+  if (t === 'more') {openSettings();return;}
+  if(t==='projects'){$('#app').classList.add('side-open');return;}
   if (t === 'sales') {
     const pg = sortedSalesPages()[0];
     if (pg) setView({type:'sales', id:pg.id}); else { $('#app').classList.add('side-open'); openSalesPageDialog(null); }
@@ -3497,11 +3499,12 @@ $('#list').addEventListener('submit', e => {
   const r = parseQuick(input.value);
   if (!r.title) return;
   createTask(r, stage);
-  $(`.col-add[data-stage="${stage}"] input`)?.focus();
+  openTopAdd(stage);
 });
 // Plusje in de kolomkop: naar het invoerveld bovenaan die kolom
 function openTopAdd(stage) {
-  const inp = $(`.col-add[data-stage="${stage}"] input`);
+  const form=$(`.col-add[data-stage="${stage}"]`);if(form)form.hidden=false;
+  const inp = form && $('input',form);
   inp?.focus(); inp?.scrollIntoView({block:'nearest', behavior:'smooth'});
 }
 
@@ -3606,8 +3609,7 @@ document.addEventListener('keydown', e => {
   }
   const mod = e.ctrlKey || e.metaKey;
   if (mod && !e.altKey && !e.shiftKey) {
-    const views = {'1':'all'};
-    if (views[e.key]) { e.preventDefault(); setView({type:views[e.key]}); return; }
+    if(e.key==='1'){e.preventDefault();setView(crmHomeView());return;}
     if (e.key === '5') { e.preventDefault(); const pg = sortedSalesPages()[0]; if (pg) setView({type:'sales', id:pg.id}); return; }
     if (e.key === ',') { e.preventDefault(); openSettings(); return; }
     if (e.key.toLowerCase() === 'f' && $('#tbSearch') && view.type !== 'sales') { e.preventDefault(); openSearch(); return; }
@@ -3627,9 +3629,9 @@ $('#topHelp').onclick = () => openHelp();
 function openHelp() {
   showDialog(`<h3>Hulp</h3>
     <ul class="help-list">
-      <li><b>Wat doe ik vandaag?</b><span>Open Vandaag. Klik op de klant die je wilt opvolgen.</span></li>
+      <li><b>Waar begin ik?</b><span>Open je project. Je klanten en hun opvolgdatums staan bij elkaar.</span></li>
       <li><b>Een klant toevoegen</b><span>Klik op Klant toevoegen, vul de naam in en bevestig. De rest kun je later aanvullen.</span></li>
-      <li><b>Een klant zoeken</b><span>Open Klanten en typ de naam, het telefoonnummer of een notitie in het zoekveld.</span></li>
+      <li><b>Een klant zoeken</b><span>Open je project en typ een naam, telefoonnummer of notitie in het zoekveld.</span></li>
       <li><b>Een gesprek bewaren</b><span>Open een klant en klik op Notitie toevoegen. Schrijf wat er besproken is en klik op Notitie bewaren.</span></li>
       <li><b>Opvolging plannen</b><span>Kies bij de klant een datum voor de volgende stap. Terugbellen en offerte opvolgen gebruiken diezelfde deadline.</span></li>
       <li><b>Een verkoop bewaren</b><span>Open Verkopen en klik op Verkoop toevoegen. Bij een gewonnen klant verschijnt de verkoop automatisch.</span></li>
@@ -3655,7 +3657,7 @@ function openSearch() { if (!tbOpen) { tbOpen = true; renderToolbar(); } $('#tbS
 function openShortcutsDialog() {
   const k = navigator.platform?.startsWith('Mac') ? '⌘' : 'Ctrl';
   const rows = [['N of Q', 'Klant toevoegen'], [k + ' K', 'Klant toevoegen (ook in een veld)'], ['/', 'Zoeken'], [k + ' F', 'Zoeken'],
-    [k + ' 1', 'Klanten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
+    [k + ' 1', 'Projecten'], [k + ' 5', 'Verkopen (laatste maand)'], [k + ' ,', 'Instellingen'],
     ['Delete', 'Open kaart verwijderen'], ['Esc', 'Sluiten'], ['Rechtsklik', 'Snelmenu op kaarten, projecten en pagina’s'], ['?', 'Deze lijst']];
   showDialog(`<h3>Sneltoetsen</h3><div class="kbd-list">${rows.map(([a, b]) => `<div><span>${esc(b)}</span><span>${a.split(' ').map(x => x === '…' || x === 'of' ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join('')}</span></div>`).join('')}</div>
     <div class="dlg-actions"><span class="grow"></span><button type="button" class="btn primary" id="kbOk">Sluiten</button></div>`, d => { $('#kbOk', d).onclick = () => dlg.close(); });
@@ -3985,26 +3987,22 @@ function agendaHtml() {
   const selList = agendaSel ? (byDay.get(agendaSel) || []) : null;
   const row = e => { const pr = e.projectId && data.projects.find(p => p.id === e.projectId);
     return `<li><button type="button" data-ev="${e.id}"><span class="ev-bar ev-${esc(e.type || 'druk')}"></span><span class="nm"><b>${esc(evShort(e))}</b><small>${[evTypeLabel(e.type), e.title ? e.edition : '', pr && evShort(e) !== pr.name ? pr.name : ''].filter(Boolean).map(esc).join(' · ')}</small></span><span class="meta"><b>${dayLabel(e.date)}</b><small class="${e.date === td ? 'now' : ''}">${countdown(e.date)}</small></span></button></li>`; };
-  return `
-    <div class="pg-bar">
+  return `<div class="crm-agenda-simple">
+        ${selList ? `<section class="pg-card"><h3>${cap(dayLabel(agendaSel))}<span class="grow"></span><button type="button" class="btn" data-newon="${agendaSel}">+ Toevoegen</button></h3>${selList.length ? `<ul class="pg-list ag-list">${selList.map(row).join('')}</ul>` : '<p class="muted small">Niets gepland op deze dag.</p>'}</section>` : ''}
+        <section class="pg-card"><h3>Komende data</h3>${soon.length ? `<ul class="pg-list ag-list">${soon.map(row).join('')}</ul>` : '<p class="muted small">Nog niets gepland. Klik op Datum toevoegen of kies een dag in de kalender.</p>'}</section>
+<details class="crm-agenda-calendar" data-crm-disclosure="agenda" ${crmMoreOpen.agenda?'open':''}><summary>Kalender bekijken</summary>    <div class="pg-bar">
       <div class="ag-nav"><button type="button" class="icon-btn" data-amonth="-1" aria-label="Vorige maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
         <b class="ag-title">${cap(MONTHS_LONG[mo - 1])} ${y}</b>
         <button type="button" class="icon-btn" data-amonth="1" aria-label="Volgende maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
       <button type="button" class="btn" data-amonth="0">Vandaag</button>
       <span class="legend ag-legend">${EV_TYPES.map(([k, l]) => `<span><i class="lg-ev ev-${k}"></i>${l}</span>`).join('')}</span>
       <span class="grow"></span>
-      <button type="button" class="btn primary" id="evNew">+ Datum toevoegen</button>
     </div>
-    <div class="ag-wrap">
       <div class="ag-cal pg-card">
         <div class="ag-head">${['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map(d => `<span>${d}</span>`).join('')}</div>
         <div class="ag-grid" style="--weeks:${weeks}">${cells}</div>
       </div>
-      <aside class="ag-side">
-        ${selList ? `<section class="pg-card"><h3>${cap(dayLabel(agendaSel))}<span class="grow"></span><button type="button" class="btn" data-newon="${agendaSel}">+ Toevoegen</button></h3>${selList.length ? `<ul class="pg-list ag-list">${selList.map(row).join('')}</ul>` : '<p class="muted small">Niets gepland op deze dag.</p>'}</section>` : ''}
-        <section class="pg-card"><h3>Komende data</h3>${soon.length ? `<ul class="pg-list ag-list">${soon.map(row).join('')}</ul>` : '<p class="muted small">Nog niets gepland. Klik op Datum toevoegen of kies een dag in de kalender.</p>'}</section>
-      </aside>
-    </div>`;
+</details></div>`;
 }
 function openEventDialog(ev, date) {
   const isNew = !ev;

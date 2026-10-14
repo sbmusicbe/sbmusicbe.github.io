@@ -218,7 +218,7 @@ test('Notes show legacy history once with a single simple composer',()=>{
   const html=r('crmDetailHtml(data.tasks[0])');
   assert.equal((html.match(/Historische notitie/g)||[]).length,1);
   assert.match(html,/data-cid="c"/);
-  assert.match(html,/Wat is er besproken/);assert.doesNotMatch(html,/<details|ccType|ccOutcome|ccDone/);
+  assert.match(html,/Wat is er besproken/);assert.doesNotMatch(html,/ccType|ccOutcome|ccDone/);
 });
 
 
@@ -285,4 +285,32 @@ test('default customer search also finds completed clients without changing the 
  const r=runtime();r("data.tasks=[makeTask('open'),makeTask('closed',{title:'Oude klant',done:true,stage:'positive'})]");
  assert.equal(r('crmFilteredTasks().length'),1);r("searchQ='Oude klant'");assert.equal(r('crmFilteredTasks()[0].id'),'closed');
  r("searchQ=''");assert.equal(r('crmFilteredTasks()[0].id'),'open');
+});
+
+
+test('calm note editor starts closed and keeps drafts available when reopened',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')]");assert.equal(r('crmNoteEditorOpen(data.tasks[0])'),false);
+ r("commentDrafts.a='Conceptnotitie'");assert.equal(r('crmNoteEditorOpen(data.tasks[0])'),true);
+ r("crmFocusOpen.note.a=false");assert.equal(r('crmNoteEditorOpen(data.tasks[0])'),false);assert.equal(r('commentDrafts.a'),'Conceptnotitie');
+ r("crmFocusOpen.note.a=true");assert.equal(r('crmNoteEditorOpen(data.tasks[0])'),true);
+});
+test('latest conversation is shown once and older records remain in expandable history',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')];data.comments=[{id:'old',taskId:'a',at:now()-1000,text:'Ouder gesprek'},{id:'new',taskId:'a',at:now(),text:'Laatste gesprekstekst'}]");
+ const html=r('crmDetailHtml(data.tasks[0])');assert.equal((html.match(/Laatste gesprekstekst/g)||[]).length,1);assert.equal((html.match(/Ouder gesprek/g)||[]).length,1);
+ assert.match(html,/<details class="crm-past-notes"><summary>Eerdere gesprekken/);assert.match(html,/id="crmNoteEditor" hidden/);
+});
+
+test('home opens a project and keeps unassigned and archived data reachable',()=>{
+ const r=runtime();assert.equal(r('crmHomeView().type'),'project');
+ r("data.projects=data.projects.filter(p=>p.id==='inbox');data.tasks=[makeTask('orphan',{projectId:'missing'})]");assert.equal(r('crmHomeView().type'),'inbox');
+ r("data.tasks=[];data.projects.push({id:'old',name:'Archief',finished:true})");assert.equal(r('crmHomeView().id'),'old');
+ r("data.projects=data.projects.filter(p=>p.id==='inbox')");assert.equal(r('crmHomeView().type'),'all');
+});
+test('extra navigation omits today, customers and results',()=>{
+ const r=runtime();assert.deepEqual(plain(r('CRM_EXTRA_VIEWS.map(x=>x[0])')),['agenda','btw']);
+});
+test('board only shows stages that belong to the chosen status filter',()=>{
+ const r=runtime();assert.ok(r('crmBoardStages().every(s=>!s.done)'));
+ r("crmListFilter().status='done'");assert.ok(r('crmBoardStages().every(s=>s.done)'));
+ r("crmListFilter().status='all'");assert.equal(r('crmBoardStages().length'),r('stages().length'));
 });
