@@ -42,6 +42,7 @@ function runtime() {
     ${section('function viewTasks(', '// Opmerkingen staan')}
     ${section('function matchSearch(', '// Bij een actieve sortering')}
     ${section('function sortFn(', "// '', 'today'")}
+    ${section('function taskMeta(', '// icoon links boven')}
     ${usability}
     data=newData();data.projects.push({id:'p',name:'Project P'},{id:'q',name:'Project Q'},{id:'finished',name:'Afgewerkt',finished:true});
     data.stages.push({id:'other',label:'Andere',done:false});
@@ -314,3 +315,10 @@ test('board only shows stages that belong to the chosen status filter',()=>{
  r("crmListFilter().status='done'");assert.ok(r('crmBoardStages().every(s=>s.done)'));
  r("crmListFilter().status='all'");assert.equal(r('crmBoardStages().length'),r('stages().length'));
 });
+
+test('project cards show every filled field even when hidden from the general list',()=>{
+ const r=runtime();r("view={type:'project',id:'p'};data.fields.find(f=>f.id==='f-telefoon').showInList=false;data.tasks=[makeTask('a',{custom:{'f-naam':'Chris','f-telefoon':'0493 123 456','f-email':'chris@example.be','f-kortingsprijs':150}})]");
+ const html=r('taskMeta(data.tasks[0])');for(const text of ['Chris','0493 123 456','chris@example.be','150'])assert.ok(html.includes(text));
+ assert.doesNotMatch(r('fieldLines(data.tasks[0])'),/0493 123 456/);
+});
+test('sales starts in table view',()=>{assert.equal(runtime()('crmSalesLayout'),'table');});
