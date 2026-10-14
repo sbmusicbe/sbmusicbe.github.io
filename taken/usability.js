@@ -62,6 +62,15 @@ function crmOpenNewCustomer() {
 }
 let crmSalesLayout='table';
 const crmMoreOpen={};
+function renderProjectNotes() {
+  const el=$('#projectNotes'),p=view.type==='project' && view.id!=='inbox'?data.projects.find(p=>p.id===view.id):null;
+  el.hidden=!p;
+  if(!p){el.innerHTML='';delete el.dataset.pid;return;}
+  if(el.dataset.pid===p.id && el.contains(document.activeElement))return;
+  el.dataset.pid=p.id;
+  el.innerHTML=`<details class="crm-project-notes" data-crm-disclosure="project-notes:${esc(p.id)}" ${crmMoreOpen['project-notes:'+p.id]?'open':''}><summary>Projectnotities${String(p.notes || '').trim()?'<span class="crm-project-notes-dot" aria-label="Bevat notities"></span>':''}</summary><label class="sr-only" for="projectNotesText">Notities voor ${esc(p.name)}</label><textarea id="projectNotesText" rows="3" placeholder="Afspraken of aandachtspunten voor dit project…">${esc(p.notes || '')}</textarea><p class="muted small">Wordt automatisch bewaard.</p></details>`;
+  if(crmMoreOpen['project-notes:'+p.id])autosize($('#projectNotesText'));
+}
 function crmSalesListHtml(pg,rows,cols) {
   const c=winCols(),dateCol=c.date;
   const ordered=[...rows].sort((a,b)=>String(dateCol?b.values[dateCol.id] || '':'').localeCompare(String(dateCol?a.values[dateCol.id] || '':'')) || (b.order || 0)-(a.order || 0));
@@ -118,6 +127,12 @@ function crmPrimaryAction() {
 }
 function bindUsability() {
   $('#primaryAdd').onclick=crmPrimaryAction;
+  $('#projectNotes').addEventListener('input',e=>{
+    if(e.target.id!=='projectNotesText')return;
+    const p=data.projects.find(p=>p.id===$('#projectNotes').dataset.pid);if(!p)return;
+    p.notes=e.target.value;touch(p);autosize(e.target);save(true);
+    const summary=$('.crm-project-notes>summary');if(summary){let dot=$('.crm-project-notes-dot',summary);if(p.notes.trim() && !dot)summary.insertAdjacentHTML('beforeend','<span class="crm-project-notes-dot" aria-label="Bevat notities"></span>');else if(!p.notes.trim())dot?.remove();}
+  });
   $('#toolbar').addEventListener('change',e=>{
     if(!['crmListStatus','crmListSort'].includes(e.target.id))return;
     crmListFilter()[e.target.id==='crmListStatus'?'status':'sort']=e.target.value;if(e.target.id==='crmListSort'){data.settings.sort=e.target.value;save();}const summary=$('.crm-list-options summary');if(summary)summary.textContent=crmFilterLabel();renderMain();
@@ -131,5 +146,5 @@ function bindUsability() {
     if(e.target.closest('[data-crm-all-customers]'))setView({type:'all'});
   });
   $('#salesPage').addEventListener('change',e=>{if(e.target.id==='crmSalesMonth')setView({type:'sales',id:e.target.value});});
-  for(const id of ['#salesPage','#pageView','#projCalc'])$(id).addEventListener('toggle',e=>{if(e.target.dataset.crmDisclosure && e.target.isConnected)crmMoreOpen[e.target.dataset.crmDisclosure]=e.target.open;},true);
+  for(const id of ['#salesPage','#pageView','#projCalc','#projectNotes'])$(id).addEventListener('toggle',e=>{if(e.target.dataset.crmDisclosure && e.target.isConnected){crmMoreOpen[e.target.dataset.crmDisclosure]=e.target.open;if(id==='#projectNotes' && e.target.open)autosize($('#projectNotesText'));}},true);
 }

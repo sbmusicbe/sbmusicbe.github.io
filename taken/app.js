@@ -1383,6 +1383,7 @@ function renderHead() {
   $('#viewSub').textContent = viewSubtitle();
   $('#viewSub').hidden = ['all','project','inbox','today'].includes(view.type);
   renderCalc();
+  renderProjectNotes();
   $('#editProject').hidden = !isP;
   const arch = view.type === 'sales' ? salesPageById(view.id) : view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
   const ab = $('#archBar'); ab.hidden = !arch?.finished;
