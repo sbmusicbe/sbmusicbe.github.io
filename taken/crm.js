@@ -124,7 +124,9 @@ function crmTabsHtml(t) {
 }
 function crmOpenContactDialog(t) {
   if (selectedId !== t.id) openTask(t.id);
-  crmSelectDetailTab('notes');
+  crmFocusOpen.note[t.id] = true;
+  crmSelectDetailTab('overview');
+  renderDetail(true);
   $('#dComment')?.focus();
 }
 function crmOpenLossDialog(t) {
@@ -168,7 +170,10 @@ function crmDuplicateHtml(t) {
   const dup=crmDuplicates(t);
   return dup.length ? `<details class="crm-warning crm-focus-duplicates"><summary>Mogelijk dubbele deal <span>(${dup.length})</span></summary><p>Dezelfde klant in meerdere projecten kan terecht zijn. Er wordt niets automatisch samengevoegd.</p>${dup.slice(0,5).map(({task,reasons})=>`<button type="button" class="link" data-crm-open="${esc(task.id)}">${esc(task.title)} · ${esc(proj(task.projectId)?.name || 'Inbox')} <span>(${esc(reasons.join(', '))})</span></button>`).join('')}${dup.length>5?`<p>En nog ${dup.length-5} overeenkomsten.</p>`:''}</details>` : '';
 }
-const crmFocusOpen = {deadline:{}};
+const crmFocusOpen = {deadline:{}, note:{}, tools:false};
+function crmNoteEditorOpen(t) {
+  return crmFocusOpen.note[t.id] ?? !!(commentDrafts[t.id] || pendingImgs[t.id]?.length || crmNoteDates[t.id]);
+}
 function crmDeadlineFieldsHtml(t) {
   return `<div class="props crm-focus-date-fields"><label class="prop"><span>Datum</span><input type="text" id="dDue" class="date-inp" value="${esc(fmtDateInp(t.due))}" placeholder="dd/mm/jjjj" autocomplete="off" role="combobox" aria-label="Deadline" aria-haspopup="dialog" aria-expanded="false"></label><label class="prop"><span>Uur</span><span class="inline"><input type="text" id="dTime" class="time-inp" value="${esc(t.time || '')}" placeholder="--:--" inputmode="numeric" autocomplete="off" maxlength="5" role="combobox" aria-label="Uur" aria-autocomplete="list" aria-expanded="false" aria-controls="timePop">${t.time ? `<button type="button" class="icon-btn" data-act="cleartime" aria-label="Uur wissen">${I.close}</button>` : ''}</span></label></div>`;
 }
@@ -179,7 +184,7 @@ function crmFocusHtml(t) {
   return `<section class="crm-focus-next"><span class="crm-focus-label">${t.done ? 'Afgerond' : 'Volgende stap'}</span><h3>${esc(title)}</h3>
     ${!t.done ? linked ? `<details id="crmDeadlineEdit" class="crm-focus-date" ${crmFocusOpen.deadline[t.id] ? 'open' : ''}><summary><span class="${action?.date < today() ? 'crm-late' : ''}">${when}</span><span class="crm-focus-change">Wijzigen</span></summary>${crmDeadlineFieldsHtml(t)}<button type="button" class="link" data-crm-date-done="${esc(t.id)}">Gereed</button></details>` : `<button type="button" class="crm-focus-date-button" data-crm-action="${esc(t.id)}">${when}<span>Wijzigen</span></button>` : ''}
     ${action?.note ? `<p class="crm-focus-action-note">${esc(action.note)}</p>` : ''}
-    <button type="button" class="btn primary crm-focus-primary" data-crm-contact="${esc(t.id)}">Notitie toevoegen</button>
+    <button type="button" class="btn primary crm-focus-primary" data-crm-contact="${esc(t.id)}" ${crmNoteEditorOpen(t) ? 'hidden' : ''}>Notitie toevoegen</button>
     ${action?`<button type="button" class="link crm-complete-link" data-crm-complete="${esc(t.id)}">Opvolging afronden</button>`:''}
   </section>`;
 }
@@ -190,26 +195,26 @@ function crmContactSummaryHtml(t) {
   if(!name && !tel && !email)return '';
   return `<section class="crm-focus-person"><div><span class="crm-focus-label">Contactpersoon</span>${name?`<b>${esc(name)}</b>`:phone?`<b>${esc(phone)}</b>`:''}</div><div>${tel?`<a href="tel:${esc(tel)}">Bellen</a>`:''}${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?`<a href="mailto:${esc(encodeURIComponent(email))}">Mailen</a>`:''}</div></section>`;
 }
+function crmHistoryItemHtml(x, first) {
+  return `<li ${x.source==='comment'?`data-cid="${esc(x.id)}"`:''}><div class="crm-history-head"><b>${x.source==='first'?'Eerste contactname':x.source==='comment'?'Notitie':esc(crmActionLabel(x.type))}</b><time>${esc(x.source==='first'?fmtDateInp(first.date):stamp(x.at))}</time>${x.source==='contact'?`<button type="button" class="icon-btn" data-crm-delcontact="${esc(x.id)}" aria-label="Contactmoment verwijderen">${I.trash}</button>`:x.source==='comment'?`<button type="button" class="icon-btn" data-act="delcomment" aria-label="Notitie verwijderen">${I.trash}</button>`:''}</div>${x.source==='contact' && ymd(new Date(x.at))===first.date?'<small>Eerste contactname</small>':''}${x.outcome?`<strong>${esc(x.outcome)}</strong>`:''}${x.text?`<p>${esc(x.text)}</p>`:''}${x.source==='comment'?imgsHtml(x.imgs,'zoom'):''}${x.nextAction?`<small>Toen afgesproken: ${esc(crmActionLabel(x.nextAction.type))} · ${esc(fmtDateInp(x.nextAction.date))}${x.nextAction.note?` — ${esc(x.nextAction.note)}`:''}</small>`:''}</li>`;
+}
 function crmDetailHtml(t) {
   const first=crmFirstContact(t), history=data.activities.filter(x=>x.taskId===t.id).map(x=>({...x,source:'contact'}));
   if(first.date && !history.some(x=>ymd(new Date(x.at))===first.date))history.push({id:'first_'+t.id,at:parseYmd(first.date).getTime(),source:'first'});
   for(const c of commentsOf(t.id))history.push({...c,source:'comment'});
   history.sort((a,b)=>b.at-a.at);
-  const draft=commentDrafts[t.id] || '';
+  const latest=history.find(x=>x.source!=='first'), older=history.filter(x=>x!==latest),draft=commentDrafts[t.id] || '';
   return `<section id="crmHistory" aria-label="Contactnotities">
-    <div class="crm-note-composer"><label for="dComment">Wat is er besproken?</label><textarea id="dComment" rows="3" placeholder="Bijvoorbeeld: Gebeld. Klant bekijkt de offerte en antwoordt vrijdag.">${esc(draft)}</textarea><div class="c-pending" id="dPending">${pendingHtml(t.id)}</div>
-      <div class="crm-note-tools"><button type="button" class="btn" data-act="attach">Afbeelding toevoegen</button><input type="file" id="dFile" accept="image/*" multiple hidden></div>
-      <label class="fl crm-note-date">Nieuwe opvolgdatum <span class="muted">(optioneel)</span><input id="crmNoteDate" type="date" value="${esc(crmNoteDates[t.id] || '')}" aria-describedby="crmNoteDateHelp"></label><p id="crmNoteDateHelp" class="muted small">Laat leeg om de huidige planning te behouden.</p>
-      <p class="err" id="crmNoteError" role="alert"></p><button type="button" class="btn primary crm-note-save" data-act="addcomment" ${crmImageLoading[t.id] ? 'disabled' : ''}>${crmImageLoading[t.id] ? 'Afbeelding verwerken…' : 'Notitie bewaren'}</button><p id="crmNoteSaved" class="muted small" role="status"></p>
-    </div>
-    ${t.notes ? `<section class="crm-legacy-note"><h3>Bestaande taaknotitie</h3><p>${esc(t.notes)}</p><button type="button" class="link" data-crm-show-data>Bewerken bij Gegevens</button></section>` : ''}
-    <h3 class="crm-notes-heading">Eerdere notities</h3>
-    <ol class="crm-history">${history.map(x=>`<li ${x.source==='comment'?`data-cid="${esc(x.id)}"`:''}><div class="crm-history-head"><b>${x.source==='first'?'Eerste contactname':x.source==='comment'?'Notitie':esc(crmActionLabel(x.type))}</b><time>${esc(x.source==='first'?fmtDateInp(first.date):stamp(x.at))}</time>${x.source==='contact'?`<button type="button" class="icon-btn" data-crm-delcontact="${esc(x.id)}" aria-label="Contactmoment verwijderen">${I.trash}</button>`:x.source==='comment'?`<button type="button" class="icon-btn" data-act="delcomment" aria-label="Notitie verwijderen">${I.trash}</button>`:''}</div>${x.source==='contact' && ymd(new Date(x.at))===first.date?'<small>Eerste contactname</small>':''}${x.outcome?`<strong>${esc(x.outcome)}</strong>`:''}${x.text?`<p>${esc(x.text)}</p>`:''}${x.source==='comment'?imgsHtml(x.imgs,'zoom'):''}${x.nextAction?`<small>Toen afgesproken: ${esc(crmActionLabel(x.nextAction.type))} · ${esc(fmtDateInp(x.nextAction.date))}${x.nextAction.note?` — ${esc(x.nextAction.note)}`:''}</small>`:''}</li>`).join('') || '<li class="muted">Nog geen notities. Schrijf hierboven je eerste notitie.</li>'}</ol>
+    <section class="crm-note-composer" id="crmNoteEditor" ${crmNoteEditorOpen(t)?'':'hidden'}><label for="dComment">Wat is er besproken?</label><textarea id="dComment" rows="3" placeholder="Schrijf een korte notitie…">${esc(draft)}</textarea><div class="c-pending" id="dPending">${pendingHtml(t.id)}</div>
+      <details class="crm-note-options" ${crmNoteDates[t.id]?'open':''}><summary>Opvolgdatum of afbeelding toevoegen</summary><label class="fl crm-note-date">Nieuwe opvolgdatum<input id="crmNoteDate" type="date" value="${esc(crmNoteDates[t.id] || '')}" aria-describedby="crmNoteDateHelp"></label><p id="crmNoteDateHelp" class="muted small">Laat leeg om de huidige planning te behouden.</p><div class="crm-note-tools"><button type="button" class="btn" data-act="attach">Afbeelding toevoegen</button><input type="file" id="dFile" accept="image/*" multiple hidden></div></details>
+      <p class="err" id="crmNoteError" role="alert"></p><div class="crm-note-actions"><button type="button" class="btn" data-crm-close-note>Sluiten</button><button type="button" class="btn primary crm-note-save" data-act="addcomment" ${crmImageLoading[t.id]?'disabled':''}>${crmImageLoading[t.id]?'Afbeelding verwerken…':'Bewaren'}</button></div><p id="crmNoteSaved" class="muted small" role="status"></p>
+    </section>
+    ${latest?`<section class="crm-note-preview ${String(latest.text || '').length>200 || String(latest.text || '').split('\n').length>3?'long':''}"><h3>Laatste gesprek</h3><ol class="crm-history">${crmHistoryItemHtml(latest,first)}</ol>${String(latest.text || '').length>200 || String(latest.text || '').split('\n').length>3?'<button type="button" class="link" data-crm-expand-note aria-expanded="false">Hele notitie lezen</button>':''}</section>`:''}
+    ${older.length || t.notes?`<details class="crm-past-notes"><summary>Eerdere gesprekken <span>(${older.length+(t.notes?1:0)})</span></summary>${t.notes?`<section class="crm-legacy-note"><h3>Taaknotitie</h3><p>${esc(t.notes)}</p><button type="button" class="link" data-crm-show-data>Bewerken bij Gegevens</button></section>`:''}<ol class="crm-history">${older.map(x=>crmHistoryItemHtml(x,first)).join('')}</ol></details>`:!latest?'<p class="muted crm-no-history">Nog geen gesprekken bewaard.</p>':''}
   </section>`;
-
 }
 function crmTaskRows(list, mode='action') {
-  return list.length ? `<div class="crm-task-list">${list.map(t=>{const a=crmEffectiveAction(t),date=mode==='deadline'?t.due:a?.date || t.due;return `<article class="crm-task-row"><button type="button" class="crm-task-open" data-crm-open="${esc(t.id)}"><b>${esc(t.title)}</b><span>${esc(proj(t.projectId)?.name || 'Inbox')} · ${esc(stageById(t.stage)?.label || '')}</span><small class="${date && date<today()?'crm-late':''}">${date?`${date<today()?'Te laat · ':''}${esc(a?crmActionLabel(a.type):'Deadline')} · ${esc(dueLabel(date))}`:'Kies een opvolgdatum'}${a?.note?' · '+esc(a.note):''}</small></button><button type="button" class="btn" data-crm-open="${esc(t.id)}">Openen</button></article>`;}).join('')}</div>` : '<p class="muted crm-empty">Niets te doen in deze lijst.</p>';
+  return list.length ? `<div class="crm-task-list">${list.map(t=>{const a=crmEffectiveAction(t),date=mode==='deadline'?t.due:a?.date || t.due;return `<article class="crm-task-row"><button type="button" class="crm-task-open" data-crm-open="${esc(t.id)}"><b>${esc(t.title)}</b><span>${esc(proj(t.projectId)?.name || 'Inbox')} · ${esc(stageById(t.stage)?.label || '')}</span><small class="${date && date<today()?'crm-late':''}">${date?`${date<today()?'Te laat · ':''}${esc(a?crmActionLabel(a.type):'Deadline')} · ${esc(dueLabel(date))}`:'Kies een opvolgdatum'}${a?.note?' · '+esc(a.note):''}</small></button><span class="crm-open-arrow" aria-hidden="true">›</span></article>`;}).join('')}</div>` : '<p class="muted crm-empty">Niets te doen in deze lijst.</p>';
 }
 function crmAttentionTasks() {
   const g=crmDayGroups();
@@ -217,7 +222,7 @@ function crmAttentionTasks() {
 }
 function crmTodayHtml() {
   const g=crmDayGroups(),attention=crmAttentionTasks(),unplanned=g.unplanned.filter(t=>!t.due);
-  return `<div class="crm-page"><p class="crm-lead">${attention.length?`Begin met deze ${attention.length} ${attention.length===1?'klant':'klanten'}. Open de klant om te bellen, te mailen of een notitie te bewaren.`:'Alles voor vandaag is opgevolgd. Je kunt alvast een volgende klant plannen.'}</p>
+  return `<div class="crm-page"><p class="crm-lead">${attention.length?`${attention.length} ${attention.length===1?'klant vraagt':'klanten vragen'} je aandacht.`:'Alles voor vandaag is opgevolgd. Je kunt alvast een volgende klant plannen.'}</p>
     <section class="crm-card"><h3>Vandaag opvolgen <span class="crm-count">${attention.length}</span></h3>${attention.length?crmTaskRows(attention):'<p class="muted">Geen klanten met een deadline vandaag of eerder.</p><button type="button" class="btn" data-crm-all-customers>Klanten bekijken</button>'}</section>
     <details class="crm-card crm-today-unplanned"><summary>Nog geen opvolgdatum <span class="crm-count">${unplanned.length}</span></summary><p class="muted">Open een klant en kies wanneer je contact wilt opnemen.</p>${crmTaskRows(unplanned)}</details></div>`;
 }
@@ -282,6 +287,8 @@ function bindCrm() {
     if(!data || $('#app').hidden)return;
     const done=e.target.closest('[data-crm-date-done]');
     if(done){crmFocusOpen.deadline[done.dataset.crmDateDone]=false;const editor=$('#crmDeadlineEdit');if(editor)editor.open=false;closeDatePop();closeTimePop();renderDetail(true);return;}
+    const closeNote=e.target.closest('[data-crm-close-note]');if(closeNote){crmFocusOpen.note[selectedId]=false;renderDetail(true);$('[data-crm-contact]')?.focus();return;}
+    const expandNote=e.target.closest('[data-crm-expand-note]');if(expandNote){const expanded=expandNote.closest('.crm-note-preview').classList.toggle('expanded');expandNote.setAttribute('aria-expanded',String(expanded));expandNote.textContent=expanded?'Kort weergeven':'Hele notitie lezen';return;}
     if(e.target.closest('[data-crm-show-data]')){crmSelectDetailTab('data');return;}
     const tab=e.target.closest('[data-crm-tab]');if(tab){crmSelectDetailTab(tab.dataset.crmTab);return;}
     const b=e.target.closest('[data-crm-open],[data-crm-action],[data-crm-complete],[data-crm-contact],[data-crm-loss],[data-crm-delcontact],[data-crm-first-contact],[data-crm-sales-project]');

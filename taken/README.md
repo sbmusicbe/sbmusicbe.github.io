@@ -37,7 +37,7 @@ Ook handig:
 |---|---|
 | `N` of `Q`, `Ctrl/⌘ K` | Nieuwe deal |
 | `/`, `Ctrl/⌘ F` | Zoeken |
-| `Ctrl/⌘ 1` | Klanten |
+| `Ctrl/⌘ 1` | Projecten |
 | `Ctrl/⌘ 5` | Verkopen (laatste maand) |
 | `Ctrl/⌘ ,` | Instellingen |
 | `Delete` | Open deal verwijderen |
@@ -46,18 +46,17 @@ Ook handig:
 
 ## Snel starten
 
-### Opvolging en verkoopdashboard
+### Rustige bediening en opvolging
 
-- **Vandaag doen** is het startscherm: één lijst met klanten die vandaag of eerder opgevolgd moeten worden, zonder dubbeltelling. Klanten zonder opvolgdatum staan in een optioneel onderdeel. Via **Klanten** ga je naar de volledige lijst. Op mobiel is Vandaag rechtstreeks beschikbaar.
+- **Projecten zijn het startpunt.** Vandaag doen, Klanten en Resultaten zijn verwijderd uit de navigatie. Je opent een project en ziet de klanten met hun opvolgdatum. Klanten zonder project blijven toegankelijk bij Zonder project. Oude snelkoppelingen openen de projectweergave.
 - **Opvolging via deadline**: in Terugbellen is de deadline de beldatum; in Antwoord op mail/Offerte is de deadline de datum om de offerte op te volgen. Er is geen tweede opvolgdatum nodig. De vaste kolommen worden ook na hernoemen herkend; gelijknamige aangepaste kolommen werken eveneens. Andere kolommen kunnen een aparte volgende actie krijgen.
-- **Taken met tabbladen** toont Overzicht & notities en Gegevens. De volgende stap, deadline, contactknoppen, notitieveld en eerdere gesprekken staan samen. Gegevens bevat de klant- en projectvelden. De tabbladen werken ook met de pijltoetsen, Home en End.
+- **Taken met tabbladen** toont Overzicht & notities en Gegevens. De volgende stap, deadline, contactknoppen, notitieveld en eerdere gesprekken staan samen. Gegevens bevat de klant- en projectvelden. De tabbladen werken ook met de pijltoetsen, Home en End. Het laatste gesprek is direct zichtbaar; eerdere gesprekken zijn uitklapbaar. Het schrijfveld opent via Notitie toevoegen, met datum en afbeeldingen onder extra opties.
 - **Eén zoekveld** op klanten- en projectpagina’s: de extra zoekknop bovenaan is daar verborgen. Op andere pagina’s blijft de zoekknop beschikbaar om naar klanten zoeken te gaan.
 - **Klant toevoegen** opent een kort formulier met naam en project. Contactgegevens en opvolging zijn optioneel. Annuleren maakt geen lege klant aan. In het dagoverzicht open je de klant om het gesprek vast te leggen. In het dealpaneel gebruik je *Notitie toevoegen*: je schrijft wat er besproken is en kunt optioneel een nieuwe opvolgdatum invullen. Voor deadline-opvolging worden bij afronden de deadline en het uur gewist. Ongedaan maken herstelt die gegevens, tenzij er intussen al een nieuwe actie gepland is.
 - **Eerste contactname** gebruikt je bestaande veld *Eerste x contactname*. De datum verschijnt bij Notities en is te bewerken in het tabblad Gegevens. Een nieuw contactmoment vult het veld in als het leeg is; een eerder contactmoment kan de datum vervroegen. Een bekende eerdere datum blijft bewaard.
 - **Contactnotities**: klik op *Notitie toevoegen*, schrijf wat er besproken is en klik op *Notitie bewaren*. Contactsoort en uitkomst zijn niet verplicht. Afbeeldingen kun je toevoegen of plakken. Een optionele nieuwe opvolgdatum past de planning aan; leeg laten behoudt de bestaande deadline. De eerste contactname wordt automatisch ingevuld als die nog ontbreekt. Eerdere contactmomenten, opmerkingen en bijlagen blijven samen zichtbaar, met de nieuwste bovenaan.
-- **Verliesreden** wordt gevraagd wanneer een deal naar een afgewerkte, niet-positieve stap gaat. Je kunt die later bij de deal aanpassen. Het dashboard groepeert deze redenen.
+- **Verliesreden** wordt gevraagd wanneer een deal naar een afgewerkte, niet-positieve stap gaat. Je kunt die later bij de deal aanpassen. Bestaande redenen blijven bij de klant bewaard.
 - **Duplicaatwaarschuwing** vergelijkt bedrijfsnamen/titels, e-mailadressen en telefoonnummers, ook tussen projecten. Belgische lokale en internationale telefoonnummers worden herkend. Een waarschuwing blokkeert niets en voegt niets automatisch samen.
-- **Resultaten** toont omzet, gemiddelde verkoopprijs, percentage gewonnen klanten, klanten om op te volgen, projectresultaten en omzet per maand. Je kunt filteren op maand en project en resultaten exporteren als CSV. Omzet gebruikt het eerste bedragveld en de maandpagina van de verkoop. Gemiddelden sluiten ontbrekende bedragen uit. Conversie gebruikt de afrondingsdatum van gewonnen/verloren deals; open deals tellen niet mee. Bestaande deals zonder afrondingsdatum tellen alleen bij alle maanden.
 - **Project per verkoop**: gewonnen deals nemen hun project mee. Onder de klantnaam staat een kleine projectnaam. Klik erop om het project in een apart venster te wijzigen; er staan geen grote selectievakken meer in de verkooptabel. Verkopen zonder project blijven zichtbaar in het totale dashboard.
 
 Alle functies werken lokaal en blijven in de bestaande versleutelde kluis. Er is geen AI, geen nieuwe externe dienst en geen databasewijziging nodig. Gebruik na de update de nieuwste appversie op al je toestellen. Maak zoals altijd eerst een back-up voordat je een oudere versie terugzet.
@@ -148,3 +147,5 @@ Nog niet gekozen. Zonder licentie blijft alle code van de eigenaar; voeg een `LI
 Veiligheidsproblemen: zie [`SECURITY.md`](SECURITY.md). Stuur nooit wachtwoorden of herstelsleutels mee.
 
 De dagelijkse bediening gebruikt knoppen met een naam, grotere invoervelden en leesbare tekst. In de lijst staan filters en volgorde bij Filteren. Wijzigingen in het klantpaneel en de invoertabel worden automatisch bewaard; notities en toevoegformulieren hebben een expliciete bewaarknop. Bij een verkoop blijven alle bestaande kolommen bewerkbaar, ook onbekende opgeslagen velden blijven behouden.
+
+De kaarten op het kolommenbord tonen alleen de naam, opvolgdatum en eventueel het project. Alle andere velden staan bij Gegevens. Afgeronde kolommen verschijnen bij het filter Afgerond of Alle klanten. De kleine invoer per kolom opent pas na een klik op het plusje. Weergave en filters delen één menu. Verkopen opent met een rustig overzicht; maand- en tabelopties staan apart. Agenda toont komende data, met een uitklapbare kalender.

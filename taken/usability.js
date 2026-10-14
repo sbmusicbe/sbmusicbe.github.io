@@ -1,15 +1,30 @@
 'use strict';
 /* Eenvoudige dagelijkse bediening; bestaande gegevens en workflows blijven behouden. */
+const CRM_EXTRA_VIEWS=[['agenda','Agenda'],['btw','BTW']];
+function crmHomeView() {
+  const project=sortedProjects().find(p=>p.id!=='inbox' && !p.finished);
+  if(project)return {type:'project',id:project.id};
+  if(data.tasks.some(t=>t.projectId==='inbox' || !data.projects.some(p=>p.id===t.projectId)))return {type:'inbox'};
+  const archived=sortedProjects().find(p=>p.id!=='inbox');
+  if(archived)return {type:'project',id:archived.id};
+  return {type:'all'};
+}
+function crmNeedsProject() {return view.type==='all' && !sortedProjects().some(p=>p.id!=='inbox' && !p.finished) && !data.tasks.length;}
 const crmListFilters = {};
 const crmListFilter = () => crmListFilters[viewKey()] ||= {status:'open',sort:data.settings.sort || 'due'};
+function crmBoardStages() {
+  const status=crmListFilter().status;
+  return stages().filter(s=>status==='all' || searchQ.trim() && status==='open' || status==='open' && !s.done || status==='done' && s.done || s.id===status);
+}
 function crmFilteredTasks() {
   const f=crmListFilter();
   return viewTasks(true).filter(t=>matchSearch(t,searchQ) && (f.status==='all' || searchQ.trim() && f.status==='open' || f.status==='open' && !t.done || f.status==='done' && t.done || t.stage===f.status));
 }
 function crmCustomerListHtml() {
   const tasks=crmFilteredTasks().sort(sortFn(crmListFilter().sort));
-  if(!tasks.length)return `<div class="crm-simple-empty"><h3>${searchQ?'Geen klant gevonden':'Geen klanten in deze lijst'}</h3><p>${searchQ?'Probeer een andere naam, telefoonnummer of notitie.':'Voeg een klant toe of kies een andere status bij Filteren.'}</p><button type="button" class="btn primary" data-qa>+ Klant toevoegen</button></div>`;
-  return `<p class="crm-list-caption">${tasks.length} ${searchQ?'zoekresultaten':tasks.length===1?'klant':'klanten'} · ${searchQ && crmListFilter().status==='open'?'Ook afgeronde klanten worden doorzocht.':'Klik op een naam om te openen.'}</p><div class="crm-customer-list">${tasks.map(t=>{
+  if(crmNeedsProject())return '<div class="crm-simple-empty"><h3>Begin met een project</h3><p>Gebruik Project toevoegen om je klanten samen te brengen.</p></div>';
+  if(!tasks.length)return `<div class="crm-simple-empty"><h3>${searchQ?'Geen klant gevonden':'Geen klanten in deze lijst'}</h3><p>${searchQ?'Probeer een andere naam, telefoonnummer of notitie.':'Voeg een klant toe of kies een andere status bij Weergave & filters.'}</p></div>`;
+  return `<p class="crm-list-caption">${tasks.length} ${searchQ?'zoekresultaten':tasks.length===1?'klant':'klanten'}${searchQ && crmListFilter().status==='open'?' · ook afgeronde klanten':''}</p><div class="crm-customer-list">${tasks.map(t=>{
     const a=t.done?null:crmEffectiveAction(t),date=a?.date || (!t.done?t.due:null),s=stageById(t.stage);
     const nameField=fieldsFor(t.projectId).find(f=>/^(naam|contactpersoon)$/i.test(f.name)),contact=nameField?t.custom[nameField.id]:'';
     return `<button type="button" class="crm-customer-row ${selectedId===t.id?'selected':''}" data-crm-open="${esc(t.id)}"><span class="crm-customer-name"><b>${esc(t.title || 'Zonder naam')}</b><small>${esc(proj(t.projectId).name)}${contact?' · '+esc(contact):''}</small></span><span class="crm-customer-status">${esc(s?.label || 'Nog geen status')}</span><span class="crm-customer-due ${date && date<today()?'crm-late':''}">${date?`${esc(dueLabel(date))}${t.time && date===t.due?' · '+esc(t.time):''}`:t.done?'Afgerond':'Nog geen opvolgdatum'}</span><span class="crm-row-arrow" aria-hidden="true">›</span></button>`;
@@ -17,13 +32,13 @@ function crmCustomerListHtml() {
 }
 function crmFilterLabel() {
   const status=crmListFilter().status;
-  return status==='open'?'Filteren':`Filteren · ${status==='done'?'Afgerond':status==='all'?'Alle klanten':stageById(status)?.label || status}`;
+  return status==='open'?'Weergave & filters':`Weergave & filters · ${status==='done'?'Afgerond':status==='all'?'Alle klanten':stageById(status)?.label || status}`;
 }
 function crmToolbarHtml() {
   const f=crmListFilter(), layout=data.settings.taskLayout || 'list';
   return `<label class="crm-search-label"><span class="sr-only">Zoek een klant</span><input class="search" id="tbSearch" type="search" placeholder="Zoek op naam, telefoon of notitie…" value="${esc(searchQ)}" autocomplete="off"></label>
-    <div class="crm-layout-switch" role="group" aria-label="Weergave"><button type="button" data-crm-layout="list" aria-pressed="${layout==='list'}">Lijst</button><button type="button" data-crm-layout="board" aria-pressed="${layout==='board'}">Kolommen</button></div>
-    <details class="crm-list-options"><summary>${esc(crmFilterLabel())}</summary><div><label>Status<select id="crmListStatus"><option value="open" ${f.status==='open'?'selected':''}>Nog op te volgen</option><option value="done" ${f.status==='done'?'selected':''}>Afgerond</option><option value="all" ${f.status==='all'?'selected':''}>Alle klanten</option>${stages().map(s=>`<option value="${esc(s.id)}" ${f.status===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></label><label>Volgorde<select id="crmListSort">${[['due','Eerstvolgende datum'],['title','Naam A–Z'],['newest','Nieuwste eerst'],['manual','Eigen volgorde']].map(([v,l])=>`<option value="${v}" ${f.sort===v?'selected':''}>${l}</option>`).join('')}</select></label></div></details>`;
+    <details class="crm-list-options"><summary>${esc(crmFilterLabel())}</summary><div class="crm-layout-switch" role="group" aria-label="Weergave"><button type="button" data-crm-layout="list" aria-pressed="${layout==='list'}">Lijst</button><button type="button" data-crm-layout="board" aria-pressed="${layout==='board'}">Kolommen</button></div>
+    <div><label>Status<select id="crmListStatus"><option value="open" ${f.status==='open'?'selected':''}>Nog op te volgen</option><option value="done" ${f.status==='done'?'selected':''}>Afgerond</option><option value="all" ${f.status==='all'?'selected':''}>Alle klanten</option>${stages().map(s=>`<option value="${esc(s.id)}" ${f.status===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></label><label>Volgorde<select id="crmListSort">${[['due','Eerstvolgende datum'],['title','Naam A–Z'],['newest','Nieuwste eerst'],['manual','Eigen volgorde']].map(([v,l])=>`<option value="${v}" ${f.sort===v?'selected':''}>${l}</option>`).join('')}</select></label></div></details>`;
 }
 function crmOpenNewCustomer() {
   const project=view.type==='project'?view.id:'inbox';
@@ -41,7 +56,7 @@ function crmOpenNewCustomer() {
       const custom={};for(const [rx,id,label] of [[/^(naam|contactpersoon)$/i,'crmCustomerPerson','Contactpersoon'],[/telefoon|gsm|mobiel/i,'crmCustomerPhone','Telefoonnummer'],[/e.?mail/i,'crmCustomerEmail','E-mailadres']]){const value=$('#'+id,d).value.trim();if(!value)continue;let field=fieldsFor(projectId).find(f=>f.type==='text' && rx.test(f.name));if(!field){field=touch({id:uid(),name:label,type:'text',order:data.fields.length,all:false,projectIds:[projectId],showInList:false});data.fields.push(field);}custom[field.id]=value;}
       d.close();const task=createTask({title:name,projectId,stage,due:date || null,noDefaultDue:true,custom,silent:true});
       if(date && !crmDeadlineActionType(task))crmSetNextAction(task,{type:'other',date,note:''});
-      save();if(view.type!=='project' || view.id!==projectId)setView({type:'all'});else renderAll();openTask(task.id);toast('Klant toegevoegd.');
+      save();if(view.type!=='project' || view.id!==projectId)setView({type:'project',id:projectId});else renderAll();openTask(task.id);toast(crmDuplicates(task).length?'Klant toegevoegd. Mogelijke dubbele klant: zie Gegevens.':'Klant toegevoegd.');
     };
   });
 }
@@ -54,7 +69,7 @@ function crmSalesListHtml(pg,rows,cols) {
     const client=c.client?r.values[c.client.id]:'',amount=c.amount?parseNl(r.values[c.amount.id]):null,date=dateCol?r.values[dateCol.id]:'';
     const other=cols.filter(col=>col.id!==c.client?.id && col.id!==c.amount?.id && col.id!==dateCol?.id).filter(col=>!isEmpty(r.values[col.id]));
     const project=r.projectId!==undefined?r.projectId:taskById(r.dealId || '')?.projectId;
-    return `<article class="crm-sale-card"><div><h3>${esc(client || 'Verkoop zonder klantnaam')}</h3><p>${date?esc(fmtDateInp(date)):'Datum ontbreekt'}${project?' · '+esc(proj(project).name):''}</p>${other.length?`<dl>${other.map(col=>`<div><dt>${esc(col.name)}</dt><dd>${esc(col.type==='money'?eur(parseNl(r.values[col.id])):r.values[col.id])}</dd></div>`).join('')}</dl>`:''}</div><div class="crm-sale-card-actions"><b>${amount===null?'Bedrag ontbreekt':esc(eur(amount))}</b><button type="button" class="btn" data-crm-sale-edit="${esc(r.id)}">Bewerken</button></div></article>`;
+    return `<article class="crm-sale-card"><div><h3>${esc(client || 'Verkoop zonder klantnaam')}</h3><p>${date?esc(fmtDateInp(date)):'Datum ontbreekt'}${project?' · '+esc(proj(project).name):''}</p>${other.length?`<details class="crm-sale-extra"><summary>Omschrijving en details</summary><dl>${other.map(col=>`<div><dt>${esc(col.name)}</dt><dd>${esc(col.type==='money'?eur(parseNl(r.values[col.id])):r.values[col.id])}</dd></div>`).join('')}</dl></details>`:''}</div><div class="crm-sale-card-actions"><b>${amount===null?'Bedrag ontbreekt':esc(eur(amount))}</b><button type="button" class="btn" data-crm-sale-edit="${esc(r.id)}">Bewerken</button></div></article>`;
   }).join('') || '<div class="crm-simple-empty"><h3>Nog geen verkopen deze maand</h3><p>Klik op Verkoop toevoegen om je eerste verkoop in te vullen.</p></div>'}</div>`;
 }
 function crmSaleInput(col,r,pg) {
@@ -93,11 +108,12 @@ function crmOpenSaleEditor(row) {
   });
 }
 function crmSalesToolsHtml(pg) {
-  return `<div class="crm-sales-tools"><label>Maand<select id="crmSalesMonth">${sortedSalesPages().map(p=>`<option value="${esc(p.id)}" ${p.id===pg.id?'selected':''}>${esc(p.title)}</option>`).join('')}</select></label><button type="button" class="btn" data-crm-new-month>+ Nieuwe maand</button><div class="crm-layout-switch" role="group" aria-label="Verkoopweergave"><button type="button" data-crm-sales-layout="list" aria-pressed="${crmSalesLayout==='list'}">Overzicht</button><button type="button" data-crm-sales-layout="table" aria-pressed="${crmSalesLayout==='table'}">Tabel bewerken</button></div></div>`;
+  return `<div class="crm-sales-tools"><label>Maand<select id="crmSalesMonth">${sortedSalesPages().map(p=>`<option value="${esc(p.id)}" ${p.id===pg.id?'selected':''}>${esc(p.title)}</option>`).join('')}</select></label><details class="crm-sales-options" data-crm-disclosure="sales-options" ${crmMoreOpen['sales-options']?'open':''}><summary>Maand en weergave aanpassen</summary><button type="button" class="btn" data-crm-new-month>+ Nieuwe maand</button><div class="crm-layout-switch" role="group" aria-label="Verkoopweergave"><button type="button" data-crm-sales-layout="list" aria-pressed="${crmSalesLayout==='list'}">Overzicht</button><button type="button" data-crm-sales-layout="table" aria-pressed="${crmSalesLayout==='table'}">Tabel bewerken</button></div></details></div>`;
 }
 function crmPrimaryAction() {
   if(view.type==='sales')crmOpenSaleEditor();
   else if(view.type==='agenda')openEventDialog(null,agendaSel || today());
+  else if(crmNeedsProject())openProjectDialog(null);
   else crmOpenNewCustomer();
 }
 function bindUsability() {
