@@ -107,7 +107,8 @@ function crmSaveNote(t, text, imgs = [], date = '') {
   return item;
 }
 function crmSelectDetailTab(tab, focus = false) {
-  if (!['overview','notes','data'].includes(tab) || !selectedId) return;
+  if (tab === 'notes') tab = 'overview';
+  if (!['overview','data'].includes(tab) || !selectedId) return;
   crmDetailTabs[selectedId] = tab;
   for (const b of document.querySelectorAll('[data-crm-tab]')) {
     const active = b.dataset.crmTab === tab;
@@ -118,8 +119,8 @@ function crmSelectDetailTab(tab, focus = false) {
   closeDatePop(); closeTimePop();
 }
 function crmTabsHtml(t) {
-  const active = crmDetailTabs[t.id] || 'overview';
-  return `<div class="crm-detail-tabs" role="tablist" aria-label="Onderdelen van deze taak">${[['overview','Overzicht'],['notes','Notities'],['data','Gegevens']].map(([key,label])=>`<button type="button" role="tab" id="crmTab-${key}" data-crm-tab="${key}" aria-controls="crmPanel-${key}" aria-selected="${active===key}" tabindex="${active===key?0:-1}">${label}</button>`).join('')}</div>`;
+  const active = crmDetailTabs[t.id] === 'data' ? 'data' : 'overview';
+  return `<div class="crm-detail-tabs" role="tablist" aria-label="Onderdelen van deze taak">${[['overview','Overzicht & notities'],['data','Gegevens']].map(([key,label])=>`<button type="button" role="tab" id="crmTab-${key}" data-crm-tab="${key}" aria-controls="crmPanel-${key}" aria-selected="${active===key}" tabindex="${active===key?0:-1}">${label}</button>`).join('')}</div>`;
 }
 function crmOpenContactDialog(t) {
   if (selectedId !== t.id) openTask(t.id);
@@ -273,8 +274,8 @@ function bindCrm() {
   $('#detail').addEventListener('keydown', e=>{
     const tab=e.target.closest('[data-crm-tab]');
     if(!tab || !['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
-    e.preventDefault();const keys=['overview','notes','data'],i=keys.indexOf(tab.dataset.crmTab);
-    crmSelectDetailTab(keys[e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3],true);
+    e.preventDefault();const keys=['overview','data'],i=keys.indexOf(tab.dataset.crmTab);
+    crmSelectDetailTab(keys[e.key==='Home'?0:e.key==='End'?1:(i+1)%2],true);
   });
   $('#detail').addEventListener('change',e=>{if(e.target.id==='crmNoteDate')crmNoteDates[selectedId]=e.target.value;});
   document.addEventListener('click',async e=>{

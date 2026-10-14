@@ -991,9 +991,9 @@ button,.nav-item,.card,.seg button,select{cursor:default}
 .crm-note-save{width:100%}
 .crm-notes-heading{font-size:15px;font-weight:500;margin:28px 0 16px}
 #crmPanel-data .prop{font-size:14px}
-#crmPanel-notes .crm-history p{font-size:14px;line-height:1.65}
-#crmPanel-notes .crm-history-head b{font-size:14px}
-#crmPanel-notes .crm-history-head time{font-size:12px}
+#crmHistory .crm-history p{font-size:14px;line-height:1.65}
+#crmHistory .crm-history-head b{font-size:14px}
+#crmHistory .crm-history-head time{font-size:12px}
 
 .crm-legacy-note{padding:16px;background:var(--raised);border-radius:10px;margin-top:24px}
 .crm-legacy-note h3{font-size:14px;margin:0 0 8px;font-weight:500}

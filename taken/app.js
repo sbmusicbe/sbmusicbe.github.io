@@ -923,7 +923,7 @@ function tourSteps() {
     {el:()=>mob?q('#tabBar [data-tab=today]'):navBy(/Vandaag/),title:'Wat doe ik vandaag?',text:'Open Vandaag voor klanten die je nu moet opvolgen. Open een klant om te bellen, te mailen of een notitie te bewaren.'},
     {el:()=>mob?q('#tabBar [data-tab=all]'):navBy(/Klanten/),title:'Je klanten terugvinden',text:'Open Klanten. Je ziet een lijst met naam, status en opvolgdatum. Met het zoekveld vind je een klant snel terug.'},
     {el:()=>q('#topHelp'),title:'Hulp is dichtbij',text:'Bij Hulp vind je korte uitleg. Instellingen en Back-ups staan in het menu.'},
-    {title:'Aan de slag',text:'Begin met een klant. In het klantpaneel staan Overzicht, Notities en Gegevens.'},
+    {title:'Aan de slag',text:'Begin met een klant. Overzicht en notities staan samen; Gegevens staat apart.'},
   ];
 }
 let tourOn = false;
@@ -1393,6 +1393,7 @@ function renderHead() {
   document.title = 'Klose';   // nooit projectnamen in de tabnaam (browsergeschiedenis, schermdelen)
   $('#tbTitle').textContent = `${viewTitle()} — Klose`;
   $('#miniTitle').textContent = viewTitle();
+  $('#topSearch').hidden = !isPageView() && view.type !== 'sales';
   const add=$('#primaryAdd');add.hidden=['btw','dashboard'].includes(view.type);add.textContent=view.type==='sales'?'+ Verkoop toevoegen':view.type==='agenda'?'+ Datum toevoegen':'+ Klant toevoegen';
 }
 function renderToolbar() {
@@ -1652,12 +1653,12 @@ function renderDetail(force) {
       <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
       <label class="crm-status-label">Status<select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label><p class="crm-autosave-note">Wijzigingen worden automatisch bewaard.</p>
       ${crmTabsHtml(t)}
-      <section id="crmPanel-overview" role="tabpanel" aria-labelledby="crmTab-overview" data-crm-panel="overview" ${crmDetailTabs[t.id] && crmDetailTabs[t.id]!=='overview' ? 'hidden' : ''}>
+      <section id="crmPanel-overview" role="tabpanel" aria-labelledby="crmTab-overview" data-crm-panel="overview" ${crmDetailTabs[t.id]==='data' ? 'hidden' : ''}>
       ${crmFocusHtml(t)}
       ${crmContactSummaryHtml(t)}
       ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
+      ${crmDetailHtml(t)}
       </section>
-      <section id="crmPanel-notes" role="tabpanel" aria-labelledby="crmTab-notes" data-crm-panel="notes" ${crmDetailTabs[t.id]==='notes' ? '' : 'hidden'}>${crmDetailHtml(t)}</section>
       <section id="crmPanel-data" role="tabpanel" aria-labelledby="crmTab-data" data-crm-panel="data" ${crmDetailTabs[t.id]==='data' ? '' : 'hidden'}>
         <div class="props">
         ${t.notes ? `<label class="prop"><span>Notities</span><textarea id="dNotes" rows="2" aria-label="Notities">${esc(t.notes)}</textarea></label>` : ''}
