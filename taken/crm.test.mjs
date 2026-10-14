@@ -237,11 +237,13 @@ test('simple note validation is atomic and supports image-only notes',()=>{
   assert.equal(r('data.comments.length'),0);assert.equal(r('data.tasks[0].due'),r('today()'));
   r("crmSaveNote(data.tasks[0],'',['data:image/jpeg;base64,YQ=='])");assert.equal(r('data.comments[0].imgs.length'),1);
 });
-test('task tabs expose three accessible panels with Overview as default',()=>{
+test('task tabs combine overview and notes and keep data separate',()=>{
   const r=runtime();r("data.tasks=[makeTask('a')]");const html=r('crmTabsHtml(data.tasks[0])');
-  assert.equal((html.match(/role="tab"/g)||[]).length,3);
+  assert.equal((html.match(/role="tab"/g)||[]).length,2);
+  assert.match(html,/Overzicht & notities/);assert.doesNotMatch(html,/crmTab-notes/);
   assert.match(html,/data-crm-tab="overview"[^>]*aria-selected="true"/);
-  r("crmDetailTabs.a='notes'");assert.match(r('crmTabsHtml(data.tasks[0])'),/data-crm-tab="notes"[^>]*aria-selected="true"/);
+  r("crmDetailTabs.a='notes'");assert.match(r('crmTabsHtml(data.tasks[0])'),/data-crm-tab="overview"[^>]*aria-selected="true"/);
+  r("crmDetailTabs.a='data'");assert.match(r('crmTabsHtml(data.tasks[0])'),/data-crm-tab="data"[^>]*aria-selected="true"/);
 });
 
 test('existing contact details and task notes remain visible in the new notes tab',()=>{
