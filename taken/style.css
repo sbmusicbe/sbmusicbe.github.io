@@ -1189,3 +1189,12 @@ body{font-size:15px;line-height:1.5}
 @media(max-width:860px){.crm-sales-options{margin-left:0;width:100%}}
 .crm-note-options>summary::before,.crm-past-notes>summary::before,.crm-sales-options>summary::before,.crm-sale-extra>summary::before,.crm-agenda-calendar>summary::before,.crm-hidden-cols>summary::before{content:'+';display:inline-block;flex:none;margin-right:8px;font-size:17px;color:var(--ink-muted)}
 .crm-note-options[open]>summary::before,.crm-past-notes[open]>summary::before,.crm-sales-options[open]>summary::before,.crm-sale-extra[open]>summary::before,.crm-agenda-calendar[open]>summary::before,.crm-hidden-cols[open]>summary::before{content:'−'}
+/* Projectnotities: één rustige regel, pas geopend wanneer nodig. */
+#projectNotes{margin:-6px 0 18px}
+.crm-project-notes>summary{display:flex;align-items:center;gap:8px;min-height:40px;color:var(--ink-muted);font-size:14px;cursor:pointer;list-style:none}
+.crm-project-notes>summary::-webkit-details-marker{display:none}
+.crm-project-notes>summary::before{content:'+';width:16px;text-align:center;font-size:17px}
+.crm-project-notes[open]>summary::before{content:'−'}
+.crm-project-notes-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.crm-project-notes textarea{display:block;width:100%;min-height:100px;margin-top:8px;padding:12px;font-size:16px;line-height:1.5;resize:vertical}
+.crm-project-notes p{margin:8px 0 0;font-size:12px}
