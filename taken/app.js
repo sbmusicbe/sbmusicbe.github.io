@@ -1104,12 +1104,12 @@ function displayValue(f, v) {
   }
 }
 // Ingevulde velden op de kaart: elk veld op een eigen regel ("Label: waarde").
-function fieldLines(t) {
+function fieldLines(t, includeAll = false) {
   const out = [];
   const line = (f, html) => out.push(`<div class="t-field"><span class="tf-l">${esc(f.name)}</span><span class="tf-v">${html}</span></div>`);
   const pill = o => `<span class="chip opt" style="--c:${o.color}">${esc(o.label)}</span>`;
   for (const f of fieldsFor(t.projectId)) {
-    if (!f.showInList) continue;
+    if (!includeAll && !f.showInList) continue;
     const v = t.custom[f.id];
     if (isEmpty(v)) continue;
     if (f.type === 'select') { const o = optOf(f, v); if (o) line(f, pill(o)); }
@@ -1220,7 +1220,7 @@ function taskMeta(t) {
     meta.push(`<span class="chip"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`);
   }
 
-  return meta.length ? `<div class="t-meta">${meta.join('')}</div>` : '';
+  return (meta.length ? `<div class="t-meta">${meta.join('')}</div>` : '') + (['project','inbox'].includes(view.type) ? fieldLines(t, true) : '');
 }
 // icoon links boven op de kaart: emoji van het project, anders de beginletter in de projectkleur
 function taskIcon(t) {

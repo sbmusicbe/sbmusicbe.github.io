@@ -60,7 +60,7 @@ function crmOpenNewCustomer() {
     };
   });
 }
-let crmSalesLayout='list';
+let crmSalesLayout='table';
 const crmMoreOpen={};
 function crmSalesListHtml(pg,rows,cols) {
   const c=winCols(),dateCol=c.date;
