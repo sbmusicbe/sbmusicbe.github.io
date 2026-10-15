@@ -1,6 +1,6 @@
 'use strict';
 /* Eenvoudige dagelijkse bediening; bestaande gegevens en workflows blijven behouden. */
-const CRM_EXTRA_VIEWS=[['agenda','Agenda'],['btw','BTW']];
+const CRM_EXTRA_VIEWS=[['agenda','Kalender'],['btw','BTW']];
 function crmHomeView() {
   const project=sortedProjects().find(p=>p.id!=='inbox' && !p.finished);
   if(project)return {type:'project',id:project.id};
