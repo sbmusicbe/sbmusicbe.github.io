@@ -16,6 +16,9 @@ test('iOS presentation is loaded, cached offline and isolated from print',()=>{
  assert.match(css,/:root\[data-theme="dark"\]/);
  assert.match(css,/@media\(prefers-color-scheme:dark\)/);
  assert.match(css,/prefers-reduced-transparency/);
+ assert.match(css,/--glass-surface:color-mix\(in srgb,var\(--canvas\) 64%,transparent\)/);
+ assert.match(css,/backdrop-filter:blur\(28px\) saturate\(150%\)/);
+ assert.match(css,/@supports.*backdrop-filter/);
  assert.match(app,/getPropertyValue\('--canvas'\)/);
 });
 const section=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
