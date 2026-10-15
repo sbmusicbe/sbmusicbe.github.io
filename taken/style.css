@@ -1204,3 +1204,38 @@ body{font-size:15px;line-height:1.5}
 .crm-status-filter{min-width:0;max-width:100%}
 .crm-status-filter select{min-height:46px;max-width:100%;font-size:14px;border-radius:10px}
 @media(max-width:640px){.crm-status-filter{flex:1}.crm-status-filter select{width:100%}}
+
+/* Compacte taakdetails, met leesbare labels en voldoende klikruimte. */
+#detail .d-body{padding-top:10px;padding-bottom:24px}
+#detail .crm-status-label{margin-top:6px}
+#detail .crm-focus-status{margin-top:0}
+#detail .crm-focus-next{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:12px 0;padding-bottom:12px}
+.crm-focus-plan{flex:1;min-width:145px}
+#detail .crm-focus-next h3{font-size:18px;line-height:1.35;margin:2px 0 4px}
+.crm-focus-actions{display:flex;flex-direction:column;align-items:flex-end;gap:4px;max-width:100%}
+#detail .crm-focus-primary{width:auto;margin:0;min-height:40px;padding:8px 12px;font-size:14px}
+#detail .crm-complete-link{margin:0;min-height:36px;font-size:13px}
+.crm-focus-plan:has(.crm-focus-date[open]),.crm-focus-plan:has(.crm-focus-action-note){flex-basis:100%}
+#detail .crm-focus-person{margin-bottom:10px;gap:10px}
+#detail .crm-focus-person b{margin-top:0}
+#detail .crm-note-preview h3{margin:0 0 6px}
+#detail .crm-history p{margin-top:4px;margin-bottom:8px}
+#detail .crm-past-notes{margin-top:10px;padding:0}
+#detail .crm-data-heading{margin:14px 0 6px}
+#detail .props{margin-top:6px;padding:0 10px;border-radius:10px}
+#detail .prop{padding:4px 0;gap:6px;grid-template-columns:112px minmax(0,1fr)}
+#detail .crm-focus-date-fields .prop{grid-template-columns:64px minmax(0,1fr)}
+#detail .crm-task-options{margin:10px 0}
+#detail .crm-autosave-note{margin:8px 0 0}
+#detail .crm-note-composer{padding:12px 0;margin:8px 0 12px}
+#detail .crm-note-composer>textarea{min-height:88px}
+#detail .crm-note-options{margin:8px 0}
+#detail .crm-note-composer>label:first-child{margin-bottom:6px}
+@media(pointer:fine){
+#detail .prop input:not([type=checkbox]),#detail .prop select{min-height:36px}
+}
+@container(max-width:320px){
+.crm-focus-actions{width:100%;align-items:stretch}
+#detail .crm-focus-primary{width:100%}
+#detail .prop{grid-template-columns:88px minmax(0,1fr)}
+}
