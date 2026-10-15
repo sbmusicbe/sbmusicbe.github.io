@@ -1509,7 +1509,7 @@ function createTask(r, stage, top) {
     id:uid(), title:r.title, notes:'', projectId,
     due:r.noDefaultDue ? r.due || null : r.due || (view.type === 'today' ? today() : null), time:r.time || null,
     stage, done:isDoneStage(stage), doneAt:isDoneStage(stage) ? now() : null,
-    createdAt:now(), crmActivityAt:now(), order:now(), custom:r.custom,
+    createdAt:now(), crmActivityAt:now(), order:now(), custom:r.custom || {},
   });
   // een deal zonder deadline komt helemaal bovenaan de kolom (nieuw werk dat nog opgepakt moet worden); met deadline onderaan zoals voorheen
   if (top || !t.due) { const os = data.tasks.filter(x => x.stage === stage).map(x => x.order || 0); if (os.length) t.order = Math.min(...os) - 1; }
@@ -1524,6 +1524,7 @@ function createTask(r, stage, top) {
     }
   }
   data.tasks.push(t);
+  if(isWinStage(t.stage) && !crmHasWinPrice(t)){t.stage=firstOpen().id;t.done=false;t.doneAt=null;setTimeout(()=>crmOpenWinDialog(t,stage),0);}
   commit();
   if (crmDuplicates(t).length) toast('Mogelijk dubbele deal: bekijk de waarschuwing bij de deal.');
   if (!r.silent && !viewTasks(true).some(x => x.id === t.id)) toast(`Toegevoegd aan ${proj(projectId).name}`);
@@ -1532,6 +1533,7 @@ function createTask(r, stage, top) {
 /* ---------------- Task actions ---------------- */
 // Verplaatst een kaart naar een kolom.
 function setStage(t, st) {
+  if(isWinStage(st) && !crmHasWinPrice(t)){setTimeout(()=>crmOpenWinDialog(t,st),0);return false;}
   const wasLost = crmLostStage(t.stage), changed = t.stage !== st;
   if (isDoneStage(st) && (!t.done || changed)) t.doneAt = now();
   if (!isDoneStage(st)) t.doneAt = null;
@@ -1543,6 +1545,7 @@ function undoFor(t) {
   return () => { const x = taskById(id); if (x) { Object.assign(x, prev); touch(x); commit(); } };
 }
 function stageToast(t, res, undo) {
+  if(res===false)return;
   if (t.done) toast(`Afgewerkt: ${stageById(t.stage).label}`, undo);
 }
 /* ---- Beweging (apple-design): paneel schuift in en uit langs dezelfde kant.
@@ -1654,6 +1657,7 @@ function renderDetail(force) {
       <label class="crm-status-label">Status<select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
       <section id="crmPanel-overview" aria-label="Opvolging en notities">
       ${crmFocusHtml(t)}
+      ${isWinStage(t.stage) && !crmHasWinPrice(t)?`<p class="crm-warning">Afgesproken bedrag ontbreekt. <button type="button" class="link" data-crm-win="${esc(t.id)}">Bedrag invullen</button></p>`:''}
       ${crmContactSummaryHtml(t)}
       ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
       ${crmDetailHtml(t)}
@@ -2727,7 +2731,7 @@ function fillWinRow(r, t) {
     data.salesCols.push(touch({id:uid(), name:'Formaat', type:'format', fmtMig:true, order:top + 1})); c = winCols();
   }
   const put = (col, val) => { if (!col) return; const same = val == null || val === '' ? r.values[col.id] === undefined : r.values[col.id] === val; if (same) return; if (val == null || val === '') delete r.values[col.id]; else r.values[col.id] = val; changed = true; };
-  put(c.client, v.title); put(c.amount, v.price); put(c.format, v.format);
+  put(c.client, v.title); if(crmHasWinPrice(t))put(c.amount, v.price); put(c.format, v.format);
   return changed;
 }
 function syncWins() {
@@ -2738,8 +2742,9 @@ function syncWins() {
     if (!win && !t.wonAt) continue;
     byId ||= new Map(data.sales.map(r => [r.id, r]));
     const rid = 'w_' + t.id, row = byId.get(rid);
-    if (win && !t.wonAt) {
-      t.wonAt = now(); touch(t); changed = true;
+    if (win && (!t.wonAt || t.crmMakeWinRow && !row)) {
+      if(!crmHasWinPrice(t))continue;
+      t.wonAt ||= now();delete t.crmMakeWinRow;touch(t); changed = true;
       const month = ymd(new Date(t.wonAt)).slice(0, 7), c = winCols();
       let pg = data.salesPages.find(x => x.month === month);
       if (!pg) { pg = touch({id:uid(), title:monthTitle(month), month, notes:'', target:null, workdays:null, order:now()}); data.salesPages.push(pg); }
@@ -2853,7 +2858,7 @@ function cellInput(c, r) {
   if (c.id === winCols().client?.id) {
     const pid = r.projectId !== undefined ? r.projectId : taskById(r.dealId || (r.id.startsWith('w_') ? r.id.slice(2) : ''))?.projectId || '';
     const name = pid ? data.projects.find(p => p.id === pid)?.name || 'Verwijderd project' : 'Project koppelen';
-    return `<div class="crm-sales-client">${input}<button type="button" class="crm-sales-project-btn" data-crm-sales-project="${esc(r.id)}" title="Project aanpassen" aria-label="Project aanpassen: ${esc(name)}">${esc(name)}<span aria-hidden="true">⌄</span></button></div>`;
+    return `<div class="crm-sales-client">${input}<button type="button" class="crm-sales-project-btn" data-crm-sales-project="${esc(r.id)}" title="Project aanpassen" aria-label="Project aanpassen: ${esc(name)}">${esc(name)}<span aria-hidden="true">⌄</span></button>${r.dealId?`<button type="button" class="crm-sales-project-btn" data-crm-open="${esc(r.dealId)}" title="Naam, bedrag, formaat en project blijven gelijk in taak en verkoop">Gekoppelde taak ↗</button>`:''}</div>`;
   }
   return input;
 }
@@ -3007,7 +3012,7 @@ function openFormatPop(cell) {
     else { const o = b.dataset.fmt; cur = cur.includes(o) ? cur.filter(x => x !== o) : [...cur, o]; }
     const nv = FORMATS.filter(o => cur.includes(o)).join(', ');
     if (nv) r.values[colId] = nv; else delete r.values[colId];
-    delete r.dealId;
+    crmUpdateLinkedSale(r,[colId]);
     touch(r); save(true); draw();
     const live = $(`tr[data-row="${r.id}"] .cell[data-col="${colId}"]`); if (live) live.innerHTML = fmtChips(r.values[colId]);
   });
@@ -3025,8 +3030,9 @@ sp.addEventListener('input', e => {
   const r = data.sales.find(x => x.id === cell.closest('tr').dataset.row); if (!r) return;
   const c = data.salesCols.find(x => x.id === cell.dataset.col);
   const v = c.type === 'money' || c.type === 'number' ? toNum(cell.value) : cell.value;
+  if(r.dealId && c.id===winCols().amount?.id && (v===null || v==='' || !Number.isFinite(v) || v<0))return;
   if (v === null || v === '') delete r.values[c.id]; else r.values[c.id] = v;
-  delete r.dealId;   // handmatig aangepast: de regel volgt de deal niet meer
+  crmUpdateLinkedSale(r,[c.id]);
   touch(r); save(true); updateSalesTotals();
 });
 sp.addEventListener('change', e => {
@@ -3947,7 +3953,7 @@ function renderPage(force) {
 const EV_TYPES = [['druk', 'Drukdatum'], ['deadline', 'Deadline'], ['verschijning', 'Verschijning'], ['anders', 'Anders']];
 const evTypeLabel = k => (EV_TYPES.find(x => x[0] === k) || EV_TYPES[0])[1];
 const evSorted = () => [...data.events].sort((a, b) => a.date.localeCompare(b.date) || (a.order || 0) - (b.order || 0));
-const eventsSoon = () => { const td = today(), wk = addDays(td, 6); return data.events.filter(e => e.date >= td && e.date <= wk).length; };
+const eventsSoon = () => { const td = today(), wk = addDays(td, 6); return crmCalendarItems().filter(e => e.date >= td && e.date <= wk).length; };
 // kort: wat je in de kalender en lijst ziet (de kleur toont de soort al)
 const evShort = e => e.title || e.edition || (e.projectId && data.projects.find(p => p.id === e.projectId)?.name) || evTypeLabel(e.type);
 const evTitle = e => e.title || [evTypeLabel(e.type), e.edition || (e.projectId && data.projects.find(p => p.id === e.projectId)?.name) || ''].filter(Boolean).join(' ');
@@ -3974,10 +3980,10 @@ function agendaHtml() {
   const [y, mo] = agendaMonth.split('-').map(Number), td = today();
   const first = new Date(y, mo - 1, 1), start = new Date(first); start.setDate(1 - (first.getDay() + 6) % 7);
   const weeks = Math.ceil(((first.getDay() + 6) % 7 + new Date(y, mo, 0).getDate()) / 7);
-  const byDay = new Map(); for (const e of evSorted()) { if (!byDay.has(e.date)) byDay.set(e.date, []); byDay.get(e.date).push(e); }
+  const byDay = new Map(); for (const e of crmCalendarItems()) { if (!byDay.has(e.date)) byDay.set(e.date, []); byDay.get(e.date).push(e); }
   const hol = beHolidays(y);
   const chip = e => { const pr = e.projectId && data.projects.find(p => p.id === e.projectId);
-    return `<button type="button" class="ev ev-${esc(e.type || 'druk')}" data-ev="${e.id}" title="${esc(evTypeLabel(e.type))}: ${esc(evTitle(e))}${e.note ? ' — ' + esc(e.note) : ''}">${pr ? `<span class="dot" style="background:${pr.color}"></span>` : ''}<span class="ev-t">${esc(evShort(e))}</span></button>`; };
+    return `<button type="button" class="ev ev-${esc(e.type || 'druk')}" ${e.taskId?`data-task="${esc(e.taskId)}"`:`data-ev="${esc(e.id)}"`} title="${esc(evTypeLabel(e.type))}: ${esc(evTitle(e))}${e.note ? ' — ' + esc(e.note) : ''}">${pr ? `<span class="dot" style="background:${pr.color}"></span>` : ''}<span class="ev-t">${esc(evShort(e))}</span></button>`; };
   let cells = '';
   for (let i = 0; i < weeks * 7; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i); const k = ymd(d), evs = byDay.get(k) || [];
@@ -3988,7 +3994,7 @@ function agendaHtml() {
   }
   const selList = agendaSel ? (byDay.get(agendaSel) || []) : null;
   const row = e => { const pr = e.projectId && data.projects.find(p => p.id === e.projectId);
-    return `<li><button type="button" data-ev="${e.id}"><span class="ev-bar ev-${esc(e.type || 'druk')}"></span><span class="nm"><b>${esc(evShort(e))}</b><small>${[evTypeLabel(e.type), e.title ? e.edition : '', pr && evShort(e) !== pr.name ? pr.name : ''].filter(Boolean).map(esc).join(' · ')}</small></span><span class="meta"><b>${dayLabel(e.date)}</b><small class="${e.date === td ? 'now' : ''}">${countdown(e.date)}</small></span></button></li>`; };
+    return `<li><button type="button" ${e.taskId?`data-task="${esc(e.taskId)}"`:`data-ev="${esc(e.id)}"`}><span class="ev-bar ev-${esc(e.type || 'druk')}"></span><span class="nm"><b>${esc(evShort(e))}</b><small>${[e.taskId?e.note:evTypeLabel(e.type), e.time, e.title ? e.edition : '', pr && evShort(e) !== pr.name ? pr.name : ''].filter(Boolean).map(esc).join(' · ')}</small></span><span class="meta"><b>${dayLabel(e.date)}</b><small class="${e.date === td ? 'now' : ''}">${countdown(e.date)}</small></span></button></li>`; };
   return `<div class="crm-agenda-simple">
     <div class="pg-bar">
       <div class="ag-nav"><button type="button" class="icon-btn" data-amonth="-1" aria-label="Vorige maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -4108,6 +4114,7 @@ pv.addEventListener('click', e => {
   const t = e.target;
   if (t.closest('#evNew')) { openEventDialog(null, agendaSel || (agendaMonth === today().slice(0, 7) ? today() : agendaMonth + '-01')); return; }
   const evb = t.closest('[data-ev]'); if (evb) { const ev = data.events.find(x => x.id === evb.dataset.ev); if (ev) openEventDialog(ev); return; }
+  const taskButton=t.closest('[data-task]');if(taskButton){openTask(taskButton.dataset.task);return;}
   const nwo = t.closest('[data-newon]'); if (nwo) { openEventDialog(null, nwo.dataset.newon); return; }
   const am = t.closest('[data-amonth]'); if (am) { const k = +am.dataset.amonth; if (!k) { agendaMonth = today().slice(0, 7); agendaSel = today(); } else { const [y, m] = agendaMonth.split('-').map(Number); agendaMonth = ymd(new Date(y, m - 1 + k, 1)).slice(0, 7); } renderPage(true); return; }
   const dayEl = t.closest('[data-day]');

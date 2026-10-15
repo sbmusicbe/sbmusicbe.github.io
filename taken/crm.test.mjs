@@ -50,7 +50,7 @@ function runtime() {
     const fmtDateInp=s=>s?s.split('-').reverse().join('/'):'';
     const I={trash:'x'};
     const commentDrafts={},pendingImgs={},pendingHtml=()=>'',imgsHtml=()=>'';
-    let undo=null;const commit=()=>{};const toast=(m,fn)=>{undo=fn;};
+    let undo=null,dialogHtml='';const showDialog=html=>{dialogHtml=html;};const commit=()=>{};const toast=(m,fn)=>{undo=fn;};
     ${crm}
     let view={type:'all'},searchQ='';const viewKey=()=>view.type==='project'?'p:'+view.id:view.type;
     ${section('function optOf(', '/* ---------------- Task list') }
@@ -106,8 +106,8 @@ test('contact logging validates before mutating; saves outcome and subsequent ac
 });
 
 test('completed action gets a contact record; undo preserves a newer follow-up',()=>{
-  const r=runtime();r("data.tasks=[makeTask('a',{nextAction:{type:'email',date:today(),note:'Offerte'}})];crmCompleteAction(data.tasks[0])");
-  assert.equal(r('data.tasks[0].nextAction'),null);assert.equal(r('data.activities.length'),1);
+  const r=runtime();r("data.tasks=[makeTask('a',{nextAction:{type:'email',date:today(),note:'Offerte'}})];crmCompleteAction(data.tasks[0],{date:'2026-10-14'})");
+  assert.equal(r('data.tasks[0].nextAction.date'),'2026-10-14');assert.equal(r('data.activities.length'),1);
   r("crmSetNextAction(data.tasks[0],{type:'call',date:'2026-10-15'});undo()");
   assert.equal(r('data.activities.length'),0);assert.equal(r('data.tasks[0].nextAction.date'),'2026-10-15');
   assert.ok(r('Object.keys(data.deleted).length'));
@@ -161,7 +161,7 @@ test('conversion and loss reasons use completion month rather than all open deal
 });
 
 test('switching a completed deal to another outcome updates its completion date',()=>{
-  const r=runtime();r("data.tasks=[makeTask('deal',{stage:'negative',done:true,doneAt:parseYmd('2026-09-10').getTime()})];setStage(data.tasks[0],'positive')");
+  const r=runtime();r("data.tasks=[makeTask('deal',{stage:'negative',done:true,doneAt:parseYmd('2026-09-10').getTime()})];crmSetWinPrice(data.tasks[0],150);setStage(data.tasks[0],'positive')");
   assert.equal(r('data.tasks[0].doneAt'),r('now()'));
   assert.equal(r("crmSalesReport('2026-10','').won"),1);
 });
@@ -198,11 +198,11 @@ test('custom column labels map to deadline follow-up without relying on fixed id
   r("crmSetNextAction(data.tasks[1],{type:'call',date:'2026-10-16'})");assert.equal(r('data.tasks[1].due'),'2026-10-16');assert.equal(r('crmEffectiveAction(data.tasks[1]).type'),'quote');
 });
 
-test('completing linked follow-up clears deadline and undo restores deadline and time',()=>{
-  const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:today(),time:'14:30'})];crmCompleteAction(data.tasks[0])");
-  assert.equal(r('data.tasks[0].due'),null);assert.equal(r('data.tasks[0].time'),null);assert.equal(r('data.tasks[0].done'),false);
+test('completing linked follow-up plans the next date and undo restores deadline and time',()=>{
+  const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:today(),time:'14:30'})];crmCompleteAction(data.tasks[0],{date:'2026-10-15'})");
+  assert.equal(r('data.tasks[0].due'),'2026-10-15');assert.equal(r('data.tasks[0].time'),'14:30');assert.equal(r('data.tasks[0].done'),false);
   r('undo()');assert.equal(r('data.tasks[0].due'),r('today()'));assert.equal(r('data.tasks[0].time'),'14:30');
-  assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),'');
+  assert.equal(r("data.tasks[0].custom['f-eerste-contact']"),undefined);
 });
 
 test('first contact field appears in follow-up history without inventing a contact channel',()=>{
@@ -339,4 +339,43 @@ test('won and lost tasks are accessible per project in lists and boards despite 
  }
  r("crmListFilter().status='open'");assert.equal(r("crmColumnHidden('positive')"),true);
  const html=r('crmToolbarHtml()');assert.ok(html.indexOf('id="crmListStatus"')<html.indexOf('<details'));assert.match(html,/Gewonnen/);assert.match(html,/Verloren/);
+});
+
+test('winning requires a valid amount and accepts an explicit zero',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')]");assert.equal(r('crmHasWinPrice(data.tasks[0])'),false);
+ assert.throws(()=>r("crmSetWinPrice(data.tasks[0],'')"));assert.throws(()=>r('crmSetWinPrice(data.tasks[0],-1)'));
+ r('setStage(data.tasks[0],"positive")');assert.equal(r('data.tasks[0].stage'),'other');
+ r('crmSetWinPrice(data.tasks[0],0);setStage(data.tasks[0],"positive")');assert.equal(r('data.tasks[0].done'),true);assert.equal(r('winValues(data.tasks[0]).price'),0);
+});
+
+test('follow-up completion validates next date or final status before mutation',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:today()})]");
+ r('crmCompleteAction(data.tasks[0])');assert.match(r('dialogHtml'),/Volgende opvolgdatum/);assert.equal(r('data.activities.length'),0);
+ for(const resolution of [{},{date:'2026-02-30'},{stage:'positive',amount:''}])assert.throws(()=>r(`crmCompleteAction(data.tasks[0],${JSON.stringify(resolution)})`));
+ assert.equal(r('data.activities.length'),0);assert.equal(r('data.tasks[0].due'),r('today()'));
+ r("crmCompleteAction(data.tasks[0],{stage:'positive',amount:'175,50'})");assert.equal(r('data.tasks[0].done'),true);assert.equal(r('winValues(data.tasks[0]).price'),175.5);
+});
+
+test('manual sales edits retain linkage and synchronize mapped task fields',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')];const cols=winCols();const row={id:'w_a',dealId:'a',projectId:'p',values:{[cols.client.id]:'Nieuwe naam',[cols.amount.id]:250}};crmUpdateLinkedSale(row,[cols.client.id,cols.amount.id]);");
+ assert.equal(r('row.dealId'),'a');assert.equal(r('data.tasks[0].title'),'Nieuwe naam');assert.equal(r('winValues(data.tasks[0]).price'),250);
+ r("crmSetWinPrice(data.tasks[0],300);fillWinRow(row,data.tasks[0])");assert.equal(r('row.values[cols.amount.id]'),300);
+ r("row.projectId='q';crmUpdateLinkedSale(row,[],true);fillWinRow(row,data.tasks[0])");assert.equal(r('data.tasks[0].projectId'),'q');assert.equal(r('winValues(data.tasks[0]).price'),300);
+});
+
+test('calendar derives live deadlines without duplicates or persisted copies',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a',{stage:'callback',due:today(),nextAction:{type:'call',date:today()}}),makeTask('done',{done:true,due:today()}),makeTask('archived',{projectId:'finished',due:today()}),makeTask('b',{due:today(),nextAction:{type:'meeting',date:'2026-10-20'}})];data.events=[{id:'event',date:today(),title:'Afspraak'}]");
+ assert.equal(r('crmCalendarItems().length'),4);assert.equal(r('data.events.length'),1);assert.equal(r("crmCalendarItems().filter(e=>e.taskId==='a').length"),1);
+ r("data.tasks[0].due='2026-10-21'");assert.equal(r("crmCalendarItems().find(e=>e.taskId==='a').date"),'2026-10-21');
+});
+
+test('linked format edits preserve selectable formats and sales-only values',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')];data.salesCols.push({id:'format',name:'Formaat',type:'format'});const fr={id:'w_a',dealId:'a',values:{format:'1/8, 1/16',legacy:'Behouden'}};crmUpdateLinkedSale(fr,['format']);fillWinRow(fr,data.tasks[0]);");
+ assert.equal(r('winValues(data.tasks[0]).format'),'1/8, 1/16');assert.equal(r('fr.values.legacy'),'Behouden');assert.equal(r('fr.dealId'),'a');
+ r("fr.values.format='';crmUpdateLinkedSale(fr,['format']);fillWinRow(fr,data.tasks[0])");assert.equal(r('winValues(data.tasks[0]).format'),'');
+});
+
+test('clearing a won task price does not erase its existing sale amount',()=>{
+ const r=runtime();r("data.tasks=[makeTask('a')];crmSetWinPrice(data.tasks[0],200);const priceRow={values:{}};fillWinRow(priceRow,data.tasks[0]);data.tasks[0].custom={};fillWinRow(priceRow,data.tasks[0]);");
+ assert.equal(r('priceRow.values[winCols().amount.id]'),200);assert.equal(r('crmHasWinPrice(data.tasks[0])'),false);
 });

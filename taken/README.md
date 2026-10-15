@@ -4,6 +4,13 @@
 
 De vormgeving is geïnspireerd op de ChatGPT iOS-app: neutrale lichte en donkere vlakken, systeemletters, afgeronde invoervelden, subtiele scheidingslijnen en een zwevende navigatiebalk op mobiel. Glazen oppervlakken hebben echte achtergrondvervaging, transparantie en een lichte rand; een zachte achtergrondtint maakt het effect zichtbaar. Het takenpaneel en dialoogvensters zijn sterker dekkend voor de leesbaarheid. Bij verminderde transparantie of browsers zonder achtergrondvervaging blijven de vlakken dekkend. De eigen Klose-identiteit, statuskleuren en bestaande bediening blijven behouden. `ios.css` bevat uitsluitend schermopmaak; de prijsberekening blijft met de bestaande afdrukopmaak printen. De extra stylesheet is ook offline beschikbaar.
 
+Verkoopopvolging:
+
+- **Gewonnen** vraagt het afgesproken bedrag als dat ontbreekt. Een expliciete 0 is geldig; lege, ongeldige en negatieve bedragen worden geweigerd. Annuleren bewaart de vorige status. Reeds gewonnen dossiers zonder bedrag krijgen een invulknop en verschijnen als aandachtspunt in Verkopen. Een tijdelijk leeggemaakt taakbedrag wist een bestaande verkoopprijs niet.
+- **Opvolging afronden** vraagt één keuze: opnieuw opvolgen op een nieuwe datum, gewonnen of verloren. Pas na bewaren wordt de actie geregistreerd. Ongedaan maken herstelt de oorspronkelijke taak zolang er geen latere wijziging aan die taak is gedaan.
+- **Gekoppelde verkoop**: naam, bedrag, formaat en project volgen elkaar in beide richtingen. Een wijziging in de tabel, het verkoopformulier of de projectkiezer verbreekt de koppeling niet. Een kleine link opent de gekoppelde taak. Datum, aantallen en andere verkoopkolommen blijven verkoopgegevens. Bestaande losse of eerder losgekoppelde verkoopregels worden niet automatisch gekoppeld.
+- **Kalender** toont ook deadlines en opvolgdatums van open taken uit actieve projecten. Dezelfde datum verschijnt één keer per taak; verschillende deadline- en opvolgdatums blijven beide zichtbaar. Klik om de taak te openen. Er worden geen kalenderkopieën opgeslagen: wijzigingen en afrondingen worden rechtstreeks uit de taken overgenomen.
+
 Klose is gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. Hosten is niets meer dan de map uploaden.
 
 ![Het bord met prijsberekening](docs/screenshots/bord.png)

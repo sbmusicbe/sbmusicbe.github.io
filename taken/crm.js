@@ -58,19 +58,84 @@ function crmAddContact(t, contact, nextAction) {
   touch(t);
   return item;
 }
-function crmCompleteAction(t) {
+function crmWinPriceField(t) {
+  const fs=fieldsFor(t.projectId);
+  return fs.find(f=>/^prijs$/i.test(f.name.trim())) || fs.find(f=>/prijs/i.test(f.name));
+}
+function crmHasWinPrice(t) { const p=winValues(t).price;return Number.isFinite(p) && p>=0; }
+function crmSetWinPrice(t,value) {
+  const price=parseNl(value);if(price===null || !Number.isFinite(price) || price<0)throw new Error('Vul een geldig afgesproken bedrag in (0 mag).');
+  let f=crmWinPriceField(t);
+  if(!f || f.type!=='number'){f=touch({id:uid(),name:'Prijs',type:'number',all:false,projectIds:[t.projectId],order:-1,showInList:true});data.fields.push(f);}
+  t.custom[f.id]=price;touch(t);
+}
+function crmOpenWinDialog(t,stage) {
+  if(!taskById(t.id))return;
+  showDialog(`<h3>Deal gewonnen</h3><p>${esc(t.title)}</p><form id="crmWinForm"><label class="fl">Afgesproken bedrag (€)<input id="crmWinAmount" type="text" inputmode="decimal" required autofocus></label><p class="muted small">Dit bedrag komt ook in Verkopen.</p><p id="crmWinError" class="err" role="alert"></p><div class="dlg-actions"><button type="button" class="btn" id="crmWinCancel">Annuleren</button><span class="grow"></span><button class="btn primary" type="submit">Gewonnen bewaren</button></div></form>`,d=>{
+    $('#crmWinCancel',d).onclick=()=>d.close();
+    $('#crmWinForm',d).onsubmit=e=>{e.preventDefault();try{crmSetWinPrice(t,$('#crmWinAmount',d).value);if(isWinStage(t.stage) && !data.sales.some(r=>r.id==='w_'+t.id))t.crmMakeWinRow=true;d.close();setStage(t,stage);commit();}catch(error){$('#crmWinError',d).textContent=error.message;}};
+  });
+}
+function crmCompleteAction(t,resolution) {
   const current = crmEffectiveAction(t); if (!current) return;
+  if(!resolution){crmOpenCompleteDialog(t);return;}
+  const stage=resolution.stage || t.stage;
+  if(!isDoneStage(stage) && (!/^\d{4}-\d\d-\d\d$/.test(resolution.date || '') || ymd(parseYmd(resolution.date))!==resolution.date))throw new Error('Kies de volgende opvolgdatum.');
+  if(isWinStage(stage) && !crmHasWinPrice(t)) {
+    const n=parseNl(resolution.amount);if(n===null || !Number.isFinite(n) || n<0)throw new Error('Vul het afgesproken bedrag in.');
+  }
+  const previous=structuredClone(t);
+  if(isWinStage(stage) && !crmHasWinPrice(t))crmSetWinPrice(t,resolution.amount);
   const before = {...current}, beforeTime = t.time, firstBefore = crmFirstContact(t);
   const item = crmAddContact(t, {type:before.type, at:now(), outcome:'Opvolgactie uitgevoerd', text:before.note}, null);
+  if(isDoneStage(stage))setStage(t,stage);
+  else {crmSetNextAction(t,{...before,date:resolution.date});t.time=beforeTime;}
   commit();
+  const completed=JSON.stringify(t);
   toast('Actie uitgevoerd en bij Notities bewaard', () => {
+    const unchanged=JSON.stringify(t)===completed;
     data.activities = data.activities.filter(x => x.id !== item.id); tombstone(item.id);
     const contactDate = ymd(new Date(item.at));
     if (firstBefore.field && t.custom[firstBefore.field.id] === contactDate && ![...data.activities,...data.comments].some(x => x.taskId === t.id && ymd(new Date(x.at)) <= contactDate)) t.custom[firstBefore.field.id] = firstBefore.date || '';
     // Een intussen geplande nieuwe actie nooit overschrijven.
-    if (!crmEffectiveAction(t)) { crmSetNextAction(t, before); if (crmDeadlineActionType(t)) t.time = beforeTime; }
+    if(unchanged){const wonAt=t.wonAt;for(const key of Object.keys(t))delete t[key];Object.assign(t,previous);if(wonAt && !previous.wonAt)t.wonAt=wonAt;touch(t);}
     commit();
   });
+}
+function crmOpenCompleteDialog(t) {
+  showDialog(`<h3>Wat is de volgende stap?</h3><p>${esc(t.title)}</p><form id="crmCompleteForm"><label class="fl">Na deze opvolging<select id="crmCompleteStage"><option value="">Opnieuw opvolgen</option>${stages().filter(s=>s.done).map(s=>`<option value="${esc(s.id)}">${esc(s.label)}</option>`).join('')}</select></label><label class="fl" id="crmCompleteDateWrap">Volgende opvolgdatum<input id="crmCompleteDate" type="date" required value="${addDays(today(),1)}"></label><label class="fl" id="crmCompleteAmountWrap" hidden>Afgesproken bedrag (€)<input id="crmCompleteAmount" type="text" inputmode="decimal"></label><p id="crmCompleteError" class="err" role="alert"></p><div class="dlg-actions"><button type="button" class="btn" id="crmCompleteCancel">Annuleren</button><span class="grow"></span><button class="btn primary" type="submit">Afronden en bewaren</button></div></form>`,d=>{
+    $('#crmCompleteCancel',d).onclick=()=>d.close();
+    $('#crmCompleteStage',d).onchange=()=>{const st=$('#crmCompleteStage',d).value;$('#crmCompleteDateWrap',d).hidden=!!st;$('#crmCompleteDate',d).required=!st;$('#crmCompleteAmountWrap',d).hidden=!(isWinStage(st)&&!crmHasWinPrice(t));};
+    $('#crmCompleteForm',d).onsubmit=e=>{e.preventDefault();try{const resolution={stage:$('#crmCompleteStage',d).value,date:$('#crmCompleteDate',d).value,amount:$('#crmCompleteAmount',d).value};crmCompleteAction(t,resolution);d.close();}catch(error){$('#crmCompleteError',d).textContent=error.message;}};
+  });
+}
+
+// Core verkoopvelden blijven in beide richtingen gekoppeld. Overige kolommen horen bij de verkoop.
+function crmUpdateLinkedSale(r,changedCols,projectChanged=false) {
+  const t=r.dealId && taskById(r.dealId);if(!t)return;
+  if(projectChanged)t.projectId=r.projectId || 'inbox';
+  const c=winCols(),has=col=>col && changedCols.includes(col.id);
+  if(projectChanged)changedCols=[...new Set([...changedCols,c.client?.id,c.amount?.id,c.format?.id])];
+  if(has(c.client))t.title=String(r.values[c.client.id] || '').trim();
+  if(has(c.amount) && !isEmpty(r.values[c.amount.id]))crmSetWinPrice(t,r.values[c.amount.id]);
+  if(has(c.format)){
+    const text=String(r.values[c.format.id] || ''),fs=fieldsFor(t.projectId);
+    let f=fs.find(f=>/^formaat$/i.test(f.name)) || fs.find(f=>/formaat/i.test(f.name));
+    if(!f){f=touch({id:uid(),name:'Formaat',type:'text',all:false,projectIds:[t.projectId],order:data.fields.length,showInList:true});data.fields.push(f);}
+    if(f.type==='select' || f.type==='multiselect'){
+      const labels=f.type==='select'?[text]:formatList(text);const ids=labels.filter(Boolean).map(label=>{let o=f.options.find(o=>o.label===label);if(!o){o={id:uid(),label,color:'#777777'};f.options.push(o);touch(f);}return o.id;});
+      t.custom[f.id]=f.type==='select'?(ids[0] || ''):ids;
+    }else t.custom[f.id]=text;
+  }
+  touch(t);
+}
+function crmCalendarItems() {
+  const items=[...data.events];
+  for(const t of crmOpenTasks()){
+    const a=crmEffectiveAction(t),dates=new Set([t.due,a?.date].filter(Boolean));
+    for(const date of dates)items.push({id:'task-'+t.id+'-'+date,taskId:t.id,projectId:t.projectId,date,type:'deadline',title:t.title,note:date===a?.date?crmActionLabel(a.type):'Taakdeadline',time:t.time || ''});
+  }
+  return items.sort((a,b)=>a.date.localeCompare(b.date) || (a.order || 0)-(b.order || 0));
 }
 function crmOpenActionDialog(t) {
   if (crmDeadlineActionType(t)) {
@@ -261,7 +326,7 @@ function crmOpenSalesProjectDialog(r) {
   const current = r.projectId !== undefined ? r.projectId : taskById(r.dealId || (r.id.startsWith('w_') ? r.id.slice(2) : ''))?.projectId || '';
   showDialog(`<h3>Project van deze verkoop</h3><label class="fl">Project<select id="crmSalesProject"><option value="">Zonder project</option>${sortedProjects().map(p=>`<option value="${esc(p.id)}" ${p.id===current?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label><div class="dlg-actions"><span class="grow"></span><button type="button" class="btn" id="crmSalesCancel">Annuleren</button><button type="button" class="btn primary" id="crmSalesSave">Bewaren</button></div>`,d=>{
     $('#crmSalesCancel',d).onclick=()=>d.close();
-    $('#crmSalesSave',d).onclick=()=>{r.projectId=$('#crmSalesProject',d).value;delete r.dealId;touch(r);d.close();save();renderSales(true);};
+    $('#crmSalesSave',d).onclick=()=>{r.projectId=$('#crmSalesProject',d).value;crmUpdateLinkedSale(r,[],true);touch(r);d.close();save();renderSales(true);};
   });
 }
 function bindCrm() {
@@ -273,6 +338,7 @@ function bindCrm() {
     const closeNote=e.target.closest('[data-crm-close-note]');if(closeNote){crmFocusOpen.note[selectedId]=false;renderDetail(true);$('[data-crm-contact]')?.focus();return;}
     const expandNote=e.target.closest('[data-crm-expand-note]');if(expandNote){const expanded=expandNote.closest('.crm-note-preview').classList.toggle('expanded');expandNote.setAttribute('aria-expanded',String(expanded));expandNote.textContent=expanded?'Kort weergeven':'Hele notitie lezen';return;}
     if(e.target.closest('[data-crm-show-data]')){crmFocusDetailSection('data');$('#dNotes')?.focus();return;}
+    const win=e.target.closest('[data-crm-win]');if(win){const t=taskById(win.dataset.crmWin);if(t)crmOpenWinDialog(t,t.stage);return;}
     const b=e.target.closest('[data-crm-open],[data-crm-action],[data-crm-complete],[data-crm-contact],[data-crm-loss],[data-crm-delcontact],[data-crm-first-contact],[data-crm-sales-project]');
     if(b){
       const d=b.dataset,t=taskById(d.crmOpen || d.crmAction || d.crmComplete || d.crmContact || d.crmLoss || d.crmFirstContact);
