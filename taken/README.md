@@ -2,7 +2,7 @@
 
 **Je klanten en opvolging op één plek.** Klanten, verkopen en agenda in één snelle app die volledig in je browser draait. Geen server nodig, geen abonnement: je gegevens blijven **versleuteld op je eigen toestel**, met optionele synchronisatie tussen al je toestellen.
 
-De vormgeving is geïnspireerd op de ChatGPT iOS-app: neutrale lichte en donkere vlakken, systeemletters, afgeronde invoervelden, subtiele scheidingslijnen en een zwevende navigatiebalk op mobiel. De eigen Klose-identiteit, statuskleuren en bestaande bediening blijven behouden. `ios.css` bevat uitsluitend schermopmaak; de prijsberekening blijft met de bestaande afdrukopmaak printen. De extra stylesheet is ook offline beschikbaar.
+De vormgeving is geïnspireerd op de ChatGPT iOS-app: neutrale lichte en donkere vlakken, systeemletters, afgeronde invoervelden, subtiele scheidingslijnen en een zwevende navigatiebalk op mobiel. Glazen oppervlakken hebben echte achtergrondvervaging, transparantie en een lichte rand; een zachte achtergrondtint maakt het effect zichtbaar. Het takenpaneel en dialoogvensters zijn sterker dekkend voor de leesbaarheid. Bij verminderde transparantie of browsers zonder achtergrondvervaging blijven de vlakken dekkend. De eigen Klose-identiteit, statuskleuren en bestaande bediening blijven behouden. `ios.css` bevat uitsluitend schermopmaak; de prijsberekening blijft met de bestaande afdrukopmaak printen. De extra stylesheet is ook offline beschikbaar.
 
 Klose is gewone HTML, CSS en JavaScript, zonder framework en zonder build-stap. Hosten is niets meer dan de map uploaden.
 
