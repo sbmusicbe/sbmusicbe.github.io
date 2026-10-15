@@ -3371,7 +3371,7 @@ $('#salesNav').addEventListener('click', e => { const b = e.target.closest('[dat
 $('#addSales').onclick = () => openSalesPageDialog(null);
 // Licht/donker: zonder keuze volgt Deals je toestel; de knop onderaan de zijbalk onthoudt je keuze op dit toestel
 function paintThemeColor() {
-  const c = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0A0A0A';
+  const c = getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim() || '#FFFFFF';
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = c; m.removeAttribute('media'); });
 }
 function setTheme(t) {
