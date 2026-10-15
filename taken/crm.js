@@ -170,11 +170,11 @@ function crmFocusHtml(t) {
   const action = t.done ? null : crmEffectiveAction(t), linked = crmDeadlineActionType(t);
   const title = t.done ? isWinStage(t.stage) ? 'Deal gewonnen' : 'Deal afgerond' : action ? crmActionLabel(action.type) : linked ? crmActionLabel(linked) : 'Plan je volgende actie';
   const when = action ? esc(dueLabel(action.date)) + (linked && t.time ? ' · ' + esc(t.time) : '') : 'Datum kiezen';
-  return `<section class="crm-focus-next"><span class="crm-focus-label">${t.done ? 'Afgerond' : 'Volgende stap'}</span><h3>${esc(title)}</h3>
+  return `<section class="crm-focus-next"><div class="crm-focus-plan"><span class="crm-focus-label">${t.done ? 'Afgerond' : 'Volgende stap'}</span><h3>${esc(title)}</h3>
     ${!t.done ? linked ? `<details id="crmDeadlineEdit" class="crm-focus-date" ${crmFocusOpen.deadline[t.id] ? 'open' : ''}><summary><span class="${action?.date < today() ? 'crm-late' : ''}">${when}</span><span class="crm-focus-change">Wijzigen</span></summary>${crmDeadlineFieldsHtml(t)}<button type="button" class="link" data-crm-date-done="${esc(t.id)}">Gereed</button></details>` : `<button type="button" class="crm-focus-date-button" data-crm-action="${esc(t.id)}">${when}<span>Wijzigen</span></button>` : ''}
     ${action?.note ? `<p class="crm-focus-action-note">${esc(action.note)}</p>` : ''}
-    <button type="button" class="btn primary crm-focus-primary" data-crm-contact="${esc(t.id)}" ${crmNoteEditorOpen(t) ? 'hidden' : ''}>Notitie toevoegen</button>
-    ${action?`<button type="button" class="link crm-complete-link" data-crm-complete="${esc(t.id)}">Opvolging afronden</button>`:''}
+    </div><div class="crm-focus-actions"><button type="button" class="btn primary crm-focus-primary" data-crm-contact="${esc(t.id)}" ${crmNoteEditorOpen(t) ? 'hidden' : ''}>Notitie toevoegen</button>
+    ${action?`<button type="button" class="link crm-complete-link" data-crm-complete="${esc(t.id)}">Opvolging afronden</button>`:''}</div>
   </section>`;
 }
 function crmContactSummaryHtml(t) {
