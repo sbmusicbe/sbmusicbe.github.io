@@ -351,7 +351,7 @@ const touch = o => { o.u = now(); return o; };
 function tombstone(id) { data.deleted[id] = now(); }
 /* Functies die je kunt aan- of uitzetten (zonder keuze staat alles aan, zoals bij bestaande gebruikers) */
 const FEATURES = [
-  ['agenda', 'Agenda', 'Afspraken en deadlines op een kalender'],
+  ['agenda', 'Kalender', 'Afspraken en deadlines op een kalender'],
   ['sales', 'Verkopen', 'Maandpagina’s met omzet, doel, commissie en bonus'],
   ['btw', 'BTW-rekenmachine', 'Een bedrag omrekenen van of naar inclusief btw'],
 ];
@@ -1084,7 +1084,7 @@ function viewTitle() {
   if (view.type === 'dashboard') return 'Verkoopresultaten';
   if (view.type === 'project') return view.id==='inbox'?'Zonder project':proj(view.id).name;
   if (view.type === 'all') return crmNeedsProject()?'Projecten':'Zoeken in projecten';
-  if (view.type === 'agenda') return 'Agenda';
+  if (view.type === 'agenda') return 'Kalender';
   if (view.type === 'btw') return 'BTW';
   if (view.type === 'sales') return salesPageById(view.id)?.title || 'Verkopen';
   return SMART.find(s => s[0] === view.type)[1];
@@ -3986,14 +3986,11 @@ function agendaHtml() {
       <div class="ag-evs">${evs.slice(0, 3).map(chip).join('')}${evs.length > 3 ? `<span class="ag-more">+${evs.length - 3}</span>` : ''}</div>
       ${evs.length ? `<span class="ag-dots">${evs.slice(0, 4).map(e => `<i class="ev-${esc(e.type || 'druk')}"></i>`).join('')}</span>` : ''}</div>`;
   }
-  const soon = evSorted().filter(e => e.date >= td).slice(0, 12);
   const selList = agendaSel ? (byDay.get(agendaSel) || []) : null;
   const row = e => { const pr = e.projectId && data.projects.find(p => p.id === e.projectId);
     return `<li><button type="button" data-ev="${e.id}"><span class="ev-bar ev-${esc(e.type || 'druk')}"></span><span class="nm"><b>${esc(evShort(e))}</b><small>${[evTypeLabel(e.type), e.title ? e.edition : '', pr && evShort(e) !== pr.name ? pr.name : ''].filter(Boolean).map(esc).join(' · ')}</small></span><span class="meta"><b>${dayLabel(e.date)}</b><small class="${e.date === td ? 'now' : ''}">${countdown(e.date)}</small></span></button></li>`; };
   return `<div class="crm-agenda-simple">
-        ${selList ? `<section class="pg-card"><h3>${cap(dayLabel(agendaSel))}<span class="grow"></span><button type="button" class="btn" data-newon="${agendaSel}">+ Toevoegen</button></h3>${selList.length ? `<ul class="pg-list ag-list">${selList.map(row).join('')}</ul>` : '<p class="muted small">Niets gepland op deze dag.</p>'}</section>` : ''}
-        <section class="pg-card"><h3>Komende data</h3>${soon.length ? `<ul class="pg-list ag-list">${soon.map(row).join('')}</ul>` : '<p class="muted small">Nog niets gepland. Klik op Datum toevoegen of kies een dag in de kalender.</p>'}</section>
-<details class="crm-agenda-calendar" data-crm-disclosure="agenda" ${crmMoreOpen.agenda?'open':''}><summary>Kalender bekijken</summary>    <div class="pg-bar">
+    <div class="pg-bar">
       <div class="ag-nav"><button type="button" class="icon-btn" data-amonth="-1" aria-label="Vorige maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
         <b class="ag-title">${cap(MONTHS_LONG[mo - 1])} ${y}</b>
         <button type="button" class="icon-btn" data-amonth="1" aria-label="Volgende maand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
@@ -4005,7 +4002,8 @@ function agendaHtml() {
         <div class="ag-head">${['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map(d => `<span>${d}</span>`).join('')}</div>
         <div class="ag-grid" style="--weeks:${weeks}">${cells}</div>
       </div>
-</details></div>`;
+        ${selList ? `<section class="pg-card"><h3>${cap(dayLabel(agendaSel))}<span class="grow"></span><button type="button" class="btn" data-newon="${agendaSel}">+ Toevoegen</button></h3>${selList.length ? `<ul class="pg-list ag-list">${selList.map(row).join('')}</ul>` : '<p class="muted small">Niets gepland op deze dag.</p>'}</section>` : ''}
+</div>`;
 }
 function openEventDialog(ev, date) {
   const isNew = !ev;
@@ -4013,7 +4011,7 @@ function openEventDialog(ev, date) {
   const eds = [];
   const projs = sortedProjects().filter(p => p.id !== 'inbox');
   showDialog(`
-    <h3>${isNew ? 'Nieuwe datum in de agenda' : 'Agenda-item bewerken'}</h3>
+    <h3>${isNew ? 'Nieuwe datum in de kalender' : 'Kalenderitem bewerken'}</h3>
     <div class="seg ev-types" role="group" aria-label="Soort">${EV_TYPES.map(([k, l]) => `<button type="button" data-etype="${k}" class="${st.type === k ? 'on' : ''}">${l}</button>`).join('')}</div>
     <label class="fl">Titel <span class="muted">(optioneel)</span><input id="evTitle" type="text" value="${esc(ev?.title || '')}" placeholder="bv. Druk Turnhout Deze Week" autofocus></label>
     <div class="ev-row">
