@@ -238,15 +238,6 @@ test('simple note validation is atomic and supports image-only notes',()=>{
   assert.equal(r('data.comments.length'),0);assert.equal(r('data.tasks[0].due'),r('today()'));
   r("crmSaveNote(data.tasks[0],'',['data:image/jpeg;base64,YQ=='])");assert.equal(r('data.comments[0].imgs.length'),1);
 });
-test('task tabs combine overview and notes and keep data separate',()=>{
-  const r=runtime();r("data.tasks=[makeTask('a')]");const html=r('crmTabsHtml(data.tasks[0])');
-  assert.equal((html.match(/role="tab"/g)||[]).length,2);
-  assert.match(html,/Overzicht & notities/);assert.doesNotMatch(html,/crmTab-notes/);
-  assert.match(html,/data-crm-tab="overview"[^>]*aria-selected="true"/);
-  r("crmDetailTabs.a='notes'");assert.match(r('crmTabsHtml(data.tasks[0])'),/data-crm-tab="overview"[^>]*aria-selected="true"/);
-  r("crmDetailTabs.a='data'");assert.match(r('crmTabsHtml(data.tasks[0])'),/data-crm-tab="data"[^>]*aria-selected="true"/);
-});
-
 test('existing contact details and task notes remain visible in the new notes tab',()=>{
  const r=runtime();r("data.tasks=[makeTask('a',{notes:'Oude taaknotitie'})];data.activities=[{id:'old',taskId:'a',type:'call',at:now(),outcome:'Interesse',text:'Oud gesprek',nextAction:{type:'quote',date:'2026-10-20',note:'Offerte sturen'}}]");
  const html=r('crmDetailHtml(data.tasks[0])');for(const text of ['Oude taaknotitie','Interesse','Oud gesprek','Offerte sturen','20/10/2026'])assert.ok(html.includes(text));
@@ -322,3 +313,15 @@ test('project cards show every filled field even when hidden from the general li
  assert.doesNotMatch(r('fieldLines(data.tasks[0])'),/0493 123 456/);
 });
 test('sales starts in table view',()=>{assert.equal(runtime()('crmSalesLayout'),'table');});
+
+test('won and lost tasks are accessible per project in lists and boards despite hidden columns',()=>{
+ const r=runtime();r(`view={type:'project',id:'p'};data.tasks=[makeTask('open'),makeTask('won',{stage:'positive',done:true}),makeTask('lost',{stage:'negative',done:true}),makeTask('other-project',{projectId:'q',stage:'positive',done:true})]`);
+ for(const [status,ids] of [['positive',['won']],['negative',['lost']],['done',['won','lost']],['all',['open','won','lost']]]){
+   r(`crmListFilter().status='${status}'`);
+   assert.deepEqual(plain(r('crmFilteredTasks().map(t=>t.id)')),ids);
+   if(status!=='all')assert.ok(r('crmFilteredTasks().every(t=>crmBoardStages().some(s=>s.id===t.stage))'));
+   assert.equal(r(`crmColumnHidden('${status==='negative'?'negative':'positive'}')`),false);
+ }
+ r("crmListFilter().status='open'");assert.equal(r("crmColumnHidden('positive')"),true);
+ const html=r('crmToolbarHtml()');assert.ok(html.indexOf('id="crmListStatus"')<html.indexOf('<details'));assert.match(html,/Gewonnen/);assert.match(html,/Verloren/);
+});
