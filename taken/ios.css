@@ -1,0 +1,147 @@
+/* ChatGPT iOS-inspired presentation. Klose identity and CRM workflows stay intact.
+   Screen-only: the existing price calculation print layout is unchanged. */
+@media screen {
+  :root, :root[data-theme="light"] {
+    --canvas:#ffffff; --raised:#f5f5f5; --sunken:#ebebeb;
+    --ink:#202020; --ink-muted:#666666; --ink-faint:#767676;
+    --line:#e9e9e9; --border-strong:#c5c5c5;
+    --action:#202020; --on-action:#ffffff;
+    --accent:#262626; --on-accent:#ffffff; --accent-soft:#eeeeee;
+    --focus:#0879d9; --ios-side:#f9f9f9;
+    --shadow-card:none; --shadow-float:0 12px 48px #00000012;
+    --f-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px;
+    --ios-glass:color-mix(in srgb,var(--canvas) 94%,transparent);
+  }
+  :root[data-theme="dark"] {
+    --canvas:#171717; --raised:#242424; --sunken:#303030;
+    --ink:#f3f3f3; --ink-muted:#b0b0b0; --ink-faint:#a0a0a0;
+    --line:#333333; --border-strong:#5c5c5c;
+    --action:#f3f3f3; --on-action:#171717;
+    --accent:#eeeeee; --on-accent:#171717; --accent-soft:#303030;
+    --focus:#69baff; --ios-side:#111111;
+    --shadow-float:0 12px 48px #00000055;
+  }
+  @media(prefers-color-scheme:dark) {
+    :root:not([data-theme="light"]) {
+      --canvas:#171717; --raised:#242424; --sunken:#303030;
+      --ink:#f3f3f3; --ink-muted:#b0b0b0; --ink-faint:#a0a0a0;
+      --line:#333333; --border-strong:#5c5c5c;
+      --action:#f3f3f3; --on-action:#171717;
+      --accent:#eeeeee; --on-accent:#171717; --accent-soft:#303030;
+      --focus:#69baff; --ios-side:#111111;
+      --shadow-float:0 12px 48px #00000055;
+    }
+  }
+  body {letter-spacing:-.012em}
+  button,input,select,textarea {font-family:var(--f-sans)}
+  .btn {box-shadow:none;font-weight:500;border-color:var(--line)}
+  .btn:not(.primary):not(.danger) {background:var(--raised);border-color:transparent}
+  .btn.primary:hover {background:var(--ink);opacity:.88}
+  .icon-btn,.top-btn {color:var(--ink)}
+  .link,.linklike {font-weight:500;text-underline-offset:3px}
+  .link:hover,.linklike:hover {color:var(--ink);text-decoration:underline}
+  input[type=text],input[type=password],input[type=number],input[type=date],
+  input[type=month],input[type=time],input[type=url],input[type=tel],
+  input[type=email],input[type=search],select,textarea {
+    border-color:var(--line);background-color:var(--raised);
+  }
+  input:focus,select:focus,textarea:focus {border-color:var(--focus)}
+  .lock-card {border:0;box-shadow:none}
+  .lock-tag {font:400 16px/1.5 var(--f-sans);transform:none;color:var(--ink-muted)}
+  #side {background:var(--ios-side);border-right:0;padding-left:12px;padding-right:12px}
+  .brand {font-family:var(--f-sans);font-size:21px;letter-spacing:-.04em}
+  .side-section {text-transform:none;letter-spacing:0;color:var(--ink-muted);font:500 13px/1.4 var(--f-sans)}
+  .nav-item {border-radius:12px;color:var(--ink);font-weight:400}
+  .nav-item.on {background:var(--sunken);box-shadow:none;font-weight:500}
+  .nav-item .cnt {font-family:var(--f-sans)}
+  .side-foot {border-top-color:transparent}
+  .topbar {background:var(--ios-glass);border-bottom:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  .tb-date {font:400 13px/1.4 var(--f-sans);letter-spacing:0}
+  .top-search {border:0;background:var(--raised);box-shadow:none}
+  .top-btn,.top-avatar {border:0;box-shadow:none;background:var(--raised)}
+  .main-head h2 {font-weight:600;letter-spacing:-.035em;font-size:25px;line-height:1.25}
+  .main-head .view-sub {color:var(--ink-muted);font-size:13px}
+  .toolbar.open {gap:8px}
+  .crm-search-label .search {background:var(--raised);border:1px solid transparent;border-radius:24px;padding-left:18px;font-size:15px}
+  .crm-search-label .search:focus {border-color:var(--focus)}
+  .crm-status-filter select,.crm-list-options>summary {
+    border:1px solid transparent;border-radius:24px;background-color:var(--raised);font-size:14px;
+  }
+  .crm-list-options>summary {padding-left:16px;padding-right:16px}
+  .crm-list-options>.crm-layout-switch {background:var(--raised);border-radius:18px;padding:4px}
+  .crm-layout-switch button {border:0;border-radius:14px}
+  .crm-layout-switch button[aria-pressed="true"] {background:var(--canvas);color:var(--ink);box-shadow:none}
+  .pcalc {border:0;background:var(--raised);border-radius:18px}
+  .crm-price-details>summary {display:block;min-height:48px;padding:12px 16px;font-size:14px}
+  .crm-price-details>summary::before {display:inline-block;margin-right:10px;vertical-align:middle}
+  .crm-price-details>summary>span {display:block;margin:3px 0 0 25px;font-size:13px}
+  .crm-customer-list {border:0;border-radius:20px;background:var(--raised);padding:0 16px}
+  .crm-customer-row {background:transparent;padding:16px 4px;gap:12px;min-height:80px}
+  .crm-customer-row:hover {background:var(--sunken)}
+  .crm-customer-row.selected {background:var(--sunken);border-radius:12px}
+  .crm-customer-name b {font-weight:600;font-size:16px;letter-spacing:-.02em}
+  .crm-customer-name small,.crm-customer-status,.crm-customer-due {font-size:13px}
+  .crm-row-arrow {color:var(--ink-faint)}
+  .card {border:1px solid var(--line);border-radius:18px;background:var(--canvas);box-shadow:none;padding:14px 16px}
+  .card.sel {background:var(--raised);border-color:var(--border-strong)}
+  .t-title {font-weight:600;letter-spacing:-.02em}
+  .t-fields {font-family:var(--f-sans)}
+  .col>header {font-weight:500}
+  #detail {border-left-color:var(--line);background:var(--canvas)}
+  .d-head {background:var(--ios-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:0}
+  #detail .crm-focus-status {background-color:var(--raised);border-radius:20px;padding-left:14px;font-weight:500}
+  #detail .crm-focus-next {border-bottom-color:var(--line)}
+  #detail .crm-focus-primary {border-radius:22px}
+  #detail .props {background:var(--raised);border:0;border-radius:18px;padding:0 12px}
+  #detail .prop {border-bottom-color:var(--line)}
+  #detail .props:not(.crm-focus-date-fields)>.prop {grid-template-columns:120px minmax(0,1fr)}
+  #detail .prop input:not([type=checkbox]),#detail .prop select,#detail .prop textarea {background-color:transparent}
+  #detail .prop input:focus,#detail .prop select:focus,#detail .prop textarea:focus {background-color:var(--canvas)}
+  #detail .crm-focus-person a {color:var(--ink);font-weight:500}
+  #detail .crm-note-composer>textarea {background:var(--raised);border-color:transparent;border-radius:20px;padding:12px 16px}
+  #detail .crm-note-composer>textarea:focus {border-color:var(--focus)}
+  .crm-legacy-note,.crm-note-preview {border-radius:16px}
+  .crm-note-preview {background:var(--raised);padding:12px 14px}
+  .crm-note-preview .crm-history-head time {font-family:var(--f-sans)}
+  .crm-data-heading {letter-spacing:-.02em}
+  .sp-card,.pg-card,.crm-sale-card,.crm-card {border-color:var(--line);border-radius:20px;box-shadow:none}
+  .table-wrap {border-color:var(--line);border-radius:18px}
+  table.sales th {font:500 13px/1.4 var(--f-sans);text-transform:none;letter-spacing:0;background:var(--raised);padding-top:12px;padding-bottom:12px}
+  table.sales .cell.t-money,table.sales .cell.t-number,table.sales tfoot td,.sales-stat b {font-family:var(--f-sans);font-variant-numeric:tabular-nums}
+  table.sales .grp-day td {font-family:var(--f-sans);letter-spacing:0;text-transform:none}
+  .ag-cal {background:var(--raised);border:0;border-radius:22px}
+  .ag-day {border-color:transparent;border-radius:12px}
+  .ag-day.sel {border-color:var(--ink)}
+  .ag-day.today .ag-num {background:var(--action);color:var(--on-action)}
+  .ag-head {font-family:var(--f-sans);letter-spacing:0}
+  dialog {border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-float)}
+  #ctxMenu,#datePop,#timePop,#fmtPop {border-radius:20px;padding:8px}
+  #ctxMenu button {min-height:40px;font-weight:400}
+  .st-nav button {font-family:var(--f-sans)}
+  #toast {border-radius:24px;font-family:var(--f-sans)}
+  @media(max-width:860px) {
+    .topbar {height:auto;min-height:60px;padding-top:max(10px,env(safe-area-inset-top));padding-bottom:6px}
+    .top-avatar::before {width:19px;height:16px;aspect-ratio:auto;background:linear-gradient(currentColor,currentColor) 0 3px/19px 2px no-repeat,linear-gradient(currentColor,currentColor) 0 11px/12px 2px no-repeat!important}
+    .top-avatar,.top-search {width:44px;height:44px;background:transparent}
+    .main-inner {padding-top:10px;padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+    .main-head {gap:10px;margin-bottom:16px}
+    .main-head h2 {font-size:26px;line-height:1.25}
+    .main-head #primaryAdd {min-height:44px;font-size:15px;font-weight:500}
+    .crm-customer-row {min-height:96px;padding-top:14px;padding-bottom:14px}
+    .crm-customer-list {padding:0 14px}
+    #side {border-radius:0 24px 24px 0}
+    #tabBar {left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));height:66px;padding:6px;border:1px solid var(--line);border-radius:32px;gap:2px;background:var(--ios-glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 4px 24px #0000000a}
+    #tabBar button {font-weight:500;font-size:11px;min-width:0;min-height:52px;gap:3px}
+    #tabBar .tb-ind {top:6px;bottom:6px;background:var(--sunken)}
+    #miniBar {background:var(--ios-glass);border-bottom:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    #detail {border-radius:26px 26px 0 0}
+    .d-grab {background:var(--border-strong)}
+  }
+  @media(prefers-reduced-transparency:reduce) {
+    .topbar,.d-head,#tabBar,#miniBar {background:var(--canvas);backdrop-filter:none;-webkit-backdrop-filter:none}
+  }
+  @container(max-width:320px) {
+    #detail .props:not(.crm-focus-date-fields)>.prop {grid-template-columns:minmax(0,1fr);gap:2px}
+  }
+}

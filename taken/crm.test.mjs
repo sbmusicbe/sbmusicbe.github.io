@@ -6,6 +6,18 @@ import vm from 'node:vm';
 const app=readFileSync(new URL('./app.js',import.meta.url),'utf8');
 const crm=readFileSync(new URL('./crm.js',import.meta.url),'utf8');
 const usability=readFileSync(new URL('./usability.js',import.meta.url),'utf8');
+test('iOS presentation is loaded, cached offline and isolated from print',()=>{
+ const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
+ const sw=readFileSync(new URL('./sw.js',import.meta.url),'utf8');
+ const css=readFileSync(new URL('./ios.css',import.meta.url),'utf8');
+ assert.match(html,/<link rel="stylesheet" href="ios\.css">/);
+ assert.match(sw,/'ios\.css'/);
+ assert.match(css,/@media screen\s*\{/);
+ assert.match(css,/:root\[data-theme="dark"\]/);
+ assert.match(css,/@media\(prefers-color-scheme:dark\)/);
+ assert.match(css,/prefers-reduced-transparency/);
+ assert.match(app,/getPropertyValue\('--canvas'\)/);
+});
 const section=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
 function runtime() {
   const ctx=vm.createContext({console,structuredClone,setTimeout,clearTimeout});
