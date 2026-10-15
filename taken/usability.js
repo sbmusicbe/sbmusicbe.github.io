@@ -23,22 +23,25 @@ function crmFilteredTasks() {
 function crmCustomerListHtml() {
   const tasks=crmFilteredTasks().sort(sortFn(crmListFilter().sort));
   if(crmNeedsProject())return '<div class="crm-simple-empty"><h3>Begin met een project</h3><p>Gebruik Project toevoegen om je klanten samen te brengen.</p></div>';
-  if(!tasks.length)return `<div class="crm-simple-empty"><h3>${searchQ?'Geen klant gevonden':'Geen klanten in deze lijst'}</h3><p>${searchQ?'Probeer een andere naam, telefoonnummer of notitie.':'Voeg een klant toe of kies een andere status bij Weergave & filters.'}</p></div>`;
+  if(!tasks.length)return `<div class="crm-simple-empty"><h3>${searchQ?'Geen klant gevonden':'Geen klanten in deze lijst'}</h3><p>${searchQ?'Probeer een andere naam, telefoonnummer of notitie.':'Voeg een klant toe of kies Gewonnen, Verloren of Alle taken naast de zoekbalk.'}</p></div>`;
   return `<p class="crm-list-caption">${tasks.length} ${searchQ?'zoekresultaten':tasks.length===1?'klant':'klanten'}${searchQ && crmListFilter().status==='open'?' · ook afgeronde klanten':''}</p><div class="crm-customer-list">${tasks.map(t=>{
     const a=t.done?null:crmEffectiveAction(t),date=a?.date || (!t.done?t.due:null),s=stageById(t.stage);
     const nameField=fieldsFor(t.projectId).find(f=>/^(naam|contactpersoon)$/i.test(f.name)),contact=nameField?t.custom[nameField.id]:'';
     return `<button type="button" class="crm-customer-row ${selectedId===t.id?'selected':''}" data-crm-open="${esc(t.id)}"><span class="crm-customer-name"><b>${esc(t.title || 'Zonder naam')}</b><small>${esc(proj(t.projectId).name)}${contact?' · '+esc(contact):''}</small></span><span class="crm-customer-status">${esc(s?.label || 'Nog geen status')}</span><span class="crm-customer-due ${date && date<today()?'crm-late':''}">${date?`${esc(dueLabel(date))}${t.time && date===t.due?' · '+esc(t.time):''}`:t.done?'Afgerond':'Nog geen opvolgdatum'}</span><span class="crm-row-arrow" aria-hidden="true">›</span></button>`;
   }).join('')}</div>`;
 }
-function crmFilterLabel() {
+// Een expliciete statuskeuze toont ook eerder verborgen afgewerkte kolommen.
+function crmColumnHidden(id) {
   const status=crmListFilter().status;
-  return status==='open'?'Weergave & filters':`Weergave & filters · ${status==='done'?'Afgerond':status==='all'?'Alle klanten':stageById(status)?.label || status}`;
+  if(status===id)return false;
+  return !((status==='done' || status==='all' || searchQ.trim()) && stageById(id)?.done);
 }
 function crmToolbarHtml() {
   const f=crmListFilter(), layout=data.settings.taskLayout || 'list';
   return `<label class="crm-search-label"><span class="sr-only">Zoek een klant</span><input class="search" id="tbSearch" type="search" placeholder="Zoek op naam, telefoon of notitie…" value="${esc(searchQ)}" autocomplete="off"></label>
-    <details class="crm-list-options"><summary>${esc(crmFilterLabel())}</summary><div class="crm-layout-switch" role="group" aria-label="Weergave"><button type="button" data-crm-layout="list" aria-pressed="${layout==='list'}">Lijst</button><button type="button" data-crm-layout="board" aria-pressed="${layout==='board'}">Kolommen</button></div>
-    <div><label>Status<select id="crmListStatus"><option value="open" ${f.status==='open'?'selected':''}>Nog op te volgen</option><option value="done" ${f.status==='done'?'selected':''}>Afgerond</option><option value="all" ${f.status==='all'?'selected':''}>Alle klanten</option>${stages().map(s=>`<option value="${esc(s.id)}" ${f.status===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></label><label>Volgorde<select id="crmListSort">${[['due','Eerstvolgende datum'],['title','Naam A–Z'],['newest','Nieuwste eerst'],['manual','Eigen volgorde']].map(([v,l])=>`<option value="${v}" ${f.sort===v?'selected':''}>${l}</option>`).join('')}</select></label></div></details>`;
+    <label class="crm-status-filter"><span class="sr-only">Toon taken</span><select id="crmListStatus" aria-label="Toon taken"><option value="open" ${f.status==='open'?'selected':''}>Nog op te volgen</option><option value="done" ${f.status==='done'?'selected':''}>Afgewerkt (gewonnen & verloren)</option>${stages().map(s=>`<option value="${esc(s.id)}" ${f.status===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}<option value="all" ${f.status==='all'?'selected':''}>Alle taken</option></select></label>
+    <details class="crm-list-options"><summary>Weergave</summary><div class="crm-layout-switch" role="group" aria-label="Weergave"><button type="button" data-crm-layout="list" aria-pressed="${layout==='list'}">Lijst</button><button type="button" data-crm-layout="board" aria-pressed="${layout==='board'}">Kolommen</button></div>
+    <div><label>Volgorde<select id="crmListSort">${[['due','Eerstvolgende datum'],['title','Naam A–Z'],['newest','Nieuwste eerst'],['manual','Eigen volgorde']].map(([v,l])=>`<option value="${v}" ${f.sort===v?'selected':''}>${l}</option>`).join('')}</select></label></div></details>`;
 }
 function crmOpenNewCustomer() {
   const project=view.type==='project'?view.id:'inbox';
@@ -135,7 +138,7 @@ function bindUsability() {
   });
   $('#toolbar').addEventListener('change',e=>{
     if(!['crmListStatus','crmListSort'].includes(e.target.id))return;
-    crmListFilter()[e.target.id==='crmListStatus'?'status':'sort']=e.target.value;if(e.target.id==='crmListSort'){data.settings.sort=e.target.value;save();}const summary=$('.crm-list-options summary');if(summary)summary.textContent=crmFilterLabel();renderMain();
+    crmListFilter()[e.target.id==='crmListStatus'?'status':'sort']=e.target.value;if(e.target.id==='crmListSort'){data.settings.sort=e.target.value;save();}renderMain();
   });
   document.addEventListener('click',e=>{
     if(!data || $('#app').hidden)return;

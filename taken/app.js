@@ -923,7 +923,7 @@ function tourSteps() {
     {el:()=>mob?q('#tabBar [data-tab=projects]'):q('#projNav'),title:'Je projecten',text:'Open een project om je klanten en hun opvolgdatums te bekijken.'},
     {el:()=>q('#tbSearch'),title:'Een klant terugvinden',text:'Zoek binnen je project op naam, telefoonnummer of notitie.'},
     {el:()=>q('#topHelp'),title:'Hulp is dichtbij',text:'Bij Hulp vind je korte uitleg. Instellingen en Back-ups staan in het menu.'},
-    {title:'Aan de slag',text:'Begin met een klant. Overzicht en notities staan samen; Gegevens staat apart.'},
+    {title:'Aan de slag',text:'Begin met een klant. Opvolging, notities en klantgegevens staan samen in één paneel.'},
   ];
 }
 let tourOn = false;
@@ -1242,7 +1242,7 @@ function renderBoard() {
   const sorter = taskSorter(p.sort), plainSorter = sortFn(p.sort);
   const byDoneAt = (a, b) => (b.doneAt || 0) - (a.doneAt || 0);
   const scroll = $('.board')?.scrollLeft || 0;
-  const hidden = new Set(p.hidden || []);
+  const hidden = new Set((p.hidden || []).filter(id=>crmColumnHidden(id)));
   const available=crmBoardStages(),vis=available.filter(st=>!hidden.has(st.id)),hid=available.filter(st=>hidden.has(st.id));
   const count = id => all.filter(t => t.stage === id).length;
   const bar = `<div class="board-bar">
@@ -1652,25 +1652,27 @@ function renderDetail(force) {
         <textarea id="dTitle" rows="1" aria-label="Naam van klant of taak">${esc(t.title)}</textarea>
       </div>
       <label class="crm-status-label">Status<select id="dStage" class="crm-focus-status" aria-label="Status">${stages().map(x => `<option value="${x.id}" ${x.id === t.stage ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
-      ${crmTabsHtml(t)}
-      <section id="crmPanel-overview" role="tabpanel" aria-labelledby="crmTab-overview" data-crm-panel="overview" ${crmDetailTabs[t.id]==='data' ? 'hidden' : ''}>
+      <section id="crmPanel-overview" aria-label="Opvolging en notities">
       ${crmFocusHtml(t)}
       ${crmContactSummaryHtml(t)}
       ${t.wonAt && data.sales.some(r => r.id === 'w_' + t.id) ? `<p class="muted small d-sale">Staat als verkoop in <button type="button" class="link" data-act="gosales">${esc(salesPageById(data.sales.find(r => r.id === 'w_' + t.id).pageId)?.title || 'Verkopen')}</button>.</p>` : ''}
       ${crmDetailHtml(t)}
       </section>
-      <section id="crmPanel-data" role="tabpanel" aria-labelledby="crmTab-data" data-crm-panel="data" ${crmDetailTabs[t.id]==='data' ? '' : 'hidden'}>
+      <section id="crmPanel-data" aria-label="Klantgegevens">
+        <h3 class="crm-data-heading">Klantgegevens</h3>
         <div id="crmDuplicates">${crmDuplicateHtml(t)}</div>
+        ${!crmDeadlineActionType(t) ? crmDeadlineFieldsHtml(t) : ''}
+        ${crmLostStage(t.stage) ? `<div class="crm-loss"><b>Verliesreden: ${esc(t.lostReason || 'Nog niet opgegeven')}</b>${t.lostNote ? `<p>${esc(t.lostNote)}</p>` : ''}<button type="button" class="link" data-crm-loss="${esc(t.id)}">Reden aanpassen</button></div>` : ''}
+
         <div class="props">
         ${t.notes ? `<label class="prop"><span>Notities</span><textarea id="dNotes" rows="2" aria-label="Notities">${esc(t.notes)}</textarea></label>` : ''}
         <label class="prop"><span>Project</span><select id="dProject">${sortedProjects().map(x => `<option value="${x.id}" ${x.id === t.projectId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+        ${fs.map(f => fieldInput(f, t)).join('')}
         </div>
-        ${!crmDeadlineActionType(t) ? crmDeadlineFieldsHtml(t) : ''}
-        ${crmLostStage(t.stage) ? `<div class="crm-loss"><b>Verliesreden: ${esc(t.lostReason || 'Nog niet opgegeven')}</b>${t.lostNote ? `<p>${esc(t.lostNote)}</p>` : ''}<button type="button" class="link" data-crm-loss="${esc(t.id)}">Reden aanpassen</button></div>` : ''}
-        <div class="d-sec"><span>Extra gegevens</span><button class="link" data-act="fields">Extra gegevens beheren</button></div>
-        <div class="props">${fs.map(f => fieldInput(f, t)).join('') ||
-          `<p class="muted small" style="margin:0">Nog geen extra gegevens voor dit project. <button class="link" data-act="newfield">Toevoegen</button></p>`}</div>
+        <details class="crm-task-options"><summary>Meer opties</summary>
+        <button class="link" data-act="fields">Gegevensvelden beheren</button>
         <div class="crm-focus-danger"><button type="button" class="btn danger" data-act="deletetask">Klant verwijderen</button><p class="muted small">Aangemaakt op ${created.getDate()} ${MONTHS[created.getMonth()]} ${created.getFullYear()}</p></div>
+        </details>
         <p class="crm-autosave-note">Wijzigingen worden automatisch bewaard.</p>
       </section>
     </div>`;
@@ -1722,7 +1724,7 @@ async function attachImages(t, files) {
   }
   const el = $('#dPending'); if (el && selectedId === t.id) el.innerHTML = pendingHtml(t.id);
   if (list.length && selectedId === t.id) {
-    crmFocusOpen.note[t.id]=true;crmSelectDetailTab('overview');const editor=$('#crmNoteEditor');if(editor)editor.hidden=false;const button=$('[data-crm-contact]');if(button)button.hidden=true;
+    crmFocusOpen.note[t.id]=true;crmFocusDetailSection('overview');const editor=$('#crmNoteEditor');if(editor)editor.hidden=false;const button=$('[data-crm-contact]');if(button)button.hidden=true;
   }
   } finally { crmImageLoading[t.id]--; updateSave(); }
 }

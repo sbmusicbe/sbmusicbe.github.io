@@ -74,7 +74,7 @@ function crmCompleteAction(t) {
 }
 function crmOpenActionDialog(t) {
   if (crmDeadlineActionType(t)) {
-    openTask(t.id); crmSelectDetailTab('overview');
+    openTask(t.id); crmFocusDetailSection('overview');
     const editor = $('#crmDeadlineEdit'); if (editor) editor.open = true;
     const input = $('#dDue'); input?.focus(); if (input) openDatePop(input);
     return;
@@ -94,7 +94,7 @@ function crmOpenActionDialog(t) {
   });
 }
 // Eén notitie, zonder verplichte contactsoort of uitkomst. Een lege datum laat de planning staan.
-const crmNoteDates = {}, crmDetailTabs = {}, crmImageLoading = {};
+const crmNoteDates = {}, crmImageLoading = {};
 function crmSaveNote(t, text, imgs = [], date = '') {
   text = String(text || '').trim();
   if (!text && !imgs.length) throw new Error('Schrijf een korte notitie of voeg een afbeelding toe.');
@@ -106,26 +106,15 @@ function crmSaveNote(t, text, imgs = [], date = '') {
   crmRecordFirstContact(t, at); touch(t);
   return item;
 }
-function crmSelectDetailTab(tab, focus = false) {
-  if (tab === 'notes') tab = 'overview';
-  if (!['overview','data'].includes(tab) || !selectedId) return;
-  crmDetailTabs[selectedId] = tab;
-  for (const b of document.querySelectorAll('[data-crm-tab]')) {
-    const active = b.dataset.crmTab === tab;
-    b.setAttribute('aria-selected', String(active)); b.tabIndex = active ? 0 : -1;
-    if (active && focus) b.focus();
-  }
-  for (const panel of document.querySelectorAll('[data-crm-panel]')) panel.hidden = panel.dataset.crmPanel !== tab;
+// Interne snelkoppelingen brengen je naar het juiste deel van hetzelfde paneel.
+function crmFocusDetailSection(section) {
   closeDatePop(); closeTimePop();
-}
-function crmTabsHtml(t) {
-  const active = crmDetailTabs[t.id] === 'data' ? 'data' : 'overview';
-  return `<div class="crm-detail-tabs" role="tablist" aria-label="Onderdelen van deze taak">${[['overview','Overzicht & notities'],['data','Gegevens']].map(([key,label])=>`<button type="button" role="tab" id="crmTab-${key}" data-crm-tab="${key}" aria-controls="crmPanel-${key}" aria-selected="${active===key}" tabindex="${active===key?0:-1}">${label}</button>`).join('')}</div>`;
+  if(section==='data') $('#crmPanel-data')?.scrollIntoView({block:'nearest'});
 }
 function crmOpenContactDialog(t) {
   if (selectedId !== t.id) openTask(t.id);
   crmFocusOpen.note[t.id] = true;
-  crmSelectDetailTab('overview');
+  crmFocusDetailSection('overview');
   renderDetail(true);
   $('#dComment')?.focus();
 }
@@ -210,7 +199,7 @@ function crmDetailHtml(t) {
       <p class="err" id="crmNoteError" role="alert"></p><div class="crm-note-actions"><button type="button" class="btn" data-crm-close-note>Sluiten</button><button type="button" class="btn primary crm-note-save" data-act="addcomment" ${crmImageLoading[t.id]?'disabled':''}>${crmImageLoading[t.id]?'Afbeelding verwerken…':'Bewaren'}</button></div><p id="crmNoteSaved" class="muted small" role="status"></p>
     </section>
     ${latest?`<section class="crm-note-preview ${String(latest.text || '').length>200 || String(latest.text || '').split('\n').length>3?'long':''}"><h3>Laatste gesprek</h3><ol class="crm-history">${crmHistoryItemHtml(latest,first)}</ol>${String(latest.text || '').length>200 || String(latest.text || '').split('\n').length>3?'<button type="button" class="link" data-crm-expand-note aria-expanded="false">Hele notitie lezen</button>':''}</section>`:''}
-    ${older.length || t.notes?`<details class="crm-past-notes"><summary>Eerdere gesprekken <span>(${older.length+(t.notes?1:0)})</span></summary>${t.notes?`<section class="crm-legacy-note"><h3>Taaknotitie</h3><p>${esc(t.notes)}</p><button type="button" class="link" data-crm-show-data>Bewerken bij Gegevens</button></section>`:''}<ol class="crm-history">${older.map(x=>crmHistoryItemHtml(x,first)).join('')}</ol></details>`:!latest?'<p class="muted crm-no-history">Nog geen gesprekken bewaard.</p>':''}
+    ${older.length || t.notes?`<details class="crm-past-notes"><summary>Eerdere gesprekken <span>(${older.length+(t.notes?1:0)})</span></summary>${t.notes?`<section class="crm-legacy-note"><h3>Taaknotitie</h3><p>${esc(t.notes)}</p><button type="button" class="link" data-crm-show-data>Notitie bewerken</button></section>`:''}<ol class="crm-history">${older.map(x=>crmHistoryItemHtml(x,first)).join('')}</ol></details>`:!latest?'<p class="muted crm-no-history">Nog geen gesprekken bewaard.</p>':''}
   </section>`;
 }
 function crmTaskRows(list, mode='action') {
@@ -276,12 +265,6 @@ function crmOpenSalesProjectDialog(r) {
   });
 }
 function bindCrm() {
-  $('#detail').addEventListener('keydown', e=>{
-    const tab=e.target.closest('[data-crm-tab]');
-    if(!tab || !['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
-    e.preventDefault();const keys=['overview','data'],i=keys.indexOf(tab.dataset.crmTab);
-    crmSelectDetailTab(keys[e.key==='Home'?0:e.key==='End'?1:(i+1)%2],true);
-  });
   $('#detail').addEventListener('change',e=>{if(e.target.id==='crmNoteDate')crmNoteDates[selectedId]=e.target.value;});
   document.addEventListener('click',async e=>{
     if(!data || $('#app').hidden)return;
@@ -289,8 +272,7 @@ function bindCrm() {
     if(done){crmFocusOpen.deadline[done.dataset.crmDateDone]=false;const editor=$('#crmDeadlineEdit');if(editor)editor.open=false;closeDatePop();closeTimePop();renderDetail(true);return;}
     const closeNote=e.target.closest('[data-crm-close-note]');if(closeNote){crmFocusOpen.note[selectedId]=false;renderDetail(true);$('[data-crm-contact]')?.focus();return;}
     const expandNote=e.target.closest('[data-crm-expand-note]');if(expandNote){const expanded=expandNote.closest('.crm-note-preview').classList.toggle('expanded');expandNote.setAttribute('aria-expanded',String(expanded));expandNote.textContent=expanded?'Kort weergeven':'Hele notitie lezen';return;}
-    if(e.target.closest('[data-crm-show-data]')){crmSelectDetailTab('data');return;}
-    const tab=e.target.closest('[data-crm-tab]');if(tab){crmSelectDetailTab(tab.dataset.crmTab);return;}
+    if(e.target.closest('[data-crm-show-data]')){crmFocusDetailSection('data');$('#dNotes')?.focus();return;}
     const b=e.target.closest('[data-crm-open],[data-crm-action],[data-crm-complete],[data-crm-contact],[data-crm-loss],[data-crm-delcontact],[data-crm-first-contact],[data-crm-sales-project]');
     if(b){
       const d=b.dataset,t=taskById(d.crmOpen || d.crmAction || d.crmComplete || d.crmContact || d.crmLoss || d.crmFirstContact);
@@ -299,7 +281,7 @@ function bindCrm() {
       else if(d.crmComplete && t)crmCompleteAction(t);
       else if(d.crmContact && t)crmOpenContactDialog(t);
       else if(d.crmLoss && t)crmOpenLossDialog(t);
-      else if(d.crmFirstContact && t){const first=crmFirstContact(t);if(first.field){crmSelectDetailTab('data');const input=$(`[data-field="${CSS.escape(first.field.id)}"]`,$('#detail'));input?.focus();if(input)openDatePop(input);}else toast('Voeg een datumveld Eerste contactname toe bij Extra gegevens.');}
+      else if(d.crmFirstContact && t){const first=crmFirstContact(t);if(first.field){crmFocusDetailSection('data');const input=$(`[data-field="${CSS.escape(first.field.id)}"]`,$('#detail'));input?.focus();if(input)openDatePop(input);}else toast('Voeg een datumveld Eerste contactname toe bij Extra gegevens.');}
       else if(d.crmSalesProject){const r=data.sales.find(x=>x.id===d.crmSalesProject);if(r)crmOpenSalesProjectDialog(r);}
       else if(d.crmDelcontact){const item=data.activities.find(x=>x.id===d.crmDelcontact);if(item && await askConfirm('Contactmoment verwijderen?','Alleen dit contactmoment wordt verwijderd.')){data.activities=data.activities.filter(x=>x.id!==item.id);tombstone(item.id);commit();}}
       return;
