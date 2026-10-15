@@ -6,8 +6,9 @@
     --ink:#202020; --ink-muted:#666666; --ink-faint:#767676;
     --line:#e9e9e9; --border-strong:#c5c5c5;
     --action:#202020; --on-action:#ffffff;
-    --accent:#262626; --on-accent:#ffffff; --accent-soft:#eeeeee;
-    --focus:#0879d9; --ios-side:#f9f9f9;
+    --brand:#4b52f5;
+    --accent:var(--brand); --on-accent:#ffffff; --accent-soft:#eeefff;
+    --focus:var(--accent); --ios-side:#f9f9f9;
     --shadow-card:none; --shadow-float:0 12px 48px #00000012;
     --f-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px;
@@ -18,8 +19,8 @@
     --ink:#f3f3f3; --ink-muted:#b0b0b0; --ink-faint:#a0a0a0;
     --line:#333333; --border-strong:#5c5c5c;
     --action:#f3f3f3; --on-action:#171717;
-    --accent:#eeeeee; --on-accent:#171717; --accent-soft:#303030;
-    --focus:#69baff; --ios-side:#111111;
+    --accent:#aaaaff; --on-accent:#171717; --accent-soft:#2b2b49;
+    --focus:var(--accent); --ios-side:#111111;
     --shadow-float:0 12px 48px #00000055;
   }
   @media(prefers-color-scheme:dark) {
@@ -28,8 +29,8 @@
       --ink:#f3f3f3; --ink-muted:#b0b0b0; --ink-faint:#a0a0a0;
       --line:#333333; --border-strong:#5c5c5c;
       --action:#f3f3f3; --on-action:#171717;
-      --accent:#eeeeee; --on-accent:#171717; --accent-soft:#303030;
-      --focus:#69baff; --ios-side:#111111;
+      --accent:#aaaaff; --on-accent:#171717; --accent-soft:#2b2b49;
+      --focus:var(--accent); --ios-side:#111111;
       --shadow-float:0 12px 48px #00000055;
     }
   }
@@ -194,5 +195,21 @@
       box-shadow:none;border-color:var(--line);
     }
     #detail .props,#detail .crm-note-preview,.card {background:var(--raised);box-shadow:none}
+  }
+  /* A few deliberate accents from the violet-blue stroke of the Klose mark. */
+  .btn.primary {background:var(--brand);border-color:var(--brand);color:#ffffff}
+  .btn.primary:hover {background:var(--brand);border-color:var(--brand);opacity:.9}
+  .btn.primary.danger-fill {background:var(--dot-rose);border-color:var(--dot-rose)}
+  .btn.primary:disabled {background:var(--sunken);border-color:transparent;color:var(--ink-muted);opacity:1}
+  .nav-item.on {background:var(--accent-soft);color:var(--accent)}
+  .crm-layout-switch button[aria-pressed="true"] {background:var(--accent-soft);color:var(--accent)}
+  .crm-customer-row.selected {background:var(--accent-soft)}
+  .card.sel {border-color:var(--accent)}
+  .link,.linklike,.link:hover,.linklike:hover,#detail .crm-focus-person a {color:var(--accent)}
+  .ag-day.today .ag-num {background:var(--brand);color:#ffffff}
+  .ag-day.sel {border-color:var(--accent)}
+  @media(max-width:860px) {
+    #tabBar button.on {color:var(--accent)}
+    #tabBar .tb-ind {background:var(--accent-soft)}
   }
 }
