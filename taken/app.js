@@ -3388,6 +3388,7 @@ function setTheme(t) {
 matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change', () => { if (!document.documentElement.dataset.theme) paintThemeColor(); });
 paintThemeColor();
 $('#openSettings').onclick = () => { $('#app').classList.remove('side-open'); openSettings(); };
+$('#reloadApp').onclick = () => { window.location.reload(); };
 $('#lockNow').onclick = lock;
 $('#syncStatus').onclick = () => data.settings.sync ? syncNow() : openSettings();
 $('#menuBtn').onclick = $('#topAvatar').onclick = () => $('#app').classList.add('side-open');
