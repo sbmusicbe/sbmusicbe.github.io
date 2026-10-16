@@ -1,0 +1,392 @@
+/* Klose — responsive polish for phones and tablets.
+   Kept separate from the main stylesheet so it can be tuned safely. */
+:root {
+  --responsive-gutter: clamp(14px, 3.2vw, 28px);
+  --responsive-tap: 46px;
+}
+
+html, body {
+  min-width: 320px;
+  max-width: 100%;
+}
+
+body {
+  overflow-wrap: anywhere;
+}
+
+button, a, input, select, textarea, summary {
+  touch-action: manipulation;
+}
+
+button, .btn, .icon-btn, .nav-item, .check {
+  min-height: var(--responsive-tap);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  font-size: 16px;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+#app {
+  min-height: 100%;
+  height: 100dvh;
+  min-width: 0;
+}
+
+#main,
+.main-inner,
+#list,
+#pageView,
+#salesPage,
+#detail {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.main-inner {
+  padding-inline: var(--responsive-gutter);
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+
+.main-head {
+  align-items: center;
+  gap: 10px;
+}
+
+.main-head h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toolbar.open {
+  align-items: stretch;
+}
+
+.toolbar.open > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#banner,
+#archBar {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.crm-customer-list,
+.crm-sales-list,
+.crm-table-wrap,
+.pc-neg-scroll {
+  max-width: 100%;
+}
+
+.crm-customer-row,
+.crm-sale-card,
+.crm-task-row {
+  min-width: 0;
+}
+
+.crm-customer-name,
+.crm-customer-status,
+.crm-customer-due,
+.crm-sale-card > div,
+.crm-sale-card dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+#detail {
+  max-width: 100vw;
+  max-width: 100dvw;
+}
+
+#detail input,
+#detail select,
+#detail textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 861px) and (max-width: 1100px) {
+  :root { --side-w: 210px; }
+  .main-inner { padding-inline: 20px; }
+  #app.with-detail {
+    grid-template-columns: var(--side-w) minmax(0, 1fr) minmax(320px, 38vw);
+  }
+  .pc-row { gap: 12px 16px; padding: 12px 14px; }
+}
+
+@media (max-width: 860px) {
+  #app,
+  #app.with-detail {
+    display: block;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  #main {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+    overflow: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-inner {
+    padding-top: 18px;
+    padding-inline: var(--responsive-gutter);
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+
+  .main-head {
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .main-head h2 {
+    flex: 1 1 50%;
+    font-size: clamp(21px, 5vw, 26px);
+    line-height: 1.2;
+  }
+
+  .main-head .view-sub {
+    flex-basis: 100%;
+    order: 2;
+    white-space: normal;
+  }
+
+  #primaryAdd {
+    order: 3;
+    flex: 1 1 100%;
+    width: 100%;
+    min-height: 48px;
+    margin: 2px 0 0;
+  }
+
+  .toolbar.open {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .crm-search-label,
+  .crm-sales-tools > label {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .crm-search-label .search,
+  .crm-sales-tools select {
+    width: 100%;
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .crm-list-options {
+    width: 100%;
+  }
+
+  .crm-list-options > summary {
+    min-height: 48px;
+  }
+
+  .crm-list-options > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .crm-list-options label,
+  .crm-list-options select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .crm-customer-list {
+    border-radius: 14px;
+  }
+
+  .crm-customer-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding: 15px;
+    min-height: 104px;
+  }
+
+  .crm-customer-name { grid-column: 1 / -1; }
+  .crm-customer-due { grid-column: 1; font-size: 14px; }
+  .crm-row-arrow { display: none; }
+
+  .crm-task-row {
+    gap: 8px 12px;
+    padding: 12px 0;
+  }
+
+  .crm-task-open {
+    flex: 1 1 100%;
+    min-height: 54px;
+    padding: 8px 28px 8px 0;
+  }
+
+  .crm-task-row > .btn {
+    flex: 1 1 auto;
+    margin-left: 0;
+  }
+
+  .crm-sale-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .crm-sale-card-actions {
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .crm-sales-tools .crm-layout-switch {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .crm-sales-tools .crm-layout-switch button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .pc-row {
+    align-items: stretch;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .pc-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+
+  .pcalc .fl,
+  .pcalc .fl input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pc-togo {
+    width: 100%;
+    margin: 0;
+    text-align: left;
+  }
+
+  .pc-out li {
+    flex-basis: 50%;
+    border-bottom: 1px solid var(--line);
+  }
+
+  #detail {
+    width: 100%;
+    max-width: 100vw;
+    max-width: 100dvw;
+    border-radius: 0;
+  }
+
+  #detail .prop {
+    grid-template-columns: minmax(86px, 34%) minmax(0, 1fr);
+  }
+
+  #tabBar {
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  #tabBar button {
+    min-height: 52px;
+  }
+
+  #fab {
+    bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  :root { --responsive-gutter: 14px; }
+
+  body { font-size: 15px; }
+
+  .main-inner { padding-top: 14px; }
+
+  .main-head { gap: 8px; }
+
+  #primaryAdd { width: 100%; }
+
+  .crm-list-options > div,
+  .pc-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .crm-customer-row {
+    padding: 14px;
+    min-height: 96px;
+  }
+
+  .crm-sale-card dl > div {
+    flex-wrap: wrap;
+  }
+
+  .crm-sale-card dt {
+    min-width: 72px;
+  }
+
+  .pc-out li {
+    flex-basis: 100%;
+    border-right: 0;
+  }
+
+  #detail .prop {
+    grid-template-columns: minmax(72px, 30%) minmax(0, 1fr);
+  }
+
+  #detail .prop input,
+  #detail .prop select,
+  #detail .prop textarea {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .crm-focus-actions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  #detail .crm-focus-primary {
+    width: 100%;
+    min-height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
