@@ -3778,45 +3778,58 @@ function calcPrintHtml(p) {
 let calcPrintCleanup = null;
 function printCalc(p) {
   calcPrintCleanup?.();
-  const sheet = document.createElement('section'), oldTitle = document.title;
-  sheet.id = 'calcPrint'; sheet.innerHTML = calcPrintHtml(p);
-  document.body.append(sheet); document.body.classList.add('printing-calc');
-  document.title = 'Prijsberekening - ' + p.name;
-  const cleanup = () => {
-    sheet.remove(); document.body.classList.remove('printing-calc'); document.title = oldTitle;
-    window.removeEventListener('afterprint', cleanup); calcPrintCleanup = null;
-  };
-  calcPrintCleanup = cleanup;
-  window.addEventListener('afterprint', cleanup, {once:true});
+  const sheet = document.createElement('section');
+  sheet.id = 'calcPrint';
+  sheet.innerHTML = calcPrintHtml(p);
 
-  // In iPad/iPhone apps installed on the home screen, window.print() may do nothing.
-  // Open a readable print sheet instead so the user can use Share > Print / Save to Files.
   const isAppleTouch = /iPad|iPhone|iPod/.test(navigator.userAgent)
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (isAppleTouch) {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      const styles = [...document.querySelectorAll('link[rel="stylesheet"]')]
-        .map(link => '<link rel="stylesheet" href="' + esc(link.href) + '">').join('');
-      printWindow.document.open();
-      printWindow.document.write('<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prijsberekening - '
-        + esc(p.name) + '</title>' + styles
-        + '<style>body{padding:20px!important;background:#fff!important;color:#101010!important}#calcPrint{display:block!important;max-width:900px;margin:20px auto!important}.ios-print-help{font:16px/1.5 -apple-system,sans-serif;padding:14px;margin:0 auto 18px;max-width:900px;background:#f2f2f7;border-radius:12px;color:#222}</style></head><body><p class="ios-print-help">Tik op <b>Deel</b> in Safari en kies <b>Druk af</b> of <b>Bewaar in Bestanden</b> om als PDF te bewaren.</p>'
-        + sheet.outerHTML + '</body></html>');
-      printWindow.document.close();
-      cleanup();
+
+  // iPadOS can ignore window.print() inside an installed PWA. Offer the native
+  // share sheet with a standalone HTML document containing the same calculation.
+  if (isAppleTouch && navigator.share && typeof File !== 'undefined') {
+    const styles = [...document.querySelectorAll('link[rel="stylesheet"]')]
+      .map(link => '<link rel="stylesheet" href="' + esc(link.href) + '">').join('');
+    const html = '<!doctype html><html lang="nl"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>Prijsberekening - ' + esc(p.name) + '</title>' + styles
+      + '<style>body{padding:20px!important;background:#fff!important;color:#101010!important}'
+      + '#calcPrint{display:block!important;max-width:900px;margin:20px auto!important}'
+      + '@media print{.ios-print-help{display:none!important}}</style></head>'
+      + '<body><p style="font:16px/1.5 -apple-system,sans-serif;padding:12px;background:#f2f2f7;border-radius:10px">'
+      + 'Kies in het deelvenster eventueel Druk af, of bewaar dit document en open het om af te drukken.</p>'
+      + sheet.outerHTML + '</body></html>';
+    const file = new File([html], 'prijsberekening-' + String(p.name || 'project').replace(/[^a-z0-9-_]+/gi, '-').slice(0,60) + '.html', {type:'text/html'});
+    if (!navigator.canShare || navigator.canShare({files:[file]})) {
+      navigator.share({files:[file], title:'Prijsberekening - ' + p.name})
+        .catch(err => {
+          if (err && err.name !== 'AbortError') toast('Delen is niet gelukt. Open de pagina in Safari om af te drukken.');
+        });
       return;
     }
-    cleanup();
-    toast('Open deze app in Safari en probeer Afdrukken opnieuw. Gebruik daarna Deel > Druk af.');
+    toast('Delen van bestanden wordt niet ondersteund door deze versie van iPadOS. Open de app in Safari om af te drukken.');
     return;
   }
 
+  // Keep the normal print flow for browsers where it is supported.
+  const oldTitle = document.title;
+  document.body.append(sheet);
+  document.body.classList.add('printing-calc');
+  document.title = 'Prijsberekening - ' + p.name;
+  const cleanup = () => {
+    sheet.remove();
+    document.body.classList.remove('printing-calc');
+    document.title = oldTitle;
+    window.removeEventListener('afterprint', cleanup);
+    calcPrintCleanup = null;
+  };
+  calcPrintCleanup = cleanup;
+  window.addEventListener('afterprint', cleanup, {once:true});
   try {
     window.print();
   } catch {
     cleanup();
-    toast('Afdrukken is niet beschikbaar. Open de pagina in Safari en gebruik Deel > Druk af.');
+    toast('Afdrukken is niet beschikbaar. Open de pagina in Safari om af te drukken.');
   }
 }
 function renderCalc() {
