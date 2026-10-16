@@ -34,14 +34,14 @@ export async function api(method, path, body, {cond = false, raw = false} = {}) 
   if (cond && r.headers.get('ETag')) etags.set(url, {etag: r.headers.get('ETag'), data, link});
   return cond || raw ? {data, changed: true, link} : data;
 }
-export const nextLink = link => (link.match(/<([^>]+)>;\s*rel="next"/) || [])[1];
+export const nextLink = link => (link.match(/<([^>]+)>;\\s*rel="next"/) || [])[1];
 
 // ---- events ----
 export const EVENT_LABEL = 'event';
 // Issues echt verwijderen vraagt beheerrechten op de repo; daarom krijgen ze dit label en worden ze gesloten.
 export const DELETED_LABEL = 'verwijderd';
 const hasLabel = (issue, name) => (issue.labels || []).some(l => (l.name || l) === name);
-const JSON_RE = /```json\s*([\s\S]*?)```/;
+const JSON_RE = /```json\\s*([\\s\\S]*?)```/;
 export function parseEvent(issue) {
   if (!issue || issue.pull_request || !hasLabel(issue, EVENT_LABEL) || hasLabel(issue, DELETED_LABEL)) return null;
   try {
@@ -58,12 +58,12 @@ export function eventIssue(ev) {
   const url = new URL('./?e=' + ev.id, location.href).href;
   return {
     title: '🎧 ' + ev.name,
-    body: `Event voor verzoekjes: ${url}\n\n_Wordt beheerd via beheer.html, pas de gegevens hieronder niet met de hand aan._\n\n\`\`\`json\n${JSON.stringify(d, null, 2)}\n\`\`\`\n`
+    body: `Event voor verzoekjes: ${url}\\n\\n_Wordt beheerd via beheer.html, pas de gegevens hieronder niet met de hand aan._\\n\\n\\`\\`\\`json\\n${JSON.stringify(d, null, 2)}\\n\\`\\`\\`\\n`
   };
 }
 
 // ---- verzoekjes ----
-const REQ_RE = /<!--\s*vz\s+([\s\S]*?)\s*-->/;
+const REQ_RE = /<!--\\s*vz\\s+([\\s\\S]*?)\\s*-->/;
 export function parseRequest(issue) {
   if (!issue || issue.pull_request) return null;
   const m = (issue.body || '').match(REQ_RE);
@@ -82,12 +82,12 @@ export function parseRequest(issue) {
 }
 export function requestIssue(r) {
   const d = {e: r.eventId, en: r.eventNumber, t: r.title, a: r.artist, art: r.artwork, k: r.songKey, n: r.name, m: r.message, s: r.source};
-  const line = s => s.replace(/[\r\n]+/g, ' ').replace(/-->/g, '--');
+  const line = s => s.replace(/[\\r\\n]+/g, ' ').replace(/-->/g, '--');
   return {
     title: `[${r.eventId}] ${line(r.title)}${r.artist ? ' — ' + line(r.artist) : ''}`.slice(0, 250),
-    body: `**${line(r.title)}**${r.artist ? ' — ' + line(r.artist) : ''}\n\n`
-      + (r.name ? `Van: ${line(r.name)}\n\n` : '') + (r.message ? `> ${line(r.message)}\n\n` : '')
-      + `<!-- vz ${JSON.stringify(d).replace(/-->/g, '--\\u003e')} -->\n`
+    body: `**${line(r.title)}**${r.artist ? ' — ' + line(r.artist) : ''}\\n\\n`
+      + (r.name ? `Van: ${line(r.name)}\\n\\n` : '') + (r.message ? `> ${line(r.message)}\\n\\n` : '')
+      + `<!-- vz ${JSON.stringify(d).replace(/-->/g, '--\\\\u003e')} -->\\n`
   };
 }
 
@@ -97,7 +97,6 @@ export function requestIssue(r) {
 const PHOTO_CHUNK = 60000, PHOTO_MAX = 3 * PHOTO_CHUNK;
 const photoMem = new Map();
 const photoKey = p => p && Array.isArray(p.ids) && p.ids.length ? p.ids.join('.') + '@' + (p.v || 0) : '';
-
 export async function loadPhoto(photo) {
   const key = photoKey(photo);
   if (!key) return '';
@@ -106,9 +105,8 @@ export async function loadPhoto(photo) {
   let url = cached[key];
   if (!url) {
     const parts = await Promise.all(photo.ids.slice(0, 3).map(id => api('GET', '/issues/comments/' + (+id))));
-    url = parts.map(c => ((c.body || '').match(/<!--\s*vzfoto\s*([A-Za-z0-9+/=:;,\s]*?)-->/) || [, ''])[1].replace(/\s+/g, '')).join('');
-    if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(url)) return '';
-    // Enkel de laatste 3 foto's bijhouden in de browser.
+    url = parts.map(c => ((c.body || '').match(/<!--\\s*vzfoto\\s*([A-Za-z0-9+/=:;,\\s]*?)-->/) || [, ''])[1].replace(/\\s+/g, '')).join('');
+    if (!/^data:image\\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(url)) return '';
     const next = {[key]: url};
     Object.keys(cached).slice(-2).forEach(k => { if (k !== key) next[k] = cached[k]; });
     store.set('vz_photos', next);
@@ -116,8 +114,6 @@ export async function loadPhoto(photo) {
   photoMem.set(key, url);
   return url;
 }
-
-// Verklein de gekozen foto tot een JPEG die in 3 reacties past.
 export async function compressImage(file) {
   const img = await new Promise((res, rej) => {
     const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Dit bestand is geen foto die de browser kan openen.'));
@@ -138,12 +134,11 @@ export async function compressImage(file) {
   URL.revokeObjectURL(img.src);
   throw new Error('De foto is te groot.');
 }
-
 export async function savePhoto(eventNumber, dataUrl) {
   const chunks = dataUrl.match(new RegExp(`.{1,${PHOTO_CHUNK}}`, 'g'));
   const ids = [];
   for (let i = 0; i < chunks.length; i++) {
-    const c = await api('POST', `/issues/${eventNumber}/comments`, {body: `📷 Foto voor dit event (deel ${i + 1}/${chunks.length}), beheerd via beheer.html\n<!-- vzfoto\n${chunks[i]}\n-->`});
+    const c = await api('POST', `/issues/${eventNumber}/comments`, {body: `📷 Foto voor dit event (deel ${i + 1}/${chunks.length}), beheerd via beheer.html\\n<!-- vzfoto\\n${chunks[i]}\\n-->`});
     ids.push(c.id);
   }
   const photo = {ids, v: Date.now()};
@@ -160,15 +155,12 @@ export async function deletePhoto(photo) {
 // Alle gasten gebruiken hetzelfde token, dus een GitHub-duimpje telt maar één keer. Daarom is elke stem een reactie
 // op het issue; het aantal reacties staat al in de lijst van issues (geen extra aanvragen nodig).
 export async function addVote(number) {
-  const c = await api('POST', `/issues/${number}/comments`, {body: 'Stem via de verzoekjes-pagina.\n<!-- vz-vote -->'});
+  const c = await api('POST', `/issues/${number}/comments`, {body: 'Stem via de verzoekjes-pagina.\\n<!-- vz-vote -->'});
   return c.id;
 }
 export async function removeVote(commentId) {
   try { await api('DELETE', '/issues/comments/' + (+commentId)); } catch (e) { if (e.status !== 404) throw e; }
 }
-
-// Hoort een verzoekje bij dit event? Een code kan na het verwijderen van een event opnieuw gebruikt worden;
-// daarom telt ook het issue-nummer van het event (oudere verzoekjes zonder nummer: op aanmaakdatum).
 export const belongsTo = (r, ev) => !!ev && r.eventId === ev.id
   && (r.eventNumber ? r.eventNumber === ev.number : Date.parse(r.createdAt) >= Date.parse(ev.createdAt) - 60_000);
 
@@ -193,39 +185,78 @@ export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','
 // Zelfde nummer = zelfde sleutel, ook bij "(Remastered)", "- Radio Edit", "feat." enz.
 export function songKey(title, artist) {
   const norm = s => String(s || '').toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/\s*[\(\[][^\)\]]*[\)\]]/g, '')
-    .replace(/\s+-\s+.*$/, '')
-    .replace(/\s+(feat\.?|ft\.?|featuring)\s+.*$/, '')
+    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/\\s*[\\(\\[][^\\)\\]]*[\\)\\]]/g, '')
+    .replace(/\\s+-\\s+.*$/, '')
+    .replace(/\\s+(feat\\.?|ft\\.?|featuring)\\s+.*$/, '')
     .replace(/[^a-z0-9]+/g, ' ').trim();
   return (norm(title) + '|' + norm(artist).split(/ (?:and|x) /)[0]).slice(0, 300);
 }
 
 // Alleen hoesjes van Apple (mzstatic) worden getoond.
-export const safeArt = u => /^https:\/\/[a-z0-9.-]+\.mzstatic\.com\/[^"'()\s]+$/i.test(u || '') ? u : '';
+export const safeArt = u => /^https:\\/\\/[a-z0-9.-]+\\.mzstatic\\.com\\/[^"'()\\s]+$/i.test(u || '') ? u : '';
 
-// Zoeken via de iTunes Search API (JSONP: geen sleutel nodig, werkt vanaf elke site).
+// Zoek via de iTunes Search API. Gebruik JSONP voor compatibiliteit; val terug op JSON/fetch
+// wanneer de callback-request wordt geblokkeerd of Apple tijdelijk geen JSONP antwoordt.
 let jsonpN = 0;
-export function searchSongs(term, {limit = 15, country = 'BE'} = {}) {
+function mapSongResults(data) {
+  return (data.results || []).filter(r => r.kind === 'song').map(r => ({
+    title: r.trackName, artist: r.artistName, album: r.collectionName || '',
+    artwork: (r.artworkUrl100 || '').replace('100x100bb', '200x200bb'),
+    year: (r.releaseDate || '').slice(0, 4)
+  })).filter(r => r.title && r.artist);
+}
+function jsonpSearch(url, timeoutMs = 6000) {
   return new Promise((resolve, reject) => {
     const cb = '__vzcb' + (++jsonpN);
     const s = document.createElement('script');
-    const done = () => { delete window[cb]; s.remove(); clearTimeout(t); };
-    const t = setTimeout(() => { done(); reject(new Error('timeout')); }, 8000);
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      delete window[cb];
+      s.onerror = null;
+      s.remove();
+      clearTimeout(t);
+    };
+    const t = setTimeout(() => { done(); reject(new Error('timeout')); }, timeoutMs);
     window[cb] = data => {
       done();
-      resolve((data.results || []).filter(r => r.kind === 'song').map(r => ({
-        title: r.trackName, artist: r.artistName, album: r.collectionName || '',
-        artwork: (r.artworkUrl100 || '').replace('100x100bb', '200x200bb'),
-        year: (r.releaseDate || '').slice(0, 4)
-      })));
+      resolve(mapSongResults(data || {}));
     };
     s.onerror = () => { done(); reject(new Error('netwerk')); };
-    s.src = 'https://itunes.apple.com/search?' + new URLSearchParams({
-      term, entity: 'song', media: 'music', limit, country, callback: cb
-    });
+    s.src = url + '&callback=' + encodeURIComponent(cb);
     document.head.appendChild(s);
   });
+}
+async function fetchSearch(url, timeoutMs = 6000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, {signal: controller.signal, mode: 'cors', cache: 'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return mapSongResults(await r.json());
+  } finally {
+    clearTimeout(timer);
+  }
+}
+export async function searchSongs(term, {limit = 15, country = 'BE'} = {}) {
+  const url = 'https://itunes.apple.com/search?' + new URLSearchParams({
+    term, entity: 'song', media: 'music', limit: String(limit), country
+  });
+  try {
+    // JSONP is the documented cross-site pattern for Apple's Search API.
+    return await jsonpSearch(url);
+  } catch (firstError) {
+    // Some browser/network combinations block dynamically inserted scripts. Try standard CORS fetch.
+    try {
+      return await fetchSearch(url);
+    } catch (secondError) {
+      // One short JSONP retry can recover from a transient Apple endpoint failure.
+      try { return await jsonpSearch(url, 5000); }
+      catch { throw secondError || firstError; }
+    }
+  }
 }
 
 export function toast(msg, ms = 2600) {
