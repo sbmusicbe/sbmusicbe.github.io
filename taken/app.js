@@ -3777,9 +3777,6 @@ function calcPrintHtml(p) {
 }
 let calcPrintCleanup = null;
 function printCalc(p) {
-  // Op mobiele browsers kan await document.fonts.ready de tijdelijke gebruikersactie
-  // laten verlopen. Dan wordt window.print() stil genegeerd. Roep print synchroon
-  // aan binnen de tik op de knop; de print-CSS gebruikt systeemfonts waar nodig.
   calcPrintCleanup?.();
   const sheet = document.createElement('section'), oldTitle = document.title;
   sheet.id = 'calcPrint'; sheet.innerHTML = calcPrintHtml(p);
@@ -3791,11 +3788,35 @@ function printCalc(p) {
   };
   calcPrintCleanup = cleanup;
   window.addEventListener('afterprint', cleanup, {once:true});
+
+  // In iPad/iPhone apps installed on the home screen, window.print() may do nothing.
+  // Open a readable print sheet instead so the user can use Share > Print / Save to Files.
+  const isAppleTouch = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isAppleTouch) {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      const styles = [...document.querySelectorAll('link[rel="stylesheet"]')]
+        .map(link => '<link rel="stylesheet" href="' + esc(link.href) + '">').join('');
+      printWindow.document.open();
+      printWindow.document.write('<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prijsberekening - '
+        + esc(p.name) + '</title>' + styles
+        + '<style>body{padding:20px!important;background:#fff!important;color:#101010!important}#calcPrint{display:block!important;max-width:900px;margin:20px auto!important}.ios-print-help{font:16px/1.5 -apple-system,sans-serif;padding:14px;margin:0 auto 18px;max-width:900px;background:#f2f2f7;border-radius:12px;color:#222}</style></head><body><p class="ios-print-help">Tik op <b>Deel</b> in Safari en kies <b>Druk af</b> of <b>Bewaar in Bestanden</b> om als PDF te bewaren.</p>'
+        + sheet.outerHTML + '</body></html>');
+      printWindow.document.close();
+      cleanup();
+      return;
+    }
+    cleanup();
+    toast('Open deze app in Safari en probeer Afdrukken opnieuw. Gebruik daarna Deel > Druk af.');
+    return;
+  }
+
   try {
     window.print();
   } catch {
     cleanup();
-    toast('Afdrukken is niet beschikbaar in deze browser. Gebruik het deelmenu van je browser om af te drukken of als PDF te bewaren.');
+    toast('Afdrukken is niet beschikbaar. Open de pagina in Safari en gebruik Deel > Druk af.');
   }
 }
 function renderCalc() {
