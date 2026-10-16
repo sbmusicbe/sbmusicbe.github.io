@@ -1,0 +1,66 @@
+/* Performance polish: avoid expensive effects on long lists and reduce layout/paint work.
+   No data or encryption settings are changed. */
+@media (prefers-reduced-motion: no-preference) {
+  .crm-customer-row,
+  .crm-sale-card,
+  .card,
+  .nav-item,
+  .btn,
+  .icon-btn {
+    transition-duration: .1s;
+  }
+}
+
+/* Let the browser skip layout and paint work for cards outside the viewport. */
+.crm-customer-row,
+.crm-sale-card,
+.crm-task-row,
+.card,
+.crm-sale-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
+
+/* Scrolling remains smooth without forcing costly effects on large lists. */
+#main,
+#detail,
+.crm-customer-list,
+.crm-sales-list,
+.cards,
+.board {
+  overscroll-behavior: contain;
+}
+
+/* Blur/backdrop effects can be expensive on older phones and tablets. */
+@media (max-width: 860px), (prefers-reduced-motion: reduce) {
+  .topbar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .btn,
+  .icon-btn,
+  .nav-item,
+  .crm-customer-row,
+  .crm-sale-card {
+    transition: none;
+  }
+  .card {
+    contain: layout paint style;
+  }
+}
+
+/* Don't animate large panels for users who have asked for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  #detail,
+  #side,
+  #scrim,
+  .card,
+  .crm-customer-row,
+  .crm-sale-card,
+  .btn,
+  .icon-btn {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
