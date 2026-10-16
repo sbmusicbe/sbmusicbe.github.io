@@ -3775,7 +3775,10 @@ function calcPrintHtml(p) {
     <p class="pc-print-note">Prijzen per formaat · afgerond naar boven op hele euro’s</p>`;
 }
 let calcPrintCleanup = null;
-async function printCalc(p) {
+function printCalc(p) {
+  // Op mobiele browsers kan await document.fonts.ready de tijdelijke gebruikersactie
+  // laten verlopen. Dan wordt window.print() stil genegeerd. Roep print synchroon
+  // aan binnen de tik op de knop; de print-CSS gebruikt systeemfonts waar nodig.
   calcPrintCleanup?.();
   const sheet = document.createElement('section'), oldTitle = document.title;
   sheet.id = 'calcPrint'; sheet.innerHTML = calcPrintHtml(p);
@@ -3788,9 +3791,11 @@ async function printCalc(p) {
   calcPrintCleanup = cleanup;
   window.addEventListener('afterprint', cleanup, {once:true});
   try {
-    if (document.fonts) await document.fonts.ready;
     window.print();
-  } catch { cleanup(); toast('Afdrukken is niet beschikbaar op dit toestel.'); }
+  } catch {
+    cleanup();
+    toast('Afdrukken is niet beschikbaar in deze browser. Gebruik het deelmenu van je browser om af te drukken of als PDF te bewaren.');
+  }
 }
 function renderCalc() {
   const el = $('#projCalc'), p = view.type === 'project' ? data.projects.find(x => x.id === view.id) : null;
