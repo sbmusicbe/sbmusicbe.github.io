@@ -1239,3 +1239,95 @@ body{font-size:15px;line-height:1.5}
 #detail .crm-focus-primary{width:100%}
 #detail .prop{grid-template-columns:88px minmax(0,1fr)}
 }
+
+
+
+/* SB Music workspace redesign — inspired by the clean Compass dashboard reference. */
+:root{
+ --canvas:#fff;--raised:#f7f8fa;--sunken:#f0f2f5;--ink:#17191d;--ink-muted:#626b78;
+ --ink-faint:#939ba7;--line:#e1e5eb;--border-strong:#b9c1cc;
+ --action:#17191d;--on-action:#fff;--accent:#2877ff;--on-accent:#fff;--accent-soft:#edf4ff;
+ --r-sm:7px;--r-md:11px;--r-lg:14px;--r-xl:18px;--side-w:260px;
+ --shadow-card:0 1px 2px rgba(15,23,42,.04);--shadow-float:0 12px 34px rgba(15,23,42,.10);
+ color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--canvas:#111318;--raised:#191c22;--sunken:#242832;--ink:#f4f6f9;--ink-muted:#b0b8c4;--ink-faint:#7e8794;--line:#303640;--border-strong:#525b68;--action:#f4f6f9;--on-action:#17191d;--accent:#75a7ff;--accent-soft:#1c2b44;--shadow-card:0 1px 3px #0004;--shadow-float:0 12px 34px #0006}}
+body{background:var(--canvas);color:var(--ink);letter-spacing:0}
+#app{grid-template-columns:var(--side-w) minmax(0,1fr);gap:0}
+#side{background:var(--raised);border-right:1px solid var(--line);padding:22px 14px 14px;gap:5px}
+.side-head{padding:4px 12px 24px}
+.brand{font-size:21px;letter-spacing:-.045em;gap:12px}
+.brand .k-mark{width:23px}
+.side-section{margin:18px 8px 7px;color:var(--ink-faint);font-size:12px;font-weight:600;letter-spacing:.035em;text-transform:uppercase}
+.nav-item{min-height:42px;padding:0 12px;border-radius:9px;font-size:14px;font-weight:500;color:var(--ink-muted);gap:12px}
+.nav-item .ico{width:20px;height:20px}.nav-item .ico svg{width:19px;height:19px}
+.nav-item:hover{background:var(--sunken);color:var(--ink)}
+.nav-item.on{background:#e9edf3;color:#17191d;box-shadow:none;font-weight:600}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .nav-item.on{background:#303642;color:#fff}}
+.nav-item .cnt{font-family:var(--f-sans);font-size:12px}
+.side-foot{margin-top:auto;padding:12px 4px 4px;border-top:1px solid var(--line)}
+.foot-row{gap:5px}.foot-btn{border-radius:9px}
+#syncStatus{font-size:12px}
+#main{background:var(--canvas)}
+@media(min-width:861px){
+ .topbar{height:58px;padding:0 30px;gap:14px;border-bottom:1px solid var(--line)}
+ .tb-date{font-family:var(--f-sans);font-size:13px;letter-spacing:0}
+ .top-search{height:36px;border-radius:9px;background:var(--raised);box-shadow:none;width:min(300px,34vw)}
+ .top-btn{width:36px;height:36px;border-radius:9px;box-shadow:none}
+ .main-inner{padding:28px 30px 70px}
+ .main-head{min-height:46px;margin-bottom:22px;gap:12px}
+ .main-head h2{font-size:27px;letter-spacing:-.04em}
+ .view-sub{font-size:14px}
+ #app.with-detail{grid-template-columns:var(--side-w) minmax(360px,1fr) minmax(350px,39vw)}
+ #app.board-mode.with-detail{grid-template-columns:var(--side-w) minmax(0,1fr)}
+ #app.board-mode #detail{width:min(var(--detail-w,440px),calc(100vw - var(--side-w) - 20px));}
+}
+.btn{border-radius:9px;font-weight:600}
+.btn.primary{background:#2877ff;border-color:#2877ff;color:#fff}
+.btn.primary:hover{background:#1766eb;border-color:#1766eb}
+.icon-btn{border-radius:9px}
+input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:9px}
+#toolbar.open{gap:10px;margin-bottom:20px}
+#tbSearch{border-radius:9px;min-height:40px}
+.crm-customer-list{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--canvas)}
+.crm-customer-row{padding:17px 18px;transition:background .15s}
+.crm-customer-row:hover{background:var(--raised)}
+.crm-customer-name{font-weight:600}
+.crm-customer-status,.crm-customer-due{color:var(--ink-muted)}
+.crm-metrics{gap:14px}
+.crm-metric{border:1px solid var(--line);border-radius:12px;box-shadow:none;padding:18px;background:var(--canvas)}
+.crm-metric strong{font-size:25px;letter-spacing:-.04em}
+.crm-card,.crm-page,.crm-sales-list,.crm-sale-card{border-radius:12px;box-shadow:none}
+.crm-card{border:1px solid var(--line)}
+.board-bar{margin-bottom:16px}
+.col-tabs{gap:8px}
+.col-tabs button{border-radius:9px;border:1px solid var(--line);background:var(--canvas);padding:8px 12px}
+.col-tabs button.on{background:var(--accent-soft);border-color:#c7dcff;color:var(--accent)}
+.board{gap:14px}
+.col>header{height:40px;padding:0 5px;font-size:14px}
+.card{border-radius:11px;padding:14px;background:var(--canvas);box-shadow:0 1px 2px rgba(15,23,42,.04);border-color:var(--line);gap:10px}
+.card:hover{border-color:#b8c5d8;box-shadow:0 4px 12px rgba(15,23,42,.06)}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.t-title{font-size:14px;line-height:21px}
+.chip{border-radius:6px}
+#detail{background:var(--canvas);border-left:1px solid var(--line);box-shadow:none}
+.d-head{min-height:58px;padding:10px 18px}
+.d-body{padding:22px 22px 48px}
+#dTitle{font-size:23px;line-height:30px;letter-spacing:-.035em}
+.props{border-radius:12px;padding:0 16px}
+.prop{padding:10px 0;grid-template-columns:110px minmax(0,1fr)}
+.crm-focus-status{border-radius:8px}
+.crm-focus-primary{border-radius:9px}
+.pcalc{border-radius:12px}
+#tabBar{background:var(--canvas);border-top:1px solid var(--line)}
+@media(max-width:860px){
+ #side{background:var(--canvas)}
+ .main-inner{padding-top:22px}
+ .main-head{margin-bottom:18px}
+ .main-head h2{font-size:24px}
+ #primaryAdd{border-radius:10px}
+ .crm-customer-list{border-radius:11px}
+ .crm-customer-row{padding:15px}
+ #detail{border-radius:18px 18px 0 0}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
