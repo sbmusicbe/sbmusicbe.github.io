@@ -15,28 +15,28 @@
 <script src="vendor/qrcode.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
-@page{size:A4;margin:0}
+@page{size:A4 portrait;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:radial-gradient(90% 60% at 50% 0%,#1f3d2d 0%,rgba(10,10,10,0) 70%),#0a0a0a;color:#fff;min-height:100vh;font-family:'Onest',sans-serif;-webkit-font-smoothing:antialiased}
-.bar{position:sticky;top:0;z-index:2;display:flex;gap:.5rem;justify-content:center;align-items:center;padding:1rem;flex-wrap:wrap;background:rgba(10,10,10,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
-.bar input{font:inherit;font-size:.875rem;padding:.75rem 1.125rem;border-radius:9999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;outline:none;width:min(22rem,100%)}
-.bar input:focus{border-color:rgba(255,255,255,.3)}
-.pill{display:inline-block;transition:transform .35s cubic-bezier(.2,.8,.2,1);cursor:pointer;border:0;background:none;font:inherit}
+html,body{background:#f3f3f0;color:#111;min-height:100vh;font-family:'Onest',sans-serif;-webkit-font-smoothing:antialiased}
+.bar{position:sticky;top:0;z-index:2;display:flex;gap:.5rem;justify-content:center;align-items:center;padding:1rem;flex-wrap:wrap;background:rgba(255,255,255,.94);border-bottom:1px solid #e6e5e2}
+.bar input{font:inherit;font-size:.875rem;padding:.75rem 1.125rem;border-radius:9999px;border:1px solid #d7d7d2;background:#fff;color:#111;outline:none;width:min(22rem,100%)}
+.bar input:focus{border-color:#777}
+.pill{display:inline-block;transition:transform .2s;cursor:pointer;border:0;background:none;font:inherit}
 .pill-in{display:inline-flex;align-items:center;gap:.75rem;border-radius:9999px;font-size:.875rem;font-weight:500;padding:.375rem .375rem .375rem 1.5rem;white-space:nowrap}
 .pill.no-ar .pill-in{padding:.875rem 1.75rem}
-.pill--dark .pill-in{background:#f1f0ee;color:#111}
-.pill--light .pill-in{background:rgba(255,255,255,.05);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
-.pill-ar{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:#0a0a0a;color:#fff}
+.pill--dark .pill-in{background:#111;color:#fff}
+.pill--light .pill-in{background:#fff;color:#111;box-shadow:inset 0 0 0 1px #c9c9c4}
+.pill-ar{width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:9999px;background:#fff;color:#111}
 .pill-ar svg{width:1em;height:1em}
 .pill:disabled{opacity:.5;cursor:default}
-@media (hover:hover){.pill:not(:disabled):hover{transform:scale(1.04)}}
-.hint{text-align:center;font-size:.8125rem;color:rgba(255,255,255,.55);padding:1rem 1rem 1.25rem}
-.sheet{display:block;width:min(210mm,calc(100vw - 2rem));height:auto;margin:0 auto 2.5rem;border-radius:.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);background:#0a0a0a}
+@media (hover:hover){.pill:not(:disabled):hover{transform:scale(1.03)}}
+.hint{text-align:center;font-size:.8125rem;color:#666;padding:1rem 1rem 1.25rem}
+.sheet{display:block;width:min(210mm,calc(100vw - 2rem));height:auto;margin:0 auto 2.5rem;border-radius:.25rem;box-shadow:0 12px 36px rgba(0,0,0,.12);background:#fff}
 #printImg{display:none}
 @media print{
-  html,body{background:none}
+  html,body{background:#fff!important;color:#000!important;min-height:0}
   .bar,.hint,.sheet{display:none!important}
-  #printImg{display:block;width:210mm;height:297mm}
+  #printImg{display:block;width:210mm;height:297mm;object-fit:contain}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
@@ -55,177 +55,150 @@ html,body{background:radial-gradient(90% 60% at 50% 0%,#1f3d2d 0%,rgba(10,10,10,
 import { configured, api, parseEvent, EVENT_LABEL, loadPhoto } from './gh.js';
 const $ = s => document.querySelector(s);
 
-// Huisstijl van sbmusic.be: wit, inkt, donkergroen accent, Onest; donker hero-vlak en voet met grote afronding.
-const C = {white: '#ffffff', fg: '#111111', ink: '#0a0a0a', muted: '#8d8d8d', line: '#e6e5e2', surface: '#f1f0ee', accent: '#2e5a43', from: '#3f7a5c', to: '#1f3d2d', soft: '#6fa88a'};
-const PX = 8;                             // pixels per mm → 1680 × 2376 px (± 200 dpi)
+// Printdesign: een witte A4-poster met zwarte tekst en een contrastrijke QR-code.
+const C = {white:'#ffffff', fg:'#111111', ink:'#000000', muted:'#555555', line:'#deded9', surface:'#f4f4f1', accent:'#2e5a43'};
+const PX = 8; // 8 px/mm: 1680 × 2376 px (circa 200 dpi)
 const W = 210, H = 297;
 const m = v => v * PX;
 
-const id = (new URLSearchParams(location.search).get('e') || '').toLowerCase();
-const url = new URL('./?e=' + encodeURIComponent(id), location.href).href;
+// Gebruik steeds de publieke verzoekpagina en dezelfde event-ID als op de beheerpagina.
+// Door de URL relatief aan de eigen origin op te bouwen, blijven preview en productie correct.
+const id = (new URLSearchParams(location.search).get('e') || '').trim().toLowerCase();
+const eventUrl = new URL('/requests/', location.origin);
+if (id) eventUrl.searchParams.set('e', id);
+const url = eventUrl.href;
 const shortUrl = url.replace(/^https?:\/\//, '');
-const state = {event: null, photo: null, avatar: null, logoW: null, headline: $('#headline').value};
+const state = {event:null, photo:null, avatar:null, logo:null, headline:$('#headline').value};
 
 const canvas = $('#sheet');
 canvas.width = m(W); canvas.height = m(H);
 const ctx = canvas.getContext('2d');
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 
-// ---- tekst ----
-const FONT = (size, w = 400) => `${w} ${m(size)}px Onest, system-ui, sans-serif`;
-function setTracking(em, size) { try { ctx.letterSpacing = (m(size) * em) + 'px'; } catch {} }
-function wrap(text, maxW) {
-  const words = text.split(/\s+/).filter(Boolean), lines = [];
-  let line = '';
-  for (const w of words) {
-    const t = line ? line + ' ' + w : w;
-    if (line && ctx.measureText(t).width > maxW) { lines.push(line); line = w; } else line = t;
-  }
-  if (line) lines.push(line);
-  return lines;
+const FONT = (size, w=400) => `${w} ${m(size)}px Onest, system-ui, sans-serif`;
+function setTracking(em,size){try{ctx.letterSpacing=(m(size)*em)+'px'}catch{}}
+function wrap(text,maxW){
+  const words=text.split(/\s+/).filter(Boolean), lines=[]; let line='';
+  for(const w of words){const t=line?line+' '+w:w;if(line&&ctx.measureText(t).width>maxW){lines.push(line);line=w}else line=t}
+  if(line)lines.push(line);return lines;
 }
-// Koppen zoals op de site: Onest 600, tracking −2%, regelafstand 0,98; verkleinen tot ze passen.
-function fit(text, size, maxW, maxH, weight = 600) {
-  for (let s = size; ; s *= 0.94) {
-    ctx.font = FONT(s, weight); setTracking(-0.02, s);
-    const lines = wrap(text, m(maxW));
-    if ((!lines.some(l => ctx.measureText(l).width > m(maxW)) && lines.length * s * 0.98 <= maxH) || s < size * 0.35) { setTracking(0, s); return {lines, size: s, h: lines.length * s * 0.98, weight}; }
-  }
+function fit(text,size,maxW,maxH,weight=600){
+  for(let s=size;;s*=.94){ctx.font=FONT(s,weight);setTracking(-.02,s);const lines=wrap(text,m(maxW));
+    if((!lines.some(l=>ctx.measureText(l).width>m(maxW))&&lines.length*s*.98<=maxH)||s<size*.35){setTracking(0,s);return{lines,size:s,h:lines.length*s*.98,weight}}}
 }
-function drawLines(t, x, top, color) {
-  ctx.font = FONT(t.size, t.weight); setTracking(-0.02, t.size); ctx.fillStyle = color;
-  t.lines.forEach((l, i) => ctx.fillText(l, x, top + m(t.size * (0.8 + i * 0.98))));  // volgt ctx.textAlign
-  setTracking(0, t.size);
+function drawLines(t,x,top,color,align='center'){
+  ctx.font=FONT(t.size,t.weight);setTracking(-.02,t.size);ctx.fillStyle=color;ctx.textAlign=align;
+  t.lines.forEach((l,i)=>ctx.fillText(l,x,top+m(t.size*(.8+i*.98))));
+  setTracking(0,t.size);ctx.textAlign='left';
 }
-function rrect(x, y, w, h, r) {
-  const [tl, tr, br, bl] = Array.isArray(r) ? r : [r, r, r, r];
-  ctx.beginPath();
-  ctx.moveTo(x + tl, y); ctx.lineTo(x + w - tr, y); ctx.arcTo(x + w, y, x + w, y + tr, tr);
-  ctx.lineTo(x + w, y + h - br); ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
-  ctx.lineTo(x + bl, y + h); ctx.arcTo(x, y + h, x, y + h - bl, bl);
-  ctx.lineTo(x, y + tl); ctx.arcTo(x, y, x + tl, y, tl); ctx.closePath();
+function rrect(x,y,w,h,r){
+  const [tl,tr,br,bl]=Array.isArray(r)?r:[r,r,r,r];ctx.beginPath();
+  ctx.moveTo(x+tl,y);ctx.lineTo(x+w-tr,y);ctx.arcTo(x+w,y,x+w,y+tr,tr);
+  ctx.lineTo(x+w,y+h-br);ctx.arcTo(x+w,y+h,x+w-br,y+h,br);
+  ctx.lineTo(x+bl,y+h);ctx.arcTo(x,y+h,x,y+h-bl,bl);
+  ctx.lineTo(x,y+tl);ctx.arcTo(x,y,x+tl,y+tl,tl);ctx.closePath();
 }
-// Eyebrow zoals op de site: klein bolletje + tekst.
-function eyebrow(text, x, y, color, dot) {
-  ctx.fillStyle = dot; ctx.beginPath(); ctx.arc(x + m(0.75), y - m(1.05), m(0.75), 0, Math.PI * 2); ctx.fill();
-  ctx.font = FONT(3.4, 500); ctx.fillStyle = color; ctx.fillText(text, x + m(3), y);
+function arrowBadge(cx,cy,r,bg,fg){
+  ctx.fillStyle=bg;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=fg;ctx.lineWidth=r*.16;ctx.lineCap='round';ctx.lineJoin='round';
+  const s=r*.42;ctx.beginPath();ctx.moveTo(cx-s,cy+s);ctx.lineTo(cx+s,cy-s);ctx.moveTo(cx-s*.6,cy-s);ctx.lineTo(cx+s,cy-s);ctx.lineTo(cx+s,cy+s*.6);ctx.stroke();
 }
-function arrowBadge(cx, cy, r, bg, fg, up = false) {
-  ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = fg; ctx.lineWidth = r * 0.16; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  const s = r * 0.42; ctx.beginPath();
-  if (up) { ctx.moveTo(cx - s, cy + s); ctx.lineTo(cx + s, cy - s); ctx.moveTo(cx - s * .6, cy - s); ctx.lineTo(cx + s, cy - s); ctx.lineTo(cx + s, cy + s * .6); }
-  else { ctx.moveTo(cx - s, cy); ctx.lineTo(cx + s, cy); ctx.moveTo(cx + s * .2, cy - s * .8); ctx.lineTo(cx + s, cy); ctx.lineTo(cx + s * .2, cy + s * .8); }
-  ctx.stroke();
-}
-
-// ---- tekenen ----
-// Zoals sbmusic.be: zwart met groene gloed, ronde foto met groene ring, wit logo, naam en tagline,
-// QR-code op een witte kaart, warmwitte hoofdknop en glazen rijen; alles gecentreerd in één kolom.
-function draw() {
-  const CX = m(W / 2), COL = 128, X = (W - COL) / 2;
+function draw(){
+  const CX=m(W/2), COL=128, X=(W-COL)/2;
   ctx.save();
-  ctx.fillStyle = C.ink; ctx.fillRect(0, 0, m(W), m(H));
-  const g = ctx.createRadialGradient(CX, 0, 0, CX, 0, m(170));
-  g.addColorStop(0, '#1f3d2d'); g.addColorStop(1, 'rgba(10,10,10,0)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, m(W), m(190));
+  ctx.fillStyle=C.white;ctx.fillRect(0,0,m(W),m(H));
 
-  // ronde foto met groene ring (event-foto of de avatar van de site)
-  const AV = 46, ay = 22, acx = W / 2, acy = ay + AV / 2;
-  ctx.fillStyle = 'rgba(111,168,138,.18)'; ctx.beginPath(); ctx.arc(m(acx), m(acy), m(AV / 2 + 2.4), 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(m(acx), m(acy), m(AV / 2 + 1), 0, Math.PI * 2); ctx.fill();
-  const p = state.photo || state.avatar;
-  ctx.save(); ctx.beginPath(); ctx.arc(m(acx), m(acy), m(AV / 2), 0, Math.PI * 2); ctx.clip();
-  ctx.fillStyle = '#1a1a1a'; ctx.fillRect(m(acx - AV / 2), m(ay), m(AV), m(AV));
-  if (p) {
-    const s = Math.max(m(AV) / p.naturalWidth, m(AV) / p.naturalHeight), dw = p.naturalWidth * s, dh = p.naturalHeight * s;
-    ctx.drawImage(p, m(acx) - dw / 2, m(acy) - dh * (state.photo ? 0.5 : 0.5), dw, dh);
-  }
+  // Foto als rustig, rond herkenningspunt; zonder donkere of gekleurde achtergrondvlakken.
+  const AV=38, ay=17, acx=W/2, acy=ay+AV/2, p=state.photo||state.avatar;
+  ctx.fillStyle=C.white;ctx.beginPath();ctx.arc(m(acx),m(acy),m(AV/2+1),0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=C.line;ctx.lineWidth=m(.8);ctx.beginPath();ctx.arc(m(acx),m(acy),m(AV/2+1),0,Math.PI*2);ctx.stroke();
+  ctx.save();ctx.beginPath();ctx.arc(m(acx),m(acy),m(AV/2),0,Math.PI*2);ctx.clip();
+  ctx.fillStyle='#f4f4f1';ctx.fillRect(m(acx-AV/2),m(ay),m(AV),m(AV));
+  if(p){const s=Math.max(m(AV)/p.naturalWidth,m(AV)/p.naturalHeight),dw=p.naturalWidth*s,dh=p.naturalHeight*s;ctx.drawImage(p,m(acx)-dw/2,m(acy)-dh/2,dw,dh)}
   ctx.restore();
 
-  // logo, naam, tagline
-  let y = ay + AV + 10;
-  if (state.logoW) { const lw = 22, lh = lw * 770 / 1806; ctx.drawImage(state.logoW, m(acx - lw / 2), m(y), m(lw), m(lh)); y += lh + 7; }
-  const name = state.event?.name || 'Verzoekjes';
-  const t = fit(name, 11, COL + 20, 24);
-  ctx.textAlign = 'center'; drawLines(t, CX, m(y), C.white); ctx.textAlign = 'left';
-  // drawLines tekent links uitgelijnd vanaf x; voor centreren tekenen we opnieuw per regel
-  y += t.h + 5;
-  ctx.font = FONT(4.2, 500); ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.textAlign = 'center';
-  ctx.fillText('Verzoekjes · Muziek op aanvraag', CX, m(y + 3)); ctx.textAlign = 'left';
-  y += 12;
+  let y=ay+AV+8;
+  if(state.logo){const lw=22,lh=lw*770/1806;ctx.drawImage(state.logo,m(acx-lw/2),m(y),m(lw),m(lh));y+=lh+6}
+  const name=state.event?.name||'Verzoekjes';
+  const t=fit(name,11,COL+20,24);
+  drawLines(t,CX,m(y),C.ink,'center');
+  y+=t.h+4;
+  ctx.font=FONT(4.2,500);ctx.fillStyle=C.muted;ctx.textAlign='center';
+  ctx.fillText('Verzoekjes · Muziek op aanvraag',CX,m(y+3));ctx.textAlign='left';
+  y+=10;
 
-  // QR-code op een witte kaart
-  const q = 64, qx = (W - q) / 2;
-  ctx.fillStyle = C.white; rrect(m(qx), m(y), m(q), m(q), m(6)); ctx.fill();
-  if (window.qrcode) {
-    const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-    const n = qr.getModuleCount(), pad = 5, inner = m(q - 2 * pad), cell = inner / n, ox = m(qx + pad), oy = m(y + pad);
-    ctx.fillStyle = C.ink;
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
-      if (qr.isDark(r, c)) ctx.fillRect(Math.floor(ox + c * cell), Math.floor(oy + r * cell), Math.ceil(cell), Math.ceil(cell));
+  // De QR wordt altijd gegenereerd met de link van het gekozen event.
+  const q=66,qx=(W-q)/2;
+  ctx.fillStyle=C.white;ctx.fillRect(m(qx),m(y),m(q),m(q));
+  if(window.qrcode && id){
+    const qr=qrcode(0,'M');qr.addData(url);qr.make();
+    const n=qr.getModuleCount(),pad=5,inner=m(q-2*pad),cell=inner/n,ox=m(qx+pad),oy=m(y+pad);
+    ctx.fillStyle=C.ink;
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(qr.isDark(r,c))
+      ctx.fillRect(Math.floor(ox+c*cell),Math.floor(oy+r*cell),Math.ceil(cell),Math.ceil(cell));
+  }else{
+    ctx.strokeStyle=C.line;ctx.lineWidth=m(.5);ctx.strokeRect(m(qx),m(y),m(q),m(q));
+    ctx.font=FONT(3.2,500);ctx.fillStyle=C.muted;ctx.textAlign='center';ctx.fillText('QR-code niet beschikbaar',CX,m(y+q/2));ctx.textAlign='left';
   }
-  y += q + 9;
+  y+=q+6;
+  ctx.font=FONT(3.1,400);ctx.fillStyle=C.muted;ctx.textAlign='center';
+  ctx.fillText(shortUrl,CX,m(y+1));ctx.textAlign='left';
+  y+=7;
 
-  // hoofdknop (warmwit, zoals "Boek SB") met de titel
-  const head = (state.headline || '').trim() || 'Vraag je nummer aan.';
-  const bh = 14;
-  ctx.fillStyle = C.surface; rrect(m(X), m(y), m(COL), m(bh), m(4)); ctx.fill();
-  let hs = 5; ctx.font = FONT(hs, 600);
-  while (ctx.measureText(head).width > m(COL - 26) && hs > 3) { hs -= .2; ctx.font = FONT(hs, 600); }
-  ctx.fillStyle = C.fg; ctx.fillText(head, m(X + 6), m(y + bh / 2 + hs * .36));
-  arrowBadge(m(X + COL - 7.5), m(y + bh / 2), m(4), C.ink, C.white, true);
-  y += bh + 4;
+  const head=(state.headline||'').trim()||'Vraag je nummer aan.', bh=14;
+  ctx.fillStyle=C.surface;rrect(m(X),m(y),m(COL),m(bh),m(3));ctx.fill();
+  let hs=5;ctx.font=FONT(hs,600);
+  while(ctx.measureText(head).width>m(COL-26)&&hs>3){hs-=.2;ctx.font=FONT(hs,600)}
+  ctx.fillStyle=C.ink;ctx.fillText(head,m(X+6),m(y+bh/2+hs*.36));
+  arrowBadge(m(X+COL-7.5),m(y+bh/2),m(4),C.ink,C.white);
+  y+=bh+4;
 
-  // glazen rijen met de stappen
-  const steps = [['01', 'Scan de code met je gsm'], ['02', 'Kies je nummer'], ['03', 'Stem op de wachtrij']];
-  steps.forEach(([n, label]) => {
-    const rh = 12;
-    ctx.fillStyle = 'rgba(255,255,255,.05)'; rrect(m(X), m(y), m(COL), m(rh), m(4)); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = m(.3); rrect(m(X), m(y), m(COL), m(rh), m(4)); ctx.stroke();
-    ctx.font = FONT(3.2, 500); ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillText(n, m(X + 6), m(y + rh / 2 + 1.1));
-    ctx.font = FONT(4.4, 500); ctx.fillStyle = C.white; ctx.fillText(label, m(X + 15), m(y + rh / 2 + 1.55));
-    y += rh + 3;
+  const steps=[['01','Scan de code met je gsm'],['02','Kies je nummer'],['03','Stem op de wachtrij']];
+  steps.forEach(([n,label])=>{
+    const rh=12;ctx.fillStyle=C.white;rrect(m(X),m(y),m(COL),m(rh),m(3));ctx.fill();
+    ctx.strokeStyle=C.line;ctx.lineWidth=m(.35);rrect(m(X),m(y),m(COL),m(rh),m(3));ctx.stroke();
+    ctx.font=FONT(3.2,500);ctx.fillStyle=C.muted;ctx.fillText(n,m(X+6),m(y+rh/2+1.1));
+    ctx.font=FONT(4.4,500);ctx.fillStyle=C.ink;ctx.fillText(label,m(X+15),m(y+rh/2+1.55));
+    y+=rh+3;
   });
-
-  // voet
-  ctx.font = FONT(2.8, 400); ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.textAlign = 'center';
-  ctx.fillText(shortUrl + '   ·   © 2026 SB', CX, m(H - 12)); ctx.textAlign = 'left';
+  ctx.font=FONT(2.8,400);ctx.fillStyle=C.muted;ctx.textAlign='center';
+  ctx.fillText('© 2026 SB · '+shortUrl,CX,m(H-12));ctx.textAlign='left';
   ctx.restore();
 }
 
-// ---- PDF en afdrukken ----
-const fileName = () => 'poster-' + (id || 'verzoekjes') + '.pdf';
-$('#pdfBtn').onclick = () => {
-  const {jsPDF} = window.jspdf || {};
-  if (!jsPDF) { alert('De PDF-module kon niet laden. Controleer je internetverbinding en probeer opnieuw.'); return; }
-  const doc = new jsPDF({unit: 'mm', format: 'a4', orientation: 'portrait', compress: true});
-  doc.setProperties({title: (state.event?.name ? state.event.name + ' · ' : '') + 'Verzoekjes', creator: 'sbmusic.be'});
-  doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, W, H, undefined, 'FAST');
+const fileName=()=>'poster-'+(id||'verzoekjes')+'.pdf';
+function preparePrintImage(){ $('#printImg').src=canvas.toDataURL('image/png'); }
+$('#pdfBtn').onclick=()=>{
+  const {jsPDF}=window.jspdf||{};
+  if(!jsPDF){alert('De PDF-module kon niet laden. Controleer je internetverbinding en probeer opnieuw.');return}
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
+  doc.setProperties({title:(state.event?.name?state.event.name+' · ':'')+'Verzoekjes',creator:'sbmusic.be'});
+  // PNG voorkomt grijze compressie rond de zwarte QR-modules; witte pagina blijft wit.
+  doc.addImage(canvas.toDataURL('image/png'),'PNG',0,0,W,H,undefined,'FAST');
   doc.save(fileName());
 };
-$('#printBtn').onclick = () => { $('#printImg').src = canvas.toDataURL('image/png'); setTimeout(() => print(), 50); };
-addEventListener('beforeprint', () => { $('#printImg').src = canvas.toDataURL('image/png'); });
-$('#headline').oninput = e => { state.headline = e.target.value; draw(); };
+$('#printBtn').onclick=()=>{preparePrintImage();setTimeout(()=>print(),50)};
+addEventListener('beforeprint',preparePrintImage);
+$('#headline').oninput=e=>{state.headline=e.target.value;draw()};
 
-// ---- laden ----
-(async () => {
-  const fonts = document.fonts ? Promise.all([
-    document.fonts.load('600 40px Onest'), document.fonts.load('500 20px Onest'), document.fonts.load('700 40px Onest'), document.fonts.load('400 20px Onest')
-  ]).catch(() => {}) : Promise.resolve();
-  const logo = loadImg('/assets/logo-sb-white.png').then(i => { state.logoW = i; }).catch(() => {});
-  const event = (configured && id ? api('GET', `/issues?labels=${EVENT_LABEL}&state=all&per_page=100`) : Promise.resolve([]))
-    .then(async list => {
-      state.event = list.map(parseEvent).find(e => e && e.id === id) || null;
-      if (state.event?.photo) { const u = await loadPhoto(state.event.photo); if (u) state.photo = await loadImg(u); }
-    }).catch(() => {});
-  const press = loadImg('/assets/sb-avatar.jpg').then(i => { state.avatar = i; }).catch(() => {});
-  await Promise.all([fonts, logo, event, press]);
-  if (state.event) document.title = state.event.name + ' · Poster';
+(async()=>{
+  const fonts=document.fonts?Promise.all([
+    document.fonts.load('600 40px Onest'),document.fonts.load('500 20px Onest'),document.fonts.load('400 20px Onest')
+  ]).catch(()=>{}):Promise.resolve();
+  const logo=loadImg('/assets/logo-sb-black.png').then(i=>{state.logo=i}).catch(()=>{});
+  const event=(configured&&id?api('GET',`/issues?labels=${EVENT_LABEL}&state=all&per_page=100`):Promise.resolve([]))
+    .then(async list=>{
+      state.event=list.map(parseEvent).find(e=>e&&String(e.id).toLowerCase()===id)||null;
+      if(state.event?.photo){const u=await loadPhoto(state.event.photo);if(u)state.photo=await loadImg(u)}
+    }).catch(()=>{});
+  const avatar=loadImg('/assets/sb-avatar.jpg').then(i=>{state.avatar=i}).catch(()=>{});
+  await Promise.all([fonts,logo,event,avatar]);
+  if(state.event)document.title=state.event.name+' · Poster';
   draw();
-  $('#pdfBtn').disabled = $('#printBtn').disabled = false;
-  $('#hint').textContent = state.event ? 'Pas de titel aan. Download PDF bewaart een A4-bestand om te mailen of te laten drukken.'
-    : (id ? 'Event niet gevonden. De QR-code werkt wel, maar controleer de link.' : 'Geen event gekozen: open de poster via beheer → QR & link.');
+  $('#pdfBtn').disabled=$('#printBtn').disabled=false;
+  $('#hint').textContent=state.event
+    ? 'Witte, printervriendelijke A4-poster. Controleer de eventlink onder de QR-code voor je afdrukt.'
+    : (id?'Event niet gevonden. De QR-code is niet gegenereerd: controleer het eventnummer.':'Geen event gekozen: open de poster via beheer → QR & link.');
 })();
 </script>
 </body>
